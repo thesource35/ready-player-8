@@ -16708,6 +16708,7 @@ enum RentalProvider: String, CaseIterable {
     case unitedRentals = "United Rentals"
     case dozr = "DOZR"
     case toolsy = "Toolsy"
+    case rentMyEquipment = "Rent My Equipment"
     case sunbelt = "Sunbelt Rentals"
     case herc = "Herc Rentals"
 
@@ -16716,6 +16717,7 @@ enum RentalProvider: String, CaseIterable {
         case .unitedRentals: return Color(red: 0.0, green: 0.35, blue: 0.65)
         case .dozr: return Color(red: 0.95, green: 0.55, blue: 0.1)
         case .toolsy: return Color(red: 0.2, green: 0.7, blue: 0.4)
+        case .rentMyEquipment: return Color(red: 0.55, green: 0.27, blue: 0.68)
         case .sunbelt: return Color(red: 0.85, green: 0.2, blue: 0.15)
         case .herc: return Color(red: 0.3, green: 0.3, blue: 0.7)
         }
@@ -16723,12 +16725,472 @@ enum RentalProvider: String, CaseIterable {
 
     var tagline: String {
         switch self {
-        case .unitedRentals: return "Largest equipment rental company"
-        case .dozr: return "Online heavy equipment marketplace"
+        case .unitedRentals: return "Largest equipment rental company in the world"
+        case .dozr: return "Online heavy equipment rental marketplace"
         case .toolsy: return "Tool rentals made simple"
+        case .rentMyEquipment: return "Peer-to-peer construction equipment rental"
         case .sunbelt: return "Reliable jobsite solutions"
         case .herc: return "ProSolutions for every project"
         }
+    }
+
+    var websiteURL: String {
+        switch self {
+        case .unitedRentals: return "https://www.unitedrentals.com"
+        case .dozr: return "https://dozr.com"
+        case .toolsy: return "https://toolsy.com"
+        case .rentMyEquipment: return "https://www.rentmyequipment.com"
+        case .sunbelt: return "https://www.sunbeltrentals.com"
+        case .herc: return "https://www.hercrentals.com"
+        }
+    }
+
+    var searchURL: String {
+        switch self {
+        case .unitedRentals: return "https://www.unitedrentals.com/marketplace/equipment"
+        case .dozr: return "https://dozr.com/equipment-rental"
+        case .toolsy: return "https://toolsy.com/rentals"
+        case .rentMyEquipment: return "https://www.rentmyequipment.com/search"
+        case .sunbelt: return "https://www.sunbeltrentals.com/equipment"
+        case .herc: return "https://www.hercrentals.com/us/equipment.html"
+        }
+    }
+
+    var appScheme: String? {
+        switch self {
+        case .unitedRentals: return "unitedrentals://"
+        case .dozr: return "dozr://"
+        case .toolsy: return nil
+        case .rentMyEquipment: return nil
+        case .sunbelt: return "sunbeltrentals://"
+        case .herc: return nil
+        }
+    }
+
+    var appStoreID: String? {
+        switch self {
+        case .unitedRentals: return "1074798452"
+        case .dozr: return "1547894041"
+        case .toolsy: return nil
+        case .rentMyEquipment: return nil
+        case .sunbelt: return "1076532758"
+        case .herc: return "1234068498"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .unitedRentals: return "\u{1F3E2}"
+        case .dozr: return "\u{1F69C}"
+        case .toolsy: return "\u{1F527}"
+        case .rentMyEquipment: return "\u{1F91D}"
+        case .sunbelt: return "\u{2600}\u{FE0F}"
+        case .herc: return "\u{1F3D7}"
+        }
+    }
+
+    var features: [String] {
+        switch self {
+        case .unitedRentals: return ["4,300+ locations", "Largest fleet in North America", "24/7 support", "Online ordering", "Delivery & pickup", "UR Control telematics"]
+        case .dozr: return ["Online marketplace", "Transparent pricing", "Verified operators", "Heavy equipment focus", "Instant quoting", "Delivery coordination"]
+        case .toolsy: return ["Hand & power tools", "Same-day availability", "Competitive daily rates", "No minimum rental", "Walk-in or deliver", "Trade account discounts"]
+        case .rentMyEquipment: return ["Peer-to-peer rentals", "Owner-direct pricing", "Equipment insurance", "Local inventory", "Flexible terms", "List your own equipment"]
+        case .sunbelt: return ["1,100+ locations", "Full-service rental", "Operator training", "Safety programs", "Fuel management", "GPS fleet tracking"]
+        case .herc: return ["ProSolutions consulting", "National accounts", "On-site management", "Environmental services", "Industrial plant support", "Entertainment & events"]
+        }
+    }
+}
+
+// MARK: - Provider Integration Manager
+
+@MainActor
+final class RentalProviderManager: ObservableObject {
+    static let shared = RentalProviderManager()
+
+    @Published var connectedProviders: Set<String> = []
+    @Published var quoteRequests: [RentalQuoteRequest] = []
+
+    private let connectedKey = "ConstructOS.Rentals.ConnectedProviders"
+    private let quotesKey = "ConstructOS.Rentals.QuoteRequests"
+
+    init() {
+        if let data = UserDefaults.standard.stringArray(forKey: connectedKey) {
+            connectedProviders = Set(data)
+        }
+        quoteRequests = loadJSON(quotesKey, default: [RentalQuoteRequest]())
+    }
+
+    func connect(_ provider: RentalProvider) {
+        connectedProviders.insert(provider.rawValue)
+        UserDefaults.standard.set(Array(connectedProviders), forKey: connectedKey)
+    }
+
+    func disconnect(_ provider: RentalProvider) {
+        connectedProviders.remove(provider.rawValue)
+        UserDefaults.standard.set(Array(connectedProviders), forKey: connectedKey)
+    }
+
+    func isConnected(_ provider: RentalProvider) -> Bool {
+        connectedProviders.contains(provider.rawValue)
+    }
+
+    func submitQuote(_ request: RentalQuoteRequest) {
+        quoteRequests.insert(request, at: 0)
+        saveJSON(quotesKey, value: quoteRequests)
+    }
+
+    func openProvider(_ provider: RentalProvider) {
+        #if os(iOS)
+        // Try app scheme first, fallback to website
+        if let scheme = provider.appScheme, let url = URL(string: scheme) {
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url)
+                return
+            }
+        }
+        if let url = URL(string: provider.websiteURL) {
+            UIApplication.shared.open(url)
+        }
+        #elseif os(macOS)
+        if let url = URL(string: provider.websiteURL) {
+            NSWorkspace.shared.open(url)
+        }
+        #endif
+    }
+
+    func openSearch(_ provider: RentalProvider, query: String = "") {
+        var urlStr = provider.searchURL
+        if !query.isEmpty, let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
+            urlStr += "?q=\(encoded)"
+        }
+        #if os(iOS)
+        if let url = URL(string: urlStr) { UIApplication.shared.open(url) }
+        #elseif os(macOS)
+        if let url = URL(string: urlStr) { NSWorkspace.shared.open(url) }
+        #endif
+    }
+
+    func openAppStore(_ provider: RentalProvider) {
+        #if os(iOS)
+        if let appID = provider.appStoreID, let url = URL(string: "itms-apps://apple.com/app/id\(appID)") {
+            UIApplication.shared.open(url)
+        }
+        #endif
+    }
+}
+
+struct RentalQuoteRequest: Identifiable, Codable {
+    var id = UUID()
+    let equipmentName: String
+    let category: String
+    let provider: String
+    let duration: String
+    let jobsite: String
+    let notes: String
+    let requestedAt: Date
+    var status: String = "pending"
+}
+
+// MARK: - Provider Hub View
+
+struct RentalProviderHubView: View {
+    @ObservedObject var manager = RentalProviderManager.shared
+    @State private var selectedProvider: RentalProvider? = nil
+    @State private var showQuoteSheet = false
+    @State private var quoteEquipment = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("PROVIDER HUB").font(.system(size: 11, weight: .bold)).tracking(3).foregroundColor(Theme.accent)
+                    Text("Connected Rental Platforms")
+                        .font(.system(size: 16, weight: .heavy)).foregroundColor(Theme.text)
+                    Text("Link accounts for direct ordering, real-time availability, and unified quotes")
+                        .font(.system(size: 10)).foregroundColor(Theme.muted)
+                }
+                Spacer()
+                Text("\(manager.connectedProviders.count)/\(RentalProvider.allCases.count)")
+                    .font(.system(size: 20, weight: .heavy)).foregroundColor(Theme.accent)
+            }
+            .padding(14).background(Theme.surface).cornerRadius(12)
+            .premiumGlow(cornerRadius: 12, color: Theme.accent)
+
+            // Provider cards
+            ForEach(RentalProvider.allCases, id: \.rawValue) { provider in
+                ProviderIntegrationCard(
+                    provider: provider,
+                    isConnected: manager.isConnected(provider),
+                    onConnect: { manager.connect(provider) },
+                    onDisconnect: { manager.disconnect(provider) },
+                    onOpen: { manager.openProvider(provider) },
+                    onSearch: { manager.openSearch(provider) },
+                    onGetApp: { manager.openAppStore(provider) },
+                    onQuote: {
+                        selectedProvider = provider
+                        showQuoteSheet = true
+                    }
+                )
+            }
+
+            // Quote history
+            if !manager.quoteRequests.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("QUOTE REQUESTS").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.gold)
+                    ForEach(manager.quoteRequests.prefix(5)) { quote in
+                        HStack(spacing: 8) {
+                            Circle().fill(quote.status == "pending" ? Theme.gold : Theme.green).frame(width: 6, height: 6)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(quote.equipmentName).font(.system(size: 10, weight: .bold)).foregroundColor(Theme.text)
+                                Text("\(quote.provider) \u{2022} \(quote.duration) \u{2022} \(quote.jobsite)")
+                                    .font(.system(size: 8)).foregroundColor(Theme.muted)
+                            }
+                            Spacer()
+                            Text(quote.status.uppercased())
+                                .font(.system(size: 8, weight: .bold))
+                                .foregroundColor(quote.status == "pending" ? Theme.gold : Theme.green)
+                        }
+                        .padding(8).background(Theme.panel).cornerRadius(6)
+                    }
+                }
+                .padding(12).background(Theme.surface).cornerRadius(10)
+            }
+        }
+        .sheet(isPresented: $showQuoteSheet) {
+            if let provider = selectedProvider {
+                QuoteRequestSheet(provider: provider, equipment: quoteEquipment) { quote in
+                    manager.submitQuote(quote)
+                    showQuoteSheet = false
+                }
+            }
+        }
+    }
+}
+
+struct ProviderIntegrationCard: View {
+    let provider: RentalProvider
+    let isConnected: Bool
+    let onConnect: () -> Void
+    let onDisconnect: () -> Void
+    let onOpen: () -> Void
+    let onSearch: () -> Void
+    let onGetApp: () -> Void
+    let onQuote: () -> Void
+    @State private var expanded = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Text(provider.icon).font(.system(size: 24))
+                    .frame(width: 40, height: 40)
+                    .background(provider.color.opacity(0.15))
+                    .cornerRadius(10)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text(provider.rawValue).font(.system(size: 13, weight: .bold)).foregroundColor(Theme.text)
+                        if isConnected {
+                            Text("LINKED").font(.system(size: 7, weight: .black)).foregroundColor(.black)
+                                .padding(.horizontal, 5).padding(.vertical, 2)
+                                .background(Theme.green).cornerRadius(3)
+                        }
+                    }
+                    Text(provider.tagline).font(.system(size: 9)).foregroundColor(Theme.muted)
+                }
+                Spacer()
+                Button { withAnimation { expanded.toggle() } } label: {
+                    Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 10, weight: .bold)).foregroundColor(Theme.muted)
+                }.buttonStyle(.plain)
+            }
+
+            if expanded {
+                VStack(alignment: .leading, spacing: 10) {
+                    // Features
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 4) {
+                        ForEach(provider.features, id: \.self) { feature in
+                            HStack(spacing: 4) {
+                                Image(systemName: "checkmark.circle.fill").font(.system(size: 8)).foregroundColor(provider.color)
+                                Text(feature).font(.system(size: 9)).foregroundColor(Theme.text).lineLimit(1)
+                            }
+                        }
+                    }
+
+                    // Action buttons
+                    HStack(spacing: 6) {
+                        if isConnected {
+                            Button(action: onOpen) {
+                                Label("Open", systemImage: "arrow.up.right.square")
+                                    .font(.system(size: 9, weight: .bold)).foregroundColor(.black)
+                                    .frame(maxWidth: .infinity).padding(.vertical, 7)
+                                    .background(provider.color).cornerRadius(6)
+                            }.buttonStyle(.plain)
+
+                            Button(action: onSearch) {
+                                Label("Search", systemImage: "magnifyingglass")
+                                    .font(.system(size: 9, weight: .bold)).foregroundColor(provider.color)
+                                    .frame(maxWidth: .infinity).padding(.vertical, 7)
+                                    .background(provider.color.opacity(0.12)).cornerRadius(6)
+                                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(provider.color.opacity(0.3), lineWidth: 1))
+                            }.buttonStyle(.plain)
+
+                            Button(action: onQuote) {
+                                Label("Quote", systemImage: "doc.text")
+                                    .font(.system(size: 9, weight: .bold)).foregroundColor(Theme.gold)
+                                    .frame(maxWidth: .infinity).padding(.vertical, 7)
+                                    .background(Theme.gold.opacity(0.12)).cornerRadius(6)
+                                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(Theme.gold.opacity(0.3), lineWidth: 1))
+                            }.buttonStyle(.plain)
+
+                            Button(action: onDisconnect) {
+                                Text("Unlink").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.red)
+                                    .padding(.horizontal, 10).padding(.vertical, 7)
+                                    .background(Theme.red.opacity(0.1)).cornerRadius(6)
+                            }.buttonStyle(.plain)
+                        } else {
+                            Button(action: onConnect) {
+                                Label("Connect \(provider.rawValue)", systemImage: "link")
+                                    .font(.system(size: 10, weight: .bold)).foregroundColor(.black)
+                                    .frame(maxWidth: .infinity).padding(.vertical, 8)
+                                    .background(provider.color).cornerRadius(6)
+                            }.buttonStyle(.plain)
+
+                            if provider.appStoreID != nil {
+                                Button(action: onGetApp) {
+                                    Label("Get App", systemImage: "arrow.down.app")
+                                        .font(.system(size: 9, weight: .bold)).foregroundColor(Theme.cyan)
+                                        .padding(.horizontal, 12).padding(.vertical, 8)
+                                        .background(Theme.cyan.opacity(0.12)).cornerRadius(6)
+                                }.buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .padding(12).background(Theme.surface).cornerRadius(10)
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(isConnected ? provider.color.opacity(0.4) : Theme.border.opacity(0.3), lineWidth: 1))
+    }
+}
+
+// MARK: - Quote Request Sheet
+
+struct QuoteRequestSheet: View {
+    let provider: RentalProvider
+    let equipment: String
+    let onSubmit: (RentalQuoteRequest) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var equipmentName: String
+    @State private var duration = "1 Week"
+    @State private var jobsite = ""
+    @State private var notes = ""
+
+    private let durations = ["1 Day", "3 Days", "1 Week", "2 Weeks", "1 Month", "3 Months", "6 Months", "12 Months"]
+
+    init(provider: RentalProvider, equipment: String, onSubmit: @escaping (RentalQuoteRequest) -> Void) {
+        self.provider = provider
+        self.equipment = equipment
+        self.onSubmit = onSubmit
+        _equipmentName = State(initialValue: equipment)
+    }
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                Theme.bg.ignoresSafeArea()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack(spacing: 10) {
+                            Text(provider.icon).font(.system(size: 28))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("REQUEST QUOTE").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(provider.color)
+                                Text(provider.rawValue).font(.system(size: 16, weight: .heavy)).foregroundColor(Theme.text)
+                            }
+                        }
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("EQUIPMENT").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                            TextField("Equipment name or description", text: $equipmentName)
+                                .font(.system(size: 13)).foregroundColor(Theme.text)
+                                .padding(10).background(Theme.surface)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.border, lineWidth: 1))
+                                .cornerRadius(8)
+                        }
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("RENTAL DURATION").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 6) {
+                                    ForEach(durations, id: \.self) { d in
+                                        Button { duration = d } label: {
+                                            Text(d).font(.system(size: 10, weight: .bold))
+                                                .foregroundColor(duration == d ? .black : Theme.text)
+                                                .padding(.horizontal, 12).padding(.vertical, 7)
+                                                .background(duration == d ? provider.color : Theme.surface)
+                                                .cornerRadius(6)
+                                        }.buttonStyle(.plain)
+                                    }
+                                }
+                            }
+                        }
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("JOBSITE / DELIVERY LOCATION").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                            TextField("Address or site name", text: $jobsite)
+                                .font(.system(size: 13)).foregroundColor(Theme.text)
+                                .padding(10).background(Theme.surface)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.border, lineWidth: 1))
+                                .cornerRadius(8)
+                        }
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("NOTES").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                            TextEditor(text: $notes)
+                                .font(.system(size: 12)).foregroundColor(Theme.text)
+                                .scrollContentBackground(.hidden).background(Theme.surface)
+                                .frame(height: 80).padding(6)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.border, lineWidth: 1))
+                                .cornerRadius(8)
+                        }
+
+                        Button {
+                            let quote = RentalQuoteRequest(
+                                equipmentName: equipmentName,
+                                category: "",
+                                provider: provider.rawValue,
+                                duration: duration,
+                                jobsite: jobsite,
+                                notes: notes,
+                                requestedAt: Date()
+                            )
+                            onSubmit(quote)
+                        } label: {
+                            Text("SUBMIT QUOTE REQUEST")
+                                .font(.system(size: 13, weight: .bold)).foregroundColor(.black)
+                                .frame(maxWidth: .infinity).padding(.vertical, 14)
+                                .background(LinearGradient(colors: [provider.color, Theme.gold], startPoint: .leading, endPoint: .trailing))
+                                .cornerRadius(10)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(equipmentName.isEmpty)
+
+                        Text("Quote requests are sent to \(provider.rawValue). Response times vary by provider.")
+                            .font(.system(size: 9)).foregroundColor(Theme.muted).multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .padding(20)
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundColor(Theme.muted)
+                }
+            }
+        }
+        .preferredColorScheme(.dark)
     }
 }
 
@@ -16865,6 +17327,34 @@ private let rentalInventory: [RentalItem] = [
     RentalItem(name: "Pneumatic Nailer Framing", category: .handTools, dailyRate: "$25", weeklyRate: "$85", monthlyRate: "$210", specs: "21-degree, full round", availability: "Available", provider: .toolsy, imageIcon: "\u{1F527}"),
     RentalItem(name: "Concrete Scarifier", category: .handTools, dailyRate: "$150", weeklyRate: "$520", monthlyRate: "$1,350", specs: "8 in path, self-propelled", availability: "Available", provider: .unitedRentals, imageIcon: "\u{1F527}"),
     RentalItem(name: "Floor Grinder 10 in", category: .handTools, dailyRate: "$120", weeklyRate: "$420", monthlyRate: "$1,100", specs: "Diamond disc, dust port", availability: "Available", provider: .toolsy, imageIcon: "\u{1F527}"),
+
+    // Rent My Equipment — Peer-to-peer listings
+    RentalItem(name: "Mini Excavator 3.5-Ton", category: .heavyEquipment, dailyRate: "$295", weeklyRate: "$1,100", monthlyRate: "$2,900", specs: "Owner-operated, Kubota KX035", availability: "Available", provider: .rentMyEquipment, imageIcon: "\u{1F3D7}"),
+    RentalItem(name: "Skid Steer w/ Attachments", category: .earthmoving, dailyRate: "$280", weeklyRate: "$1,050", monthlyRate: "$2,800", specs: "Bobcat S650, bucket + forks", availability: "Available", provider: .rentMyEquipment, imageIcon: "\u{1F69C}"),
+    RentalItem(name: "Towable Boom Lift 50 ft", category: .aerialLifts, dailyRate: "$200", weeklyRate: "$700", monthlyRate: "$1,850", specs: "Towable, no CDL needed", availability: "Available", provider: .rentMyEquipment, imageIcon: "\u{2B06}\u{FE0F}"),
+    RentalItem(name: "Plate Compactor + Rammer", category: .compaction, dailyRate: "$40", weeklyRate: "$135", monthlyRate: "$340", specs: "Combo package, gas", availability: "Available", provider: .rentMyEquipment, imageIcon: "\u{1F6A7}"),
+    RentalItem(name: "Concrete Mixer Portable 9CF", category: .concrete, dailyRate: "$60", weeklyRate: "$200", monthlyRate: "$500", specs: "Towable, electric start", availability: "Available", provider: .rentMyEquipment, imageIcon: "\u{1F9F1}"),
+    RentalItem(name: "Pressure Washer 4000 PSI", category: .handTools, dailyRate: "$75", weeklyRate: "$250", monthlyRate: "$620", specs: "Hot water, diesel", availability: "Available", provider: .rentMyEquipment, imageIcon: "\u{1F527}"),
+    RentalItem(name: "Dump Trailer 14 ft", category: .trailers, dailyRate: "$95", weeklyRate: "$340", monthlyRate: "$880", specs: "7-ton, hydraulic lift", availability: "Available", provider: .rentMyEquipment, imageIcon: "\u{1F6FB}"),
+    RentalItem(name: "Generator 12kW Portable", category: .generators, dailyRate: "$80", weeklyRate: "$280", monthlyRate: "$720", specs: "Diesel, wheeled, quiet", availability: "Available", provider: .rentMyEquipment, imageIcon: "\u{26A1}"),
+    RentalItem(name: "Welder/Generator Combo", category: .welding, dailyRate: "$95", weeklyRate: "$330", monthlyRate: "$850", specs: "300A, multi-process + 10kW", availability: "Available", provider: .rentMyEquipment, imageIcon: "\u{1F525}"),
+    RentalItem(name: "Trencher Walk-Behind 36 in", category: .earthmoving, dailyRate: "$180", weeklyRate: "$640", monthlyRate: "$1,700", specs: "36 in depth, gas", availability: "Available", provider: .rentMyEquipment, imageIcon: "\u{1F69C}"),
+
+    // Additional United Rentals items
+    RentalItem(name: "CAT 336 Excavator", category: .heavyEquipment, dailyRate: "$1,200", weeklyRate: "$4,500", monthlyRate: "$12,000", specs: "36-ton, 268 HP, 24 ft reach", availability: "Available", provider: .unitedRentals, imageIcon: "\u{1F3D7}"),
+    RentalItem(name: "Genie Z-80/60 Boom", category: .aerialLifts, dailyRate: "$520", weeklyRate: "$1,800", monthlyRate: "$4,800", specs: "80 ft height, articulating", availability: "Available", provider: .unitedRentals, imageIcon: "\u{2B06}\u{FE0F}"),
+    RentalItem(name: "Air Compressor 185 CFM", category: .handTools, dailyRate: "$120", weeklyRate: "$420", monthlyRate: "$1,100", specs: "Towable, diesel", availability: "Available", provider: .unitedRentals, imageIcon: "\u{1F527}"),
+
+    // Additional DOZR items
+    RentalItem(name: "Volvo A30G Articulated Truck", category: .heavyEquipment, dailyRate: "$1,400", weeklyRate: "$5,200", monthlyRate: "$14,000", specs: "30-ton, 370 HP", availability: "2-day lead", provider: .dozr, imageIcon: "\u{1F3D7}"),
+    RentalItem(name: "Hitachi ZX210 Excavator", category: .heavyEquipment, dailyRate: "$800", weeklyRate: "$3,000", monthlyRate: "$8,000", specs: "21-ton, 159 HP", availability: "Available", provider: .dozr, imageIcon: "\u{1F3D7}"),
+    RentalItem(name: "CAT 430F2 Backhoe", category: .earthmoving, dailyRate: "$420", weeklyRate: "$1,550", monthlyRate: "$4,100", specs: "97 HP, 4WD, extendahoe", availability: "Available", provider: .dozr, imageIcon: "\u{1F69C}"),
+
+    // Additional Toolsy items
+    RentalItem(name: "Tile Saw 10 in Wet", category: .handTools, dailyRate: "$45", weeklyRate: "$150", monthlyRate: "$380", specs: "1.5 HP, sliding table", availability: "Available", provider: .toolsy, imageIcon: "\u{1F527}"),
+    RentalItem(name: "Rebar Bender/Cutter", category: .handTools, dailyRate: "$55", weeklyRate: "$180", monthlyRate: "$450", specs: "Up to #6 rebar, electric", availability: "Available", provider: .toolsy, imageIcon: "\u{1F527}"),
+    RentalItem(name: "Laser Level Rotary", category: .surveying, dailyRate: "$65", weeklyRate: "$220", monthlyRate: "$550", specs: "Self-leveling, 2000 ft range", availability: "Available", provider: .toolsy, imageIcon: "\u{1F4D0}"),
+    RentalItem(name: "Stud Welder CD", category: .welding, dailyRate: "$50", weeklyRate: "$170", monthlyRate: "$420", specs: "Capacitor discharge, deck studs", availability: "Available", provider: .toolsy, imageIcon: "\u{1F525}"),
 ]
 
 struct RentalSearchView: View {
@@ -16873,6 +17363,14 @@ struct RentalSearchView: View {
     @State private var selectedProvider: RentalProvider? = nil
     @State private var sortByPrice = false
     @State private var showProviderInfo = false
+    @State private var showProviderHub = false
+    @State private var activeSubTab: RentalSubTab = .search
+
+    enum RentalSubTab: String, CaseIterable {
+        case search = "Search"
+        case providers = "Providers"
+        case quotes = "Quotes"
+    }
 
     private var filteredItems: [RentalItem] {
         var items = rentalInventory
@@ -16921,6 +17419,70 @@ struct RentalSearchView: View {
                 .padding(16).background(Theme.surface).cornerRadius(14)
                 .premiumGlow(cornerRadius: 14, color: Theme.accent)
 
+                // Sub-tab selector
+                HStack(spacing: 0) {
+                    ForEach(RentalSubTab.allCases, id: \.self) { tab in
+                        Button { withAnimation { activeSubTab = tab } } label: {
+                            Text(tab.rawValue.uppercased())
+                                .font(.system(size: 10, weight: .bold)).tracking(1)
+                                .foregroundColor(activeSubTab == tab ? .black : Theme.muted)
+                                .frame(maxWidth: .infinity).padding(.vertical, 10)
+                                .background(activeSubTab == tab ? Theme.accent : Theme.surface)
+                        }.buttonStyle(.plain)
+                    }
+                }
+                .cornerRadius(8)
+
+                if activeSubTab == .providers {
+                    RentalProviderHubView()
+                } else if activeSubTab == .quotes {
+                    quotesPanel
+                } else {
+                    searchContent
+                }
+            }
+            .padding(16)
+        }
+        .background(Theme.bg)
+    }
+
+    private var quotesPanel: some View {
+        let manager = RentalProviderManager.shared
+        return VStack(alignment: .leading, spacing: 10) {
+            Text("QUOTE HISTORY").font(.system(size: 11, weight: .bold)).tracking(2).foregroundColor(Theme.gold)
+            if manager.quoteRequests.isEmpty {
+                VStack(spacing: 8) {
+                    Text("\u{1F4CB}").font(.system(size: 36))
+                    Text("No quote requests yet").font(.system(size: 13, weight: .semibold)).foregroundColor(Theme.muted)
+                    Text("Request quotes from the Search or Providers tab").font(.system(size: 11)).foregroundColor(Theme.muted)
+                }.frame(maxWidth: .infinity).padding(24).background(Theme.surface).cornerRadius(12)
+            } else {
+                ForEach(manager.quoteRequests) { quote in
+                    HStack(spacing: 10) {
+                        Circle().fill(quote.status == "pending" ? Theme.gold : Theme.green).frame(width: 8, height: 8)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(quote.equipmentName).font(.system(size: 12, weight: .bold)).foregroundColor(Theme.text)
+                            Text("\(quote.provider) \u{2022} \(quote.duration) \u{2022} \(quote.jobsite)")
+                                .font(.system(size: 9)).foregroundColor(Theme.muted)
+                            if !quote.notes.isEmpty {
+                                Text(quote.notes).font(.system(size: 9)).foregroundColor(Theme.muted).lineLimit(1)
+                            }
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(quote.status.uppercased()).font(.system(size: 8, weight: .bold))
+                                .foregroundColor(quote.status == "pending" ? Theme.gold : Theme.green)
+                            Text(quote.requestedAt, style: .date).font(.system(size: 8)).foregroundColor(Theme.muted)
+                        }
+                    }
+                    .padding(10).background(Theme.surface).cornerRadius(8)
+                }
+            }
+        }
+    }
+
+    private var searchContent: some View {
+        VStack(alignment: .leading, spacing: 12) {
                 // Search bar
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass").foregroundColor(Theme.muted)
@@ -16996,14 +17558,12 @@ struct RentalSearchView: View {
                     }
                 }
             }
-            .padding(16)
         }
-        .background(Theme.bg)
     }
-}
 
 struct RentalItemCard: View {
     let item: RentalItem
+
     @State private var expanded = false
 
     var body: some View {
