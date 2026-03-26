@@ -17369,6 +17369,7 @@ struct RentalSearchView: View {
     enum RentalSubTab: String, CaseIterable {
         case search = "Search"
         case providers = "Providers"
+        case tools = "Tools"
         case quotes = "Quotes"
     }
 
@@ -17435,6 +17436,8 @@ struct RentalSearchView: View {
 
                 if activeSubTab == .providers {
                     RentalProviderHubView()
+                } else if activeSubTab == .tools {
+                    toolsContent
                 } else if activeSubTab == .quotes {
                     quotesPanel
                 } else {
@@ -17444,6 +17447,22 @@ struct RentalSearchView: View {
             .padding(16)
         }
         .background(Theme.bg)
+    }
+
+    private var toolsContent: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            RentalCalculatorView()
+            RentalFavoritesPanel()
+            PriceAlertsPanel()
+            BundleBuilderView()
+            AIEquipmentRecommenderView()
+            OperatorMarketplaceView()
+            MarketRateAnalyticsView()
+            FleetUtilizationView()
+            RentalHistoryPanel()
+            ConditionReportView()
+            ProviderReviewsPanel()
+        }
     }
 
     private var quotesPanel: some View {
@@ -17563,7 +17582,7 @@ struct RentalSearchView: View {
 
 struct RentalItemCard: View {
     let item: RentalItem
-
+    @ObservedObject private var store = RentalDataStore.shared
     @State private var expanded = false
 
     var body: some View {
@@ -17597,6 +17616,10 @@ struct RentalItemCard: View {
                 }
                 Text(item.specs).font(.system(size: 9)).foregroundColor(Theme.muted).lineLimit(1)
                 Spacer()
+                Button { store.toggleFavorite(item) } label: {
+                    Image(systemName: store.isFavorite(item) ? "heart.fill" : "heart")
+                        .font(.system(size: 10)).foregroundColor(store.isFavorite(item) ? Theme.red : Theme.muted)
+                }.buttonStyle(.plain)
                 Button { withAnimation { expanded.toggle() } } label: {
                     Text(expanded ? "LESS" : "MORE").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.accent)
                 }.buttonStyle(.plain)
@@ -17641,6 +17664,935 @@ struct RentalItemCard: View {
         }
         .padding(12).background(Theme.surface).cornerRadius(10)
         .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.border.opacity(0.3), lineWidth: 0.8))
+    }
+}
+
+
+// MARK: - ========== Rental Advanced Features ==========
+
+import CoreLocation
+
+// MARK: - Location Manager for Near Me
+
+@MainActor
+final class RentalLocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    static let shared = RentalLocationManager()
+    private let manager = CLLocationManager()
+    @Published var userLocation: CLLocation?
+    @Published var authStatus: CLAuthorizationStatus = .notDetermined
+
+    override init() {
+        super.init()
+        manager.delegate = self
+        manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+    }
+
+    func requestLocation() {
+        manager.requestWhenInUseAuthorization()
+        manager.requestLocation()
+    }
+
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        Task { @MainActor in
+            userLocation = locations.last
+        }
+    }
+
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {}
+
+    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        Task { @MainActor in
+            authStatus = manager.authorizationStatus
+            if authStatus == .authorizedWhenInUse || authStatus == .authorizedAlways {
+                manager.requestLocation()
+            }
+        }
+    }
+
+    func distanceTo(lat: Double, lon: Double) -> Double? {
+        guard let loc = userLocation else { return nil }
+        let target = CLLocation(latitude: lat, longitude: lon)
+        return loc.distance(from: target) / 1609.34 // miles
+    }
+}
+
+// MARK: - Rental Data Store (Favorites, History, Alerts, Bundles, Reviews)
+
+struct RentalFavorite: Identifiable, Codable {
+    var id = UUID()
+    let itemName: String
+    let category: String
+    let provider: String
+    let dailyRate: String
+    let addedAt: Date
+}
+
+struct RentalHistoryEntry: Identifiable, Codable {
+    var id = UUID()
+    let itemName: String
+    let provider: String
+    let duration: String
+    let totalCost: String
+    let projectRef: String
+    let startDate: Date
+    let endDate: Date
+    let rating: Int
+}
+
+struct PriceAlert: Identifiable, Codable {
+    var id = UUID()
+    let itemName: String
+    let category: String
+    let targetDailyRate: Double
+    let createdAt: Date
+    var triggered: Bool = false
+}
+
+struct RentalBundle: Identifiable, Codable {
+    var id = UUID()
+    var name: String
+    var items: [BundleItem]
+    let projectRef: String
+    let createdAt: Date
+
+    struct BundleItem: Identifiable, Codable {
+        var id = UUID()
+        let itemName: String
+        let dailyRate: String
+        let duration: String
+    }
+}
+
+struct ConditionReport: Identifiable, Codable {
+    var id = UUID()
+    let itemName: String
+    let provider: String
+    let type: String // "pickup" or "return"
+    let condition: String // "excellent", "good", "fair", "damaged"
+    let notes: String
+    let photoCount: Int
+    let createdAt: Date
+}
+
+struct ProviderReview: Identifiable, Codable {
+    var id = UUID()
+    let provider: String
+    let rating: Int
+    let deliveryRating: Int
+    let conditionRating: Int
+    let serviceRating: Int
+    let comment: String
+    let createdAt: Date
+}
+
+struct OperatorListing: Identifiable {
+    let id = UUID()
+    let name: String
+    let certifications: [String]
+    let hourlyRate: String
+    let experience: Int
+    let rating: Double
+    let location: String
+    let available: Bool
+    let specialties: [String]
+    let initials: String
+}
+
+@MainActor
+final class RentalDataStore: ObservableObject {
+    static let shared = RentalDataStore()
+
+    @Published var favorites: [RentalFavorite] = []
+    @Published var history: [RentalHistoryEntry] = []
+    @Published var priceAlerts: [PriceAlert] = []
+    @Published var bundles: [RentalBundle] = []
+    @Published var conditionReports: [ConditionReport] = []
+    @Published var reviews: [ProviderReview] = []
+
+    private let favKey = "ConstructOS.Rentals.Favorites"
+    private let histKey = "ConstructOS.Rentals.History"
+    private let alertKey = "ConstructOS.Rentals.PriceAlerts"
+    private let bundleKey = "ConstructOS.Rentals.Bundles"
+    private let reportKey = "ConstructOS.Rentals.ConditionReports"
+    private let reviewKey = "ConstructOS.Rentals.Reviews"
+
+    init() { load() }
+
+    func toggleFavorite(_ item: RentalItem) {
+        if let idx = favorites.firstIndex(where: { $0.itemName == item.name && $0.provider == item.provider.rawValue }) {
+            favorites.remove(at: idx)
+        } else {
+            favorites.insert(RentalFavorite(itemName: item.name, category: item.category.rawValue, provider: item.provider.rawValue, dailyRate: item.dailyRate, addedAt: Date()), at: 0)
+        }
+        save()
+    }
+
+    func isFavorite(_ item: RentalItem) -> Bool {
+        favorites.contains { $0.itemName == item.name && $0.provider == item.provider.rawValue }
+    }
+
+    func addHistory(_ entry: RentalHistoryEntry) { history.insert(entry, at: 0); save() }
+    func addPriceAlert(_ alert: PriceAlert) { priceAlerts.insert(alert, at: 0); save() }
+    func removePriceAlert(_ alert: PriceAlert) { priceAlerts.removeAll { $0.id == alert.id }; save() }
+    func addBundle(_ bundle: RentalBundle) { bundles.insert(bundle, at: 0); save() }
+    func addConditionReport(_ report: ConditionReport) { conditionReports.insert(report, at: 0); save() }
+    func addReview(_ review: ProviderReview) { reviews.insert(review, at: 0); save() }
+
+    func providerAvgRating(_ provider: RentalProvider) -> Double {
+        let providerReviews = reviews.filter { $0.provider == provider.rawValue }
+        guard !providerReviews.isEmpty else { return 0 }
+        return Double(providerReviews.map(\.rating).reduce(0, +)) / Double(providerReviews.count)
+    }
+
+    func totalSpent() -> Double {
+        history.reduce(0) { sum, entry in
+            sum + (Double(entry.totalCost.replacingOccurrences(of: "$", with: "").replacingOccurrences(of: ",", with: "")) ?? 0)
+        }
+    }
+
+    private func load() {
+        favorites = loadJSON(favKey, default: [RentalFavorite]())
+        history = loadJSON(histKey, default: [RentalHistoryEntry]())
+        priceAlerts = loadJSON(alertKey, default: [PriceAlert]())
+        bundles = loadJSON(bundleKey, default: [RentalBundle]())
+        conditionReports = loadJSON(reportKey, default: [ConditionReport]())
+        reviews = loadJSON(reviewKey, default: [ProviderReview]())
+    }
+
+    private func save() {
+        saveJSON(favKey, value: favorites)
+        saveJSON(histKey, value: history)
+        saveJSON(alertKey, value: priceAlerts)
+        saveJSON(bundleKey, value: bundles)
+        saveJSON(reportKey, value: conditionReports)
+        saveJSON(reviewKey, value: reviews)
+    }
+}
+
+// MARK: - Rental Calculator
+
+struct RentalCalculatorView: View {
+    @State private var selectedItems: [(name: String, dailyRate: Double, qty: Int, days: Int)] = []
+    @State private var newItem = ""
+    @State private var newRate = ""
+    @State private var newQty = 1
+    @State private var newDays = 7
+
+    private var totalDaily: Double { selectedItems.reduce(0) { $0 + $1.dailyRate * Double($1.qty) } }
+    private var totalWeekly: Double { totalDaily * 5 }  // typical 5-day work week rate
+    private var grandTotal: Double { selectedItems.reduce(0) { $0 + $1.dailyRate * Double($1.qty) * Double($1.days) } }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("RENTAL CALCULATOR").font(.system(size: 11, weight: .bold)).tracking(2).foregroundColor(Theme.gold)
+                Spacer()
+                Text("$\(String(format: "%.0f", grandTotal)) TOTAL")
+                    .font(.system(size: 13, weight: .heavy)).foregroundColor(Theme.accent)
+            }
+
+            // Add item row
+            HStack(spacing: 6) {
+                TextField("Equipment", text: $newItem)
+                    .font(.system(size: 11)).foregroundColor(Theme.text)
+                    .padding(6).background(Theme.panel).cornerRadius(6)
+                TextField("$/day", text: $newRate)
+                    .font(.system(size: 11)).foregroundColor(Theme.text)
+                    .frame(width: 60).padding(6).background(Theme.panel).cornerRadius(6)
+                Stepper("x\(newQty)", value: $newQty, in: 1...20)
+                    .font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                Stepper("\(newDays)d", value: $newDays, in: 1...365)
+                    .font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                Button("ADD") {
+                    guard !newItem.isEmpty, let rate = Double(newRate.replacingOccurrences(of: "$", with: "")) else { return }
+                    selectedItems.append((newItem, rate, newQty, newDays))
+                    newItem = ""; newRate = ""
+                }
+                .font(.system(size: 9, weight: .bold)).foregroundColor(.black)
+                .padding(.horizontal, 8).padding(.vertical, 5)
+                .background(Theme.gold).cornerRadius(5)
+                .buttonStyle(.plain)
+            }
+
+            if !selectedItems.isEmpty {
+                ForEach(selectedItems.indices, id: \.self) { i in
+                    HStack(spacing: 8) {
+                        Text(selectedItems[i].name).font(.system(size: 10, weight: .semibold)).foregroundColor(Theme.text).lineLimit(1)
+                        Spacer()
+                        Text("$\(String(format: "%.0f", selectedItems[i].dailyRate))/day").font(.system(size: 9)).foregroundColor(Theme.muted)
+                        Text("x\(selectedItems[i].qty)").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.cyan)
+                        Text("\(selectedItems[i].days)d").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.gold)
+                        Text("$\(String(format: "%.0f", selectedItems[i].dailyRate * Double(selectedItems[i].qty) * Double(selectedItems[i].days)))")
+                            .font(.system(size: 10, weight: .heavy)).foregroundColor(Theme.accent)
+                        Button { selectedItems.remove(at: i) } label: {
+                            Image(systemName: "xmark").font(.system(size: 8)).foregroundColor(Theme.red)
+                        }.buttonStyle(.plain)
+                    }
+                    .padding(6).background(Theme.panel).cornerRadius(6)
+                }
+
+                HStack(spacing: 16) {
+                    VStack(spacing: 2) { Text("DAILY").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.muted); Text("$\(String(format: "%.0f", totalDaily))").font(.system(size: 14, weight: .heavy)).foregroundColor(Theme.accent) }
+                    VStack(spacing: 2) { Text("WEEKLY").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.muted); Text("$\(String(format: "%.0f", totalWeekly))").font(.system(size: 14, weight: .heavy)).foregroundColor(Theme.cyan) }
+                    VStack(spacing: 2) { Text("TOTAL").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.muted); Text("$\(String(format: "%.0f", grandTotal))").font(.system(size: 14, weight: .heavy)).foregroundColor(Theme.green) }
+                    Spacer()
+                }
+            }
+        }
+        .padding(12).background(Theme.surface).cornerRadius(10)
+        .premiumGlow(cornerRadius: 10, color: Theme.gold)
+    }
+}
+
+// MARK: - Favorites Panel
+
+struct RentalFavoritesPanel: View {
+    @ObservedObject var store = RentalDataStore.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("FAVORITES").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.red)
+                Text("\(store.favorites.count)").font(.system(size: 10, weight: .heavy)).foregroundColor(Theme.muted)
+                Spacer()
+            }
+            if store.favorites.isEmpty {
+                Text("Tap the heart on any equipment to save it here")
+                    .font(.system(size: 11)).foregroundColor(Theme.muted).padding(10)
+            } else {
+                ForEach(store.favorites) { fav in
+                    HStack(spacing: 8) {
+                        Image(systemName: "heart.fill").font(.system(size: 10)).foregroundColor(Theme.red)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(fav.itemName).font(.system(size: 10, weight: .bold)).foregroundColor(Theme.text)
+                            Text("\(fav.provider) \u{2022} \(fav.dailyRate)/day").font(.system(size: 8)).foregroundColor(Theme.muted)
+                        }
+                        Spacer()
+                        Text(fav.category).font(.system(size: 8)).foregroundColor(Theme.cyan)
+                    }
+                    .padding(6).background(Theme.panel).cornerRadius(6)
+                }
+            }
+        }
+        .padding(12).background(Theme.surface).cornerRadius(10)
+    }
+}
+
+// MARK: - Rental History Panel
+
+struct RentalHistoryPanel: View {
+    @ObservedObject var store = RentalDataStore.shared
+
+    private var totalSpent: String {
+        let total = store.totalSpent()
+        return total >= 1000 ? "$\(String(format: "%.1f", total / 1000))K" : "$\(String(format: "%.0f", total))"
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("RENTAL HISTORY").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.purple)
+                Spacer()
+                Text("\(totalSpent) TOTAL SPEND").font(.system(size: 9, weight: .heavy)).foregroundColor(Theme.gold)
+            }
+            if store.history.isEmpty {
+                Text("No rental history yet. Completed rentals will appear here.")
+                    .font(.system(size: 11)).foregroundColor(Theme.muted).padding(10)
+            } else {
+                ForEach(store.history.prefix(10)) { entry in
+                    HStack(spacing: 8) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(entry.itemName).font(.system(size: 10, weight: .bold)).foregroundColor(Theme.text)
+                            Text("\(entry.provider) \u{2022} \(entry.duration) \u{2022} \(entry.projectRef)")
+                                .font(.system(size: 8)).foregroundColor(Theme.muted)
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(entry.totalCost).font(.system(size: 11, weight: .heavy)).foregroundColor(Theme.accent)
+                            HStack(spacing: 2) {
+                                ForEach(0..<5, id: \.self) { i in
+                                    Image(systemName: i < entry.rating ? "star.fill" : "star")
+                                        .font(.system(size: 7)).foregroundColor(Theme.gold)
+                                }
+                            }
+                        }
+                    }
+                    .padding(6).background(Theme.panel).cornerRadius(6)
+                }
+            }
+        }
+        .padding(12).background(Theme.surface).cornerRadius(10)
+    }
+}
+
+// MARK: - Price Alerts Panel
+
+struct PriceAlertsPanel: View {
+    @ObservedObject var store = RentalDataStore.shared
+    @State private var newAlertName = ""
+    @State private var newAlertCategory = ""
+    @State private var newAlertTarget = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("PRICE ALERTS").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.green)
+                Text("\(store.priceAlerts.filter { !$0.triggered }.count) active")
+                    .font(.system(size: 9)).foregroundColor(Theme.muted)
+                Spacer()
+            }
+
+            HStack(spacing: 6) {
+                TextField("Equipment name", text: $newAlertName)
+                    .font(.system(size: 10)).padding(6).background(Theme.panel).cornerRadius(5)
+                TextField("Target $/day", text: $newAlertTarget)
+                    .font(.system(size: 10)).frame(width: 80).padding(6).background(Theme.panel).cornerRadius(5)
+                Button("SET ALERT") {
+                    guard !newAlertName.isEmpty, let target = Double(newAlertTarget.replacingOccurrences(of: "$", with: "")) else { return }
+                    store.addPriceAlert(PriceAlert(itemName: newAlertName, category: newAlertCategory, targetDailyRate: target, createdAt: Date()))
+                    newAlertName = ""; newAlertTarget = ""
+                }
+                .font(.system(size: 9, weight: .bold)).foregroundColor(.black)
+                .padding(.horizontal, 8).padding(.vertical, 5).background(Theme.green).cornerRadius(5)
+                .buttonStyle(.plain)
+            }
+
+            ForEach(store.priceAlerts) { alert in
+                HStack(spacing: 8) {
+                    Image(systemName: alert.triggered ? "bell.badge.fill" : "bell.fill")
+                        .font(.system(size: 10)).foregroundColor(alert.triggered ? Theme.gold : Theme.green)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(alert.itemName).font(.system(size: 10, weight: .bold)).foregroundColor(Theme.text)
+                        Text("Target: $\(String(format: "%.0f", alert.targetDailyRate))/day")
+                            .font(.system(size: 8)).foregroundColor(Theme.muted)
+                    }
+                    Spacer()
+                    Text(alert.triggered ? "TRIGGERED" : "WATCHING")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundColor(alert.triggered ? Theme.gold : Theme.green)
+                    Button { store.removePriceAlert(alert) } label: {
+                        Image(systemName: "xmark").font(.system(size: 8)).foregroundColor(Theme.red)
+                    }.buttonStyle(.plain)
+                }
+                .padding(6).background(Theme.panel).cornerRadius(6)
+            }
+        }
+        .padding(12).background(Theme.surface).cornerRadius(10)
+    }
+}
+
+// MARK: - Bundle Builder
+
+struct BundleBuilderView: View {
+    @ObservedObject var store = RentalDataStore.shared
+    @State private var bundleName = ""
+    @State private var projectRef = ""
+    @State private var bundleItems: [(name: String, rate: String, duration: String)] = []
+    @State private var newItemName = ""
+    @State private var newItemRate = ""
+    @State private var newItemDuration = "1 Week"
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("BUNDLE BUILDER").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.cyan)
+            Text("Group equipment for a single job quote across providers")
+                .font(.system(size: 9)).foregroundColor(Theme.muted)
+
+            HStack(spacing: 6) {
+                TextField("Bundle name", text: $bundleName)
+                    .font(.system(size: 10)).padding(6).background(Theme.panel).cornerRadius(5)
+                TextField("Project ref", text: $projectRef)
+                    .font(.system(size: 10)).frame(width: 100).padding(6).background(Theme.panel).cornerRadius(5)
+            }
+
+            HStack(spacing: 6) {
+                TextField("Equipment", text: $newItemName)
+                    .font(.system(size: 10)).padding(6).background(Theme.panel).cornerRadius(5)
+                TextField("$/day", text: $newItemRate)
+                    .font(.system(size: 10)).frame(width: 60).padding(6).background(Theme.panel).cornerRadius(5)
+                Button("+ ADD") {
+                    guard !newItemName.isEmpty else { return }
+                    bundleItems.append((newItemName, newItemRate.isEmpty ? "TBD" : newItemRate, newItemDuration))
+                    newItemName = ""; newItemRate = ""
+                }
+                .font(.system(size: 9, weight: .bold)).foregroundColor(.black)
+                .padding(.horizontal, 8).padding(.vertical, 5).background(Theme.cyan).cornerRadius(5)
+                .buttonStyle(.plain)
+            }
+
+            ForEach(bundleItems.indices, id: \.self) { i in
+                HStack {
+                    Text("\(i+1). \(bundleItems[i].name)").font(.system(size: 10, weight: .semibold)).foregroundColor(Theme.text)
+                    Spacer()
+                    Text(bundleItems[i].rate).font(.system(size: 9)).foregroundColor(Theme.accent)
+                    Button { bundleItems.remove(at: i) } label: {
+                        Image(systemName: "minus.circle").font(.system(size: 10)).foregroundColor(Theme.red)
+                    }.buttonStyle(.plain)
+                }
+            }
+
+            if !bundleItems.isEmpty {
+                Button("SAVE BUNDLE (\(bundleItems.count) items)") {
+                    let bundle = RentalBundle(
+                        name: bundleName.isEmpty ? "Untitled Bundle" : bundleName,
+                        items: bundleItems.map { RentalBundle.BundleItem(itemName: $0.name, dailyRate: $0.rate, duration: $0.duration) },
+                        projectRef: projectRef,
+                        createdAt: Date()
+                    )
+                    store.addBundle(bundle)
+                    bundleName = ""; projectRef = ""; bundleItems = []
+                }
+                .font(.system(size: 10, weight: .bold)).foregroundColor(.black)
+                .frame(maxWidth: .infinity).padding(.vertical, 8)
+                .background(Theme.cyan).cornerRadius(6)
+                .buttonStyle(.plain)
+            }
+
+            // Saved bundles
+            ForEach(store.bundles.prefix(3)) { bundle in
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(bundle.name).font(.system(size: 10, weight: .bold)).foregroundColor(Theme.cyan)
+                        if !bundle.projectRef.isEmpty {
+                            Text(bundle.projectRef).font(.system(size: 8)).foregroundColor(Theme.muted)
+                        }
+                        Spacer()
+                        Text("\(bundle.items.count) items").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.muted)
+                    }
+                    ForEach(bundle.items) { item in
+                        Text("\u{2022} \(item.itemName) \u{2014} \(item.dailyRate)/day")
+                            .font(.system(size: 9)).foregroundColor(Theme.muted)
+                    }
+                }
+                .padding(8).background(Theme.panel).cornerRadius(6)
+            }
+        }
+        .padding(12).background(Theme.surface).cornerRadius(10)
+    }
+}
+
+// MARK: - Condition Reporting
+
+struct ConditionReportView: View {
+    @ObservedObject var store = RentalDataStore.shared
+    @State private var itemName = ""
+    @State private var provider = ""
+    @State private var reportType = "pickup"
+    @State private var condition = "good"
+    @State private var notes = ""
+
+    private let conditions = ["excellent", "good", "fair", "damaged"]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("CONDITION REPORT").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.gold)
+
+            HStack(spacing: 6) {
+                TextField("Equipment name", text: $itemName)
+                    .font(.system(size: 10)).padding(6).background(Theme.panel).cornerRadius(5)
+                TextField("Provider", text: $provider)
+                    .font(.system(size: 10)).frame(width: 100).padding(6).background(Theme.panel).cornerRadius(5)
+            }
+
+            HStack(spacing: 8) {
+                ForEach(["pickup", "return"], id: \.self) { type in
+                    Button { reportType = type } label: {
+                        Text(type.uppercased()).font(.system(size: 9, weight: .bold))
+                            .foregroundColor(reportType == type ? .black : Theme.text)
+                            .padding(.horizontal, 10).padding(.vertical, 5)
+                            .background(reportType == type ? Theme.gold : Theme.surface).cornerRadius(5)
+                    }.buttonStyle(.plain)
+                }
+                Spacer()
+                ForEach(conditions, id: \.self) { cond in
+                    Button { condition = cond } label: {
+                        Text(cond.prefix(4).uppercased()).font(.system(size: 8, weight: .bold))
+                            .foregroundColor(condition == cond ? .black : conditionColor(cond))
+                            .padding(.horizontal, 6).padding(.vertical, 4)
+                            .background(condition == cond ? conditionColor(cond) : conditionColor(cond).opacity(0.12))
+                            .cornerRadius(4)
+                    }.buttonStyle(.plain)
+                }
+            }
+
+            TextField("Notes (damage, wear, missing parts...)", text: $notes)
+                .font(.system(size: 10)).padding(6).background(Theme.panel).cornerRadius(5)
+
+            Button("SUBMIT REPORT") {
+                guard !itemName.isEmpty else { return }
+                store.addConditionReport(ConditionReport(itemName: itemName, provider: provider, type: reportType, condition: condition, notes: notes, photoCount: 0, createdAt: Date()))
+                itemName = ""; provider = ""; notes = ""
+            }
+            .font(.system(size: 10, weight: .bold)).foregroundColor(.black)
+            .frame(maxWidth: .infinity).padding(.vertical, 7)
+            .background(Theme.gold).cornerRadius(6).buttonStyle(.plain)
+            .disabled(itemName.isEmpty)
+
+            ForEach(store.conditionReports.prefix(3)) { report in
+                HStack(spacing: 6) {
+                    Circle().fill(conditionColor(report.condition)).frame(width: 6, height: 6)
+                    Text(report.itemName).font(.system(size: 9, weight: .bold)).foregroundColor(Theme.text)
+                    Text(report.type.uppercased()).font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted)
+                    Spacer()
+                    Text(report.condition.uppercased()).font(.system(size: 8, weight: .bold)).foregroundColor(conditionColor(report.condition))
+                }
+            }
+        }
+        .padding(12).background(Theme.surface).cornerRadius(10)
+    }
+
+    private func conditionColor(_ c: String) -> Color {
+        switch c {
+        case "excellent": return Theme.green
+        case "good": return Theme.cyan
+        case "fair": return Theme.gold
+        case "damaged": return Theme.red
+        default: return Theme.muted
+        }
+    }
+}
+
+// MARK: - Operator Marketplace
+
+private let mockOperators: [OperatorListing] = [
+    OperatorListing(name: "Carlos Mendez", certifications: ["NCCCO Crane", "OSHA 30"], hourlyRate: "$85/hr", experience: 18, rating: 4.9, location: "Houston, TX", available: true, specialties: ["Tower Crane", "Crawler Crane"], initials: "CM"),
+    OperatorListing(name: "James Walsh", certifications: ["NCCCO Mobile Crane", "CDL-A"], hourlyRate: "$78/hr", experience: 14, rating: 4.8, location: "Chicago, IL", available: true, specialties: ["Rough Terrain", "All-Terrain"], initials: "JW"),
+    OperatorListing(name: "Maria Santos", certifications: ["Excavator Cert", "OSHA 10"], hourlyRate: "$65/hr", experience: 9, rating: 4.7, location: "Dallas, TX", available: false, specialties: ["Excavator", "Backhoe", "Dozer"], initials: "MS"),
+    OperatorListing(name: "Derek Thompson", certifications: ["Boom Lift", "Scissor Lift", "Forklift"], hourlyRate: "$55/hr", experience: 7, rating: 4.6, location: "Phoenix, AZ", available: true, specialties: ["Aerial Lifts", "Telehandler"], initials: "DT"),
+    OperatorListing(name: "Aisha Williams", certifications: ["NCCCO Tower Crane", "Signal Person"], hourlyRate: "$92/hr", experience: 22, rating: 5.0, location: "New York, NY", available: true, specialties: ["Tower Crane", "Luffing Jib"], initials: "AW"),
+    OperatorListing(name: "Roberto Fuentes", certifications: ["Concrete Pump", "CDL-B"], hourlyRate: "$70/hr", experience: 12, rating: 4.8, location: "Miami, FL", available: true, specialties: ["Boom Pump", "Line Pump"], initials: "RF"),
+]
+
+struct OperatorMarketplaceView: View {
+    @State private var searchText = ""
+    private var filtered: [OperatorListing] {
+        guard !searchText.isEmpty else { return mockOperators }
+        let q = searchText.lowercased()
+        return mockOperators.filter { $0.name.lowercased().contains(q) || $0.specialties.joined().lowercased().contains(q) || $0.location.lowercased().contains(q) }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("OPERATOR MARKETPLACE").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.purple)
+                Spacer()
+                Text("\(mockOperators.filter { $0.available }.count) AVAILABLE").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.green)
+            }
+
+            HStack(spacing: 6) {
+                Image(systemName: "magnifyingglass").font(.system(size: 10)).foregroundColor(Theme.muted)
+                TextField("Search operators, certifications, location...", text: $searchText)
+                    .font(.system(size: 11)).foregroundColor(Theme.text)
+            }
+            .padding(8).background(Theme.panel).cornerRadius(6)
+
+            ForEach(filtered) { op in
+                HStack(spacing: 10) {
+                    Circle().fill(LinearGradient(colors: [Theme.purple, Theme.cyan], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 36, height: 36)
+                        .overlay(Text(op.initials).font(.system(size: 11, weight: .heavy)).foregroundColor(.white))
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 4) {
+                            Text(op.name).font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text)
+                            if op.available {
+                                Circle().fill(Theme.green).frame(width: 5, height: 5)
+                            }
+                        }
+                        Text(op.certifications.joined(separator: " \u{2022} ")).font(.system(size: 8)).foregroundColor(Theme.muted).lineLimit(1)
+                        Text("\(op.location) \u{2022} \(op.experience) yrs \u{2022} \(op.specialties.joined(separator: ", "))").font(.system(size: 8)).foregroundColor(Theme.muted).lineLimit(1)
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(op.hourlyRate).font(.system(size: 11, weight: .heavy)).foregroundColor(Theme.accent)
+                        HStack(spacing: 1) {
+                            Text("\(String(format: "%.1f", op.rating))").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.gold)
+                            Image(systemName: "star.fill").font(.system(size: 7)).foregroundColor(Theme.gold)
+                        }
+                    }
+                }
+                .padding(8).background(Theme.surface).cornerRadius(8)
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(op.available ? Theme.green.opacity(0.2) : Theme.border.opacity(0.2), lineWidth: 0.8))
+            }
+        }
+        .padding(12).background(Theme.surface).cornerRadius(10)
+    }
+}
+
+// MARK: - Market Rate Analytics
+
+struct MarketRateAnalyticsView: View {
+    private let rateData: [(category: String, avgDaily: Double, trend: String, demand: String)] = [
+        ("Excavators", 820, "+5%", "High"),
+        ("Dozers", 1150, "+3%", "Medium"),
+        ("Boom Lifts", 340, "-2%", "Medium"),
+        ("Scissor Lifts", 145, "+1%", "High"),
+        ("Generators", 280, "+8%", "High"),
+        ("Cranes", 2400, "+4%", "Low"),
+        ("Jackhammers", 72, "0%", "Medium"),
+        ("Compactors", 180, "+2%", "Medium"),
+        ("Concrete Pumps", 790, "+6%", "High"),
+        ("Welders", 115, "-1%", "Low"),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("MARKET RATE ANALYTICS").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.cyan)
+            Text("Average daily rental rates and demand trends")
+                .font(.system(size: 9)).foregroundColor(Theme.muted)
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 6) {
+                ForEach(rateData, id: \.category) { item in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(item.category).font(.system(size: 9, weight: .bold)).foregroundColor(Theme.text)
+                        HStack {
+                            Text("$\(String(format: "%.0f", item.avgDaily))/day")
+                                .font(.system(size: 12, weight: .heavy)).foregroundColor(Theme.accent)
+                            Spacer()
+                            Text(item.trend).font(.system(size: 9, weight: .bold))
+                                .foregroundColor(item.trend.hasPrefix("+") ? Theme.green : item.trend.hasPrefix("-") ? Theme.red : Theme.muted)
+                        }
+                        HStack(spacing: 4) {
+                            Text("DEMAND").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted)
+                            Text(item.demand.uppercased()).font(.system(size: 7, weight: .bold))
+                                .foregroundColor(item.demand == "High" ? Theme.green : item.demand == "Medium" ? Theme.gold : Theme.muted)
+                        }
+                    }
+                    .padding(8).background(Theme.panel).cornerRadius(6)
+                }
+            }
+        }
+        .padding(12).background(Theme.surface).cornerRadius(10)
+    }
+}
+
+// MARK: - Fleet Utilization Dashboard
+
+struct FleetUtilizationView: View {
+    @ObservedObject var store = RentalDataStore.shared
+
+    private var activeRentals: Int { store.history.filter { $0.endDate > Date() }.count }
+    private var idleItems: Int { max(0, store.favorites.count - activeRentals) }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("FLEET UTILIZATION").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.green)
+                Spacer()
+            }
+
+            HStack(spacing: 12) {
+                VStack(spacing: 2) {
+                    Text("\(activeRentals)").font(.system(size: 22, weight: .heavy)).foregroundColor(Theme.green)
+                    Text("ACTIVE").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.muted)
+                }.frame(maxWidth: .infinity).padding(10).background(Theme.green.opacity(0.08)).cornerRadius(8)
+                VStack(spacing: 2) {
+                    Text("\(idleItems)").font(.system(size: 22, weight: .heavy)).foregroundColor(Theme.gold)
+                    Text("IDLE").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.muted)
+                }.frame(maxWidth: .infinity).padding(10).background(Theme.gold.opacity(0.08)).cornerRadius(8)
+                VStack(spacing: 2) {
+                    let total = store.totalSpent()
+                    Text(total >= 1000 ? "$\(String(format: "%.1f", total/1000))K" : "$\(String(format: "%.0f", total))")
+                        .font(.system(size: 22, weight: .heavy)).foregroundColor(Theme.accent)
+                    Text("SPENT").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.muted)
+                }.frame(maxWidth: .infinity).padding(10).background(Theme.accent.opacity(0.08)).cornerRadius(8)
+            }
+
+            if store.history.isEmpty {
+                Text("Complete rentals to see utilization metrics")
+                    .font(.system(size: 10)).foregroundColor(Theme.muted).padding(6)
+            }
+        }
+        .padding(12).background(Theme.surface).cornerRadius(10)
+    }
+}
+
+// MARK: - AI Equipment Recommender
+
+struct AIEquipmentRecommenderView: View {
+    @State private var jobDescription = ""
+    @State private var recommendations: [(equipment: String, reason: String, estRate: String)] = []
+    @State private var isThinking = false
+
+    private func recommend() {
+        isThinking = true
+        let desc = jobDescription.lowercased()
+        var recs: [(equipment: String, reason: String, estRate: String)] = []
+
+        if desc.contains("excavat") || desc.contains("dig") || desc.contains("trench") || desc.contains("foundation") {
+            recs.append(("CAT 320 Excavator", "Standard for foundation and trench work", "$850/day"))
+            recs.append(("Mini Excavator 3.5-Ton", "Tight access, residential foundation", "$295/day"))
+        }
+        if desc.contains("grade") || desc.contains("level") || desc.contains("clear") || desc.contains("dozer") {
+            recs.append(("CAT D6 Dozer", "Grading and site clearing", "$1,200/day"))
+            recs.append(("Bobcat S770 Skid Steer", "Versatile grading and material handling", "$380/day"))
+        }
+        if desc.contains("concrete") || desc.contains("pour") || desc.contains("slab") || desc.contains("foundation") {
+            recs.append(("Concrete Pump Trailer", "Efficient pour for slabs and foundations", "$800/day"))
+            recs.append(("Power Trowel 48 in", "Slab finishing after pour", "$85/day"))
+            recs.append(("Concrete Vibrator", "Consolidation during pour", "$45/day"))
+        }
+        if desc.contains("roof") || desc.contains("high") || desc.contains("upper") || desc.contains("exterior") {
+            recs.append(("Genie S-65 Boom Lift", "65 ft reach for exterior/upper work", "$350/day"))
+            recs.append(("JLG 1932R Scissor Lift", "Interior elevated work", "$120/day"))
+        }
+        if desc.contains("demol") || desc.contains("break") || desc.contains("remove") {
+            recs.append(("Hilti TE 3000 Breaker", "Heavy-duty concrete demolition", "$85/day"))
+            recs.append(("Bobcat E85 + Breaker", "Structural demolition", "$520/day"))
+        }
+        if desc.contains("weld") || desc.contains("steel") || desc.contains("metal") {
+            recs.append(("Lincoln Ranger 330MPX", "Multi-process field welding", "$120/day"))
+        }
+        if desc.contains("electric") || desc.contains("wire") || desc.contains("conduit") {
+            recs.append(("Wire Puller 6,000 lb", "Commercial wire pulls", "$75/day"))
+            recs.append(("Conduit Bender Hydraulic", "EMT/rigid bending", "$30/day"))
+        }
+        if desc.contains("plumb") || desc.contains("pipe") || desc.contains("drain") {
+            recs.append(("RIDGID 300 Pipe Threader", "Pipe threading on-site", "$85/day"))
+            recs.append(("Pipe Camera Inspection", "Pre-work drain assessment", "$120/day"))
+        }
+        if recs.isEmpty {
+            recs.append(("Bobcat S770 Skid Steer", "Versatile general-purpose machine", "$380/day"))
+            recs.append(("Honda EU7000 Generator", "Reliable site power", "$95/day"))
+            recs.append(("JLG 1932R Scissor Lift", "General elevated access", "$120/day"))
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            recommendations = recs
+            isThinking = false
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("AI EQUIPMENT RECOMMENDER").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.purple)
+                Spacer()
+                Text("\u{1F916}").font(.system(size: 16))
+            }
+
+            HStack(spacing: 6) {
+                TextField("Describe the job (e.g. dig foundation for 3-story building)", text: $jobDescription)
+                    .font(.system(size: 11)).foregroundColor(Theme.text)
+                    .padding(8).background(Theme.panel).cornerRadius(6)
+                Button("RECOMMEND") { recommend() }
+                    .font(.system(size: 9, weight: .bold)).foregroundColor(.black)
+                    .padding(.horizontal, 10).padding(.vertical, 7).background(Theme.purple).cornerRadius(6)
+                    .buttonStyle(.plain)
+                    .disabled(jobDescription.isEmpty)
+            }
+
+            if isThinking {
+                HStack { ProgressView().tint(Theme.purple); Text("Analyzing job requirements...").font(.system(size: 10)).foregroundColor(Theme.muted) }
+            }
+
+            ForEach(recommendations.indices, id: \.self) { i in
+                let rec = recommendations[i]
+                HStack(spacing: 8) {
+                    Text("\(i + 1)").font(.system(size: 10, weight: .heavy)).foregroundColor(Theme.purple)
+                        .frame(width: 22, height: 22).background(Theme.purple.opacity(0.12)).cornerRadius(11)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(rec.equipment).font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text)
+                        Text(rec.reason).font(.system(size: 9)).foregroundColor(Theme.muted)
+                    }
+                    Spacer()
+                    Text(rec.estRate).font(.system(size: 10, weight: .heavy)).foregroundColor(Theme.accent)
+                }
+                .padding(8).background(Theme.panel).cornerRadius(6)
+            }
+        }
+        .padding(12).background(Theme.surface).cornerRadius(10)
+        .premiumGlow(cornerRadius: 10, color: Theme.purple)
+    }
+}
+
+// MARK: - Provider Reviews
+
+struct ProviderReviewsPanel: View {
+    @ObservedObject var store = RentalDataStore.shared
+    @State private var selectedProvider: RentalProvider = .unitedRentals
+    @State private var rating = 4
+    @State private var deliveryRating = 4
+    @State private var conditionRating = 4
+    @State private var serviceRating = 4
+    @State private var comment = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("PROVIDER REVIEWS").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.gold)
+
+            // Provider selector
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(RentalProvider.allCases, id: \.rawValue) { provider in
+                        Button { selectedProvider = provider } label: {
+                            VStack(spacing: 2) {
+                                Text(provider.icon).font(.system(size: 14))
+                                Text(provider.rawValue).font(.system(size: 7, weight: .bold)).lineLimit(1)
+                                let avg = store.providerAvgRating(provider)
+                                if avg > 0 {
+                                    Text("\(String(format: "%.1f", avg))\u{2605}")
+                                        .font(.system(size: 7, weight: .bold)).foregroundColor(Theme.gold)
+                                }
+                            }
+                            .foregroundColor(selectedProvider == provider ? .black : Theme.text)
+                            .frame(width: 65).padding(.vertical, 6)
+                            .background(selectedProvider == provider ? provider.color : Theme.panel)
+                            .cornerRadius(6)
+                        }.buttonStyle(.plain)
+                    }
+                }
+            }
+
+            // Submit review
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    ratingRow("Overall", $rating)
+                    ratingRow("Delivery", $deliveryRating)
+                }
+                HStack {
+                    ratingRow("Condition", $conditionRating)
+                    ratingRow("Service", $serviceRating)
+                }
+                TextField("Write a review...", text: $comment)
+                    .font(.system(size: 10)).padding(6).background(Theme.panel).cornerRadius(5)
+                Button("SUBMIT REVIEW") {
+                    store.addReview(ProviderReview(provider: selectedProvider.rawValue, rating: rating, deliveryRating: deliveryRating, conditionRating: conditionRating, serviceRating: serviceRating, comment: comment, createdAt: Date()))
+                    comment = ""
+                }
+                .font(.system(size: 9, weight: .bold)).foregroundColor(.black)
+                .frame(maxWidth: .infinity).padding(.vertical, 6).background(Theme.gold).cornerRadius(5)
+                .buttonStyle(.plain)
+            }
+
+            // Existing reviews
+            let providerReviews = store.reviews.filter { $0.provider == selectedProvider.rawValue }
+            ForEach(providerReviews.prefix(3)) { review in
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack {
+                        HStack(spacing: 1) { ForEach(0..<5, id: \.self) { i in Image(systemName: i < review.rating ? "star.fill" : "star").font(.system(size: 8)).foregroundColor(Theme.gold) } }
+                        Spacer()
+                        Text(review.createdAt, style: .date).font(.system(size: 8)).foregroundColor(Theme.muted)
+                    }
+                    if !review.comment.isEmpty {
+                        Text(review.comment).font(.system(size: 9)).foregroundColor(Theme.text)
+                    }
+                }
+                .padding(6).background(Theme.panel).cornerRadius(6)
+            }
+        }
+        .padding(12).background(Theme.surface).cornerRadius(10)
+    }
+
+    private func ratingRow(_ label: String, _ value: Binding<Int>) -> some View {
+        HStack(spacing: 4) {
+            Text(label).font(.system(size: 8, weight: .bold)).foregroundColor(Theme.muted).frame(width: 50, alignment: .leading)
+            ForEach(1...5, id: \.self) { i in
+                Button { value.wrappedValue = i } label: {
+                    Image(systemName: i <= value.wrappedValue ? "star.fill" : "star")
+                        .font(.system(size: 10)).foregroundColor(Theme.gold)
+                }.buttonStyle(.plain)
+            }
+        }
     }
 }
 
