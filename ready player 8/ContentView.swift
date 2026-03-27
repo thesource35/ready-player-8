@@ -21679,7 +21679,7 @@ struct ScannerToolsView: View {
 
 struct ScheduleHubView: View {
     @State private var activeTab = 0
-    private let tabs = ["Timeline", "Crew Calendar", "Cost Codes", "Takeoff", "Fuel Log", "Geofence"]
+    private let tabs = ["Timeline", "Crew Calendar", "Cost Codes", "Takeoff", "Fuel Log", "Geofence", "Estimate", "Maintenance", "Prequal", "Reference"]
 
     var body: some View {
         ScrollView {
@@ -21710,7 +21710,11 @@ struct ScheduleHubView: View {
                 else if activeTab == 2 { CostCodeView() }
                 else if activeTab == 3 { MaterialTakeoffView() }
                 else if activeTab == 4 { FuelLogView() }
-                else { geofenceContent }
+                else if activeTab == 5 { geofenceContent }
+                else if activeTab == 6 { EstimatingView() }
+                else if activeTab == 7 { MaintenanceScheduleView() }
+                else if activeTab == 8 { SubPrequalView() }
+                else { ReferenceLibraryView() }
             }.padding(16)
         }.background(Theme.bg)
     }
@@ -21782,6 +21786,302 @@ struct LocalizedStrings {
             "cancel": ["en": "Cancel", "es": "Cancelar"],
         ]
         return strings[key]?[language.code] ?? key
+    }
+}
+
+
+
+// MARK: - ========== Estimating / Bid Builder ==========
+
+struct EstimateLineItem: Identifiable, Codable {
+    var id = UUID()
+    let costCode: String
+    let description: String
+    let quantity: Double
+    let unit: String
+    let unitCost: Double
+    var markup: Double = 15
+    var total: Double { quantity * unitCost }
+    var withMarkup: Double { total * (1 + markup / 100) }
+}
+
+struct EstimatingView: View {
+    @State private var items: [EstimateLineItem] = [
+        EstimateLineItem(costCode: "03 30 00", description: "Cast-in-Place Concrete", quantity: 240, unit: "CY", unitCost: 185),
+        EstimateLineItem(costCode: "05 12 00", description: "Structural Steel Framing", quantity: 48, unit: "TON", unitCost: 3200),
+        EstimateLineItem(costCode: "06 11 00", description: "Wood Framing", quantity: 12400, unit: "BF", unitCost: 1.85),
+        EstimateLineItem(costCode: "09 29 00", description: "Gypsum Board", quantity: 18500, unit: "SF", unitCost: 2.40),
+        EstimateLineItem(costCode: "22 11 00", description: "Plumbing Piping", quantity: 1, unit: "LS", unitCost: 142000),
+        EstimateLineItem(costCode: "26 05 00", description: "Electrical Wiring", quantity: 1, unit: "LS", unitCost: 198000),
+    ]
+    @State private var projectName = "New Project Estimate"
+    @State private var globalMarkup = 15.0
+
+    private var subtotal: Double { items.reduce(0) { $0 + $1.total } }
+    private var totalWithMarkup: Double { items.reduce(0) { $0 + $1.withMarkup } }
+    private var profit: Double { totalWithMarkup - subtotal }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("BID ESTIMATOR").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.gold)
+                Spacer()
+                Text("$\(String(format: "%.0f", totalWithMarkup/1000))K BID TOTAL")
+                    .font(.system(size: 12, weight: .heavy)).foregroundColor(Theme.accent)
+            }
+
+            HStack(spacing: 8) {
+                VStack(spacing: 2) { Text("$\(String(format: "%.0f", subtotal/1000))K").font(.system(size: 16, weight: .heavy)).foregroundColor(Theme.cyan); Text("COST").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted) }.frame(maxWidth: .infinity).padding(8).background(Theme.cyan.opacity(0.06)).cornerRadius(8)
+                VStack(spacing: 2) { Text("$\(String(format: "%.0f", profit/1000))K").font(.system(size: 16, weight: .heavy)).foregroundColor(Theme.green); Text("PROFIT").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted) }.frame(maxWidth: .infinity).padding(8).background(Theme.green.opacity(0.06)).cornerRadius(8)
+                VStack(spacing: 2) { Text("\(String(format: "%.1f", profit/subtotal*100))%").font(.system(size: 16, weight: .heavy)).foregroundColor(Theme.gold); Text("MARGIN").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted) }.frame(maxWidth: .infinity).padding(8).background(Theme.gold.opacity(0.06)).cornerRadius(8)
+            }
+
+            ForEach(items) { item in
+                HStack(spacing: 6) {
+                    Text(item.costCode).font(.system(size: 8, weight: .bold, design: .monospaced)).foregroundColor(Theme.gold).frame(width: 55, alignment: .leading)
+                    Text(item.description).font(.system(size: 9, weight: .semibold)).foregroundColor(Theme.text).lineLimit(1)
+                    Spacer()
+                    Text("\(String(format: "%.0f", item.quantity)) \(item.unit)").font(.system(size: 8)).foregroundColor(Theme.muted)
+                    Text("$\(String(format: "%.0f", item.total/1000))K").font(.system(size: 9, weight: .heavy)).foregroundColor(Theme.accent)
+                }
+            }
+        }
+        .padding(14).background(Theme.surface).cornerRadius(12).premiumGlow(cornerRadius: 12, color: Theme.gold)
+    }
+}
+
+// MARK: - ========== Equipment Maintenance Scheduler ==========
+
+struct MaintenanceItem: Identifiable {
+    let id = UUID()
+    let equipment: String; let task: String; let interval: String
+    let lastDone: String; let nextDue: String; let hoursRemaining: Int; let status: String
+}
+
+struct MaintenanceScheduleView: View {
+    private let items: [MaintenanceItem] = [
+        MaintenanceItem(equipment: "CAT 320 Excavator", task: "Engine Oil & Filter", interval: "Every 500 hrs", lastDone: "Mar 10", nextDue: "50 hrs", hoursRemaining: 50, status: "DUE SOON"),
+        MaintenanceItem(equipment: "CAT 320 Excavator", task: "Hydraulic Filter", interval: "Every 1000 hrs", lastDone: "Jan 15", nextDue: "160 hrs", hoursRemaining: 160, status: "OK"),
+        MaintenanceItem(equipment: "JLG 600S Boom Lift", task: "Annual Inspection", interval: "Yearly", lastDone: "Aug 22", nextDue: "Aug 2026", hoursRemaining: 999, status: "OK"),
+        MaintenanceItem(equipment: "Bobcat S770", task: "Engine Oil & Filter", interval: "Every 250 hrs", lastDone: "Mar 1", nextDue: "10 hrs", hoursRemaining: 10, status: "OVERDUE"),
+        MaintenanceItem(equipment: "Bobcat S770", task: "Drive Belt", interval: "Every 1500 hrs", lastDone: "Nov 20", nextDue: "440 hrs", hoursRemaining: 440, status: "OK"),
+        MaintenanceItem(equipment: "Wacker Compactor", task: "Air Filter", interval: "Every 100 hrs", lastDone: "Mar 18", nextDue: "80 hrs", hoursRemaining: 80, status: "OK"),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("MAINTENANCE SCHEDULE").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.gold)
+                Spacer()
+                let overdue = items.filter { $0.status == "OVERDUE" }.count
+                let dueSoon = items.filter { $0.status == "DUE SOON" }.count
+                if overdue > 0 { Text("\(overdue) OVERDUE").font(.system(size: 8, weight: .black)).foregroundColor(.black).padding(.horizontal, 6).padding(.vertical, 2).background(Theme.red).cornerRadius(3) }
+                if dueSoon > 0 { Text("\(dueSoon) DUE SOON").font(.system(size: 8, weight: .black)).foregroundColor(.black).padding(.horizontal, 6).padding(.vertical, 2).background(Theme.gold).cornerRadius(3) }
+            }
+            ForEach(items) { item in
+                HStack(spacing: 8) {
+                    Circle().fill(item.status == "OVERDUE" ? Theme.red : item.status == "DUE SOON" ? Theme.gold : Theme.green).frame(width: 6, height: 6)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(item.equipment).font(.system(size: 10, weight: .bold)).foregroundColor(Theme.text)
+                        Text("\(item.task) \u{2022} \(item.interval)").font(.system(size: 8)).foregroundColor(Theme.muted)
+                    }
+                    Spacer()
+                    Text(item.nextDue).font(.system(size: 9, weight: .heavy)).foregroundColor(item.status == "OVERDUE" ? Theme.red : item.status == "DUE SOON" ? Theme.gold : Theme.muted)
+                    Text(item.status).font(.system(size: 7, weight: .black)).foregroundColor(item.status == "OVERDUE" ? Theme.red : item.status == "DUE SOON" ? Theme.gold : Theme.green)
+                }.padding(8).background(item.status == "OVERDUE" ? Theme.red.opacity(0.04) : Theme.surface).cornerRadius(6)
+            }
+        }
+        .padding(14).background(Theme.surface).cornerRadius(12)
+    }
+}
+
+// MARK: - ========== Subcontractor Prequalification ==========
+
+struct SubPrequalView: View {
+    private let subs: [(name: String, trade: String, emr: Double, bondLimit: String, yearsInBiz: Int, financialRating: String, references: Int, score: Int)] = [
+        ("Apex Concrete LLC", "Concrete", 0.82, "$2M", 18, "A", 12, 94),
+        ("Elite Steel Works", "Steel", 0.95, "$5M", 22, "A+", 18, 91),
+        ("Prime Electric Inc", "Electrical", 1.12, "$1M", 11, "B+", 8, 78),
+        ("Quick Plumbing", "Plumbing", 0.88, "$500K", 8, "B", 6, 72),
+        ("Delta Drywall", "Drywall", 1.35, "$750K", 5, "B-", 4, 58),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("SUBCONTRACTOR PREQUALIFICATION").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.purple)
+            Text("EMR, bonding, financial strength, and reference scoring").font(.system(size: 9)).foregroundColor(Theme.muted)
+            ForEach(subs, id: \.name) { sub in
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text(sub.name).font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text)
+                        Text(sub.trade).font(.system(size: 8)).foregroundColor(Theme.muted)
+                        Spacer()
+                        Text("\(sub.score)/100").font(.system(size: 13, weight: .heavy)).foregroundColor(sub.score >= 80 ? Theme.green : sub.score >= 60 ? Theme.gold : Theme.red)
+                    }
+                    HStack(spacing: 12) {
+                        VStack(spacing: 1) { Text("EMR").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted); Text(String(format: "%.2f", sub.emr)).font(.system(size: 10, weight: .heavy)).foregroundColor(sub.emr <= 1.0 ? Theme.green : Theme.red) }
+                        VStack(spacing: 1) { Text("BOND").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted); Text(sub.bondLimit).font(.system(size: 10, weight: .heavy)).foregroundColor(Theme.cyan) }
+                        VStack(spacing: 1) { Text("YEARS").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted); Text("\(sub.yearsInBiz)").font(.system(size: 10, weight: .heavy)).foregroundColor(Theme.accent) }
+                        VStack(spacing: 1) { Text("FINANCIAL").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted); Text(sub.financialRating).font(.system(size: 10, weight: .heavy)).foregroundColor(Theme.gold) }
+                        VStack(spacing: 1) { Text("REFS").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted); Text("\(sub.references)").font(.system(size: 10, weight: .heavy)).foregroundColor(Theme.purple) }
+                    }
+                    // Score bar
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 2).fill(Theme.border.opacity(0.3)).frame(height: 4)
+                            RoundedRectangle(cornerRadius: 2).fill(sub.score >= 80 ? Theme.green : sub.score >= 60 ? Theme.gold : Theme.red)
+                                .frame(width: geo.size.width * CGFloat(sub.score) / 100, height: 4)
+                        }
+                    }.frame(height: 4)
+                }.padding(10).background(Theme.surface).cornerRadius(8)
+            }
+        }
+        .padding(14).background(Theme.surface).cornerRadius(12)
+    }
+}
+
+// MARK: - ========== Construction Reference Library ==========
+
+struct ReferenceLibraryView: View {
+    @State private var activeRef = 0
+    private let refs = ["Concrete Mixes", "Steel Weights", "Soil Types", "OSHA Violations", "Wage Rates"]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("CONSTRUCTION REFERENCE").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.cyan)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 4) {
+                    ForEach(refs.indices, id: \.self) { i in
+                        Button { activeRef = i } label: {
+                            Text(refs[i]).font(.system(size: 8, weight: .bold))
+                                .foregroundColor(activeRef == i ? .black : Theme.text)
+                                .padding(.horizontal, 10).padding(.vertical, 5)
+                                .background(activeRef == i ? Theme.cyan : Theme.panel).cornerRadius(5)
+                        }.buttonStyle(.plain)
+                    }
+                }
+            }
+
+            if activeRef == 0 { concreteMixes }
+            else if activeRef == 1 { steelWeights }
+            else if activeRef == 2 { soilTypes }
+            else if activeRef == 3 { oshaViolations }
+            else { wageRates }
+        }
+        .padding(14).background(Theme.surface).cornerRadius(12)
+    }
+
+    private var concreteMixes: some View {
+        let mixes: [(String, String, String, String, String)] = [
+            ("3000 PSI", "General slabs, footings", "4\" slump", "5-7% air", "Type I/II"),
+            ("4000 PSI", "Structural, foundations", "4\" slump", "5-7% air", "Type I/II"),
+            ("5000 PSI", "Columns, high-load", "4\" slump", "5-7% air", "Type I"),
+            ("6000 PSI", "Post-tension, precast", "6\" slump", "3-5% air", "Type III"),
+            ("SCC Mix", "Self-consolidating", "24\"+ spread", "2-4% air", "Type I + fly ash"),
+        ]
+        return VStack(alignment: .leading, spacing: 6) {
+            ForEach(mixes, id: \.0) { m in
+                HStack(spacing: 8) {
+                    Text(m.0).font(.system(size: 10, weight: .heavy)).foregroundColor(Theme.accent).frame(width: 60, alignment: .leading)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(m.1).font(.system(size: 9, weight: .semibold)).foregroundColor(Theme.text)
+                        Text("Slump: \(m.2) \u{2022} Air: \(m.3) \u{2022} Cement: \(m.4)").font(.system(size: 8)).foregroundColor(Theme.muted)
+                    }
+                }.padding(6).background(Theme.panel).cornerRadius(5)
+            }
+        }
+    }
+
+    private var steelWeights: some View {
+        let shapes: [(String, String, String)] = [
+            ("W8x31", "Wide Flange", "31 lb/ft"), ("W10x49", "Wide Flange", "49 lb/ft"),
+            ("W12x65", "Wide Flange", "65 lb/ft"), ("W14x90", "Wide Flange", "90 lb/ft"),
+            ("HSS 6x6x1/4", "Tube Steel", "19.02 lb/ft"), ("HSS 8x8x3/8", "Tube Steel", "37.69 lb/ft"),
+            ("L4x4x1/4", "Angle", "6.6 lb/ft"), ("L6x6x3/8", "Angle", "14.9 lb/ft"),
+            ("#4 Rebar", "Reinforcing", "0.668 lb/ft"), ("#5 Rebar", "Reinforcing", "1.043 lb/ft"),
+        ]
+        return VStack(alignment: .leading, spacing: 6) {
+            ForEach(shapes, id: \.0) { s in
+                HStack {
+                    Text(s.0).font(.system(size: 10, weight: .heavy, design: .monospaced)).foregroundColor(Theme.cyan).frame(width: 90, alignment: .leading)
+                    Text(s.1).font(.system(size: 9)).foregroundColor(Theme.muted)
+                    Spacer()
+                    Text(s.2).font(.system(size: 10, weight: .bold)).foregroundColor(Theme.accent)
+                }
+            }
+        }
+    }
+
+    private var soilTypes: some View {
+        let soils: [(String, String, String, String)] = [
+            ("GW", "Well-graded gravel", "600+ psf", "Excellent"),
+            ("GP", "Poorly-graded gravel", "500 psf", "Good"),
+            ("SW", "Well-graded sand", "400 psf", "Good"),
+            ("SP", "Poorly-graded sand", "300 psf", "Fair"),
+            ("CL", "Lean clay", "200 psf", "Fair"),
+            ("CH", "Fat clay", "150 psf", "Poor"),
+            ("OH", "Organic clay", "100 psf", "Very Poor"),
+            ("PT", "Peat", "N/A", "Unsuitable"),
+        ]
+        return VStack(alignment: .leading, spacing: 6) {
+            ForEach(soils, id: \.0) { s in
+                HStack(spacing: 8) {
+                    Text(s.0).font(.system(size: 10, weight: .heavy, design: .monospaced)).foregroundColor(Theme.gold).frame(width: 25)
+                    Text(s.1).font(.system(size: 9, weight: .semibold)).foregroundColor(Theme.text).frame(width: 110, alignment: .leading)
+                    Text(s.2).font(.system(size: 9)).foregroundColor(Theme.cyan)
+                    Spacer()
+                    Text(s.3).font(.system(size: 8, weight: .bold)).foregroundColor(s.3 == "Excellent" || s.3 == "Good" ? Theme.green : s.3 == "Fair" ? Theme.gold : Theme.red)
+                }
+            }
+        }
+    }
+
+    private var oshaViolations: some View {
+        let violations: [(String, String, String)] = [
+            ("1926.501", "Fall Protection", "$15,625 per violation"),
+            ("1926.451", "Scaffolding", "$15,625 per violation"),
+            ("1926.1053", "Ladders", "$15,625 per violation"),
+            ("1926.503", "Fall Protection Training", "$15,625 per violation"),
+            ("1910.1200", "Hazard Communication", "$15,625 per violation"),
+            ("1926.20", "Safety Programs", "$15,625 per violation"),
+            ("1926.100", "Head Protection", "$15,625 per violation"),
+            ("1926.502", "Fall Protection Systems", "$15,625 per violation"),
+        ]
+        return VStack(alignment: .leading, spacing: 6) {
+            ForEach(violations, id: \.0) { v in
+                HStack(spacing: 8) {
+                    Text(v.0).font(.system(size: 9, weight: .bold, design: .monospaced)).foregroundColor(Theme.red).frame(width: 70, alignment: .leading)
+                    Text(v.1).font(.system(size: 9, weight: .semibold)).foregroundColor(Theme.text)
+                    Spacer()
+                    Text(v.2).font(.system(size: 8, weight: .bold)).foregroundColor(Theme.gold)
+                }
+            }
+        }
+    }
+
+    private var wageRates: some View {
+        let rates: [(String, String, String, String)] = [
+            ("Electrician", "TX - Harris County", "$42.50/hr", "$63.75 OT"),
+            ("Plumber", "TX - Harris County", "$40.25/hr", "$60.38 OT"),
+            ("Ironworker", "TX - Harris County", "$38.90/hr", "$58.35 OT"),
+            ("Carpenter", "TX - Harris County", "$35.75/hr", "$53.63 OT"),
+            ("Laborer", "TX - Harris County", "$28.50/hr", "$42.75 OT"),
+            ("Cement Mason", "TX - Harris County", "$32.00/hr", "$48.00 OT"),
+            ("Operating Engineer", "TX - Harris County", "$44.00/hr", "$66.00 OT"),
+            ("Painter", "TX - Harris County", "$30.25/hr", "$45.38 OT"),
+        ]
+        return VStack(alignment: .leading, spacing: 6) {
+            Text("DAVIS-BACON PREVAILING WAGES").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.muted)
+            ForEach(rates, id: \.0) { r in
+                HStack(spacing: 8) {
+                    Text(r.0).font(.system(size: 9, weight: .bold)).foregroundColor(Theme.text).frame(width: 90, alignment: .leading)
+                    Text(r.1).font(.system(size: 8)).foregroundColor(Theme.muted)
+                    Spacer()
+                    Text(r.2).font(.system(size: 9, weight: .heavy)).foregroundColor(Theme.green)
+                    Text(r.3).font(.system(size: 8)).foregroundColor(Theme.gold)
+                }
+            }
+        }
     }
 }
 
