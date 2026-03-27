@@ -18042,7 +18042,9 @@ final class RentalLocationManager: NSObject, ObservableObject, CLLocationManager
     }
 
     func requestLocation() {
+        #if os(iOS)
         manager.requestWhenInUseAuthorization()
+        #endif
         manager.requestLocation()
     }
 
@@ -18057,9 +18059,15 @@ final class RentalLocationManager: NSObject, ObservableObject, CLLocationManager
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         Task { @MainActor in
             authStatus = manager.authorizationStatus
+            #if os(iOS)
             if authStatus == .authorizedWhenInUse || authStatus == .authorizedAlways {
                 manager.requestLocation()
             }
+            #elseif os(macOS)
+            if authStatus == .authorizedAlways || authStatus == .authorized {
+                manager.requestLocation()
+            }
+            #endif
         }
     }
 
