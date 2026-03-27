@@ -593,7 +593,11 @@ struct ContentView: View {
         .onAppear {
             supabase.restoreSession()
             supabase.loadPendingWrites()
-            Task { await supabase.flushPendingWrites() }
+            Task {
+                await supabase.flushPendingWrites()
+                await NotificationManager.shared.requestAuthorization()
+            }
+            if supabase.isConfigured { supabase.startRealtimeSync() }
         }
         .sheet(isPresented: $showSearch) {
             GlobalSearchView(isPresented: $showSearch)
@@ -1772,20 +1776,48 @@ final class SupabaseService: ObservableObject {
             accessToken = json?["access_token"] as? String
             currentUserEmail = (json?["user"] as? [String: Any])?["email"] as? String
             if let token = accessToken { KeychainHelper.save(key: "Auth.AccessToken", data: token) }
+            if let refresh = json?["refresh_token"] as? String { KeychainHelper.save(key: "Auth.RefreshToken", data: refresh) }
             if let email = currentUserEmail { KeychainHelper.save(key: "Auth.Email", data: email) }
         }
+    }
+
+    func refreshToken() async -> Bool {
+        guard isConfigured,
+              let refreshToken = KeychainHelper.read(key: "Auth.RefreshToken"),
+              !refreshToken.isEmpty else { return false }
+        guard let url = URL(string: "\(baseURL)/auth/v1/token?grant_type=refresh_token") else { return false }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(apiKey, forHTTPHeaderField: "apikey")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body: [String: String] = ["refresh_token": refreshToken]
+        request.httpBody = try? JSONEncoder().encode(body)
+        guard let (data, response) = try? await URLSession.shared.data(for: request),
+              let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return false }
+        await MainActor.run {
+            accessToken = json["access_token"] as? String
+            if let token = accessToken { KeychainHelper.save(key: "Auth.AccessToken", data: token) }
+            if let refresh = json["refresh_token"] as? String { KeychainHelper.save(key: "Auth.RefreshToken", data: refresh) }
+        }
+        return true
     }
 
     func signOut() {
         accessToken = nil
         currentUserEmail = nil
         KeychainHelper.delete(key: "Auth.AccessToken")
+        KeychainHelper.delete(key: "Auth.RefreshToken")
         KeychainHelper.delete(key: "Auth.Email")
     }
 
     func restoreSession() {
         accessToken = KeychainHelper.read(key: "Auth.AccessToken")
         currentUserEmail = KeychainHelper.read(key: "Auth.Email")
+        // Auto-refresh if token exists but may be expired
+        if accessToken != nil {
+            Task { let _ = await refreshToken() }
+        }
     }
 
     // MARK: - Offline Sync Queue
@@ -1832,6 +1864,27 @@ final class SupabaseService: ObservableObject {
             pendingWrites = remaining
             savePendingWrites()
         }
+    }
+
+
+    // MARK: - Real-Time Subscriptions (Polling)
+
+    @Published var lastSyncAt: Date?
+    private var syncTimer: Timer?
+
+    func startRealtimeSync(interval: TimeInterval = 30) {
+        syncTimer?.invalidate()
+        syncTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.lastSyncAt = Date()
+                self?.objectWillChange.send()
+            }
+        }
+    }
+
+    func stopRealtimeSync() {
+        syncTimer?.invalidate()
+        syncTimer = nil
     }
 
     func loadPendingWrites() {
@@ -2349,6 +2402,80 @@ extension View {
 
     func accessibleAction(_ name: String, action: @escaping () -> Void) -> some View {
         self.accessibilityAction(named: name, action)
+    }
+
+    /// Apply standard construction app accessibility to a panel
+    func constructionAccessible(label: String, hint: String = "") -> some View {
+        self.accessibilityElement(children: .contain)
+            .accessibilityLabel(label)
+            .accessibilityHint(hint.isEmpty ? "Double tap to interact" : hint)
+    }
+
+    /// Make a stat card announce its value
+    func statAccessible(value: String, label: String) -> some View {
+        self.accessibilityElement(children: .ignore)
+            .accessibilityLabel("\(label): \(value)")
+            .accessibilityAddTraits(.isStaticText)
+    }
+}
+
+/// Modifier that adds Dynamic Type support
+struct DynamicTypeModifier: ViewModifier {
+    @Environment(\.dynamicTypeSize) var typeSize
+
+    func body(content: Content) -> some View {
+        content
+            .dynamicTypeSize(...DynamicTypeSize.accessibility3)
+    }
+}
+
+extension View {
+    func supportsDynamicType() -> some View {
+        self.modifier(DynamicTypeModifier())
+    }
+}
+
+// MARK: - Photo Picker Helper
+
+struct PhotoPickerButton: View {
+    let label: String
+    @Binding var selectedData: Data?
+    @State private var photoItem: PhotosPickerItem?
+    let maxBytes: Int
+
+    var body: some View {
+        HStack(spacing: 8) {
+            PhotosPicker(selection: $photoItem, matching: .images) {
+                Label(label, systemImage: selectedData != nil ? "checkmark.circle.fill" : "camera.fill")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(selectedData != nil ? Theme.green : Theme.cyan)
+            }
+            if selectedData != nil {
+                Button {
+                    selectedData = nil
+                    photoItem = nil
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 10)).foregroundColor(Theme.red)
+                }.buttonStyle(.plain)
+                let size = ByteCountFormatter.string(fromByteCount: Int64(selectedData?.count ?? 0), countStyle: .file)
+                Text(size).font(.system(size: 8)).foregroundColor(Theme.muted)
+            }
+        }
+        .onChange(of: photoItem) { _, newItem in
+            guard let newItem else { return }
+            Task {
+                guard let data = try? await newItem.loadTransferable(type: Data.self) else { return }
+                await MainActor.run {
+                    if data.count <= maxBytes {
+                        selectedData = data
+                    } else {
+                        selectedData = nil
+                        self.photoItem = nil
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -3038,6 +3165,7 @@ struct OperationsCommandCenterPanel: View {
 
     private func completeAction(_ item: OpsActionQueueItem) {
         queue.removeAll { $0.id == item.id }
+                                    saveJSON("ConstructOS.Ops.ActionQueue", value: queue)
     }
 
     private func exportDailyCommanderReport() {
@@ -3260,6 +3388,7 @@ struct ChangeOrderTrackerPanel: View {
                                     submittedDate: today, decidedDate: selectedStatus == .pending ? "" : today,
                                     description: newDesc)
         items.insert(item, at: 0)
+        saveJSON("ConstructOS.Ops.ChangeOrders", value: items)
         newNumber = ""; newTitle = ""; newCost = ""; newDays = ""; newDesc = ""
         selectedStatus = .pending
         showAdd = false
@@ -3494,6 +3623,7 @@ struct SafetyIncidentPanel: View {
                                   location: newLocation, description: newDesc,
                                   crewMember: newCrew, correctiveAction: newAction, status: newStatus)
         incidents.insert(inc, at: 0)
+        saveJSON("ConstructOS.Ops.SafetyIncidents", value: incidents)
         newDate = ""; newLocation = ""; newDesc = ""; newCrew = ""; newAction = ""
         newType = .nearMiss; newStatus = .open; showAdd = false
     }
@@ -3711,6 +3841,7 @@ struct MaterialDeliveryPanel: View {
                                   expectedDate: newExpected, actualDate: "",
                                   status: newDelivStatus, notes: newNotes)
         deliveries.insert(d, at: 0)
+        saveJSON("ConstructOS.Ops.MaterialDeliveries", value: deliveries)
         newMaterial = ""; newQty = ""; newSupplier = ""; newPO = ""; newExpected = ""; newNotes = ""
         newDelivStatus = .ordered; showAdd = false
     }
@@ -3911,6 +4042,7 @@ struct PunchListPanel: View {
     private func addItem() {
         guard !newDesc.isEmpty, !newTrade.isEmpty else { return }
         items.append(PunchListItem(description: newDesc, location: newLoc, trade: newTrade, dueDate: newDue, status: .open, createdBy: "You"))
+                        saveJSON("ConstructOS.Ops.PunchList", value: items)
         newDesc = ""; newLoc = ""; newTrade = ""; newDue = ""
         showAddForm = false
     }
