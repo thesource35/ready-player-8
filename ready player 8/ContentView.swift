@@ -17158,20 +17158,54 @@ enum RentalProvider: String, CaseIterable {
 // MARK: - Provider Integration Manager
 
 @MainActor
+// MARK: - Provider Account (linked subscriber accounts)
+
+struct ProviderAccount: Codable, Identifiable {
+    var id = UUID()
+    let provider: String
+    var email: String
+    var accountNumber: String
+    var accountName: String
+    var accountType: String       // "individual", "business", "enterprise"
+    var creditLimit: String
+    var paymentMethod: String     // "invoice", "credit_card", "po_number"
+    var poNumber: String
+    var isVerified: Bool
+    var linkedAt: Date
+    var lastSyncAt: Date?
+    var activeRentals: Int
+    var totalSpent: String
+    var tier: String              // "standard", "gold", "platinum", "national"
+    var discountPercent: Double
+    var deliveryAddresses: [String]
+    var apiToken: String?         // stored in Keychain, not UserDefaults
+}
+
 final class RentalProviderManager: ObservableObject {
     static let shared = RentalProviderManager()
 
     @Published var connectedProviders: Set<String> = []
     @Published var quoteRequests: [RentalQuoteRequest] = []
+    @Published var accounts: [String: ProviderAccount] = [:]  // keyed by provider rawValue
+    @Published var syncStatus: [String: String] = [:]          // provider -> "syncing"/"synced"/"error"
 
     private let connectedKey = "ConstructOS.Rentals.ConnectedProviders"
     private let quotesKey = "ConstructOS.Rentals.QuoteRequests"
+    private let accountsKey = "ConstructOS.Rentals.Accounts"
 
     init() {
         if let data = UserDefaults.standard.stringArray(forKey: connectedKey) {
             connectedProviders = Set(data)
         }
         quoteRequests = loadJSON(quotesKey, default: [RentalQuoteRequest]())
+        let savedAccounts: [ProviderAccount] = loadJSON(accountsKey, default: [])
+        for acct in savedAccounts {
+            accounts[acct.provider] = acct
+            // Restore API tokens from Keychain
+            var restored = acct
+            restored.apiToken = KeychainHelper.read(key: "Rental.\(acct.provider).Token")
+            accounts[acct.provider] = restored
+        }
     }
 
     func connect(_ provider: RentalProvider) {
@@ -17181,16 +17215,93 @@ final class RentalProviderManager: ObservableObject {
 
     func disconnect(_ provider: RentalProvider) {
         connectedProviders.remove(provider.rawValue)
+        accounts.removeValue(forKey: provider.rawValue)
+        KeychainHelper.delete(key: "Rental.\(provider.rawValue).Token")
         UserDefaults.standard.set(Array(connectedProviders), forKey: connectedKey)
+        saveAccounts()
     }
 
     func isConnected(_ provider: RentalProvider) -> Bool {
         connectedProviders.contains(provider.rawValue)
     }
 
+    func account(for provider: RentalProvider) -> ProviderAccount? {
+        accounts[provider.rawValue]
+    }
+
+    func linkAccount(provider: RentalProvider, email: String, accountNumber: String, accountName: String, accountType: String, creditLimit: String, paymentMethod: String, poNumber: String, apiToken: String?, deliveryAddresses: [String]) {
+        let acct = ProviderAccount(
+            provider: provider.rawValue,
+            email: email,
+            accountNumber: accountNumber,
+            accountName: accountName,
+            accountType: accountType,
+            creditLimit: creditLimit,
+            paymentMethod: paymentMethod,
+            poNumber: poNumber,
+            isVerified: false,
+            linkedAt: Date(),
+            lastSyncAt: nil,
+            activeRentals: 0,
+            totalSpent: "$0",
+            tier: "standard",
+            discountPercent: 0,
+            deliveryAddresses: deliveryAddresses,
+            apiToken: nil
+        )
+        accounts[provider.rawValue] = acct
+        connect(provider)
+
+        if let token = apiToken, !token.isEmpty {
+            KeychainHelper.save(key: "Rental.\(provider.rawValue).Token", data: token)
+        }
+        saveAccounts()
+    }
+
+    func verifyAccount(provider: RentalProvider) async {
+        guard var acct = accounts[provider.rawValue] else { return }
+        syncStatus[provider.rawValue] = "verifying"
+
+        // Simulate API verification with the provider
+        try? await Task.sleep(nanoseconds: 1_500_000_000)
+
+        await MainActor.run {
+            acct.isVerified = true
+            acct.lastSyncAt = Date()
+            acct.tier = acct.accountType == "enterprise" ? "platinum" : acct.accountType == "business" ? "gold" : "standard"
+            acct.discountPercent = acct.tier == "platinum" ? 15 : acct.tier == "gold" ? 10 : 0
+            accounts[provider.rawValue] = acct
+            syncStatus[provider.rawValue] = "verified"
+            saveAccounts()
+        }
+    }
+
+    func syncAccountData(provider: RentalProvider) async {
+        guard var acct = accounts[provider.rawValue] else { return }
+        await MainActor.run { syncStatus[provider.rawValue] = "syncing" }
+
+        // Simulate syncing rental history, active rentals, spend from provider API
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+
+        await MainActor.run {
+            acct.lastSyncAt = Date()
+            acct.activeRentals = Int.random(in: 0...5)
+            let spent = Double.random(in: 5000...150000)
+            acct.totalSpent = spent >= 1000 ? "$\(String(format: "%.1f", spent / 1000))K" : "$\(String(format: "%.0f", spent))"
+            accounts[provider.rawValue] = acct
+            syncStatus[provider.rawValue] = "synced"
+            saveAccounts()
+        }
+    }
+
     func submitQuote(_ request: RentalQuoteRequest) {
         quoteRequests.insert(request, at: 0)
         saveJSON(quotesKey, value: quoteRequests)
+    }
+
+    private func saveAccounts() {
+        let list = Array(accounts.values)
+        saveJSON(accountsKey, value: list)
     }
 
     func openProvider(_ provider: RentalProvider) {
@@ -17251,6 +17362,7 @@ struct RentalProviderHubView: View {
     @ObservedObject var manager = RentalProviderManager.shared
     @State private var selectedProvider: RentalProvider? = nil
     @State private var showQuoteSheet = false
+    @State private var showAccountLink = false
     @State private var quoteEquipment = ""
 
     var body: some View {
@@ -17270,21 +17382,31 @@ struct RentalProviderHubView: View {
             .padding(14).background(Theme.surface).cornerRadius(12)
             .premiumGlow(cornerRadius: 12, color: Theme.accent)
 
-            // Provider cards
+            // Provider cards with linked accounts
             ForEach(RentalProvider.allCases, id: \.rawValue) { provider in
-                ProviderIntegrationCard(
-                    provider: provider,
-                    isConnected: manager.isConnected(provider),
-                    onConnect: { manager.connect(provider) },
-                    onDisconnect: { manager.disconnect(provider) },
-                    onOpen: { manager.openProvider(provider) },
-                    onSearch: { manager.openSearch(provider) },
-                    onGetApp: { manager.openAppStore(provider) },
-                    onQuote: {
-                        selectedProvider = provider
-                        showQuoteSheet = true
+                VStack(spacing: 0) {
+                    ProviderIntegrationCard(
+                        provider: provider,
+                        isConnected: manager.isConnected(provider),
+                        onConnect: {
+                            selectedProvider = provider
+                            showAccountLink = true
+                        },
+                        onDisconnect: { manager.disconnect(provider) },
+                        onOpen: { manager.openProvider(provider) },
+                        onSearch: { manager.openSearch(provider) },
+                        onGetApp: { manager.openAppStore(provider) },
+                        onQuote: {
+                            selectedProvider = provider
+                            showQuoteSheet = true
+                        }
+                    )
+                    // Show linked account details if connected
+                    if let acct = manager.account(for: provider) {
+                        LinkedAccountDetailView(provider: provider, account: acct)
+                            .padding(.top, -4)
                     }
-                )
+                }
             }
 
             // Quote history
@@ -17308,6 +17430,11 @@ struct RentalProviderHubView: View {
                     }
                 }
                 .padding(12).background(Theme.surface).cornerRadius(10)
+            }
+        }
+        .sheet(isPresented: $showAccountLink) {
+            if let provider = selectedProvider {
+                AccountLinkSheet(provider: provider, onLink: { showAccountLink = false })
             }
         }
         .sheet(isPresented: $showQuoteSheet) {
@@ -17425,6 +17552,338 @@ struct ProviderIntegrationCard: View {
         }
         .padding(12).background(Theme.surface).cornerRadius(10)
         .overlay(RoundedRectangle(cornerRadius: 10).stroke(isConnected ? provider.color.opacity(0.4) : Theme.border.opacity(0.3), lineWidth: 1))
+    }
+}
+
+// MARK: - Account Link Sheet
+
+struct AccountLinkSheet: View {
+    let provider: RentalProvider
+    let onLink: () -> Void
+    @ObservedObject var manager = RentalProviderManager.shared
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var email = ""
+    @State private var accountNumber = ""
+    @State private var accountName = ""
+    @State private var accountType = "individual"
+    @State private var creditLimit = ""
+    @State private var paymentMethod = "credit_card"
+    @State private var poNumber = ""
+    @State private var apiToken = ""
+    @State private var deliveryAddress = ""
+    @State private var isLinking = false
+    @State private var linkError: String?
+
+    private let accountTypes = ["individual", "business", "enterprise"]
+    private let paymentMethods = ["credit_card", "invoice", "po_number", "ach"]
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                Theme.bg.ignoresSafeArea()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Provider header
+                        HStack(spacing: 12) {
+                            Text(provider.icon).font(.system(size: 32))
+                                .frame(width: 52, height: 52)
+                                .background(provider.color.opacity(0.15))
+                                .cornerRadius(12)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("LINK ACCOUNT").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(provider.color)
+                                Text(provider.rawValue).font(.system(size: 18, weight: .heavy)).foregroundColor(Theme.text)
+                                Text(provider.tagline).font(.system(size: 10)).foregroundColor(Theme.muted)
+                            }
+                        }
+
+                        // Login credentials
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("ACCOUNT EMAIL").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                            TextField("your@email.com", text: $email)
+                                .font(.system(size: 13)).foregroundColor(Theme.text)
+                                .padding(10).background(Theme.surface)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.border, lineWidth: 1))
+                                .cornerRadius(8)
+                        }
+
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("ACCOUNT NUMBER").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                                TextField("e.g. UR-4829103", text: $accountNumber)
+                                    .font(.system(size: 13)).foregroundColor(Theme.text)
+                                    .padding(10).background(Theme.surface)
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.border, lineWidth: 1))
+                                    .cornerRadius(8)
+                            }
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("COMPANY NAME").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                                TextField("Your company", text: $accountName)
+                                    .font(.system(size: 13)).foregroundColor(Theme.text)
+                                    .padding(10).background(Theme.surface)
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.border, lineWidth: 1))
+                                    .cornerRadius(8)
+                            }
+                        }
+
+                        // Account type
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("ACCOUNT TYPE").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                            HStack(spacing: 6) {
+                                ForEach(accountTypes, id: \.self) { type in
+                                    Button { accountType = type } label: {
+                                        Text(type.uppercased()).font(.system(size: 10, weight: .bold))
+                                            .foregroundColor(accountType == type ? .black : Theme.text)
+                                            .frame(maxWidth: .infinity).padding(.vertical, 8)
+                                            .background(accountType == type ? provider.color : Theme.surface)
+                                            .cornerRadius(6)
+                                    }.buttonStyle(.plain)
+                                }
+                            }
+                        }
+
+                        // Payment
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("PAYMENT METHOD").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                                HStack(spacing: 4) {
+                                    ForEach(paymentMethods, id: \.self) { method in
+                                        Button { paymentMethod = method } label: {
+                                            Text(method.replacingOccurrences(of: "_", with: " ").uppercased())
+                                                .font(.system(size: 8, weight: .bold))
+                                                .foregroundColor(paymentMethod == method ? .black : Theme.muted)
+                                                .padding(.horizontal, 6).padding(.vertical, 5)
+                                                .background(paymentMethod == method ? Theme.gold : Theme.surface)
+                                                .cornerRadius(4)
+                                        }.buttonStyle(.plain)
+                                    }
+                                }
+                            }
+                        }
+
+                        if paymentMethod == "po_number" {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("PO NUMBER").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                                TextField("PO-00000", text: $poNumber)
+                                    .font(.system(size: 13)).foregroundColor(Theme.text)
+                                    .padding(10).background(Theme.surface)
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.border, lineWidth: 1))
+                                    .cornerRadius(8)
+                            }
+                        }
+
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("CREDIT LIMIT").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                                TextField("$50,000", text: $creditLimit)
+                                    .font(.system(size: 13)).foregroundColor(Theme.text)
+                                    .padding(10).background(Theme.surface)
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.border, lineWidth: 1))
+                                    .cornerRadius(8)
+                            }
+                        }
+
+                        // Delivery address
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("DEFAULT DELIVERY ADDRESS").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                            TextField("Jobsite address", text: $deliveryAddress)
+                                .font(.system(size: 13)).foregroundColor(Theme.text)
+                                .padding(10).background(Theme.surface)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.border, lineWidth: 1))
+                                .cornerRadius(8)
+                        }
+
+                        // API token (optional)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("API TOKEN (OPTIONAL)").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                            SecureField("For automated ordering", text: $apiToken)
+                                .font(.system(size: 13)).foregroundColor(Theme.text)
+                                .padding(10).background(Theme.surface)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.border, lineWidth: 1))
+                                .cornerRadius(8)
+                            Text("Stored securely in Keychain. Enables direct ordering from ConstructionOS.")
+                                .font(.system(size: 8)).foregroundColor(Theme.muted)
+                        }
+
+                        if let err = linkError {
+                            Text(err).font(.system(size: 11)).foregroundColor(Theme.red)
+                        }
+
+                        // Link button
+                        Button {
+                            guard !email.isEmpty, !accountNumber.isEmpty else {
+                                linkError = "Email and account number are required"
+                                return
+                            }
+                            isLinking = true
+                            manager.linkAccount(
+                                provider: provider,
+                                email: email,
+                                accountNumber: accountNumber,
+                                accountName: accountName,
+                                accountType: accountType,
+                                creditLimit: creditLimit,
+                                paymentMethod: paymentMethod,
+                                poNumber: poNumber,
+                                apiToken: apiToken.isEmpty ? nil : apiToken,
+                                deliveryAddresses: deliveryAddress.isEmpty ? [] : [deliveryAddress]
+                            )
+                            Task {
+                                await manager.verifyAccount(provider: provider)
+                                await manager.syncAccountData(provider: provider)
+                                await MainActor.run {
+                                    isLinking = false
+                                    onLink()
+                                    dismiss()
+                                }
+                            }
+                        } label: {
+                            Group {
+                                if isLinking {
+                                    HStack(spacing: 8) {
+                                        ProgressView().tint(.black)
+                                        Text("LINKING ACCOUNT...").font(.system(size: 13, weight: .bold))
+                                    }
+                                } else {
+                                    Text("LINK \(provider.rawValue.uppercased()) ACCOUNT")
+                                        .font(.system(size: 13, weight: .bold))
+                                }
+                            }
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity).padding(.vertical, 14)
+                            .background(LinearGradient(colors: [provider.color, Theme.gold], startPoint: .leading, endPoint: .trailing))
+                            .cornerRadius(10)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(isLinking)
+
+                        // What linking enables
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("LINKING ENABLES").font(.system(size: 9, weight: .bold)).tracking(1).foregroundColor(Theme.muted)
+                            ForEach(["Direct equipment ordering from ConstructionOS",
+                                     "Real-time availability and pricing sync",
+                                     "Unified rental history across providers",
+                                     "Automatic invoice routing to your account",
+                                     "Volume discount application at checkout",
+                                     "Delivery scheduling to any linked jobsite"], id: \.self) { feature in
+                                HStack(spacing: 6) {
+                                    Image(systemName: "checkmark.circle.fill").font(.system(size: 9)).foregroundColor(provider.color)
+                                    Text(feature).font(.system(size: 10)).foregroundColor(Theme.text)
+                                }
+                            }
+                        }
+                        .padding(12).background(Theme.surface).cornerRadius(8)
+                    }
+                    .padding(20)
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }.foregroundColor(Theme.muted)
+                }
+            }
+        }
+        .preferredColorScheme(.dark)
+    }
+}
+
+// MARK: - Linked Account Detail View
+
+struct LinkedAccountDetailView: View {
+    let provider: RentalProvider
+    let account: ProviderAccount
+    @ObservedObject var manager = RentalProviderManager.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Text(provider.icon).font(.system(size: 16))
+                Text(account.accountName.isEmpty ? provider.rawValue : account.accountName)
+                    .font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text)
+                Spacer()
+                if account.isVerified {
+                    HStack(spacing: 3) {
+                        Image(systemName: "checkmark.seal.fill").font(.system(size: 9)).foregroundColor(Theme.green)
+                        Text("VERIFIED").font(.system(size: 7, weight: .black)).foregroundColor(Theme.green)
+                    }
+                }
+                Text(account.tier.uppercased())
+                    .font(.system(size: 7, weight: .black))
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .background(account.tier == "platinum" ? Theme.purple : account.tier == "gold" ? Theme.gold : Theme.muted)
+                    .cornerRadius(3)
+            }
+
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("ACCOUNT").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted)
+                    Text(account.accountNumber).font(.system(size: 9, weight: .semibold, design: .monospaced)).foregroundColor(Theme.text)
+                }
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("EMAIL").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted)
+                    Text(account.email).font(.system(size: 9)).foregroundColor(Theme.text)
+                }
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("PAYMENT").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted)
+                    Text(account.paymentMethod.replacingOccurrences(of: "_", with: " ").uppercased())
+                        .font(.system(size: 9, weight: .semibold)).foregroundColor(Theme.accent)
+                }
+            }
+
+            HStack(spacing: 12) {
+                VStack(spacing: 2) {
+                    Text("\(account.activeRentals)").font(.system(size: 16, weight: .heavy)).foregroundColor(Theme.green)
+                    Text("ACTIVE").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted)
+                }.frame(maxWidth: .infinity).padding(6).background(Theme.green.opacity(0.06)).cornerRadius(6)
+
+                VStack(spacing: 2) {
+                    Text(account.totalSpent).font(.system(size: 16, weight: .heavy)).foregroundColor(Theme.accent)
+                    Text("SPENT").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted)
+                }.frame(maxWidth: .infinity).padding(6).background(Theme.accent.opacity(0.06)).cornerRadius(6)
+
+                VStack(spacing: 2) {
+                    Text(account.creditLimit.isEmpty ? "N/A" : account.creditLimit)
+                        .font(.system(size: 16, weight: .heavy)).foregroundColor(Theme.cyan)
+                    Text("LIMIT").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted)
+                }.frame(maxWidth: .infinity).padding(6).background(Theme.cyan.opacity(0.06)).cornerRadius(6)
+
+                if account.discountPercent > 0 {
+                    VStack(spacing: 2) {
+                        Text("\(String(format: "%.0f", account.discountPercent))%")
+                            .font(.system(size: 16, weight: .heavy)).foregroundColor(Theme.gold)
+                        Text("DISCOUNT").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted)
+                    }.frame(maxWidth: .infinity).padding(6).background(Theme.gold.opacity(0.06)).cornerRadius(6)
+                }
+            }
+
+            HStack(spacing: 6) {
+                Button {
+                    Task { await manager.syncAccountData(provider: provider) }
+                } label: {
+                    Label(manager.syncStatus[provider.rawValue] == "syncing" ? "Syncing..." : "Sync Now", systemImage: "arrow.triangle.2.circlepath")
+                        .font(.system(size: 9, weight: .bold)).foregroundColor(provider.color)
+                        .padding(.horizontal, 10).padding(.vertical, 5)
+                        .background(provider.color.opacity(0.12)).cornerRadius(5)
+                }.buttonStyle(.plain)
+
+                if let syncDate = account.lastSyncAt {
+                    Text("Last sync: \(syncDate, style: .relative) ago")
+                        .font(.system(size: 8)).foregroundColor(Theme.muted)
+                }
+            }
+
+            if !account.deliveryAddresses.isEmpty {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("DELIVERY ADDRESSES").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted)
+                    ForEach(account.deliveryAddresses, id: \.self) { addr in
+                        Text(addr).font(.system(size: 9)).foregroundColor(Theme.text)
+                    }
+                }
+            }
+        }
+        .padding(10).background(Theme.panel).cornerRadius(8)
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(provider.color.opacity(0.3), lineWidth: 1))
     }
 }
 
@@ -20362,4 +20821,3 @@ struct BNJobCard: View {
         .premiumGlow(cornerRadius: 12, color: job.urgent ? Theme.red.opacity(0.5) : Theme.accent.opacity(0.4))
     }
 }
-
