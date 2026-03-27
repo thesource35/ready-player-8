@@ -83,6 +83,9 @@ struct TaxAccountantView: View {
     @State private var expenses: [TaxExpense] = []
     @State private var subPayments: [SubcontractorPayment] = []
     @State private var showAddExpense = false
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    private let supabase = SupabaseService.shared
 
     enum TaxSubTab: String, CaseIterable {
         case expenses = "Expenses"
@@ -155,12 +158,31 @@ struct TaxAccountantView: View {
             .padding(16)
         }
         .background(Theme.bg)
-        .onAppear {
+        .task {
             expenses = loadJSON("ConstructOS.Tax.Expenses", default: [TaxExpense]())
             subPayments = loadJSON("ConstructOS.Tax.SubPayments", default: [SubcontractorPayment]())
+            if supabase.isConfigured {
+                isLoading = true
+                do {
+                    let remote: [SupabaseTaxExpense] = try await supabase.fetch("cs_tax_expenses")
+                    if !remote.isEmpty {
+                        expenses = remote.map {
+                            TaxExpense(date: $0.date, description: $0.description, amount: $0.amount, category: TaxCategory(rawValue: $0.category) ?? .materials, projectRef: $0.projectRef, receiptAttached: $0.receiptAttached, deductible: $0.deductible)
+                        }
+                    }
+                } catch { errorMessage = "Failed to sync expenses" }
+                isLoading = false
+            }
         }
         .sheet(isPresented: $showAddExpense) {
             AddExpenseSheet { expense in
+                // Save locally
+                saveJSON("ConstructOS.Tax.Expenses", value: expenses)
+                // Sync to Supabase
+                if supabase.isConfigured {
+                    let dto = SupabaseTaxExpense(date: expense.date, description: expense.description, amount: expense.amount, category: expense.category.rawValue, projectRef: expense.projectRef, receiptAttached: expense.receiptAttached, deductible: expense.deductible)
+                    Task { await supabase.insertWithOfflineSupport("cs_tax_expenses", record: dto) }
+                }
                 expenses.insert(expense, at: 0)
                 saveJSON("ConstructOS.Tax.Expenses", value: expenses)
                 showAddExpense = false

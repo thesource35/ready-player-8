@@ -6,5 +6,25 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>ConstructionOS needs camera access for site photos, QR code scanning, and condition reports.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>ConstructionOS needs photo library access to attach site photos to reports and documents.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>ConstructionOS uses your location for GPS equipment tracking, geofencing, and nearby rental search.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>ConstructionOS uses background location for automatic crew clock-in/out at jobsite geofences.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>ConstructionOS uses Face ID to secure your account and protect sensitive project data.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>ConstructionOS adds inspection deadlines and bid due dates to your calendar.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>ConstructionOS adds inspection deadlines and bid due dates to your calendar.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>ConstructionOS needs microphone access for video calls with crew and stakeholders.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>ConstructionOS accesses contacts to find crew members and subcontractors.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

@@ -590,3 +590,46 @@ struct SupabaseWealthTracking: Codable, Identifiable {
         case id, name, revenue, expenses, margin, notes
     }
 }
+
+// MARK: - Daily Log DTO
+struct SupabaseDailyLog: Codable, Identifiable {
+    var id: String?
+    var date: String
+    var weather: String
+    var tempHigh: Int
+    var tempLow: Int
+    var manpower: Int
+    var workPerformed: String
+    var visitors: String
+    var delays: String
+    var safetyNotes: String
+    var photoCount: Int
+    var createdBy: String
+    var site: String?
+}
+
+// MARK: - Timecard DTO
+struct SupabaseTimecard: Codable, Identifiable {
+    var id: String?
+    var crewMember: String
+    var trade: String
+    var clockIn: String
+    var clockOut: String
+    var hoursRegular: Double
+    var hoursOt: Double
+    var rate: Double
+    var site: String
+    var date: String
+}
+
+// MARK: - Tax Expense DTO
+struct SupabaseTaxExpense: Codable, Identifiable {
+    var id: String?
+    var date: String
+    var description: String
+    var amount: Double
+    var category: String
+    var projectRef: String
+    var receiptAttached: Bool
+    var deductible: Bool
+}

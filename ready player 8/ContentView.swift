@@ -181,6 +181,8 @@ struct ContentView: View {
         }
     }
 
+    @State private var globalError: String?
+
     private var mainAppView: some View {
         GeometryReader { geo in
             let isWide = geo.size.width > 800
@@ -189,6 +191,19 @@ struct ContentView: View {
                 VStack(spacing: 0) {
                     HeaderView()
                     OfflineIndicatorBar(pendingCount: supabase.pendingWrites.count)
+                    if let error = globalError {
+                        ErrorBanner(message: error) { globalError = nil }
+                            .padding(.horizontal, 12)
+                    }
+                    if let lastError = supabase.lastError {
+                        HStack(spacing: 6) {
+                            Image(systemName: "cloud.bolt").font(.system(size: 10)).foregroundColor(Theme.gold)
+                            Text(lastError).font(.system(size: 9, weight: .semibold)).foregroundColor(Theme.gold)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 14).padding(.vertical, 4)
+                        .background(Theme.gold.opacity(0.06))
+                    }
                     TickerView()
                     if isWide {
                         HStack(spacing: 0) {

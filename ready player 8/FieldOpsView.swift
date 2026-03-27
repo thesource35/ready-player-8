@@ -32,6 +32,9 @@ struct PermitItem: Identifiable, Codable {
 struct FieldOpsView: View {
     @State private var activeTab = 0
     @State private var dailyLogs: [DailyLogEntry] = []
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    private let supabase = SupabaseService.shared
 
     private let mockEquipment: [EquipmentAsset] = [
         EquipmentAsset(name: "CAT 320 Excavator", assetTag: "EQ-001", category: "Heavy", site: "Riverside Lofts", hoursUsed: 2340, nextService: "50 hrs", status: "ACTIVE"),
@@ -80,7 +83,21 @@ struct FieldOpsView: View {
                 else { permitsContent }
             }.padding(16)
         }.background(Theme.bg)
-        .onAppear { dailyLogs = loadJSON("ConstructOS.Field.DailyLogs", default: [DailyLogEntry]()) }
+        .task {
+            dailyLogs = loadJSON("ConstructOS.Field.DailyLogs", default: [DailyLogEntry]())
+            if supabase.isConfigured {
+                isLoading = true
+                do {
+                    let remote: [SupabaseDailyLog] = try await supabase.fetch("cs_daily_logs")
+                    if !remote.isEmpty {
+                        dailyLogs = remote.map {
+                            DailyLogEntry(date: $0.date, weather: $0.weather, tempHigh: $0.tempHigh, tempLow: $0.tempLow, manpower: $0.manpower, workPerformed: $0.workPerformed, visitors: $0.visitors, delays: $0.delays, safetyNotes: $0.safetyNotes, photoCount: $0.photoCount, createdBy: $0.createdBy)
+                        }
+                    }
+                } catch { errorMessage = "Failed to sync daily logs" }
+                isLoading = false
+            }
+        }
     }
 
     private var dailyLogContent: some View {
