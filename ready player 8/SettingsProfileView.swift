@@ -261,3 +261,80 @@ struct OfflineIndicatorBar: View {
         }
     }
 }
+
+// MARK: - What's New Changelog
+
+struct WhatsNewView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    private let releases: [(version: String, date: String, features: [String])] = [
+        ("2.0", "Mar 2026", [
+            "25 navigation tabs across 6 groups",
+            "97 rental items from 6 providers (United Rentals, DOZR, Toolsy, Rent My Equipment, Sunbelt, Herc)",
+            "Angelic AI with 18 MCP tools for live data access",
+            "Face ID / Touch ID biometric lock",
+            "StoreKit 2 subscriptions (Free/Pro/Enterprise)",
+            "Video call system with mute/camera controls",
+            "Construction Rental Search Engine with AI recommender",
+            "Electrician & Fiber contractor directory with lead generation",
+            "Tax center with expense tracking, deduction finder, 1099 management",
+            "Field Ops: daily logs, timecards, equipment GPS, permits",
+            "Finance Hub: AIA invoicing, lien waivers, cash flow forecast",
+            "Compliance: toolbox talks, certified payroll, environmental",
+            "Client Portal: owner dashboard, selections, warranty, meetings",
+            "Analytics: bid win/loss, labor productivity, AI risk scoring",
+            "Schedule Hub: Gantt chart, crew calendar, cost codes, takeoff calculator",
+            "QR scanner, blueprint viewer, time-lapse camera, photo markup",
+            "Training & certification tracker with expiry alerts",
+            "Supabase backend with auth, offline sync, token refresh",
+            "Keychain-secured API keys",
+            "Global search, onboarding, push notifications, calendar sync",
+            "PDF export, document attachments, data backup/restore",
+            "Spotlight search indexing, deep linking, haptic feedback",
+            "41 focused Swift files, 23,900+ lines of code",
+        ]),
+        ("1.0", "Mar 2026", [
+            "Initial release",
+            "Basic project and contract management",
+            "Supabase integration",
+        ]),
+    ]
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                Theme.bg.ignoresSafeArea()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        ForEach(releases, id: \.version) { release in
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Text("v\(release.version)")
+                                        .font(.system(size: 18, weight: .heavy)).foregroundColor(Theme.accent)
+                                    Text(release.date)
+                                        .font(.system(size: 11)).foregroundColor(Theme.muted)
+                                    Spacer()
+                                }
+                                ForEach(release.features, id: \.self) { feature in
+                                    HStack(alignment: .top, spacing: 6) {
+                                        Circle().fill(Theme.accent).frame(width: 4, height: 4).padding(.top, 5)
+                                        Text(feature).font(.system(size: 11)).foregroundColor(Theme.text)
+                                    }
+                                }
+                            }
+                            .padding(14).background(Theme.surface).cornerRadius(12)
+                        }
+                    }
+                    .padding(16)
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") { dismiss() }.foregroundColor(Theme.accent)
+                }
+            }
+            .navigationTitle("What's New")
+        }
+        .preferredColorScheme(.dark)
+    }
+}

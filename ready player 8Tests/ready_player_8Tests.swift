@@ -242,4 +242,206 @@ struct ConstructionOSTests {
     @Test func rentalInventoryNotEmpty() {
         #expect(rentalInventory.count >= 90)
     }
+
+    // MARK: - Deep Link Tests
+
+    @Test func deepLinkProjects() {
+        let tab = DeepLinkHandler.handleURL(URL(string: "constructionos://projects")!)
+        #expect(tab == .projects)
+    }
+
+    @Test func deepLinkRentals() {
+        let tab = DeepLinkHandler.handleURL(URL(string: "constructionos://rentals")!)
+        #expect(tab == .rentals)
+    }
+
+    @Test func deepLinkSettings() {
+        let tab = DeepLinkHandler.handleURL(URL(string: "constructionos://settings")!)
+        #expect(tab == .settings)
+    }
+
+    @Test func deepLinkUnknown() {
+        let tab = DeepLinkHandler.handleURL(URL(string: "constructionos://unknown")!)
+        #expect(tab == .home)
+    }
+
+    @Test func deepLinkWrongScheme() {
+        let tab = DeepLinkHandler.handleURL(URL(string: "https://example.com")!)
+        #expect(tab == nil)
+    }
+
+    @Test func deepLinkAllTabs() {
+        let paths = ["projects", "contracts", "market", "maps", "ops", "hub", "security",
+                     "angelic", "wealth", "rentals", "electrical", "tax", "field",
+                     "finance", "compliance", "clients", "analytics", "schedule",
+                     "training", "scanner", "settings"]
+        for path in paths {
+            let tab = DeepLinkHandler.handleURL(URL(string: "constructionos://\(path)")!)
+            #expect(tab != nil, "Deep link for \(path) should resolve")
+        }
+    }
+
+    // MARK: - Theme Tests
+
+    @Test func themeColorsExist() {
+        // Verify all theme colors are non-nil
+        let colors = [Theme.bg, Theme.surface, Theme.panel, Theme.border,
+                      Theme.accent, Theme.gold, Theme.cyan, Theme.green,
+                      Theme.red, Theme.purple, Theme.text, Theme.muted]
+        #expect(colors.count == 12)
+    }
+
+    // MARK: - OpsRolePreset Tests
+
+    @Test func rolePresetValues() {
+        #expect(OpsRolePreset.superintendent.display == "Superintendent")
+        #expect(OpsRolePreset.projectManager.display == "Project Manager")
+        #expect(OpsRolePreset.executive.display == "Executive")
+    }
+
+    @Test func rolePresetRawValues() {
+        #expect(OpsRolePreset(rawValue: "SUPER") == .superintendent)
+        #expect(OpsRolePreset(rawValue: "PM") == .projectManager)
+        #expect(OpsRolePreset(rawValue: "EXEC") == .executive)
+        #expect(OpsRolePreset(rawValue: "INVALID") == nil)
+    }
+
+    @Test func rolePresetAllCases() {
+        #expect(OpsRolePreset.allCases.count == 3)
+    }
+
+    // MARK: - NavTab Tests
+
+    @Test func navTabCount() {
+        #expect(ContentView.NavTab.allCases.count == 25)
+    }
+
+    @Test func navTabRawValues() {
+        #expect(ContentView.NavTab.home.rawValue == "home")
+        #expect(ContentView.NavTab.rentals.rawValue == "rentals")
+        #expect(ContentView.NavTab.settings.rawValue == "settings")
+    }
+
+    // MARK: - Electrical Trade Tests
+
+    @Test func electricalTradeCount() {
+        #expect(ElectricalTrade.allCases.count == 6)
+    }
+
+    @Test func electricalTradeIcons() {
+        for trade in ElectricalTrade.allCases {
+            #expect(!trade.icon.isEmpty)
+        }
+    }
+
+    // MARK: - Tax Category Tests
+
+    @Test func taxCategoryCount() {
+        #expect(TaxCategory.allCases.count == 12)
+    }
+
+    @Test func taxCategoryIcons() {
+        for cat in TaxCategory.allCases {
+            #expect(!cat.icon.isEmpty)
+            #expect(!cat.rawValue.isEmpty)
+        }
+    }
+
+    // MARK: - Codable Round-Trip Tests
+
+    @Test func punchListCodable() {
+        let item = PunchListItem(description: "Fix drywall", location: "Floor 3", trade: "Finishing", dueDate: "04/01", status: .open, createdBy: "You")
+        let data = try? JSONEncoder().encode(item)
+        #expect(data != nil)
+        let decoded = try? JSONDecoder().decode(PunchListItem.self, from: data!)
+        #expect(decoded?.description == "Fix drywall")
+        #expect(decoded?.status == .open)
+    }
+
+    @Test func dailyLogCodable() {
+        let log = DailyLogEntry(date: "03/25", weather: "Clear", tempHigh: 68, tempLow: 50, manpower: 22, workPerformed: "Concrete pour", visitors: "None", delays: "", safetyNotes: "", photoCount: 3, createdBy: "You")
+        let data = try? JSONEncoder().encode(log)
+        #expect(data != nil)
+        let decoded = try? JSONDecoder().decode(DailyLogEntry.self, from: data!)
+        #expect(decoded?.manpower == 22)
+    }
+
+    @Test func timecardCodable() {
+        let tc = TimecardEntry(crewMember: "Mike", trade: "Concrete", clockIn: "6:00", clockOut: "2:30", hoursRegular: 8, hoursOT: 0.5, rate: 45, site: "RSL", date: "03/25")
+        let data = try? JSONEncoder().encode(tc)
+        #expect(data != nil)
+        let decoded = try? JSONDecoder().decode(TimecardEntry.self, from: data!)
+        #expect(decoded?.crewMember == "Mike")
+        #expect(decoded?.hoursOT == 0.5)
+    }
+
+    @Test func taxExpenseCodable() {
+        let exp = TaxExpense(date: "03/25", description: "Steel", amount: 4200, category: .materials, projectRef: "RSL", receiptAttached: true, deductible: true)
+        let data = try? JSONEncoder().encode(exp)
+        #expect(data != nil)
+        let decoded = try? JSONDecoder().decode(TaxExpense.self, from: data!)
+        #expect(decoded?.amount == 4200)
+        #expect(decoded?.category == .materials)
+    }
+
+    @Test func fuelEntryCodable() {
+        let fuel = FuelEntry(date: "03/25", vehicle: "F-350", gallons: 32.4, pricePerGal: 3.45, odometer: 48291, site: "RSL")
+        #expect(fuel.total == 32.4 * 3.45)
+        let data = try? JSONEncoder().encode(fuel)
+        #expect(data != nil)
+    }
+
+    @Test func electricalLeadCodable() {
+        let lead = ElectricalLead(title: "Panel Upgrade", tradeType: "Electrician", description: "200A to 400A", location: "Houston", budget: "$15,000", urgency: "urgent", postedBy: "You", postedAt: Date(), bidsReceived: 0, status: "open")
+        let data = try? JSONEncoder().encode(lead)
+        #expect(data != nil)
+        let decoded = try? JSONDecoder().decode(ElectricalLead.self, from: data!)
+        #expect(decoded?.title == "Panel Upgrade")
+    }
+
+    // MARK: - MCP Tool Coverage
+
+    @Test @MainActor func mcpGetCrewDeploy() {
+        let result = MCPToolServer.shared.executeTool(name: "get_crew_deploy", input: [:])
+        #expect(result.contains("61 workers"))
+    }
+
+    @Test @MainActor func mcpGetInspections() {
+        let result = MCPToolServer.shared.executeTool(name: "get_inspections", input: [:])
+        #expect(result.contains("DUE TODAY"))
+        #expect(result.contains("OVERDUE"))
+    }
+
+    @Test @MainActor func mcpGetBudget() {
+        let result = MCPToolServer.shared.executeTool(name: "get_budget_summary", input: [:])
+        #expect(result.contains("$92.5M"))
+    }
+
+    @Test @MainActor func mcpGetContracts() {
+        let result = MCPToolServer.shared.executeTool(name: "get_contracts", input: [:])
+        #expect(result.contains("Client:"))
+        #expect(result.contains("Budget:"))
+    }
+
+    @Test @MainActor func mcpGetChangeOrders() {
+        let result = MCPToolServer.shared.executeTool(name: "get_change_orders", input: [:])
+        #expect(result.contains("CO-"))
+    }
+
+    @Test @MainActor func mcpGetPunchList() {
+        let result = MCPToolServer.shared.executeTool(name: "get_punch_list", input: [:])
+        #expect(result.contains("OPEN"))
+    }
+
+    @Test @MainActor func mcpGetMaterialDeliveries() {
+        let result = MCPToolServer.shared.executeTool(name: "get_material_deliveries", input: [:])
+        #expect(result.contains("DELIVERED"))
+        #expect(result.contains("DELAYED"))
+    }
+
+    @Test @MainActor func mcpGetRentalRates() {
+        let result = MCPToolServer.shared.executeTool(name: "get_rental_rates", input: [:])
+        #expect(result.contains("Excavators"))
+        #expect(result.contains("/day"))
+    }
 }
