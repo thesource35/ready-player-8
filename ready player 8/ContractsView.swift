@@ -57,6 +57,7 @@ struct ContractsView: View {
             }
             .padding(16)
         }
+        .refreshable { await loadContracts() }
         .background(Theme.bg.ignoresSafeArea())
         .sheet(isPresented: $showAddSheet) {
             AddContractSheet { newContract in

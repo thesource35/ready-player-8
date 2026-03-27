@@ -58,6 +58,7 @@ struct ProjectsView: View {
             }
             .padding(16)
         }
+        .refreshable { await loadProjects() }
         .background(Theme.bg.ignoresSafeArea())
         .sheet(isPresented: $showAddSheet) {
             AddProjectSheet { newProject in

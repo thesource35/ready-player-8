@@ -600,3 +600,141 @@ final class CalendarManager: ObservableObject {
         )
     }
 }
+
+// MARK: - ========== Haptic Feedback ==========
+
+#if os(iOS)
+struct HapticEngine {
+    static func impact(_ style: UIImpactFeedbackGenerator.FeedbackStyle = .medium) {
+        UIImpactFeedbackGenerator(style: style).impactOccurred()
+    }
+    static func notification(_ type: UINotificationFeedbackGenerator.FeedbackType) {
+        UINotificationFeedbackGenerator().notificationOccurred(type)
+    }
+    static func selection() {
+        UISelectionFeedbackGenerator().selectionChanged()
+    }
+    /// Call on save/submit success
+    static func success() { notification(.success) }
+    /// Call on errors
+    static func error() { notification(.error) }
+    /// Call on tab changes
+    static func tap() { impact(.light) }
+    /// Call on important actions (delete, send, publish)
+    static func heavy() { impact(.heavy) }
+}
+#else
+struct HapticEngine {
+    static func impact(_ style: Any? = nil) {}
+    static func notification(_ type: Any? = nil) {}
+    static func selection() {}
+    static func success() {}
+    static func error() {}
+    static func tap() {}
+    static func heavy() {}
+}
+#endif
+
+// MARK: - ========== Deep Linking URL Scheme ==========
+
+/// Handles constructionos:// URL scheme for deep linking
+/// Register "constructionos" as URL scheme in Xcode target > URL Types
+struct DeepLinkHandler {
+    static func handleURL(_ url: URL) -> ContentView.NavTab? {
+        guard url.scheme == "constructionos" else { return nil }
+        let host = url.host ?? ""
+        switch host {
+        case "projects": return .projects
+        case "contracts": return .contracts
+        case "market": return .market
+        case "maps": return .maps
+        case "ops": return .ops
+        case "hub": return .hub
+        case "security": return .security
+        case "angelic", "ai": return .angelic
+        case "wealth": return .wealth
+        case "rentals": return .rentals
+        case "electrical": return .electrical
+        case "tax": return .tax
+        case "field": return .field
+        case "finance": return .finance
+        case "compliance": return .compliance
+        case "clients": return .clientPortal
+        case "analytics": return .analytics
+        case "schedule": return .schedule
+        case "training": return .training
+        case "scanner": return .scanner
+        case "settings": return .settings
+        default: return .home
+        }
+    }
+}
+
+// MARK: - ========== Spotlight Search Indexing ==========
+
+import CoreSpotlight
+import UniformTypeIdentifiers
+
+@MainActor
+final class SpotlightIndexer {
+    static let shared = SpotlightIndexer()
+
+    func indexProjects(_ projects: [Project]) {
+        var items: [CSSearchableItem] = []
+        for project in projects {
+            let attrs = CSSearchableItemAttributeSet(contentType: .text)
+            attrs.title = project.name
+            attrs.contentDescription = "\(project.client) \u{2022} \(project.type) \u{2022} \(project.status) \u{2022} Budget: \(project.budget)"
+            attrs.keywords = ["project", project.name, project.client, project.type]
+
+            let item = CSSearchableItem(
+                uniqueIdentifier: "project-\(project.id)",
+                domainIdentifier: "com.constructionos.projects",
+                attributeSet: attrs
+            )
+            items.append(item)
+        }
+        CSSearchableIndex.default().indexSearchableItems(items)
+    }
+
+    func indexContracts(_ contracts: [SupabaseContract]) {
+        var items: [CSSearchableItem] = []
+        for contract in contracts {
+            let attrs = CSSearchableItemAttributeSet(contentType: .text)
+            attrs.title = contract.title
+            attrs.contentDescription = "\(contract.client) \u{2022} \(contract.stage) \u{2022} Budget: \(contract.budget)"
+            attrs.keywords = ["contract", "bid", contract.title, contract.client]
+
+            let item = CSSearchableItem(
+                uniqueIdentifier: "contract-\(contract.id)",
+                domainIdentifier: "com.constructionos.contracts",
+                attributeSet: attrs
+            )
+            items.append(item)
+        }
+        CSSearchableIndex.default().indexSearchableItems(items)
+    }
+
+    func indexRentalItems(_ items: [RentalItem]) {
+        var searchItems: [CSSearchableItem] = []
+        for rental in items {
+            let attrs = CSSearchableItemAttributeSet(contentType: .text)
+            attrs.title = rental.name
+            attrs.contentDescription = "\(rental.category.rawValue) \u{2022} \(rental.dailyRate)/day \u{2022} \(rental.provider.rawValue)"
+            attrs.keywords = ["rental", "equipment", rental.name, rental.category.rawValue]
+
+            let item = CSSearchableItem(
+                uniqueIdentifier: "rental-\(rental.id)",
+                domainIdentifier: "com.constructionos.rentals",
+                attributeSet: attrs
+            )
+            searchItems.append(item)
+        }
+        CSSearchableIndex.default().indexSearchableItems(searchItems)
+    }
+
+    func deleteAllIndexes() {
+        CSSearchableIndex.default().deleteAllSearchableItems()
+    }
+}
+
