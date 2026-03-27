@@ -557,6 +557,11 @@ struct ContentView: View {
         case rentals = "rentals"
         case electrical = "electrical"
         case tax = "tax"
+        case field = "field"
+        case finance = "finance"
+        case compliance = "compliance"
+        case clientPortal = "client-portal"
+        case analytics = "analytics"
     }
 
     private let navItems: [(String, String, String, String)] = [
@@ -570,6 +575,11 @@ struct ContentView: View {
         ("rentals","RENTALS","\u{1F6E0}","wealth"),
         ("electrical","ELECTRIC","\u{26A1}","trade"),
         ("tax","TAX","\u{1F4B0}","trade"),
+        ("field","FIELD","\u{1F4F1}","field"),
+        ("finance","FINANCE","\u{1F4B5}","field"),
+        ("compliance","COMPLY","\u{1F6E1}","field"),
+        ("client-portal","CLIENTS","\u{1F465}","field"),
+        ("analytics","ANALYTICS","\u{1F4C8}","field"),
     ]
 
     @State private var wealthTab: WealthSubTab = .moneyLens
@@ -694,6 +704,11 @@ struct ContentView: View {
         case .rentals: RentalSearchView()
         case .electrical: ElectricalFiberView()
         case .tax: TaxAccountantView()
+        case .field: FieldOpsView()
+        case .finance: FinanceHubView()
+        case .compliance: ComplianceView()
+        case .clientPortal: ClientPortalView()
+        case .analytics: AnalyticsDashboardView()
         }
     }
 }
@@ -20398,6 +20413,498 @@ struct AddExpenseSheet: View {
             }
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() }.foregroundColor(Theme.muted) } }
         }.preferredColorScheme(.dark)
+    }
+}
+
+
+// MARK: - ========== Field Operations Tab ==========
+
+struct DailyLogEntry: Identifiable, Codable {
+    var id = UUID()
+    let date: String; let weather: String; let tempHigh: Int; let tempLow: Int
+    let manpower: Int; let workPerformed: String; let visitors: String
+    let delays: String; let safetyNotes: String; let photoCount: Int; let createdBy: String
+}
+
+struct TimecardEntry: Identifiable, Codable {
+    var id = UUID()
+    let crewMember: String; let trade: String; let clockIn: String; let clockOut: String
+    let hoursRegular: Double; let hoursOT: Double; let rate: Double; let site: String; let date: String
+}
+
+struct EquipmentAsset: Identifiable {
+    let id = UUID()
+    let name: String; let assetTag: String; let category: String; let site: String
+    let hoursUsed: Int; let nextService: String; let status: String
+}
+
+struct PermitItem: Identifiable, Codable {
+    var id = UUID()
+    let permitNumber: String; let type: String; let jurisdiction: String
+    let issuedDate: String; let expiresDate: String; let site: String; let status: String
+    let contactName: String; let contactPhone: String
+}
+
+struct FieldOpsView: View {
+    @State private var activeTab = 0
+    @State private var dailyLogs: [DailyLogEntry] = []
+
+    private let mockEquipment: [EquipmentAsset] = [
+        EquipmentAsset(name: "CAT 320 Excavator", assetTag: "EQ-001", category: "Heavy", site: "Riverside Lofts", hoursUsed: 2340, nextService: "50 hrs", status: "ACTIVE"),
+        EquipmentAsset(name: "JLG 600S Boom Lift", assetTag: "EQ-014", category: "Aerial", site: "Harbor Crossing", hoursUsed: 890, nextService: "110 hrs", status: "ACTIVE"),
+        EquipmentAsset(name: "Bobcat S770", assetTag: "EQ-008", category: "Earthmoving", site: "Pine Ridge Ph.2", hoursUsed: 1560, nextService: "40 hrs", status: "SERVICE DUE"),
+        EquipmentAsset(name: "Wacker Compactor", assetTag: "EQ-022", category: "Compaction", site: "Yard", hoursUsed: 420, nextService: "80 hrs", status: "IDLE"),
+    ]
+    private let mockTimecards: [TimecardEntry] = [
+        TimecardEntry(crewMember: "Mike Torres", trade: "Concrete", clockIn: "6:00 AM", clockOut: "2:30 PM", hoursRegular: 8, hoursOT: 0.5, rate: 45, site: "Riverside Lofts", date: "03/25"),
+        TimecardEntry(crewMember: "Sarah Kim", trade: "Electrical", clockIn: "7:00 AM", clockOut: "5:30 PM", hoursRegular: 8, hoursOT: 2.5, rate: 55, site: "Harbor Crossing", date: "03/25"),
+        TimecardEntry(crewMember: "James Wright", trade: "Framing", clockIn: "6:30 AM", clockOut: "3:00 PM", hoursRegular: 8, hoursOT: 0, rate: 42, site: "Pine Ridge Ph.2", date: "03/25"),
+    ]
+    private let mockPermits: [PermitItem] = [
+        PermitItem(permitNumber: "BP-2026-4821", type: "Building", jurisdiction: "City of Houston", issuedDate: "01/15/26", expiresDate: "01/15/27", site: "Riverside Lofts", status: "ACTIVE", contactName: "J. Martinez", contactPhone: "713-555-0142"),
+        PermitItem(permitNumber: "EP-2026-1193", type: "Electrical", jurisdiction: "Harris County", issuedDate: "02/01/26", expiresDate: "08/01/26", site: "Harbor Crossing", status: "ACTIVE", contactName: "R. Chen", contactPhone: "713-555-0198"),
+        PermitItem(permitNumber: "GP-2026-0782", type: "Grading", jurisdiction: "City of Houston", issuedDate: "12/01/25", expiresDate: "06/01/26", site: "Pine Ridge Ph.2", status: "EXPIRING", contactName: "A. Patel", contactPhone: "713-555-0231"),
+    ]
+    private let tabs = ["Daily Log", "Timecards", "Equipment", "Permits"]
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("FIELD OPS").font(.system(size: 11, weight: .bold)).tracking(3).foregroundColor(Theme.cyan)
+                        Text("Field Operations Center").font(.system(size: 22, weight: .heavy)).foregroundColor(Theme.text)
+                        Text("Daily logs, timecards, equipment tracking, and permits").font(.system(size: 11)).foregroundColor(Theme.muted)
+                    }
+                    Spacer()
+                }.padding(16).background(Theme.surface).cornerRadius(14).premiumGlow(cornerRadius: 14, color: Theme.cyan)
+
+                HStack(spacing: 0) {
+                    ForEach(tabs.indices, id: \.self) { i in
+                        Button { withAnimation { activeTab = i } } label: {
+                            Text(tabs[i].uppercased()).font(.system(size: 9, weight: .bold)).tracking(1)
+                                .foregroundColor(activeTab == i ? .black : Theme.muted)
+                                .frame(maxWidth: .infinity).padding(.vertical, 9)
+                                .background(activeTab == i ? Theme.cyan : Theme.surface)
+                        }.buttonStyle(.plain)
+                    }
+                }.cornerRadius(8)
+
+                if activeTab == 0 { dailyLogContent }
+                else if activeTab == 1 { timecardsContent }
+                else if activeTab == 2 { equipmentContent }
+                else { permitsContent }
+            }.padding(16)
+        }.background(Theme.bg)
+        .onAppear { dailyLogs = loadJSON("ConstructOS.Field.DailyLogs", default: [DailyLogEntry]()) }
+    }
+
+    private var dailyLogContent: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("DAILY FIELD REPORTS").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.accent)
+            if dailyLogs.isEmpty {
+                VStack(spacing: 8) { Text("No daily logs yet").font(.system(size: 13, weight: .semibold)).foregroundColor(Theme.muted) }
+                    .frame(maxWidth: .infinity).padding(24).background(Theme.surface).cornerRadius(12)
+            }
+            ForEach(dailyLogs) { log in
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack { Text(log.date).font(.system(size: 12, weight: .bold)).foregroundColor(Theme.text); Spacer(); Text("\(log.manpower) crew").font(.system(size: 10, weight: .heavy)).foregroundColor(Theme.cyan) }
+                    Text(log.workPerformed).font(.system(size: 10)).foregroundColor(Theme.text).lineLimit(3)
+                }.padding(12).background(Theme.surface).cornerRadius(10)
+            }
+        }
+    }
+
+    private var timecardsContent: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("CREW TIMECARDS").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.green)
+            let totalHrs = mockTimecards.reduce(0.0) { $0 + $1.hoursRegular + $1.hoursOT }
+            let totalCost = mockTimecards.reduce(0.0) { $0 + ($1.hoursRegular * $1.rate) + ($1.hoursOT * $1.rate * 1.5) }
+            HStack(spacing: 8) {
+                VStack(spacing: 2) { Text(String(format: "%.1f", totalHrs)).font(.system(size: 18, weight: .heavy)).foregroundColor(Theme.green); Text("HOURS").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted) }.frame(maxWidth: .infinity).padding(8).background(Theme.green.opacity(0.06)).cornerRadius(8)
+                VStack(spacing: 2) { Text("$\(String(format: "%.0f", totalCost))").font(.system(size: 18, weight: .heavy)).foregroundColor(Theme.accent); Text("LABOR COST").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted) }.frame(maxWidth: .infinity).padding(8).background(Theme.accent.opacity(0.06)).cornerRadius(8)
+            }
+            ForEach(mockTimecards) { tc in
+                HStack(spacing: 8) {
+                    VStack(alignment: .leading, spacing: 2) { Text(tc.crewMember).font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text); Text("\(tc.trade) \u{2022} \(tc.site)").font(.system(size: 9)).foregroundColor(Theme.muted) }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) { Text("\(tc.clockIn) - \(tc.clockOut)").font(.system(size: 9, design: .monospaced)).foregroundColor(Theme.text)
+                        HStack(spacing: 4) { Text("\(String(format: "%.0f", tc.hoursRegular))h").font(.system(size: 8)).foregroundColor(Theme.green); if tc.hoursOT > 0 { Text("+\(String(format: "%.1f", tc.hoursOT))h OT").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.gold) } }
+                    }
+                    Text("$\(String(format: "%.0f", (tc.hoursRegular * tc.rate) + (tc.hoursOT * tc.rate * 1.5)))").font(.system(size: 11, weight: .heavy)).foregroundColor(Theme.accent)
+                }.padding(10).background(Theme.surface).cornerRadius(8)
+            }
+        }
+    }
+
+    private var equipmentContent: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("EQUIPMENT GPS TRACKER").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.gold)
+            ForEach(mockEquipment) { eq in
+                HStack(spacing: 10) {
+                    Circle().fill(eq.status == "ACTIVE" ? Theme.green : eq.status == "IDLE" ? Theme.muted : Theme.gold).frame(width: 8, height: 8)
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 4) { Text(eq.name).font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text); Text(eq.assetTag).font(.system(size: 8, design: .monospaced)).foregroundColor(Theme.muted) }
+                        Text("\(eq.site) \u{2022} \(eq.category) \u{2022} \(eq.hoursUsed) hrs").font(.system(size: 9)).foregroundColor(Theme.muted)
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(eq.status).font(.system(size: 8, weight: .black)).foregroundColor(eq.status == "ACTIVE" ? Theme.green : eq.status == "IDLE" ? Theme.muted : Theme.gold)
+                        Text("Svc in \(eq.nextService)").font(.system(size: 8)).foregroundColor(Theme.muted)
+                    }
+                }.padding(10).background(Theme.surface).cornerRadius(8)
+            }
+        }
+    }
+
+    private var permitsContent: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("PERMIT BOARD").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.purple)
+            ForEach(mockPermits) { permit in
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack { Text(permit.permitNumber).font(.system(size: 11, weight: .bold, design: .monospaced)).foregroundColor(Theme.text); Spacer(); Text(permit.status).font(.system(size: 8, weight: .black)).foregroundColor(permit.status == "ACTIVE" ? Theme.green : Theme.gold) }
+                    Text("\(permit.type) Permit \u{2022} \(permit.jurisdiction)").font(.system(size: 9)).foregroundColor(Theme.muted)
+                    HStack(spacing: 12) { Text("Issued: \(permit.issuedDate)").font(.system(size: 8)).foregroundColor(Theme.muted); Text("Expires: \(permit.expiresDate)").font(.system(size: 8, weight: .bold)).foregroundColor(permit.status == "EXPIRING" ? Theme.gold : Theme.muted) }
+                    Text("\(permit.contactName) \u{2022} \(permit.contactPhone)").font(.system(size: 8)).foregroundColor(Theme.muted)
+                }.padding(12).background(Theme.surface).cornerRadius(10)
+            }
+        }
+    }
+}
+
+// MARK: - ========== Finance Hub Tab ==========
+
+struct FinanceHubView: View {
+    @State private var activeTab = 0
+    private let tabs = ["Invoices", "Lien Waivers", "Cash Flow"]
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("FINANCE HUB").font(.system(size: 11, weight: .bold)).tracking(3).foregroundColor(Theme.green)
+                        Text("Financial Command Center").font(.system(size: 22, weight: .heavy)).foregroundColor(Theme.text)
+                    }
+                    Spacer()
+                }.padding(16).background(Theme.surface).cornerRadius(14).premiumGlow(cornerRadius: 14, color: Theme.green)
+
+                HStack(spacing: 0) {
+                    ForEach(tabs.indices, id: \.self) { i in
+                        Button { withAnimation { activeTab = i } } label: {
+                            Text(tabs[i].uppercased()).font(.system(size: 9, weight: .bold)).tracking(1).foregroundColor(activeTab == i ? .black : Theme.muted).frame(maxWidth: .infinity).padding(.vertical, 9).background(activeTab == i ? Theme.green : Theme.surface)
+                        }.buttonStyle(.plain)
+                    }
+                }.cornerRadius(8)
+
+                if activeTab == 0 { invoicesContent }
+                else if activeTab == 1 { liensContent }
+                else { cashFlowContent }
+            }.padding(16)
+        }.background(Theme.bg)
+    }
+
+    private var invoicesContent: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("AIA G702/G703 PAY APPLICATIONS").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.accent)
+            HStack(spacing: 8) {
+                VStack(spacing: 2) { Text("$952K").font(.system(size: 18, weight: .heavy)).foregroundColor(Theme.accent); Text("BILLED").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted) }.frame(maxWidth: .infinity).padding(8).background(Theme.accent.opacity(0.06)).cornerRadius(8)
+                VStack(spacing: 2) { Text("$95K").font(.system(size: 18, weight: .heavy)).foregroundColor(Theme.gold); Text("RETAINAGE").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted) }.frame(maxWidth: .infinity).padding(8).background(Theme.gold.opacity(0.06)).cornerRadius(8)
+            }
+            let invoices: [(String, String, String, String, String)] = [("#07","Riverside Lofts","$284,500","$28,450","SUBMITTED"),("#06","Riverside Lofts","$312,100","$31,210","APPROVED"),("#04","Harbor Crossing","$198,750","$19,875","DRAFT"),("#12","Pine Ridge Ph.2","$156,200","$15,620","PAID")]
+            ForEach(invoices, id: \.0) { inv in
+                HStack(spacing: 8) {
+                    VStack(alignment: .leading, spacing: 2) { Text("Pay App \(inv.0)").font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text); Text(inv.1).font(.system(size: 9)).foregroundColor(Theme.muted) }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) { Text(inv.2).font(.system(size: 11, weight: .heavy)).foregroundColor(Theme.accent); Text("Ret: \(inv.3)").font(.system(size: 8)).foregroundColor(Theme.gold) }
+                    Text(inv.4).font(.system(size: 7, weight: .black)).foregroundColor(inv.4 == "PAID" ? Theme.green : inv.4 == "APPROVED" ? Theme.cyan : Theme.gold).padding(.horizontal, 6).padding(.vertical, 3).background((inv.4 == "PAID" ? Theme.green : Theme.gold).opacity(0.1)).cornerRadius(4)
+                }.padding(10).background(Theme.surface).cornerRadius(8)
+            }
+        }
+    }
+
+    private var liensContent: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("LIEN WAIVER MANAGER").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.purple)
+            let waivers: [(String, String, String, String, String)] = [("Apex Concrete","Conditional Progress","$48,200","RECEIVED","Apr 1"),("Elite Steel","Conditional Progress","$32,100","PENDING","Apr 1"),("Prime Electric","Unconditional","$15,800","RECEIVED","N/A"),("Quick Plumbing","Conditional Final","$22,400","REQUESTED","Apr 15")]
+            ForEach(waivers, id: \.0) { w in
+                HStack(spacing: 8) {
+                    Image(systemName: w.3 == "RECEIVED" ? "checkmark.circle.fill" : "clock.fill").font(.system(size: 12)).foregroundColor(w.3 == "RECEIVED" ? Theme.green : Theme.gold)
+                    VStack(alignment: .leading, spacing: 2) { Text(w.0).font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text); Text("\(w.1) \u{2022} \(w.2)").font(.system(size: 9)).foregroundColor(Theme.muted) }
+                    Spacer()
+                    if w.4 != "N/A" { Text("Due: \(w.4)").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.gold) }
+                    Text(w.3).font(.system(size: 7, weight: .black)).foregroundColor(w.3 == "RECEIVED" ? Theme.green : Theme.gold)
+                }.padding(10).background(Theme.surface).cornerRadius(8)
+            }
+        }
+    }
+
+    private var cashFlowContent: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("CASH FLOW FORECAST").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.cyan)
+            let months: [(String, Double, Double)] = [("Apr",485000,342000),("May",520000,398000),("Jun",610000,445000),("Jul",475000,380000)]
+            ForEach(months, id: \.0) { m in
+                let net = m.1 - m.2
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack { Text(m.0).font(.system(size: 12, weight: .bold)).foregroundColor(Theme.text); Spacer(); Text("+$\(String(format: "%.0f", net/1000))K").font(.system(size: 12, weight: .heavy)).foregroundColor(Theme.green) }
+                    HStack(spacing: 12) { Text("AR: $\(String(format: "%.0f", m.1/1000))K").font(.system(size: 9)).foregroundColor(Theme.green); Text("AP: $\(String(format: "%.0f", m.2/1000))K").font(.system(size: 9)).foregroundColor(Theme.red) }
+                }.padding(10).background(Theme.surface).cornerRadius(8)
+            }
+        }
+    }
+}
+
+// MARK: - ========== Compliance Tab ==========
+
+struct ComplianceView: View {
+    @State private var activeTab = 0
+    private let tabs = ["Toolbox Talks", "Payroll", "Environmental"]
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("COMPLIANCE").font(.system(size: 11, weight: .bold)).tracking(3).foregroundColor(Theme.red)
+                        Text("Safety & Regulatory").font(.system(size: 22, weight: .heavy)).foregroundColor(Theme.text)
+                    }
+                    Spacer()
+                }.padding(16).background(Theme.surface).cornerRadius(14).premiumGlow(cornerRadius: 14, color: Theme.red)
+
+                HStack(spacing: 0) {
+                    ForEach(tabs.indices, id: \.self) { i in
+                        Button { withAnimation { activeTab = i } } label: { Text(tabs[i].uppercased()).font(.system(size: 9, weight: .bold)).tracking(1).foregroundColor(activeTab == i ? .black : Theme.muted).frame(maxWidth: .infinity).padding(.vertical, 9).background(activeTab == i ? Theme.red : Theme.surface) }.buttonStyle(.plain)
+                    }
+                }.cornerRadius(8)
+
+                if activeTab == 0 { toolboxContent }
+                else if activeTab == 1 { payrollContent }
+                else { environmentalContent }
+            }.padding(16)
+        }.background(Theme.bg)
+    }
+
+    private var toolboxContent: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("WEEKLY TOOLBOX TALKS").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.gold)
+            let topics: [(String, String, String, Bool)] = [("Fall Protection - Harness Inspection","Fall Protection","15 min",true),("Trenching & Excavation Safety","Excavation","20 min",true),("Electrical Safety - Lockout/Tagout","Electrical","15 min",true),("Heat Illness Prevention","Weather","10 min",false),("Scaffold Safety","Fall Protection","15 min",true),("Silica Dust Exposure","Health","20 min",true),("Fire Prevention on Jobsite","Fire Safety","15 min",false),("PPE Inspection & Usage","General","10 min",true)]
+            ForEach(topics, id: \.0) { t in
+                HStack(spacing: 8) {
+                    Image(systemName: "shield.checkered").font(.system(size: 12)).foregroundColor(t.3 ? Theme.red : Theme.gold)
+                    VStack(alignment: .leading, spacing: 2) { Text(t.0).font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text); Text("\(t.1) \u{2022} \(t.2)").font(.system(size: 9)).foregroundColor(Theme.muted) }
+                    Spacer()
+                    if t.3 { Text("REQUIRED").font(.system(size: 7, weight: .black)).foregroundColor(Theme.red) }
+                    Button { } label: { Text("START").font(.system(size: 8, weight: .bold)).foregroundColor(.black).padding(.horizontal, 8).padding(.vertical, 4).background(Theme.gold).cornerRadius(4) }.buttonStyle(.plain)
+                }.padding(10).background(Theme.surface).cornerRadius(8)
+            }
+        }
+    }
+
+    private var payrollContent: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("CERTIFIED PAYROLL (WH-347)").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.purple)
+            let weeks: [(String, Int, Double, String, String)] = [("Week 12 (Mar 17-23)",38,1520,"$98,400","SUBMITTED"),("Week 11 (Mar 10-16)",41,1640,"$106,200","APPROVED"),("Week 10 (Mar 3-9)",36,1440,"$93,600","APPROVED")]
+            ForEach(weeks, id: \.0) { w in
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack { Text(w.0).font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text); Spacer(); Text(w.4).font(.system(size: 8, weight: .black)).foregroundColor(w.4 == "APPROVED" ? Theme.green : Theme.gold) }
+                    HStack(spacing: 12) { Text("\(w.1) employees").font(.system(size: 9)).foregroundColor(Theme.muted); Text("\(String(format: "%.0f", w.2)) hrs").font(.system(size: 9)).foregroundColor(Theme.cyan); Text(w.3).font(.system(size: 9, weight: .heavy)).foregroundColor(Theme.accent) }
+                }.padding(10).background(Theme.surface).cornerRadius(8)
+            }
+        }
+    }
+
+    private var environmentalContent: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("ENVIRONMENTAL COMPLIANCE").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.green)
+            let items: [(String, String, String, String)] = [("SWPPP Plan","CURRENT","Mar 20","Apr 20"),("Dust Monitoring","CURRENT","Mar 24","Mar 31"),("Noise Compliance","DUE","Mar 10","Mar 25"),("Erosion Controls","CURRENT","Mar 22","Apr 5"),("Waste Disposal Log","CURRENT","Mar 25","Apr 1"),("EPA Stormwater Permit","ACTIVE","Jan 15","Jan 15/27")]
+            ForEach(items, id: \.0) { item in
+                HStack(spacing: 8) {
+                    Circle().fill(item.1 == "DUE" ? Theme.gold : Theme.green).frame(width: 6, height: 6)
+                    Text(item.0).font(.system(size: 10, weight: .bold)).foregroundColor(Theme.text)
+                    Spacer()
+                    Text("Last: \(item.2)").font(.system(size: 8)).foregroundColor(Theme.muted)
+                    Text("Next: \(item.3)").font(.system(size: 8, weight: .bold)).foregroundColor(item.1 == "DUE" ? Theme.gold : Theme.muted)
+                    Text(item.1).font(.system(size: 7, weight: .black)).foregroundColor(item.1 == "DUE" ? Theme.gold : Theme.green)
+                }.padding(8).background(Theme.surface).cornerRadius(6)
+            }
+        }
+    }
+}
+
+// MARK: - ========== Client Portal Tab ==========
+
+struct ClientPortalView: View {
+    @State private var activeTab = 0
+    private let tabs = ["Dashboard", "Selections", "Warranty", "Meetings"]
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("CLIENT PORTAL").font(.system(size: 11, weight: .bold)).tracking(3).foregroundColor(Theme.purple)
+                        Text("Owner & Stakeholder Hub").font(.system(size: 22, weight: .heavy)).foregroundColor(Theme.text)
+                    }
+                    Spacer()
+                }.padding(16).background(Theme.surface).cornerRadius(14).premiumGlow(cornerRadius: 14, color: Theme.purple)
+
+                HStack(spacing: 0) {
+                    ForEach(tabs.indices, id: \.self) { i in
+                        Button { withAnimation { activeTab = i } } label: { Text(tabs[i].uppercased()).font(.system(size: 9, weight: .bold)).tracking(1).foregroundColor(activeTab == i ? .black : Theme.muted).frame(maxWidth: .infinity).padding(.vertical, 9).background(activeTab == i ? Theme.purple : Theme.surface) }.buttonStyle(.plain)
+                    }
+                }.cornerRadius(8)
+
+                if activeTab == 0 { ownerDashboard }
+                else if activeTab == 1 { selectionsBoard }
+                else if activeTab == 2 { warrantyTracker }
+                else { meetingMinutes }
+            }.padding(16)
+        }.background(Theme.bg)
+    }
+
+    private var ownerDashboard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("PROJECT STATUS FOR OWNERS").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.accent)
+            ForEach(mockProjects) { p in
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack { Text(p.name).font(.system(size: 12, weight: .bold)).foregroundColor(Theme.text); Spacer(); Text(p.status).font(.system(size: 8, weight: .black)).foregroundColor(p.status == "On Track" ? Theme.green : Theme.gold) }
+                    GeometryReader { geo in ZStack(alignment: .leading) { RoundedRectangle(cornerRadius: 3).fill(Theme.border.opacity(0.3)).frame(height: 6); RoundedRectangle(cornerRadius: 3).fill(Theme.accent).frame(width: geo.size.width * CGFloat(p.progress) / 100, height: 6) } }.frame(height: 6)
+                    HStack { Text("\(p.progress)% complete").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.accent); Spacer(); Text("Budget: \(p.budget)").font(.system(size: 9)).foregroundColor(Theme.muted) }
+                }.padding(12).background(Theme.surface).cornerRadius(10)
+            }
+        }
+    }
+
+    private var selectionsBoard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("MATERIAL & FINISH SELECTIONS").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.gold)
+            let selections: [(String, String, String, String)] = [("Kitchen Countertops","Quartz vs Granite vs Marble","PENDING","Apr 5"),("Flooring - Common Areas","LVP vs Tile vs Polished Concrete","APPROVED","N/A"),("Exterior Paint","SW 7015 vs BM HC-172","PENDING","Apr 10"),("Light Fixtures - Lobby","Modern LED vs Industrial Pendant","APPROVED","N/A"),("Cabinet Hardware","Brushed Nickel vs Matte Black","PENDING","Apr 8")]
+            ForEach(selections, id: \.0) { sel in
+                HStack(spacing: 8) {
+                    Image(systemName: sel.2 == "APPROVED" ? "checkmark.circle.fill" : "questionmark.circle").font(.system(size: 14)).foregroundColor(sel.2 == "APPROVED" ? Theme.green : Theme.gold)
+                    VStack(alignment: .leading, spacing: 2) { Text(sel.0).font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text); Text(sel.1).font(.system(size: 9)).foregroundColor(Theme.muted) }
+                    Spacer()
+                    if sel.3 != "N/A" { Text("Due: \(sel.3)").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.gold) }
+                    Text(sel.2).font(.system(size: 7, weight: .black)).foregroundColor(sel.2 == "APPROVED" ? Theme.green : Theme.gold)
+                }.padding(10).background(Theme.surface).cornerRadius(8)
+            }
+        }
+    }
+
+    private var warrantyTracker: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("WARRANTY TRACKER").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.cyan)
+            let warranties: [(String, String, String, Int)] = [("Roof Membrane (TPO)","Johns Manville","Jun 2026 - Jun 2046",20),("HVAC System","Carrier","May 2026 - May 2036",10),("Windows & Glazing","Pella","Apr 2026 - Apr 2036",10),("Elevator System","Otis","Jul 2026 - Jul 2031",5),("Waterproofing","Tremco","Mar 2026 - Mar 2041",15),("Fire Suppression","Viking Group","Jun 2026 - Jun 2031",5)]
+            ForEach(warranties, id: \.0) { w in
+                HStack(spacing: 8) {
+                    VStack(alignment: .leading, spacing: 2) { Text(w.0).font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text); Text("\(w.1) \u{2022} \(w.2)").font(.system(size: 9)).foregroundColor(Theme.muted) }
+                    Spacer()
+                    Text("\(w.3) YR").font(.system(size: 12, weight: .heavy)).foregroundColor(Theme.cyan)
+                }.padding(10).background(Theme.surface).cornerRadius(8)
+            }
+        }
+    }
+
+    private var meetingMinutes: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("OAC MEETING MINUTES").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.accent)
+            let meetings: [(String, Int, Int, Int)] = [("Mar 24, 2026",8,5,3),("Mar 17, 2026",7,4,2),("Mar 10, 2026",9,6,1)]
+            ForEach(meetings, id: \.0) { m in
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) { Text("OAC Meeting \u{2014} \(m.0)").font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text); Text("\(m.1) attendees").font(.system(size: 9)).foregroundColor(Theme.muted) }
+                    Spacer()
+                    VStack(spacing: 1) { Text("\(m.2)").font(.system(size: 14, weight: .heavy)).foregroundColor(Theme.accent); Text("ACTIONS").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted) }
+                    VStack(spacing: 1) { Text("\(m.3)").font(.system(size: 14, weight: .heavy)).foregroundColor(m.3 > 0 ? Theme.gold : Theme.green); Text("OPEN").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted) }
+                }.padding(10).background(Theme.surface).cornerRadius(8)
+            }
+        }
+    }
+}
+
+// MARK: - ========== Analytics Dashboard Tab ==========
+
+struct AnalyticsDashboardView: View {
+    @State private var activeTab = 0
+    private let tabs = ["Bids", "Labor", "Risk AI"]
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("ANALYTICS").font(.system(size: 11, weight: .bold)).tracking(3).foregroundColor(Theme.accent)
+                        Text("Business Intelligence").font(.system(size: 22, weight: .heavy)).foregroundColor(Theme.text)
+                    }
+                    Spacer()
+                }.padding(16).background(Theme.surface).cornerRadius(14).premiumGlow(cornerRadius: 14, color: Theme.accent)
+
+                HStack(spacing: 0) {
+                    ForEach(tabs.indices, id: \.self) { i in
+                        Button { withAnimation { activeTab = i } } label: { Text(tabs[i].uppercased()).font(.system(size: 9, weight: .bold)).tracking(1).foregroundColor(activeTab == i ? .black : Theme.muted).frame(maxWidth: .infinity).padding(.vertical, 9).background(activeTab == i ? Theme.accent : Theme.surface) }.buttonStyle(.plain)
+                    }
+                }.cornerRadius(8)
+
+                if activeTab == 0 { bidAnalytics }
+                else if activeTab == 1 { laborProductivity }
+                else { riskAI }
+            }.padding(16)
+        }.background(Theme.bg)
+    }
+
+    private var bidAnalytics: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("BID WIN/LOSS ANALYTICS").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.gold)
+            HStack(spacing: 8) {
+                VStack(spacing: 2) { Text("68%").font(.system(size: 22, weight: .heavy)).foregroundColor(Theme.green); Text("WIN RATE").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted) }.frame(maxWidth: .infinity).padding(10).background(Theme.green.opacity(0.06)).cornerRadius(8)
+                VStack(spacing: 2) { Text("47").font(.system(size: 22, weight: .heavy)).foregroundColor(Theme.accent); Text("BIDS YTD").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted) }.frame(maxWidth: .infinity).padding(10).background(Theme.accent.opacity(0.06)).cornerRadius(8)
+                VStack(spacing: 2) { Text("$142M").font(.system(size: 22, weight: .heavy)).foregroundColor(Theme.gold); Text("PIPELINE").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted) }.frame(maxWidth: .infinity).padding(10).background(Theme.gold.opacity(0.06)).cornerRadius(8)
+                VStack(spacing: 2) { Text("12.4%").font(.system(size: 22, weight: .heavy)).foregroundColor(Theme.cyan); Text("AVG MARKUP").font(.system(size: 7, weight: .bold)).foregroundColor(Theme.muted) }.frame(maxWidth: .infinity).padding(10).background(Theme.cyan.opacity(0.06)).cornerRadius(8)
+            }
+            let sectors: [(String, Int, Int, Int)] = [("Commercial",18,13,72),("Healthcare",8,6,75),("Industrial",7,4,57),("Residential",9,7,78),("Infrastructure",5,2,40)]
+            ForEach(sectors, id: \.0) { s in
+                HStack(spacing: 8) {
+                    Text(s.0).font(.system(size: 10, weight: .bold)).foregroundColor(Theme.text).frame(width: 80, alignment: .leading)
+                    GeometryReader { geo in ZStack(alignment: .leading) { RoundedRectangle(cornerRadius: 3).fill(Theme.border.opacity(0.3)).frame(height: 8); RoundedRectangle(cornerRadius: 3).fill(s.3 >= 70 ? Theme.green : s.3 >= 50 ? Theme.gold : Theme.red).frame(width: geo.size.width * CGFloat(s.3) / 100, height: 8) } }.frame(height: 8)
+                    Text("\(s.3)%").font(.system(size: 10, weight: .heavy)).foregroundColor(s.3 >= 70 ? Theme.green : s.3 >= 50 ? Theme.gold : Theme.red).frame(width: 35)
+                    Text("\(s.2)/\(s.1)").font(.system(size: 9, design: .monospaced)).foregroundColor(Theme.muted).frame(width: 30)
+                }
+            }
+        }
+    }
+
+    private var laborProductivity: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("LABOR PRODUCTIVITY").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.cyan)
+            let trades: [(String, Double, Double, String)] = [("Concrete (CY/hr)",2.8,2.5,"+12%"),("Framing (SF/hr)",14.2,12.0,"+18%"),("Electrical (dev/hr)",3.1,3.5,"-11%"),("Drywall (SF/hr)",22.5,20.0,"+13%"),("Plumbing (fix/hr)",1.8,2.0,"-10%"),("Painting (SF/hr)",45.0,40.0,"+13%")]
+            ForEach(trades, id: \.0) { t in
+                HStack(spacing: 8) {
+                    VStack(alignment: .leading, spacing: 2) { Text(t.0).font(.system(size: 10, weight: .bold)).foregroundColor(Theme.text); Text("Benchmark: \(String(format: "%.1f", t.2))").font(.system(size: 8)).foregroundColor(Theme.muted) }
+                    Spacer()
+                    Text(String(format: "%.1f", t.1)).font(.system(size: 16, weight: .heavy)).foregroundColor(t.1 >= t.2 ? Theme.green : Theme.red)
+                    Text(t.3).font(.system(size: 9, weight: .bold)).foregroundColor(t.3.hasPrefix("+") ? Theme.green : Theme.red)
+                }.padding(8).background(Theme.surface).cornerRadius(8)
+            }
+        }
+    }
+
+    private var riskAI: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("AI RISK SCORING").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.red)
+            Text("ML-based project risk prediction using historical patterns").font(.system(size: 10)).foregroundColor(Theme.muted)
+            let risks: [(String, Int, [String], String)] = [
+                ("Riverside Lofts", 92, ["Weather delays (3x in 30d)", "Sub default risk", "Permit renewal pending"], "HIGH RISK - Schedule slip likely"),
+                ("Harbor Crossing", 34, ["On-time deliveries", "Strong sub performance"], "LOW RISK - On track"),
+                ("Pine Ridge Ph.2", 67, ["Inspection backlog", "Labor shortage trend", "Material price volatility"], "MODERATE - Monitor closely"),
+            ]
+            ForEach(risks, id: \.0) { r in
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack { Text(r.0).font(.system(size: 12, weight: .bold)).foregroundColor(Theme.text); Spacer(); Text("\(r.1)/100").font(.system(size: 14, weight: .heavy)).foregroundColor(r.1 >= 70 ? Theme.red : r.1 >= 40 ? Theme.gold : Theme.green) }
+                    GeometryReader { geo in ZStack(alignment: .leading) { RoundedRectangle(cornerRadius: 3).fill(Theme.border.opacity(0.3)).frame(height: 6); RoundedRectangle(cornerRadius: 3).fill(r.1 >= 70 ? Theme.red : r.1 >= 40 ? Theme.gold : Theme.green).frame(width: geo.size.width * CGFloat(r.1) / 100, height: 6) } }.frame(height: 6)
+                    ForEach(r.2, id: \.self) { f in HStack(spacing: 4) { Circle().fill(Theme.red.opacity(0.5)).frame(width: 4, height: 4); Text(f).font(.system(size: 9)).foregroundColor(Theme.muted) } }
+                    Text(r.3).font(.system(size: 10, weight: .heavy)).foregroundColor(r.1 >= 70 ? Theme.red : r.1 >= 40 ? Theme.gold : Theme.green)
+                }.padding(12).background(r.1 >= 70 ? Theme.red.opacity(0.04) : Theme.surface).cornerRadius(10)
+            }
+        }
     }
 }
 
