@@ -1,0 +1,493 @@
+import Foundation
+import MapKit
+import SwiftUI
+
+// MARK: - ========== MapsView.swift ==========
+
+// MARK: - Maps View
+
+struct MapsView: View {
+    private let mapSites = previewMapSites
+    private let mapRoutes = previewMapRoutes
+
+    private let satellitePasses: [SatellitePass] = [
+        SatellitePass(name: "SAT-A1", eta: "04 min", coverage: "North yard", confidence: 97, color: Theme.cyan),
+        SatellitePass(name: "SAT-C4", eta: "19 min", coverage: "Concrete deck", confidence: 91, color: Theme.gold),
+        SatellitePass(name: "THERM-2", eta: "42 min", coverage: "Roof membrane", confidence: 88, color: Theme.green)
+    ]
+
+    @State private var selectedSiteID: UUID?
+    @State private var satelliteMode = true
+    @State private var thermalOverlay = true
+    @State private var crewOverlay = true
+    @State private var weatherOverlay = false
+    @State private var autoTrack = true
+    @State private var feedLatencyMS = 780
+    @State private var activeSweep = 1
+    @State private var cameraPreset: MapCameraPreset = .selected
+
+    private var selectedSite: MapSite {
+        mapSites.first { $0.id == selectedSiteID } ?? mapSites[1]
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("LIVE MAPS")
+                            .font(.system(size: 12, weight: .black))
+                            .tracking(2)
+                            .foregroundColor(Theme.cyan)
+                        Text("Satellite-backed site awareness with live overlays and rapid field routing.")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(Theme.muted)
+                    }
+                    Spacer()
+                    Text(satelliteMode ? "SAT LINKED" : "GRID MODE")
+                        .font(.system(size: 8, weight: .black))
+                        .foregroundColor(.black)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(satelliteMode ? Theme.gold : Theme.surface)
+                        .cornerRadius(6)
+                }
+
+                HStack(spacing: 8) {
+                    Toggle("SATELLITE", isOn: $satelliteMode)
+                        .toggleStyle(.button)
+                    Toggle("THERMAL", isOn: $thermalOverlay)
+                        .toggleStyle(.button)
+                    Toggle("CREWS", isOn: $crewOverlay)
+                        .toggleStyle(.button)
+                    Toggle("WEATHER", isOn: $weatherOverlay)
+                        .toggleStyle(.button)
+                    Toggle("AUTO TRACK", isOn: $autoTrack)
+                        .toggleStyle(.button)
+                }
+                .font(.system(size: 8, weight: .bold))
+
+                HStack(spacing: 8) {
+                    ForEach(MapCameraPreset.allCases) { preset in
+                        Button(preset.rawValue) {
+                            cameraPreset = preset
+                        }
+                        .font(.system(size: 8, weight: .black))
+                        .foregroundColor(cameraPreset == preset ? .black : Theme.muted)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 6)
+                        .background(cameraPreset == preset ? Theme.gold : Theme.surface)
+                        .cornerRadius(6)
+                        .buttonStyle(.plain)
+                    }
+                    Spacer()
+                }
+
+                HStack(spacing: 8) {
+                    mapMetricCard(title: "ACTIVE SITES", value: "\(mapSites.count)", detail: "4 live overlays", color: Theme.cyan)
+                    mapMetricCard(title: "SAT LATENCY", value: "\(feedLatencyMS)ms", detail: "within ops target", color: Theme.green)
+                    mapMetricCard(title: "NEXT PASS", value: satellitePasses[0].eta, detail: satellitePasses[0].name, color: Theme.gold)
+                    mapMetricCard(title: "SELECTED", value: selectedSite.name, detail: selectedSite.type, color: Theme.accent)
+                }
+
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        LiveMapView(
+                            sites: mapSites,
+                            routes: mapRoutes,
+                            selectedSiteID: $selectedSiteID,
+                            satelliteMode: satelliteMode,
+                            thermalOverlay: thermalOverlay,
+                            crewOverlay: crewOverlay,
+                            weatherOverlay: weatherOverlay,
+                            activeSweep: activeSweep,
+                            cameraPreset: cameraPreset
+                        )
+                        .frame(minHeight: 340)
+
+                        HStack(spacing: 8) {
+                            Button("PING SAT SWEEP") { activeSweep += 1; feedLatencyMS = max(420, feedLatencyMS - 35) }
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(.black)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 7)
+                                .background(Theme.gold)
+                                .cornerRadius(6)
+
+                            Button("CENTER \(selectedSite.name.uppercased())") { selectedSiteID = selectedSite.id }
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(Theme.cyan)
+
+                            Spacer()
+
+                            Text("Sweep #\(activeSweep) · \(autoTrack ? "auto-tracking" : "manual pan")")
+                                .font(.system(size: 8, weight: .semibold))
+                                .foregroundColor(Theme.muted)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("SITE LOCK")
+                                .font(.system(size: 9, weight: .black))
+                                .tracking(1)
+                                .foregroundColor(Theme.gold)
+
+                            Text(selectedSite.name)
+                                .font(.system(size: 15, weight: .black))
+                                .foregroundColor(Theme.text)
+                            Text("\(selectedSite.type) · \(selectedSite.status)")
+                                .font(.system(size: 9, weight: .semibold))
+                                .foregroundColor(Theme.muted)
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                statusRow(label: "Visibility", value: satelliteMode ? "Satellite locked" : "Grid-only", color: satelliteMode ? Theme.green : Theme.muted)
+                                statusRow(label: "Crew overlay", value: crewOverlay ? "Hot" : "Muted", color: crewOverlay ? Theme.cyan : Theme.muted)
+                                statusRow(label: "Thermal", value: thermalOverlay ? "Heat signatures active" : "Offline", color: thermalOverlay ? Theme.red : Theme.muted)
+                                statusRow(label: "Weather", value: weatherOverlay ? "Wind alerts live" : "Standby", color: weatherOverlay ? Theme.purple : Theme.muted)
+                                statusRow(label: "Coordinates", value: selectedSite.coordinateLabel, color: Theme.text)
+                                statusRow(label: "Feed latency", value: "\(selectedSite.latencyMS) ms", color: Theme.green)
+                                statusRow(label: "Crew ETA", value: selectedSite.crewETA, color: Theme.cyan)
+                                statusRow(label: "Alert level", value: selectedSite.alertLevel, color: selectedSite.alertLevel == "WATCH" ? Theme.red : Theme.gold)
+                            }
+                        }
+                        .padding(12)
+                        .background(Theme.surface.opacity(0.78))
+                        .cornerRadius(10)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("SAT PASSES")
+                                .font(.system(size: 9, weight: .black))
+                                .tracking(1)
+                                .foregroundColor(Theme.cyan)
+
+                            ForEach(satellitePasses) { pass in
+                                HStack(alignment: .top, spacing: 8) {
+                                    Circle()
+                                        .fill(pass.color)
+                                        .frame(width: 8, height: 8)
+                                        .padding(.top, 3)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("\(pass.name) · ETA \(pass.eta)")
+                                            .font(.system(size: 9, weight: .black))
+                                            .foregroundColor(pass.color)
+                                        Text("\(pass.coverage) · \(pass.confidence)% confidence")
+                                            .font(.system(size: 8, weight: .semibold))
+                                            .foregroundColor(Theme.muted)
+                                    }
+                                    Spacer()
+                                }
+                                .padding(8)
+                                .background(Theme.surface.opacity(0.72))
+                                .cornerRadius(8)
+                            }
+                        }
+                        .padding(12)
+                        .background(Theme.surface.opacity(0.78))
+                        .cornerRadius(10)
+                    }
+                    .frame(width: 250)
+                }
+            }
+            .padding(14)
+        }
+        .background(Theme.bg)
+    }
+
+    private func mapMetricCard(title: String, value: String, detail: String, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(title)
+                .font(.system(size: 8, weight: .black))
+                .tracking(1)
+                .foregroundColor(color)
+            Text(value)
+                .font(.system(size: 15, weight: .black))
+                .foregroundColor(Theme.text)
+            Text(detail)
+                .font(.system(size: 8, weight: .semibold))
+                .foregroundColor(Theme.muted)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(Theme.surface.opacity(0.78))
+        .cornerRadius(10)
+    }
+
+    private func statusRow(label: String, value: String, color: Color) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 8, weight: .semibold))
+                .foregroundColor(Theme.muted)
+            Spacer()
+            Text(value)
+                .font(.system(size: 8, weight: .black))
+                .foregroundColor(color)
+        }
+    }
+}
+
+// MARK: - Live Map View
+
+struct LiveMapView: View {
+    let sites: [MapSite]
+    let routes: [MapRoute]
+    @Binding var selectedSiteID: UUID?
+    let satelliteMode: Bool
+    let thermalOverlay: Bool
+    let crewOverlay: Bool
+    let weatherOverlay: Bool
+    let activeSweep: Int
+    let cameraPreset: MapCameraPreset
+    @State private var cameraPosition: MapCameraPosition = .region(MapSite.defaultRegion)
+
+    private var selectedSite: MapSite? {
+        sites.first { $0.id == selectedSiteID }
+    }
+
+    private var resolvedRoutes: [(route: MapRoute, coordinates: [CLLocationCoordinate2D])] {
+        routes.compactMap { route in
+            guard
+                let fromSite = sites.first(where: { $0.name == route.fromSiteName }),
+                let toSite = sites.first(where: { $0.name == route.toSiteName })
+            else {
+                return nil
+            }
+
+            return (route, [fromSite.coordinate, toSite.coordinate])
+        }
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack {
+                mapLayer
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                Canvas { context, size in
+                    let rect = CGRect(origin: .zero, size: size)
+
+                    for offset in stride(from: 20.0, through: size.width, by: 38.0) {
+                        var path = Path()
+                        path.move(to: CGPoint(x: offset, y: 0))
+                        path.addLine(to: CGPoint(x: offset - 28, y: size.height))
+                        context.stroke(path, with: .color(Theme.border.opacity(0.18)), lineWidth: 1)
+                    }
+
+                    for offset in stride(from: 35.0, through: size.height, by: 52.0) {
+                        var path = Path()
+                        path.move(to: CGPoint(x: 0, y: offset))
+                        path.addLine(to: CGPoint(x: size.width, y: offset - 18))
+                        context.stroke(path, with: .color(Theme.border.opacity(0.14)), lineWidth: 1)
+                    }
+
+                    if satelliteMode {
+                        context.fill(
+                            Path(ellipseIn: CGRect(x: rect.maxX * 0.55, y: rect.maxY * 0.08, width: rect.width * 0.24, height: rect.height * 0.16)),
+                            with: .radialGradient(
+                                Gradient(colors: [Theme.gold.opacity(0.30), .clear]),
+                                center: CGPoint(x: rect.maxX * 0.67, y: rect.maxY * 0.16),
+                                startRadius: 4,
+                                endRadius: 120
+                            )
+                        )
+                    }
+
+                    if thermalOverlay {
+                        context.fill(
+                            Path(ellipseIn: CGRect(x: rect.maxX * 0.18, y: rect.maxY * 0.44, width: rect.width * 0.34, height: rect.height * 0.22)),
+                            with: .radialGradient(
+                                Gradient(colors: [Theme.red.opacity(0.34), Theme.gold.opacity(0.16), .clear]),
+                                center: CGPoint(x: rect.maxX * 0.32, y: rect.maxY * 0.54),
+                                startRadius: 8,
+                                endRadius: 120
+                            )
+                        )
+                    }
+
+                    if weatherOverlay {
+                        context.fill(
+                            Path(CGRect(x: rect.maxX * 0.62, y: rect.maxY * 0.04, width: rect.width * 0.28, height: rect.height * 0.24)),
+                            with: .linearGradient(
+                                Gradient(colors: [Theme.purple.opacity(0.18), .clear]),
+                                startPoint: CGPoint(x: rect.maxX * 0.62, y: rect.maxY * 0.04),
+                                endPoint: CGPoint(x: rect.maxX * 0.90, y: rect.maxY * 0.28)
+                            )
+                        )
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text("LIVE SITE MAP")
+                            .font(.system(size: 11, weight: .black))
+                            .tracking(1)
+                            .foregroundColor(Theme.cyan)
+                        Spacer()
+                        Text(satelliteMode ? "SATELLITE" : "GRID")
+                            .font(.system(size: 7, weight: .black))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(satelliteMode ? Theme.gold : Theme.surface)
+                            .cornerRadius(4)
+                    }
+
+                    Spacer()
+
+                    ZStack {
+                        ForEach(sites) { site in
+                            Button {
+                                selectedSiteID = site.id
+                            } label: {
+                                VStack(spacing: 3) {
+                                    Circle()
+                                        .fill(selectedSiteID == site.id ? Theme.gold : Theme.cyan)
+                                        .frame(width: selectedSiteID == site.id ? 18 : 14, height: selectedSiteID == site.id ? 18 : 14)
+                                        .overlay(Circle().stroke(Color.black.opacity(0.35), lineWidth: 1))
+                                    Text(site.name.uppercased())
+                                        .font(.system(size: 7, weight: .black))
+                                        .foregroundColor(Theme.text)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .position(x: proxy.size.width * site.x, y: proxy.size.height * site.y)
+                        }
+                    }
+
+                    HStack(spacing: 8) {
+                        if crewOverlay {
+                            overlayTag("Crew routes", color: Theme.cyan)
+                        }
+                        if thermalOverlay {
+                            overlayTag("Thermal", color: Theme.red)
+                        }
+                        if weatherOverlay {
+                            overlayTag("Wind", color: Theme.purple)
+                        }
+                        Spacer()
+                        Text("Sweep #\(activeSweep)")
+                            .font(.system(size: 7, weight: .bold))
+                            .foregroundColor(Theme.muted)
+                    }
+
+                    if let selectedSite {
+                        Text("\(selectedSite.name) · \(selectedSite.status)")
+                            .font(.system(size: 8, weight: .semibold))
+                            .foregroundColor(Theme.text)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .background(Theme.surface.opacity(0.85))
+                            .cornerRadius(8)
+                    }
+                }
+                .padding(14)
+            }
+        }
+        .onAppear {
+            updateCamera()
+        }
+        .onChange(of: selectedSiteID) { _, _ in
+            updateCamera()
+        }
+        .onChange(of: cameraPreset) { _, _ in
+            updateCamera()
+        }
+    }
+
+    private func overlayTag(_ label: String, color: Color) -> some View {
+        Text(label.uppercased())
+            .font(.system(size: 7, weight: .black))
+            .foregroundColor(color)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 4)
+            .background(color.opacity(0.12))
+            .cornerRadius(5)
+    }
+
+    @ViewBuilder
+    private var mapLayer: some View {
+        if satelliteMode {
+            liveMapBase
+                .mapStyle(.hybrid)
+        } else {
+            liveMapBase
+                .mapStyle(.standard)
+        }
+    }
+
+    private var liveMapBase: some View {
+        Map(position: $cameraPosition, interactionModes: [.pan, .zoom]) {
+            ForEach(resolvedRoutes, id: \.route.id) { item in
+                MapPolyline(coordinates: item.coordinates)
+                    .stroke(item.route.color.opacity(crewOverlay ? 0.92 : 0.25), lineWidth: crewOverlay ? 4 : 2)
+            }
+
+            ForEach(sites) { site in
+                Annotation(site.name, coordinate: site.coordinate, anchor: .center) {
+                    VStack(spacing: 4) {
+                        Circle()
+                            .fill(selectedSiteID == site.id ? Theme.gold : Theme.cyan)
+                            .frame(width: selectedSiteID == site.id ? 16 : 12, height: selectedSiteID == site.id ? 16 : 12)
+                            .overlay(Circle().stroke(Color.black.opacity(0.35), lineWidth: 1))
+                        Text(site.name)
+                            .font(.system(size: 7, weight: .black))
+                            .foregroundColor(Theme.text)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(Theme.surface.opacity(0.82))
+                            .cornerRadius(4)
+                    }
+                    .onTapGesture {
+                        selectedSiteID = site.id
+                    }
+                }
+            }
+        }
+        .mapControlVisibility(.hidden)
+        .overlay(
+            LinearGradient(
+                colors: [
+                    Color.black.opacity(satelliteMode ? 0.18 : 0.10),
+                    Color.clear,
+                    Theme.bg.opacity(0.22)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+    }
+
+    private func updateCamera() {
+        cameraPosition = .region(region(for: cameraPreset))
+    }
+
+    private func region(for preset: MapCameraPreset) -> MKCoordinateRegion {
+        switch preset {
+        case .network:
+            return MKCoordinateRegion(
+                center: MapSite.mapCenter,
+                span: MKCoordinateSpan(latitudeDelta: 0.055, longitudeDelta: 0.055)
+            )
+        case .selected:
+            return selectedSite?.focusRegion ?? MapSite.defaultRegion
+        case .logistics:
+            if let logisticsSite = sites.first(where: { $0.type == "LOGISTICS" }) {
+                return MKCoordinateRegion(
+                    center: logisticsSite.coordinate,
+                    span: MKCoordinateSpan(latitudeDelta: 0.018, longitudeDelta: 0.018)
+                )
+            }
+            return MapSite.defaultRegion
+        case .weather:
+            return MKCoordinateRegion(
+                center: CLLocationCoordinate2D(
+                    latitude: MapSite.mapCenter.latitude + 0.01,
+                    longitude: MapSite.mapCenter.longitude + 0.012
+                ),
+                span: MKCoordinateSpan(latitudeDelta: 0.03, longitudeDelta: 0.03)
+            )
+        }
+    }
+}
