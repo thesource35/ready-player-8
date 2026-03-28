@@ -244,7 +244,7 @@ struct ContentView: View {
             }
         case .hub: PlatformIntegrationPanel()
         case .security: SecurityAccessPanel()
-        case .pricing: PricingView()
+        case .pricing: AIPricingDashboardView()
         case .angelic: AngelicAIView()
         case .wealth:
             VStack(alignment: .leading, spacing: 14) {
