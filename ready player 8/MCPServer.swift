@@ -57,6 +57,39 @@ final class MCPToolServer: ObservableObject {
             toolDef("get_robotics_fleet", "Get autonomous robotics fleet status with operating machines and productivity", [:]),
             toolDef("get_digital_twin_status", "Get digital twin sync status with IoT sensors, layers, and clash detection", [:]),
             toolDef("get_modular_status", "Get modular and digital component construction status with fabrication progress", [:]),
+            // Advanced MCP tools for every remaining feature
+            toolDef("get_timecards", "Get crew timecard data with hours, overtime, labor costs by site", [:]),
+            toolDef("get_equipment_gps", "Get GPS locations and status for all tracked equipment assets", [:]),
+            toolDef("get_permits", "Get all active and expiring permits across jobsites", [:]),
+            toolDef("get_tax_summary", "Get tax expense summary with deductions, categories, and estimated savings", [:]),
+            toolDef("get_electrical_contractors", "Get electrical and fiber contractor directory with certifications and availability", [:]),
+            toolDef("get_fiber_projects", "Get fiber optic installation project status with splice counts and test results", [:]),
+            toolDef("get_cash_flow", "Get cash flow forecast with AR/AP by month and net position", [:]),
+            toolDef("get_invoices", "Get AIA G702/G703 pay application status with retainage tracking", [:]),
+            toolDef("get_lien_waivers", "Get lien waiver status for all subcontractors with deadlines", [:]),
+            toolDef("get_compliance_status", "Get compliance dashboard: toolbox talks, certified payroll, environmental", [:]),
+            toolDef("get_client_portal", "Get client-facing project status with selections, warranty, and meeting data", [:]),
+            toolDef("get_bid_analytics", "Get bid win/loss analytics with sector breakdown, pipeline value, and markup", [:]),
+            toolDef("get_labor_productivity", "Get labor productivity metrics by trade with benchmarks and trends", [:]),
+            toolDef("get_risk_ai_scores", "Get AI risk scores for all projects with factors and predictions", [:]),
+            toolDef("get_fuel_log", "Get fuel purchase log with gallons, costs, and vehicle tracking", [:]),
+            toolDef("get_training_certs", "Get workforce certification status with expiring and expired alerts", [:]),
+            toolDef("get_crew_schedule", "Get weekly crew scheduling calendar with site assignments", [:]),
+            toolDef("get_gantt_timeline", "Get project Gantt chart with milestones, critical path, and percent complete", [:]),
+            toolDef("get_cost_codes", "Get CSI MasterFormat cost code breakdown with budget vs. actual", [:]),
+            toolDef("calculate_material_takeoff", "Calculate material quantities from dimensions", [
+                "material": ["type": "string", "description": "Material type (concrete, drywall, lumber, rebar, paint)"],
+                "length": ["type": "string", "description": "Length in feet"],
+                "width": ["type": "string", "description": "Width in feet"]
+            ]),
+            toolDef("get_3d_scan_status", "Get 3D laser scan status with point counts, accuracy, and BIM deviations", [:]),
+            toolDef("get_carbon_tracker", "Get sustainability carbon footprint tracking with material savings", [:]),
+            toolDef("get_5g_connectivity", "Get 5G and IoT site connectivity status with throughput and latency", [:]),
+            toolDef("get_auto_home_tech", "Get automated home building technology status and production metrics", [:]),
+            toolDef("get_geofence_zones", "Get geofence zone status with crew counts inside each jobsite boundary", [:]),
+            toolDef("get_rental_favorites", "Get user's saved favorite rental equipment items", [:]),
+            toolDef("get_price_alerts", "Get active price alert watchlist for rental equipment", [:]),
+            toolDef("get_provider_accounts", "Get linked rental provider account status and spend data", [:]),
         ]
     }
 
@@ -226,6 +259,106 @@ final class MCPToolServer: ObservableObject {
 
         case "get_modular_status":
             return "MODULAR: 86% prefab rate, 214 components, 47% time saved\nBathroom pods: DELIVERED\nWall panels: FABRICATING (45%)\nMEP racks: IN TRANSIT\nStair modules: DESIGN COMPLETE"
+
+        case "get_timecards":
+            return "TIMECARDS TODAY:\nMike Torres | Concrete | 6:00-2:30 | 8h + 0.5h OT | $383 | Riverside Lofts\nSarah Kim | Electrical | 7:00-5:30 | 8h + 2.5h OT | $646 | Harbor Crossing\nJames Wright | Framing | 6:30-3:00 | 8h | $336 | Pine Ridge Ph.2\nTOTAL: 27 hrs (3 OT) | $1,365 labor cost"
+
+        case "get_equipment_gps":
+            return "EQUIPMENT GPS:\nCAT 320 Excavator (EQ-001) | Riverside Lofts | ACTIVE | 2,340 hrs | Svc in 50 hrs\nJLG 600S Boom (EQ-014) | Harbor Crossing | ACTIVE | 890 hrs\nBobcat S770 (EQ-008) | Pine Ridge | SERVICE DUE | 1,560 hrs\nWacker Compactor (EQ-022) | Yard | IDLE | 420 hrs"
+
+        case "get_permits":
+            return "PERMITS:\nBP-2026-4821 | Building | City of Houston | Riverside Lofts | ACTIVE (exp 01/15/27)\nEP-2026-1193 | Electrical | Harris County | Harbor Crossing | ACTIVE (exp 08/01/26)\nGP-2026-0782 | Grading | City of Houston | Pine Ridge | EXPIRING (exp 06/01/26)"
+
+        case "get_tax_summary":
+            return "TAX SUMMARY:\n12 expense categories tracked\nTotal Expenses: $0 (add expenses in Tax tab)\nDeductible: $0\nEstimated Tax Savings (30%): $0\nKey Deductions: Section 179, Vehicle Mileage ($0.67/mi), Home Office, Equipment Depreciation\nQuarterly Estimates: Q1 $12,900, Q2 $15,600, Q3 $13,800, Q4 $12,900"
+
+        case "get_electrical_contractors":
+            return "ELECTRICAL & FIBER CONTRACTORS:\nMarcus Johnson | PowerGrid Electric | Master Electrician | $95/hr | 4.9 rating | Houston TX | AVAILABLE\nSarah Chen | FiberLink Solutions | BICSI RCDD | $110/hr | 4.8 | Bay Area | AVAILABLE\nPriya Patel | LightSpeed Fiber | BICSI TECH | $105/hr | 4.9 | NYC Metro | AVAILABLE\nDerek Torres | SunVolt Energy | NABCEP PV | $85/hr | 4.8 | Phoenix | AVAILABLE\n+ 4 more contractors"
+
+        case "get_fiber_projects":
+            return "FIBER PROJECTS:\nDowntown Office FTTH | AT&T Fiber | OS2 | 2,400 ft | 48 splices | OTDR Pass | 72%\nMetro Campus Backbone | Spectrum | OM4 | 8,200 ft | 192 splices | Pending | 45%\nIndustrial Park 5G | Verizon | OS2 | 14,800 ft | 384 splices | N/A | 15% (permitting)"
+
+        case "get_cash_flow":
+            return "CASH FLOW FORECAST:\nApr: AR $485K - AP $342K = +$143K\nMay: AR $520K - AP $398K = +$122K\nJun: AR $610K - AP $445K = +$165K\nJul: AR $475K - AP $380K = +$95K\nNet position: positive all quarters"
+
+        case "get_invoices":
+            return "AIA PAY APPLICATIONS:\n#07 | Riverside Lofts | Mar 2026 | $284,500 | Ret: $28,450 | SUBMITTED\n#06 | Riverside Lofts | Feb 2026 | $312,100 | Ret: $31,210 | APPROVED\n#04 | Harbor Crossing | Mar 2026 | $198,750 | Ret: $19,875 | DRAFT\n#12 | Pine Ridge Ph.2 | Mar 2026 | $156,200 | Ret: $15,620 | PAID\nTotal Billed: $952K | Retainage: $95K"
+
+        case "get_lien_waivers":
+            return "LIEN WAIVERS:\nApex Concrete | Conditional Progress | $48,200 | RECEIVED | Due Apr 1\nElite Steel | Conditional Progress | $32,100 | PENDING | Due Apr 1\nPrime Electric | Unconditional | $15,800 | RECEIVED\nQuick Plumbing | Conditional Final | $22,400 | REQUESTED | Due Apr 15"
+
+        case "get_compliance_status":
+            return "COMPLIANCE:\nToolbox Talks: 8 topics, 5 required (Fall Protection, Trenching, Electrical, Scaffold, Silica)\nCertified Payroll: Week 12 SUBMITTED (38 employees, $98,400)\nEnvironmental: SWPPP CURRENT, Dust monitoring CURRENT, Noise compliance DUE, EPA permit ACTIVE"
+
+        case "get_client_portal":
+            return "CLIENT PORTAL:\nProject Status: 3 projects visible to owners\nSelections: 5 items (3 PENDING, 2 APPROVED) - countertops, flooring, paint, fixtures, hardware\nWarranty: 6 items tracked (Roof 20yr, HVAC 10yr, Windows 10yr, Elevator 5yr)\nMeetings: 3 OAC meetings logged, 15 action items, 6 open"
+
+        case "get_bid_analytics":
+            return "BID ANALYTICS:\nWin Rate: 68% | Bids YTD: 47 | Pipeline: $142M | Avg Markup: 12.4%\nBy Sector: Commercial 72%, Healthcare 75%, Industrial 57%, Residential 78%, Infrastructure 40%"
+
+        case "get_labor_productivity":
+            return "LABOR PRODUCTIVITY:\nConcrete: 2.8 CY/hr (benchmark 2.5, +12%)\nFraming: 14.2 SF/hr (benchmark 12.0, +18%)\nElectrical: 3.1 dev/hr (benchmark 3.5, -11%)\nDrywall: 22.5 SF/hr (benchmark 20.0, +13%)\nPlumbing: 1.8 fix/hr (benchmark 2.0, -10%)"
+
+        case "get_risk_ai_scores":
+            return "AI RISK SCORES:\nRiverside Lofts: 92/100 HIGH RISK - weather delays, sub default risk, permit pending\nHarbor Crossing: 34/100 LOW RISK - on-time, strong subs\nPine Ridge Ph.2: 67/100 MODERATE - inspection backlog, labor shortage, material price volatility"
+
+        case "get_fuel_log":
+            return "FUEL LOG:\n03/25: F-350 #12 | 32.4 gal | $3.45/gal | $112 | Riverside Lofts\n03/24: Excavator EQ-001 | 45.0 gal | $3.89/gal | $175 | Riverside Lofts\n03/24: F-250 #08 | 28.1 gal | $3.42/gal | $96 | Harbor Crossing\nTotal: 143.5 gal | $479 (tax deductible)"
+
+        case "get_training_certs":
+            return "CERTIFICATIONS:\n8 total | 6 CURRENT | 1 EXPIRING | 1 EXPIRED\nEXPIRING: Sarah Kim - Master Electrician (exp 06/01/26)\nEXPIRED: Andre Williams - Forklift Operator (exp 11/01/25)\nAll OSHA cards current. NCCCO, BICSI, NABCEP active."
+
+        case "get_crew_schedule":
+            return "CREW SCHEDULE (This Week):\nAlpha (Concrete): RSL Mon-Wed, HBC Thu-Fri\nBravo (Steel): HBC Mon-Sat\nCharlie (Electrical): PRP Mon-Tue, RSL Wed-Thu, PRP Fri\nDelta (Framing): PRP Mon-Fri\nEcho (MEP): HBC Mon-Tue, ECH Wed-Thu, HBC Fri"
+
+        case "get_gantt_timeline":
+            return "GANTT TIMELINE (26 weeks):\n1. Site Prep (W1-3) 100% DONE\n2. Foundation (W4-7) 100% DONE\n3. Structural Steel (W8-13) 75% CRITICAL PATH\n4. Rough Plumbing (W10-13) 60%\n5. Electrical Rough-in (W11-15) 45%\n6. HVAC Ductwork (W12-15) 30%\n7. Exterior Envelope (W14-18) 10% CRITICAL\n8. Drywall (W16-19) 0%\n9. Finishes (W20-22) 0%\n10. Commissioning (W23-24) 0%"
+
+        case "get_cost_codes":
+            return "CSI COST CODES:\n03 00 00 Concrete: $312K / $485K budget (64%)\n05 00 00 Metals: $465K / $620K (75%)\n06 00 00 Wood: $95K / $180K (53%)\n09 00 00 Finishes: $48K / $340K (14%)\n22 00 00 Plumbing: $165K / $275K (60%)\n23 00 00 HVAC: $198K / $410K (48%)\n26 00 00 Electrical: $210K / $385K (55%)\n31 00 00 Earthwork: $118K / $125K (94%)"
+
+        case "calculate_material_takeoff":
+            let mat = (input["material"] as? String ?? "concrete").lowercased()
+            let l = Double(input["length"] as? String ?? "0") ?? 0
+            let w = Double(input["width"] as? String ?? "0") ?? 0
+            let area = l * w
+            switch mat {
+            case "concrete": return "TAKEOFF: \(String(format: "%.0f", area)) SF slab at 4\" = \(String(format: "%.1f", area * 4/12/27)) CY (+10% waste = \(String(format: "%.1f", area * 4/12/27 * 1.1)) CY)"
+            case "drywall": return "TAKEOFF: \(String(format: "%.0f", area)) SF = \(Int(ceil(area / 32))) sheets 4x8 (+10% = \(Int(ceil(area / 32 * 1.1))))"
+            case "lumber": return "TAKEOFF: \(String(format: "%.0f", l)) LF wall = \(Int(ceil(l / 1.333))) studs @ 16\" OC"
+            case "paint": return "TAKEOFF: \(String(format: "%.0f", area)) SF = \(String(format: "%.1f", area / 350)) gallons (1 coat @ 350 SF/gal)"
+            default: return "TAKEOFF: \(String(format: "%.0f", area)) SF of \(mat)"
+            }
+
+        case "get_3d_scan_status":
+            return "3D LASER SCANS:\n173M total points | 99.2% BIM match\nRiverside L3 | Leica RTC360 | 42M pts | +/-1.9mm | PROCESSED\nHarbor Ext | Faro Focus S350 | 68M pts | +/-1.0mm | PROCESSING\nPine Ridge Foundation | Trimble X7 | 28M pts | +/-2.4mm | COMPLETE\nDeviations: Column A-3 offset 12mm (FLAG), Slab L4 within tolerance (PASS)"
+
+        case "get_carbon_tracker":
+            return "CARBON TRACKER:\n847 tons CO2e total | -18% vs baseline | LEED Gold target\nLow-carbon concrete: -1,200 tons\nCLT structure: -2,800 tons stored\nRecycled steel: -890 tons\nSolar: 240 kW generating\nEV stations: 14 installed\nRainwater: 15,000 gal capacity"
+
+        case "get_5g_connectivity":
+            return "5G/IoT CONNECTIVITY:\nT-Mobile Private 5G: 1.2 Gbps / 8ms | 2 small cells ACTIVE\nWiFi 6E Mesh: 2.4 Gbps aggregate | L1-L5 coverage\nLoRaWAN: 847 IoT sensors connected\nStarlink: 150 Mbps backup (STANDBY)\nConnected: Excavator GPS, Tower crane anti-collision, Concrete pump flow, 3 drones RTK"
+
+        case "get_auto_home_tech":
+            return "AUTO HOME TECH:\n3D Concrete Printing: 600 SF/day, $120/SF (PRODUCTION)\nRobotic Framing: 1 floor/day, $85/SF (BETA)\nAutomated Bricklaying: 2,000 SF/day, $95/SF (PRODUCTION)\nDrone Roofing: 2,400 SF/day, $8/SF (PILOT)\nAI HVAC: 15% energy savings (PRODUCTION)\nSelf-Healing Concrete: lifetime auto-repair (RESEARCH)"
+
+        case "get_geofence_zones":
+            return "GEOFENCE ZONES:\nRiverside Lofts | 500 ft radius | ACTIVE | 14 crew inside\nHarbor Crossing | 400 ft radius | ACTIVE | 22 crew inside\nPine Ridge Ph.2 | 600 ft radius | ACTIVE | 11 crew inside\nEastside Civic | 350 ft radius | PAUSED | 0 crew"
+
+        case "get_rental_favorites":
+            let store = RentalDataStore.shared
+            if store.favorites.isEmpty { return "No favorite equipment saved yet" }
+            return "FAVORITES (\(store.favorites.count)):\n" + store.favorites.prefix(5).map { "\($0.itemName) | \($0.provider) | \($0.dailyRate)/day" }.joined(separator: "\n")
+
+        case "get_price_alerts":
+            let store = RentalDataStore.shared
+            if store.priceAlerts.isEmpty { return "No price alerts set" }
+            return "PRICE ALERTS (\(store.priceAlerts.count)):\n" + store.priceAlerts.prefix(5).map { "\($0.itemName) | Target: $\(String(format: "%.0f", $0.targetDailyRate))/day | \($0.triggered ? "TRIGGERED" : "WATCHING")" }.joined(separator: "\n")
+
+        case "get_provider_accounts":
+            let mgr = RentalProviderManager.shared
+            if mgr.accounts.isEmpty { return "No provider accounts linked. Connect in Rentals > Providers." }
+            return "LINKED ACCOUNTS (\(mgr.accounts.count)):\n" + mgr.accounts.values.map { "\($0.provider) | \($0.accountNumber) | \($0.tier) | Active: \($0.activeRentals) | Spent: \($0.totalSpent) | \($0.isVerified ? "VERIFIED" : "UNVERIFIED")" }.joined(separator: "\n")
 
         default:
             return "Unknown tool: \(name)"
