@@ -117,12 +117,23 @@ enum RentalProvider: String, CaseIterable {
 
     var searchURL: String {
         switch self {
-        case .unitedRentals: return "https://www.unitedrentals.com/marketplace/equipment"
-        case .dozr: return "https://dozr.com/equipment-rental"
-        case .toolsy: return "https://toolsy.com/rentals"
-        case .rentMyEquipment: return "https://www.rentmyequipment.com/search"
-        case .sunbelt: return "https://www.sunbeltrentals.com/equipment"
-        case .herc: return "https://www.hercrentals.com/us/equipment.html"
+        case .unitedRentals: return "https://www.unitedrentals.com/marketplace/equipment?ref=constructionos"
+        case .dozr: return "https://dozr.com/equipment-rental?ref=constructionos"
+        case .toolsy: return "https://toolsy.com/rentals?ref=constructionos"
+        case .rentMyEquipment: return "https://www.rentmyequipment.com/search?ref=constructionos"
+        case .sunbelt: return "https://www.sunbeltrentals.com/equipment?ref=constructionos"
+        case .herc: return "https://www.hercrentals.com/us/equipment.html?ref=constructionos"
+        }
+    }
+
+    var affiliateID: String {
+        switch self {
+        case .unitedRentals: return "cos-ur-2026"
+        case .dozr: return "cos-dozr-2026"
+        case .toolsy: return "cos-toolsy-2026"
+        case .rentMyEquipment: return "cos-rme-2026"
+        case .sunbelt: return "cos-sb-2026"
+        case .herc: return "cos-herc-2026"
         }
     }
 

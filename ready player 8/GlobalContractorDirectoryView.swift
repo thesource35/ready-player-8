@@ -59,6 +59,8 @@ struct DirectoryContractor: Identifiable {
     let certifications: [String]
     let specialties: [String]
     let verified: Bool
+    var premiumListing: Bool = false  // $99/mo premium placement
+    var featuredBadge: String? = nil  // "TOP RATED", "FAST RESPONSE", etc.
 }
 
 let globalContractors: [DirectoryContractor] = [

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConstructionOS - The All-in-One Construction Command Center</title>
+<style>
+:root { --bg: #080E12; --surface: #0F1C24; --accent: #F29E3D; --gold: #FCC757; --cyan: #4AC4CC; --green: #69D294; --red: #D94D48; --text: #F0F8F8; --muted: #9EBDC2; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif; background: var(--bg); color: var(--text); }
+.hero { text-align: center; padding: 80px 20px 60px; background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%); }
+.hero h1 { font-size: 48px; font-weight: 900; letter-spacing: 2px; margin-bottom: 8px; }
+.hero h1 span { color: var(--accent); }
+.hero .sub { font-size: 20px; color: var(--muted); margin-bottom: 32px; }
+.hero .stats { display: flex; gap: 32px; justify-content: center; margin-bottom: 40px; flex-wrap: wrap; }
+.hero .stat { text-align: center; }
+.hero .stat .num { font-size: 36px; font-weight: 900; color: var(--accent); }
+.hero .stat .label { font-size: 11px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+.cta { display: inline-block; padding: 16px 40px; background: linear-gradient(90deg, var(--accent), var(--gold)); color: #000; font-size: 16px; font-weight: 800; border-radius: 12px; text-decoration: none; letter-spacing: 1px; }
+.cta:hover { transform: scale(1.02); }
+.cta-secondary { display: inline-block; padding: 14px 32px; border: 2px solid var(--accent); color: var(--accent); font-size: 14px; font-weight: 700; border-radius: 12px; text-decoration: none; margin-left: 16px; }
+.features { max-width: 1100px; margin: 0 auto; padding: 60px 20px; }
+.features h2 { font-size: 32px; font-weight: 900; text-align: center; margin-bottom: 48px; }
+.features h2 span { color: var(--cyan); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+.card { background: var(--surface); border-radius: 16px; padding: 24px; border: 1px solid rgba(74,196,204,0.1); }
+.card .icon { font-size: 28px; margin-bottom: 12px; }
+.card h3 { font-size: 16px; font-weight: 800; margin-bottom: 6px; color: var(--accent); }
+.card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.pricing { max-width: 900px; margin: 0 auto; padding: 60px 20px; text-align: center; }
+.pricing h2 { font-size: 32px; font-weight: 900; margin-bottom: 12px; }
+.pricing .note { color: var(--muted); margin-bottom: 40px; }
+.tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.tier { background: var(--surface); border-radius: 16px; padding: 28px 20px; text-align: left; border: 1px solid rgba(255,255,255,0.05); }
+.tier.featured { border-color: var(--accent); }
+.tier h3 { font-size: 14px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+.tier .price { font-size: 32px; font-weight: 900; color: var(--accent); }
+.tier .per { font-size: 12px; color: var(--muted); }
+.tier ul { list-style: none; margin-top: 16px; }
+.tier ul li { font-size: 12px; color: var(--muted); padding: 4px 0; }
+.tier ul li::before { content: "✓ "; color: var(--green); font-weight: bold; }
+.compare { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+.compare h2 { text-align: center; font-size: 28px; margin-bottom: 24px; }
+.compare table { width: 100%; border-collapse: collapse; }
+.compare th, .compare td { padding: 12px 16px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+.compare th { color: var(--muted); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+.compare .yes { color: var(--green); font-weight: bold; }
+.compare .no { color: var(--red); }
+.footer { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 12px; border-top: 1px solid rgba(255,255,255,0.05); }
+.waitlist { max-width: 500px; margin: 0 auto; padding: 40px 20px; text-align: center; }
+.waitlist input { padding: 14px 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: var(--surface); color: var(--text); font-size: 14px; width: 60%; margin-right: 8px; }
+.waitlist button { padding: 14px 24px; background: var(--accent); color: #000; font-weight: 800; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; }
+@media (max-width: 768px) { .tiers { grid-template-columns: 1fr; } .hero h1 { font-size: 32px; } }
+</style>
+</head>
+<body>
+
+<div class="hero">
+    <h1>CONSTRUCT<span>OS</span></h1>
+    <p class="sub">The All-in-One Construction Command Center</p>
+    <div class="stats">
+        <div class="stat"><div class="num">30</div><div class="label">Tabs</div></div>
+        <div class="stat"><div class="num">56</div><div class="label">AI Tools</div></div>
+        <div class="stat"><div class="num">97</div><div class="label">Rental Items</div></div>
+        <div class="stat"><div class="num">25K+</div><div class="label">Lines of Code</div></div>
+    </div>
+    <a href="#waitlist" class="cta">JOIN THE WAITLIST</a>
+    <a href="#features" class="cta-secondary">See Features</a>
+</div>
+
+<div class="features" id="features">
+    <h2>Everything You Need. <span>One App.</span></h2>
+    <div class="grid">
+        <div class="card"><div class="icon">⌘</div><h3>Command Center</h3><p>Real-time site risk scores, weather overlays, crew deployment, inspections, and daily standup reports tailored to your role.</p></div>
+        <div class="card"><div class="icon">🤖</div><h3>Angelic AI (56 MCP Tools)</h3><p>Claude-powered AI assistant with live access to every data point in the app. Ask about sites, budgets, crew, equipment — get real answers.</p></div>
+        <div class="card"><div class="icon">🛠</div><h3>Equipment Rentals</h3><p>97 items from United Rentals, DOZR, Toolsy, Rent My Equipment, Sunbelt & Herc. AI recommender, price alerts, bundle builder.</p></div>
+        <div class="card"><div class="icon">⚙️</div><h3>12-Panel Ops Suite</h3><p>Change orders, safety incidents, materials, punch list, RFIs, submittals, budget burn, subcontractor scorecards — all in one place.</p></div>
+        <div class="card"><div class="icon">💵</div><h3>Finance Hub</h3><p>AIA G702/G703 pay apps, lien waivers, cash flow forecasting, tax deductions, 1099 tracking, and quarterly estimates.</p></div>
+        <div class="card"><div class="icon">🏗</div><h3>Smart Build Hub</h3><p>IoT concrete testing, BIM center (LOD 400), net zero design, modular construction, automated home building technology.</p></div>
+        <div class="card"><div class="icon">📱</div><h3>Field Ops</h3><p>Daily logs, GPS timecards with overtime, equipment tracking, permit management, geofencing auto clock-in/out.</p></div>
+        <div class="card"><div class="icon">⚡</div><h3>Electrical & Fiber</h3><p>Licensed contractor directory, lead generation, fiber project tracking, emergency dispatch, license verification.</p></div>
+        <div class="card"><div class="icon">🏠</div><h3>Satellite Roofing</h3><p>AI roof estimator with 9 materials, pitch calculation, labor + material + waste + permit breakdown.</p></div>
+        <div class="card"><div class="icon">📊</div><h3>Analytics & AI Risk</h3><p>Bid win/loss analysis, labor productivity benchmarks, ML-based risk scoring with factor analysis.</p></div>
+        <div class="card"><div class="icon">🔒</div><h3>Face ID Security</h3><p>Biometric lock, Keychain-encrypted keys, two-factor auth, credential vault, recovery kit.</p></div>
+        <div class="card"><div class="icon">📖</div><h3>Global Directory</h3><p>Contractor database spanning 25 trades and 6+ countries with ratings, certifications, and bid requests.</p></div>
+    </div>
+</div>
+
+<div class="pricing" id="pricing">
+    <h2>AI-Powered Dynamic Pricing</h2>
+    <p class="note">Like Procore but smarter — AI calculates your price based on revenue, modules, and projects. Unlimited users included.</p>
+    <div class="tiers">
+        <div class="tier">
+            <h3 style="color: var(--muted)">Starter</h3>
+            <div class="price">$375</div><div class="per">/month</div>
+            <ul>
+                <li>Under $5M annual volume</li>
+                <li>5 core modules</li>
+                <li>Unlimited users</li>
+                <li>Unlimited storage</li>
+                <li>AI assistant (basic)</li>
+            </ul>
+        </div>
+        <div class="tier featured">
+            <h3 style="color: var(--accent)">Professional</h3>
+            <div class="price">$1,200</div><div class="per">/month</div>
+            <ul>
+                <li>$25M-$150M volume</li>
+                <li>All 13 modules</li>
+                <li>Unlimited users</li>
+                <li>56 AI MCP tools</li>
+                <li>Rental marketplace</li>
+                <li>Wealth intelligence</li>
+                <li>15% volume discount</li>
+            </ul>
+        </div>
+        <div class="tier">
+            <h3 style="color: var(--gold)">Enterprise</h3>
+            <div class="price">Custom</div><div class="per">contact us</div>
+            <ul>
+                <li>$150M+ volume</li>
+                <li>All modules + custom</li>
+                <li>Dedicated support</li>
+                <li>API access</li>
+                <li>25% volume discount</li>
+                <li>On-site training</li>
+                <li>Custom integrations</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="compare" id="compare">
+    <h2>vs. Procore</h2>
+    <table>
+        <tr><th>Feature</th><th>ConstructionOS</th><th>Procore</th></tr>
+        <tr><td>AI Assistant (56 MCP tools)</td><td class="yes">✓</td><td class="no">✗</td></tr>
+        <tr><td>Equipment Rental Marketplace</td><td class="yes">✓ 97 items, 6 providers</td><td class="no">✗</td></tr>
+        <tr><td>Wealth Intelligence Suite</td><td class="yes">✓ 5 tools</td><td class="no">✗</td></tr>
+        <tr><td>Tax Center & 1099 Tracking</td><td class="yes">✓</td><td class="no">✗</td></tr>
+        <tr><td>Satellite Roof Estimator</td><td class="yes">✓</td><td class="no">✗</td></tr>
+        <tr><td>Smart Concrete IoT Testing</td><td class="yes">✓</td><td class="no">✗</td></tr>
+        <tr><td>Digital Twin + 3D Scanning</td><td class="yes">✓</td><td class="yes">✓ (add-on)</td></tr>
+        <tr><td>Unlimited Users</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        <tr><td>Dynamic AI Pricing</td><td class="yes">✓</td><td class="no">✗ (fixed annual)</td></tr>
+        <tr><td>Starting Price</td><td class="yes">$375/mo</td><td class="no">$20,000+/yr</td></tr>
+    </table>
+</div>
+
+<div class="waitlist" id="waitlist">
+    <h2>Join the Waitlist</h2>
+    <p style="color: var(--muted); margin-bottom: 24px;">Be first to get access when we launch on the App Store.</p>
+    <input type="email" placeholder="your@email.com">
+    <button>JOIN WAITLIST</button>
+</div>
+
+<div class="footer">
+    <p>ConstructionOS &copy; 2026 &bull; Built for the builders &bull; <a href="mailto:hello@constructionos.app" style="color: var(--accent)">hello@constructionos.app</a></p>
+</div>
+
+</body>
+</html>
