@@ -2,11 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-	</array>
-	<key>NSCameraUsageDescription</key>
+<key>NSCameraUsageDescription</key>
 	<string>ConstructionOS needs camera access for site photos, QR code scanning, and condition reports.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>ConstructionOS needs photo library access to attach site photos to reports and documents.</string>

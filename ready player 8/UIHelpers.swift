@@ -706,7 +706,7 @@ final class SpotlightIndexer {
             attrs.keywords = ["contract", "bid", contract.title, contract.client]
 
             let item = CSSearchableItem(
-                uniqueIdentifier: "contract-\(contract.id)",
+                uniqueIdentifier: "contract-\(contract.id ?? UUID().uuidString)",
                 domainIdentifier: "com.constructionos.contracts",
                 attributeSet: attrs
             )

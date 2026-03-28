@@ -169,7 +169,7 @@ struct ContentView: View {
         Group {
             if !onboardingComplete {
                 OnboardingView(isComplete: $onboardingComplete)
-            } else if !supabase.isAuthenticated && supabase.isConfigured {
+            } else if !supabase.isAuthenticated {
                 AuthGateView(supabase: supabase)
             } else if BiometricAuthManager.shared.biometricEnabled && !biometricUnlocked {
                 BiometricLockScreen(isUnlocked: $biometricUnlocked)

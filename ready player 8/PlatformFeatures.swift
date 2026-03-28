@@ -280,9 +280,16 @@ final class SubscriptionManager: ObservableObject {
     func loadProducts() async {
         do {
             let products = try await Product.products(for: Set(productIDs))
-            await MainActor.run { availableProducts = products.sorted { $0.price < $1.price } }
+            await MainActor.run {
+                availableProducts = products.sorted { $0.price < $1.price }
+                if products.isEmpty {
+                    purchaseError = nil // Don't show error if products aren't configured yet
+                }
+            }
         } catch {
-            await MainActor.run { purchaseError = "Failed to load products" }
+            await MainActor.run {
+                purchaseError = nil // Silently handle — products may not be set up yet
+            }
         }
     }
 
@@ -378,8 +385,9 @@ struct SubscriptionPaywallView: View {
 
                     // Available products
                     if manager.availableProducts.isEmpty {
-                        Text("Loading subscription options...")
+                        Text("Subscription products will be available soon. Contact us for early access pricing.")
                             .font(.system(size: 12)).foregroundColor(Theme.muted)
+                            .multilineTextAlignment(.center).padding(.vertical, 10)
                     } else {
                         ForEach(manager.availableProducts, id: \.id) { product in
                             Button {
