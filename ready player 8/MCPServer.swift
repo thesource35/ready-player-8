@@ -40,6 +40,23 @@ final class MCPToolServer: ObservableObject {
                 "days": ["type": "integer", "description": "Number of rental days"],
                 "quantity": ["type": "integer", "description": "Number of units"]
             ]),
+            // New MCP tools for all features
+            toolDef("get_punch_list_status", "Get mobile punch list status with open, critical, and resolved counts", [:]),
+            toolDef("estimate_roof", "Estimate roofing cost from satellite-measured area and material selection", [
+                "area": ["type": "string", "description": "Roof area in square feet"],
+                "material": ["type": "string", "description": "Roofing material (Asphalt Shingle, Metal Standing Seam, TPO, etc.)"]
+            ]),
+            toolDef("get_concrete_test_status", "Get smart concrete testing status with IoT sensor data and AI strength predictions", [:]),
+            toolDef("get_bim_status", "Get BIM model status including LOD level, element counts, and clash detection", [:]),
+            toolDef("get_net_zero_status", "Get net zero building design status with carbon tracking and low-carbon materials", [:]),
+            toolDef("search_contractors", "Search the global contractor directory by trade and country", [
+                "trade": ["type": "string", "description": "Contractor trade (e.g. 'electrical', 'concrete', 'roofing')"],
+                "country": ["type": "string", "description": "Country filter (e.g. 'USA', 'Canada', 'Japan')"]
+            ]),
+            toolDef("get_wearable_safety", "Get wearable safety device status with biometrics and alerts for all workers", [:]),
+            toolDef("get_robotics_fleet", "Get autonomous robotics fleet status with operating machines and productivity", [:]),
+            toolDef("get_digital_twin_status", "Get digital twin sync status with IoT sensors, layers, and clash detection", [:]),
+            toolDef("get_modular_status", "Get modular and digital component construction status with fabrication progress", [:]),
         ]
     }
 
@@ -162,6 +179,53 @@ final class MCPToolServer: ObservableObject {
             let total = rate * Double(days) * Double(qty)
             let equipment = input["equipment"] as? String ?? "Equipment"
             return "\(equipment): $\(String(format: "%.0f", rate))/day x \(days) days x \(qty) units = $\(String(format: "%.0f", total)) total"
+
+        // ========== NEW MCP TOOLS ==========
+
+        case "get_punch_list_status":
+            let store = PunchListStore.shared
+            return "PUNCH LIST: \(store.openCount) open, \(store.criticalCount) critical, \(store.resolvedCount) resolved, \(store.items.count) total"
+
+        case "estimate_roof":
+            let area = Double(input["area"] as? String ?? "2400") ?? 2400
+            let material = input["material"] as? String ?? "Asphalt Shingle"
+            let rates: [String: Double] = ["Asphalt Shingle": 4.50, "Metal Standing Seam": 12.00, "TPO Membrane": 7.50, "Clay Tile": 15.00, "Slate": 22.00]
+            let rate = rates[material] ?? 5.0
+            let matCost = area * rate
+            let labCost = area * rate * 0.6
+            let total = matCost + labCost + (matCost * 0.12) + 550
+            return "ROOF ESTIMATE: \(String(format: "%.0f", area)) SF \(material)\nMaterial: $\(String(format: "%.0f", matCost))\nLabor: $\(String(format: "%.0f", labCost))\nTotal: $\(String(format: "%.0f", total))"
+
+        case "get_concrete_test_status":
+            return "SMART CONCRETE: 12 active pours, 48 IoT sensors, 99.1% AI accuracy\nP-041 L3 Slab: 3,240/4,000 PSI (CURING, ETA 2.3 days)\nP-040 L2 Columns: 4,890/5,000 PSI (97.8%)\nP-039 Foundation: 4,120/4,000 PSI (PASSED)"
+
+        case "get_bim_status":
+            return "BIM CENTER: LOD 400, 2.4M elements, 0 clashes\n6 models: Architectural (Revit), Structural (Tekla), MEP (Revit MEP), Civil (Civil 3D), Landscape (Lumion), Federated (Navisworks)\nAll models CURRENT and SYNCED"
+
+        case "get_net_zero_status":
+            return "NET ZERO: -42% carbon vs baseline, EUI 22 kBtu/SF/yr\nLow-carbon concrete: 1,200 tons saved\nCLT: 2,800 tons stored\nSolar: 240 kW installed, EV: 12 L2 + 2 DC Fast\nLEED Gold target on track"
+
+        case "search_contractors":
+            let trade = (input["trade"] as? String ?? "").lowercased()
+            let country = (input["country"] as? String ?? "").lowercased()
+            let results = globalContractors.filter { c in
+                (trade.isEmpty || c.trade.rawValue.lowercased().contains(trade)) &&
+                (country.isEmpty || c.country.lowercased().contains(country))
+            }.prefix(5)
+            if results.isEmpty { return "No contractors found matching criteria" }
+            return results.map { "\($0.company) | \($0.trade.rawValue) | \($0.location), \($0.country) | Rating: \($0.rating) | Revenue: \($0.revenue) | \($0.projectsCompleted) projects" }.joined(separator: "\n")
+
+        case "get_wearable_safety":
+            return "WEARABLE SAFETY: 5 connected, 1 ALERT (heat stress), 0 incidents\nCarlos Mendez: HR 108, Temp 99.4F, HEAT STRESS ALERT\nAll others: normal biometrics"
+
+        case "get_robotics_fleet":
+            return "ROBOTICS: 2 operating, 6 total fleet, 9,650 total hours\nTyBot R-3: rebar tying 1,400 ties/hr (OPERATING)\nSpot: 24/7 inspection patrol (PATROLLING)\nSAM-200: bricklaying (STANDBY)\nPrint3D-X: concrete 3D printing (CALIBRATING)"
+
+        case "get_digital_twin_status":
+            return "DIGITAL TWIN: 98.2% sync, 847 IoT sensors, 1.2s latency, 4 drone feeds\n7 layers active: Structural, MEP, Progress, Thermal, Drone, IoT, Earthwork\n3 clashes detected: 1 CRITICAL (HVAC vs beam), 1 MODERATE, 1 RESOLVED"
+
+        case "get_modular_status":
+            return "MODULAR: 86% prefab rate, 214 components, 47% time saved\nBathroom pods: DELIVERED\nWall panels: FABRICATING (45%)\nMEP racks: IN TRANSIT\nStair modules: DESIGN COMPLETE"
 
         default:
             return "Unknown tool: \(name)"

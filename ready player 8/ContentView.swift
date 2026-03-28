@@ -121,6 +121,10 @@ struct ContentView: View {
         case training = "training"
         case scanner = "scanner"
         case tech = "tech"
+        case punchPro = "punch-pro"
+        case roofEstimate = "roof-estimate"
+        case smartBuild = "smart-build"
+        case contractors = "contractors"
         case settings = "settings"
     }
 
@@ -144,6 +148,10 @@ struct ContentView: View {
         ("training","TRAINING","\u{1F393}","plan"),
         ("scanner","SCANNER","\u{1F4F7}","plan"),
         ("tech","TECH 2026","\u{1F916}","tech"),
+        ("punch-pro","PUNCH","\u{2705}","build"),
+        ("roof-estimate","ROOFING","\u{1F3E0}","build"),
+        ("smart-build","BUILD AI","\u{1F3D7}","build"),
+        ("contractors","DIRECTORY","\u{1F4D6}","build"),
         ("settings","SETTINGS","\u{2699}\u{FE0F}","settings"),
     ]
 
@@ -285,6 +293,10 @@ struct ContentView: View {
         case .training: TrainingCertView()
         case .scanner: ScannerToolsView()
         case .tech: ConstructionTech2026View()
+        case .punchPro: PunchListProView()
+        case .roofEstimate: SatelliteRoofEstimatorView()
+        case .smartBuild: SmartBuildHubView()
+        case .contractors: GlobalContractorDirectoryView()
         case .settings: SettingsProfileView()
         }
     }
