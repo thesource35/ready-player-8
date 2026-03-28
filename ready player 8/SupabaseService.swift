@@ -449,7 +449,7 @@ final class SupabaseService: ObservableObject {
 
 // MARK: - Codable DTOs
 
-struct SupabaseProject: Codable, Identifiable {
+struct SupabaseProject: Codable, Identifiable, Sendable {
     var id: String?
     var name: String
     var client: String
@@ -465,7 +465,7 @@ struct SupabaseProject: Codable, Identifiable {
     }
 }
 
-struct SupabaseContract: Codable, Identifiable {
+struct SupabaseContract: Codable, Identifiable, Sendable {
     var id: String?
     var title: String
     var client: String
@@ -490,7 +490,7 @@ struct SupabaseContract: Codable, Identifiable {
     }
 }
 
-struct SupabaseMarketData: Codable, Identifiable {
+struct SupabaseMarketData: Codable, Identifiable, Sendable {
     var id: String?
     var city: String
     var vacancy: Double
@@ -504,7 +504,7 @@ struct SupabaseMarketData: Codable, Identifiable {
     }
 }
 
-struct SupabaseAIMessage: Codable, Identifiable {
+struct SupabaseAIMessage: Codable, Identifiable, Sendable {
     var id: String?
     var sessionId: String
     var role: String
@@ -522,7 +522,7 @@ struct SupabaseAIMessage: Codable, Identifiable {
 
 // MARK: - Wealth Suite DTOs
 
-struct SupabaseWealthOpportunity: Codable, Identifiable {
+struct SupabaseWealthOpportunity: Codable, Identifiable, Sendable {
     var id: String?
     var name: String
     var wealthSignal: Int
@@ -536,7 +536,7 @@ struct SupabaseWealthOpportunity: Codable, Identifiable {
     }
 }
 
-struct SupabaseDecisionJournal: Codable, Identifiable {
+struct SupabaseDecisionJournal: Codable, Identifiable, Sendable {
     var id: String?
     var title: String
     var context: String
@@ -557,7 +557,7 @@ struct SupabaseDecisionJournal: Codable, Identifiable {
     }
 }
 
-struct SupabasePsychologySession: Codable, Identifiable {
+struct SupabasePsychologySession: Codable, Identifiable, Sendable {
     var id: String?
     var score: Double
     var profileLabel: String
@@ -568,7 +568,7 @@ struct SupabasePsychologySession: Codable, Identifiable {
     }
 }
 
-struct SupabaseLeverageSnapshot: Codable, Identifiable {
+struct SupabaseLeverageSnapshot: Codable, Identifiable, Sendable {
     var id: String?
     var totalScore: Double
 
@@ -578,7 +578,7 @@ struct SupabaseLeverageSnapshot: Codable, Identifiable {
     }
 }
 
-struct SupabaseWealthTracking: Codable, Identifiable {
+struct SupabaseWealthTracking: Codable, Identifiable, Sendable {
     var id: String?
     var name: String
     var revenue: Double
@@ -592,7 +592,7 @@ struct SupabaseWealthTracking: Codable, Identifiable {
 }
 
 // MARK: - Daily Log DTO
-struct SupabaseDailyLog: Codable, Identifiable {
+struct SupabaseDailyLog: Codable, Identifiable, Sendable {
     var id: String?
     var date: String
     var weather: String
@@ -609,7 +609,7 @@ struct SupabaseDailyLog: Codable, Identifiable {
 }
 
 // MARK: - Timecard DTO
-struct SupabaseTimecard: Codable, Identifiable {
+struct SupabaseTimecard: Codable, Identifiable, Sendable {
     var id: String?
     var crewMember: String
     var trade: String
@@ -623,7 +623,7 @@ struct SupabaseTimecard: Codable, Identifiable {
 }
 
 // MARK: - Tax Expense DTO
-struct SupabaseTaxExpense: Codable, Identifiable {
+struct SupabaseTaxExpense: Codable, Identifiable, Sendable {
     var id: String?
     var date: String
     var description: String

@@ -198,9 +198,10 @@ struct MarketView: View {
         guard supabase.isConfigured else { return }
         isLoading = true; errorMessage = nil; defer { isLoading = false }
         do {
-            async let mData: [SupabaseMarketData] = supabase.fetch("cs_market_data")
-            async let cData: [SupabaseContract] = supabase.fetch("cs_contracts")
-            (marketData, contracts) = try await (mData, cData)
+            let mData: [SupabaseMarketData] = try await supabase.fetch("cs_market_data")
+            let cData: [SupabaseContract] = try await supabase.fetch("cs_contracts")
+            marketData = mData
+            contracts = cData
         } catch {
             errorMessage = error.localizedDescription
         }
