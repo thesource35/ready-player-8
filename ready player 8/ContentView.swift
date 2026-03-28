@@ -120,6 +120,7 @@ struct ContentView: View {
         case schedule = "schedule"
         case training = "training"
         case scanner = "scanner"
+        case tech = "tech"
         case settings = "settings"
     }
 
@@ -142,6 +143,7 @@ struct ContentView: View {
         ("schedule","SCHEDULE","\u{1F4C5}","plan"),
         ("training","TRAINING","\u{1F393}","plan"),
         ("scanner","SCANNER","\u{1F4F7}","plan"),
+        ("tech","TECH 2026","\u{1F916}","tech"),
         ("settings","SETTINGS","\u{2699}\u{FE0F}","settings"),
     ]
 
@@ -282,6 +284,7 @@ struct ContentView: View {
         case .schedule: ScheduleHubView()
         case .training: TrainingCertView()
         case .scanner: ScannerToolsView()
+        case .tech: ConstructionTech2026View()
         case .settings: SettingsProfileView()
         }
     }
