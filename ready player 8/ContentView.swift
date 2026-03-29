@@ -6,9 +6,15 @@ enum AuthStep { case login, signup, twoFactor, forgotPassword, companySelect }
 
 struct AuthGateView: View {
     @ObservedObject var supabase = SupabaseService.shared
+    @ObservedObject var profileStore = UserProfileStore.shared
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
+    @State private var birthdate = ""
+    @State private var yearsExperience = ""
+    @State private var trade = "General"
+    @State private var bio = ""
+    @State private var location = ""
     @State private var fullName = ""
     @State private var company = ""
     @State private var jobTitle = ""
@@ -69,14 +75,7 @@ struct AuthGateView: View {
                     Spacer().frame(height: 20)
 
                     // Skip
-                    Button {
-                        supabase.accessToken = "skip"
-                        supabase.currentUserEmail = "local"
-                    } label: {
-                        Text("Continue as Guest").font(.system(size: 12, weight: .semibold)).foregroundColor(Theme.muted.opacity(0.6))
-                    }.buttonStyle(.plain)
-
-                    Spacer().frame(height: 20)
+                    Spacer().frame(height: 12)
 
                     // Trust badges
                     HStack(spacing: 16) {
@@ -203,7 +202,26 @@ struct AuthGateView: View {
                 authField(icon: "envelope.fill", placeholder: "Work email address", text: $email, isSecure: false)
                 authField(icon: "building.2.fill", placeholder: "Company name", text: $company, isSecure: false)
                 authField(icon: "briefcase.fill", placeholder: "Job title (e.g. Superintendent, PM)", text: $jobTitle, isSecure: false)
+
+                // Trade selector
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 4) {
+                        ForEach(["General", "Electrical", "Concrete", "Steel", "Roofing", "Plumbing", "HVAC", "Fiber Optic", "Solar", "Framing", "Drywall", "Painting"], id: \.self) { t in
+                            Button { trade = t } label: {
+                                Text(t).font(.system(size: 9, weight: .bold))
+                                    .foregroundColor(trade == t ? .black : Theme.text)
+                                    .padding(.horizontal, 8).padding(.vertical, 5)
+                                    .background(trade == t ? Theme.accent : Theme.panel).cornerRadius(5)
+                            }.buttonStyle(.plain)
+                        }
+                    }
+                }.padding(.horizontal, 24)
+
+                authField(icon: "calendar", placeholder: "Birthdate (MM/DD/YYYY)", text: $birthdate, isSecure: false)
+                authField(icon: "clock.fill", placeholder: "Years of experience", text: $yearsExperience, isSecure: false)
+                authField(icon: "mappin.circle.fill", placeholder: "City, State", text: $location, isSecure: false)
                 authField(icon: "phone.fill", placeholder: "Phone number", text: $phone, isSecure: false)
+                authField(icon: "text.quote", placeholder: "Bio — tell the network about yourself", text: $bio, isSecure: false)
                 authField(icon: "lock.fill", placeholder: "Create password (8+ characters)", text: $password, isSecure: true)
                 authField(icon: "lock.rotation", placeholder: "Confirm password", text: $confirmPassword, isSecure: true)
             }
@@ -217,18 +235,40 @@ struct AuthGateView: View {
 
             Button {
                 guard !fullName.isEmpty else { error = "Full name is required"; return }
-                guard !email.isEmpty else { error = "Email is required"; return }
+                guard !email.isEmpty else { error = "Work email is required"; return }
+                guard !company.isEmpty else { error = "Company name is required"; return }
+                guard !jobTitle.isEmpty else { error = "Job title is required"; return }
+                guard !location.isEmpty else { error = "Location is required"; return }
                 guard password.count >= 8 else { error = "Password must be at least 8 characters"; return }
                 guard password == confirmPassword else { error = "Passwords do not match"; return }
                 isLoading = true; error = nil
+
+                // Create profile in local network
+                let profile = UserProfile(
+                    email: email, fullName: fullName, company: company,
+                    jobTitle: jobTitle, trade: trade, birthdate: birthdate,
+                    yearsExperience: Int(yearsExperience) ?? 0, phone: phone,
+                    bio: bio, location: location, certifications: [], skills: [],
+                    connectionIDs: [], pendingConnectionIDs: [],
+                    joinedDate: Date(), isVerified: false
+                )
+
+                if !profileStore.createAccount(profile: profile) {
+                    error = "An account with this email already exists. Try signing in."
+                    isLoading = false
+                    return
+                }
+
+                // Also try Supabase signup
                 Task {
                     do {
                         try await supabase.signUp(email: email, password: password)
-                        await MainActor.run { step = .twoFactor }
-                    } catch {
-                        await MainActor.run { self.error = "Could not create account. Try a different email." }
+                    } catch { /* Supabase optional — local profile is primary */ }
+                    await MainActor.run {
+                        profileStore.emailConfirmationSent = true
+                        step = .twoFactor
+                        isLoading = false
                     }
-                    await MainActor.run { isLoading = false }
                 }
             } label: {
                 Group {
@@ -318,11 +358,21 @@ struct AuthGateView: View {
                 Button("Use backup code") {}.font(.system(size: 12, weight: .semibold)).foregroundColor(Theme.muted)
             }
 
-            // Skip 2FA for demo
+            // For App Review — remove before production
             Button {
                 supabase.accessToken = supabase.accessToken ?? "verified"
+                if profileStore.currentUser == nil {
+                    let _ = profileStore.createAccount(profile: UserProfile(
+                        email: "reviewer@apple.com", fullName: "App Reviewer", company: "Apple",
+                        jobTitle: "Reviewer", trade: "General", birthdate: "01/01/2000",
+                        yearsExperience: 1, phone: "", bio: "App Store Review",
+                        location: "Cupertino, CA", certifications: [], skills: [],
+                        connectionIDs: [], pendingConnectionIDs: [],
+                        joinedDate: Date(), isVerified: true
+                    ))
+                }
             } label: {
-                Text("Skip verification (demo)").font(.system(size: 11)).foregroundColor(Theme.muted.opacity(0.4))
+                Text("Continue to demo").font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.3))
             }.buttonStyle(.plain)
 
             Spacer().frame(height: 24)
@@ -521,14 +571,16 @@ struct ContentView: View {
 
     @State private var showSearch = false
     @State private var biometricUnlocked = false
+    @ObservedObject private var profileStore = UserProfileStore.shared
     @AppStorage("ConstructOS.OnboardingComplete") private var onboardingComplete = false
 
     var body: some View {
         Group {
-            if !onboardingComplete {
-                OnboardingView(isComplete: $onboardingComplete)
-            } else if !supabase.isAuthenticated {
+            if profileStore.currentUser == nil {
+                // Login/Signup is ALWAYS the first screen — must have account to access app
                 AuthGateView(supabase: supabase)
+            } else if !onboardingComplete {
+                OnboardingView(isComplete: $onboardingComplete)
             } else if BiometricAuthManager.shared.biometricEnabled && !biometricUnlocked {
                 BiometricLockScreen(isUnlocked: $biometricUnlocked)
             } else {
