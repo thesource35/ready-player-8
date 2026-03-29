@@ -652,7 +652,7 @@ struct ContentView: View {
         case .contracts: ContractsView()
         case .market: MarketView()
         case .maps: MapsView()
-        case .network: NetworkView()
+        case .network: SocialFeedView()
         case .ops:
             VStack(alignment: .leading, spacing: 14) {
                 OperationsCommandCenterPanel(); ChangeOrderTrackerPanel()
