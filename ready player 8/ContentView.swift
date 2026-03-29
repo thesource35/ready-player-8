@@ -600,7 +600,11 @@ struct ContentView: View {
             SpotlightIndexer.shared.indexProjects(mockProjects)
             SpotlightIndexer.shared.indexRentalItems(rentalInventory)
         }
-        .onChange(of: activeNav) { _, _ in HapticEngine.tap() }
+        .onChange(of: activeNav) { _, newTab in
+            HapticEngine.tap()
+            AnalyticsEngine.shared.trackScreen(newTab.rawValue)
+        }
+        .onAppear { AnalyticsEngine.shared.track("app_opened") }
         .onOpenURL { url in
             if let tab = DeepLinkHandler.handleURL(url) { activeNav = tab }
         }

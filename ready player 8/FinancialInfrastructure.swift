@@ -233,12 +233,28 @@ struct EmpireDashboardView: View {
                 }
 
                 switch activeTab {
-                case 0: payView
-                case 1: capitalView
-                case 2: insuranceView
-                case 3: workforceView
+                case 0:
+                    if FeatureGates.payments.isAvailable { payView } else {
+                        ComingSoonOverlay(feature: "ConstructionOS Pay", description: "Payment processing for invoices, payroll, materials, and rentals. 1.5% processing fee with instant transfers.", expectedDate: "Q3 2026")
+                    }
+                    LegalDisclaimerView(text: LegalDisclaimers.paymentDisclaimer)
+                case 1:
+                    if FeatureGates.capital.isAvailable { capitalView } else {
+                        ComingSoonOverlay(feature: "ConstructionOS Capital", description: "Invoice factoring — get 90% of approved pay apps advanced in 24 hours. 2.5% factoring fee.", expectedDate: "Q4 2026")
+                    }
+                    LegalDisclaimerView(text: LegalDisclaimers.capitalDisclaimer)
+                case 2:
+                    if FeatureGates.insurance.isAvailable { insuranceView } else {
+                        ComingSoonOverlay(feature: "ConstructionOS Insurance", description: "Compare quotes from top carriers. GL, Workers Comp, Umbrella, Builder's Risk.", expectedDate: "Q3 2026")
+                    }
+                    LegalDisclaimerView(text: LegalDisclaimers.insuranceDisclaimer)
+                case 3: workforceView; LegalDisclaimerView(text: LegalDisclaimers.workforceDisclaimer)
                 case 4: supplyChainView
-                case 5: bondsView
+                case 5:
+                    if FeatureGates.bonds.isAvailable { bondsView } else {
+                        ComingSoonOverlay(feature: "ConstructionOS Bonds", description: "Surety bonding powered by your project performance data. Bid, performance, and payment bonds.", expectedDate: "Q4 2026")
+                    }
+                    LegalDisclaimerView(text: LegalDisclaimers.bondDisclaimer)
                 default: intelView
                 }
             }.padding(16)
