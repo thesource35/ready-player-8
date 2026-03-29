@@ -211,3 +211,88 @@ INSERT INTO cs_projects (name, client, type, status, progress, budget, score, te
     ('Harbor Industrial Park', 'Harbor Industries', 'Industrial', 'Ahead', 78, '$18.5M', '88', 'Bravo'),
     ('Riverside Residential', 'Urban Living', 'Residential', 'On Track', 42, '$31.2M', '85', 'Charlie')
 ON CONFLICT DO NOTHING;
+
+-- ============================================================
+-- ADDITIONAL TABLES (Added for full panel sync)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS cs_ops_alerts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title TEXT NOT NULL, detail TEXT, owner TEXT,
+    severity INTEGER DEFAULT 1, due TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS cs_ops_actions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    action TEXT NOT NULL, team TEXT, eta TEXT, related_ref TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS cs_change_orders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    number TEXT, title TEXT NOT NULL, amount TEXT,
+    impact_days TEXT, status TEXT DEFAULT 'PENDING',
+    submitted_date TEXT, decided_date TEXT, description TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS cs_safety_incidents (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    type TEXT, date TEXT, location TEXT, description TEXT,
+    crew_member TEXT, corrective_action TEXT, status TEXT DEFAULT 'open',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS cs_submittals (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    number TEXT, title TEXT NOT NULL, spec_section TEXT,
+    trade TEXT, status TEXT DEFAULT 'PENDING',
+    submitted_date TEXT, reviewer TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS cs_rfis (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    subject TEXT NOT NULL, assigned_to TEXT,
+    submitted_days_ago INTEGER DEFAULT 0,
+    priority TEXT DEFAULT 'MED', status TEXT DEFAULT 'OPEN',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS cs_punch_pro (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title TEXT NOT NULL, location TEXT, trade TEXT,
+    priority TEXT DEFAULT 'medium', status TEXT DEFAULT 'open',
+    assigned_to TEXT, due_date TEXT, notes TEXT,
+    photo_count INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    resolved_at TIMESTAMPTZ
+);
+
+CREATE TABLE IF NOT EXISTS cs_fuel_log (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    date TEXT, vehicle TEXT, gallons DOUBLE PRECISION,
+    price_per_gal DOUBLE PRECISION, odometer INTEGER,
+    site TEXT, created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS cs_electrical_leads (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title TEXT NOT NULL, trade_type TEXT, description TEXT,
+    location TEXT, budget TEXT, urgency TEXT DEFAULT 'normal',
+    posted_by TEXT, bids_received INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'open',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS
+ALTER TABLE cs_ops_alerts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cs_ops_actions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cs_change_orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cs_safety_incidents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cs_submittals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cs_rfis ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cs_punch_pro ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cs_fuel_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cs_electrical_leads ENABLE ROW LEVEL SECURITY;
