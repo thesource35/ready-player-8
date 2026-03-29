@@ -533,6 +533,7 @@ struct ContentView: View {
         case roofEstimate = "roof-estimate"
         case smartBuild = "smart-build"
         case contractors = "contractors"
+        case empire = "empire"
         case settings = "settings"
     }
 
@@ -560,6 +561,7 @@ struct ContentView: View {
         ("roof-estimate","ROOFING","\u{1F3E0}","build"),
         ("smart-build","BUILD AI","\u{1F3D7}","build"),
         ("contractors","DIRECTORY","\u{1F4D6}","build"),
+        ("empire","EMPIRE","\u{1F3E6}","empire"),
         ("settings","SETTINGS","\u{2699}\u{FE0F}","settings"),
     ]
 
@@ -707,6 +709,7 @@ struct ContentView: View {
         case .roofEstimate: SatelliteRoofEstimatorView()
         case .smartBuild: SmartBuildHubView()
         case .contractors: GlobalContractorDirectoryView()
+        case .empire: EmpireDashboardView()
         case .settings: SettingsProfileView()
         }
     }
