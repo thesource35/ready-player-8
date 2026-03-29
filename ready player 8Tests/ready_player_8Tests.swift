@@ -212,12 +212,14 @@ struct ConstructionOSTests {
     // MARK: - Subscription Tier Tests
 
     @Test func subscriptionTierFeatures() {
-        let free = SubscriptionManager.SubscriptionTier.free
-        let pro = SubscriptionManager.SubscriptionTier.pro
-        let enterprise = SubscriptionManager.SubscriptionTier.enterprise
-        #expect(free.features.count > 0)
-        #expect(pro.features.count > free.features.count)
-        #expect(enterprise.features.count > pro.features.count)
+        let field = SubscriptionManager.SubscriptionTier.fieldWorker
+        let pm = SubscriptionManager.SubscriptionTier.projectManager
+        let owner = SubscriptionManager.SubscriptionTier.companyOwner
+        // All tiers get same core features — no lockouts
+        #expect(field.features.count == pm.features.count)
+        #expect(pm.features.count == owner.features.count)
+        // Bonus features increase by tier
+        #expect(owner.bonusFeatures.count > field.bonusFeatures.count)
     }
 
     // MARK: - Rental Provider Tests

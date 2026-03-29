@@ -243,38 +243,87 @@ import StoreKit
 final class SubscriptionManager: ObservableObject {
     static let shared = SubscriptionManager()
 
-    @Published var subscriptionStatus: SubscriptionTier = .free
+    @Published var subscriptionStatus: SubscriptionTier = .fieldWorker
     @Published var availableProducts: [Product] = []
     @Published var isPurchasing = false
     @Published var purchaseError: String?
 
     enum SubscriptionTier: String {
-        case free = "Free"
-        case pro = "Pro"
-        case enterprise = "Enterprise"
+        case fieldWorker = "Field Worker"
+        case projectManager = "Project Manager"
+        case companyOwner = "Company Owner"
+
+        var price: String {
+            switch self {
+            case .fieldWorker: return "$9.99/mo"
+            case .projectManager: return "$24.99/mo"
+            case .companyOwner: return "$49.99/mo"
+            }
+        }
+
+        var annualPrice: String {
+            switch self {
+            case .fieldWorker: return "$99/yr"
+            case .projectManager: return "$249/yr"
+            case .companyOwner: return "$499/yr"
+            }
+        }
+
+        var description: String {
+            switch self {
+            case .fieldWorker: return "For electricians, plumbers, framers, concrete workers, and every trade on the jobsite"
+            case .projectManager: return "For superintendents, PMs, estimators, and field engineers running projects"
+            case .companyOwner: return "For GCs, subcontractor owners, and executives managing a business"
+            }
+        }
 
         var features: [String] {
+            // ALL features included on every tier — no lockouts
+            return [
+                "All 30 tabs — full access",
+                "56 AI-powered MCP tools",
+                "Unlimited projects & contracts",
+                "Equipment rental marketplace (97 items)",
+                "Digital twin & 3D scanning",
+                "Smart concrete testing AI",
+                "Punch list pro with photos",
+                "Financial tools (invoicing, lien waivers)",
+                "Tax center with deduction finder",
+                "Crew timecards & GPS tracking",
+                "Construction network & connections",
+                "Satellite roof estimator",
+                "Gantt scheduling & cost codes",
+                "Compliance & safety tools",
+                "Unlimited cloud sync",
+                "PDF export & document storage",
+                "Push notifications & calendar sync",
+            ]
+        }
+
+        var bonusFeatures: [String] {
             switch self {
-            case .free: return ["5 Projects", "Basic Ops Dashboard", "Demo Data"]
-            case .pro: return ["Unlimited Projects", "Full Ops Suite", "Supabase Sync", "Wealth Intelligence", "PDF Export"]
-            case .enterprise: return ["Everything in Pro", "Team Collaboration", "Video Calls", "Priority Support", "Custom Integrations"]
+            case .fieldWorker: return ["Personal profile & network", "Job lead alerts", "Certification tracker"]
+            case .projectManager: return ["Everything in Field Worker +", "Team management (up to 25)", "Client portal sharing", "Bid analytics"]
+            case .companyOwner: return ["Everything in Project Manager +", "Unlimited team members", "AI pricing engine", "White-label client portal", "Priority support", "Custom integrations"]
             }
         }
 
         var color: Color {
             switch self {
-            case .free: return Theme.muted
-            case .pro: return Theme.gold
-            case .enterprise: return Theme.accent
+            case .fieldWorker: return Theme.cyan
+            case .projectManager: return Theme.gold
+            case .companyOwner: return Theme.accent
             }
         }
     }
 
     private let productIDs = [
-        "com.constructionos.pro.monthly",
-        "com.constructionos.pro.annual",
-        "com.constructionos.enterprise.monthly",
-        "com.constructionos.enterprise.annual"
+        "com.constructionos.fieldworker.monthly",
+        "com.constructionos.fieldworker.annual",
+        "com.constructionos.pm.monthly",
+        "com.constructionos.pm.annual",
+        "com.constructionos.owner.monthly",
+        "com.constructionos.owner.annual"
     ]
 
     func loadProducts() async {
@@ -325,15 +374,15 @@ final class SubscriptionManager: ObservableObject {
         for await result in Transaction.currentEntitlements {
             if let transaction = try? checkVerified(result) {
                 if transaction.productID.contains("enterprise") {
-                    await MainActor.run { subscriptionStatus = .enterprise }
+                    await MainActor.run { subscriptionStatus = .companyOwner }
                     return
                 } else if transaction.productID.contains("pro") {
-                    await MainActor.run { subscriptionStatus = .pro }
+                    await MainActor.run { subscriptionStatus = .projectManager }
                     return
                 }
             }
         }
-        await MainActor.run { subscriptionStatus = .free }
+        await MainActor.run { subscriptionStatus = .fieldWorker }
     }
 
     private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
@@ -358,7 +407,7 @@ struct SubscriptionPaywallView: View {
                         .font(.system(size: 18, weight: .heavy)).tracking(2).foregroundColor(Theme.text)
 
                     // Tier comparison
-                    ForEach([SubscriptionManager.SubscriptionTier.free, .pro, .enterprise], id: \.rawValue) { tier in
+                    ForEach([SubscriptionManager.SubscriptionTier.fieldWorker, .projectManager, .companyOwner], id: \.rawValue) { tier in
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
                                 Text(tier.rawValue.uppercased())
