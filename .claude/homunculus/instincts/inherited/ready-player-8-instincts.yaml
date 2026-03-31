@@ -1,0 +1,614 @@
+# Instincts generated from https://github.com/thesource35/ready-player-8
+# Generated: 2026-03-31T05:34:55.007Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: ready-player-8-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/thesource35/ready-player-8
+---
+
+# Ready Player 8 Commit Length
+
+## Action
+
+Write moderate-length commit messages (~62 characters)
+
+## Evidence
+
+- Average commit message length: 62 chars
+- Based on 40 commits
+
+---
+id: ready-player-8-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/thesource35/ready-player-8
+---
+
+# Ready Player 8 Naming Files
+
+## Action
+
+Use PascalCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: PascalCase
+
+---
+id: ready-player-8-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/thesource35/ready-player-8
+---
+
+# Ready Player 8 Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: ready-player-8-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/thesource35/ready-player-8
+---
+
+# Ready Player 8 Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: ready-player-8-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/thesource35/ready-player-8
+---
+
+# Ready Player 8 Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: ready-player-8-workflow-feature-development
+trigger: "when implementing a new feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/thesource35/ready-player-8
+---
+
+# Ready Player 8 Workflow Feature Development
+
+## Action
+
+Follow the feature-development workflow:
+1. Add feature implementation
+2. Add tests for feature
+3. Update documentation
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~12x per month
+- Files: **/*.test.*
+
+---
+id: ready-player-8-workflow-add-or-expand-navigation-tab
+trigger: "when doing add or expand navigation tab"
+confidence: 0.8
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/thesource35/ready-player-8
+---
+
+# Ready Player 8 Workflow Add Or Expand Navigation Tab
+
+## Action
+
+Follow the add-or-expand-navigation-tab workflow:
+1. Edit or expand ready player 8/ContentView.swift to add the new tab and navigation logic.
+2. Create a new View file for the tab (e.g., ready player 8/FieldOpsView.swift, ready player 8/FinanceHubView.swift, etc.).
+3. Implement sub-tabs or features within the new View file.
+4. Update related models or helpers if needed.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~6x per month
+- Files: ready player 8/ContentView.swift, ready player 8/*View.swift
+
+---
+id: ready-player-8-workflow-supabase-schema-and-backend-sync
+trigger: "when doing supabase schema and backend sync"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/thesource35/ready-player-8
+---
+
+# Ready Player 8 Workflow Supabase Schema And Backend Sync
+
+## Action
+
+Follow the supabase-schema-and-backend-sync workflow:
+1. Edit docs/supabase-schema.sql to add or update tables.
+2. Update or create corresponding DTOs and backend sync logic in ready player 8/SupabaseService.swift or related files.
+3. Enable RLS and set up policies as needed.
+4. Wire up new tables to app panels or sync managers.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: docs/supabase-schema.sql, ready player 8/SupabaseService.swift, ready player 8/SupabaseCRUDWiring.swift
+
+---
+id: ready-player-8-workflow-feature-development-implementation-tests-docs
+trigger: "when doing feature development implementation tests docs"
+confidence: 0.65
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/thesource35/ready-player-8
+---
+
+# Ready Player 8 Workflow Feature Development Implementation Tests Docs
+
+## Action
+
+Follow the feature-development-implementation-tests-docs workflow:
+1. Implement feature logic in one or more ready player 8/*.swift files.
+2. Add or update tests in ready player 8Tests/ready_player_8Tests.swift.
+3. Update or create documentation in docs/ (e.g., docs/IAP-Setup-Guide.md, docs/AppStore-Metadata.md).
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~3x per month
+- Files: ready player 8/*.swift, ready player 8Tests/ready_player_8Tests.swift, docs/*.md
+
+---
+id: ready-player-8-workflow-app-store-build-and-release-prep
+trigger: "when doing app store build and release prep"
+confidence: 0.65
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/thesource35/ready-player-8
+---
+
+# Ready Player 8 Workflow App Store Build And Release Prep
+
+## Action
+
+Follow the app-store-build-and-release-prep workflow:
+1. Update ready player 8.xcodeproj/project.pbxproj for version/build bump.
+2. Edit ready player 8/Info.plist and ready player 8/ready_player_8.entitlements as needed.
+3. Update or add docs/AppStore-Metadata.md or related metadata files.
+4. Optionally update app icon assets.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~3x per month
+- Files: ready player 8.xcodeproj/project.pbxproj, ready player 8/Info.plist, ready player 8/ready_player_8.entitlements
+
+---
+id: ready-player-8-workflow-ai-tool-mcp-server-expansion
+trigger: "when doing ai tool mcp server expansion"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/thesource35/ready-player-8
+---
+
+# Ready Player 8 Workflow Ai Tool Mcp Server Expansion
+
+## Action
+
+Follow the ai-tool-mcp-server-expansion workflow:
+1. Edit or expand ready player 8/MCPServer.swift to add new tool definitions and logic.
+2. Update related view files or models if new data/features are exposed.
+3. Document new tools in commit messages or docs.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: ready player 8/MCPServer.swift, ready player 8/*.swift
+
+---
+id: ready-player-8-workflow-refactor-or-split-monolithic-file
+trigger: "when doing refactor or split monolithic file"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/thesource35/ready-player-8
+---
+
+# Ready Player 8 Workflow Refactor Or Split Monolithic File
+
+## Action
+
+Follow the refactor-or-split-monolithic-file workflow:
+1. Identify logical components or feature areas within the monolithic file.
+2. Extract each area into a new ready player 8/*.swift file.
+3. Reduce ContentView.swift to navigation and glue logic.
+4. Verify build and update imports/usages.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: ready player 8/ContentView.swift, ready player 8/*.swift
+
+---
+id: ready-player-8-instinct-file-naming
+trigger: "When creating a new Swift file"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct File Naming
+
+## Action
+
+Name the file using PascalCase
+
+## Evidence
+
+- Pattern in namingConventions.files
+- Files like ContentView.swift, Persistence.swift
+
+---
+id: ready-player-8-instinct-function-naming
+trigger: "When defining a new function in Swift"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Function Naming
+
+## Action
+
+Name the function using camelCase
+
+## Evidence
+
+- Pattern in namingConventions.functions
+- Consistent with Swift conventions in codebase
+
+---
+id: ready-player-8-instinct-class-naming
+trigger: "When defining a new class in Swift"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Class Naming
+
+## Action
+
+Name the class using PascalCase
+
+## Evidence
+
+- Pattern in namingConventions.classes
+- Classes like MCPServer, ContentView
+
+---
+id: ready-player-8-instinct-constant-naming
+trigger: "When declaring a constant in Swift"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Constant Naming
+
+## Action
+
+Use SCREAMING_SNAKE_CASE for constant names
+
+## Evidence
+
+- Pattern in namingConventions.constants
+
+---
+id: ready-player-8-instinct-import-style
+trigger: "When importing modules in Swift files"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Import Style
+
+## Action
+
+Use relative imports
+
+## Evidence
+
+- Pattern in importStyle: relative
+
+---
+id: ready-player-8-instinct-export-style
+trigger: "When exporting modules or symbols"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Export Style
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in exportStyle: named
+
+---
+id: ready-player-8-instinct-test-location
+trigger: "When adding or updating tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Test Location
+
+## Action
+
+Place test files in the 'ready player 8Tests' directory, separate from source files
+
+## Evidence
+
+- testLocation: separate
+- Files like ready player 8Tests/ready_player_8Tests.swift
+
+---
+id: ready-player-8-instinct-test-pattern
+trigger: "When implementing a new feature"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Test Pattern
+
+## Action
+
+Add or update corresponding tests in ready player 8Tests/ready_player_8Tests.swift
+
+## Evidence
+
+- feature-development-implementation-tests-docs workflow
+- feature-development workflow
+- Commits adding tests after feature implementation
+
+---
+id: ready-player-8-instinct-test-file-naming
+trigger: "When naming test files"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Test File Naming
+
+## Action
+
+Use the pattern <FeatureName>Tests.swift
+
+## Evidence
+
+- Files like ready player 8Tests/ready_player_8Tests.swift
+
+---
+id: ready-player-8-instinct-commit-format-freeform
+trigger: "When writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Commit Format Freeform
+
+## Action
+
+Use a freeform, descriptive message without a strict prefix
+
+## Evidence
+
+- commits.type: freeform
+- Examples like 'Full website: landing page with crypto + regular payments'
+
+---
+id: ready-player-8-instinct-commit-length
+trigger: "When composing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Commit Length
+
+## Action
+
+Aim for concise messages averaging around 60 characters
+
+## Evidence
+
+- commits.averageLength: 62
+
+---
+id: ready-player-8-instinct-feature-development
+trigger: "When implementing a new feature"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Feature Development
+
+## Action
+
+Add feature logic, then tests, then documentation, in that order
+
+## Evidence
+
+- feature-development-implementation-tests-docs workflow
+- Commit sequences showing code → test → docs
+
+---
+id: ready-player-8-instinct-add-navigation-tab
+trigger: "When expanding app navigation with a new tab"
+confidence: 0.95
+domain: workflow
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Add Navigation Tab
+
+## Action
+
+Edit ContentView.swift to add the tab, create a new View file, implement sub-tabs/features, and update related models/helpers
+
+## Evidence
+
+- add-or-expand-navigation-tab workflow
+- Commit sequences editing ContentView.swift and adding *View.swift files
+
+---
+id: ready-player-8-instinct-supabase-schema-sync
+trigger: "When adding/updating database tables or backend models"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Supabase Schema Sync
+
+## Action
+
+Edit supabase-schema.sql, update SupabaseService.swift, enable RLS/policies, and wire up to app panels/sync managers
+
+## Evidence
+
+- supabase-schema-and-backend-sync workflow
+- Commits editing docs/supabase-schema.sql and SupabaseService.swift
+
+---
+id: ready-player-8-instinct-app-store-release-prep
+trigger: "When preparing for App Store/TestFlight release"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct App Store Release Prep
+
+## Action
+
+Update project.pbxproj for version bump, edit Info.plist/entitlements, update metadata/docs, and optionally update app icon
+
+## Evidence
+
+- app-store-build-and-release-prep workflow
+- Commits updating project.pbxproj, Info.plist, and docs/AppStore-Metadata.md
+
+---
+id: ready-player-8-instinct-ai-tool-mcp-expansion
+trigger: "When exposing new features to AI via MCPServer"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Ai Tool Mcp Expansion
+
+## Action
+
+Edit MCPServer.swift to add tool definitions/logic, update related views/models, and document new tools
+
+## Evidence
+
+- ai-tool-mcp-server-expansion workflow
+- Commits editing MCPServer.swift and related files
+
+---
+id: ready-player-8-instinct-refactor-monolith
+trigger: "When ContentView.swift or another file becomes too large"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: thesource35/ready-player-8
+---
+
+# Ready Player 8 Instinct Refactor Monolith
+
+## Action
+
+Extract logical components into new .swift files, reduce ContentView.swift to navigation/glue logic, and update imports/usages
+
+## Evidence
+
+- refactor-or-split-monolithic-file workflow
+- Commits splitting ContentView.swift and creating new files
+
