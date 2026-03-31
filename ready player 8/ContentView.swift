@@ -534,6 +534,7 @@ struct ContentView: View {
         case smartBuild = "smart-build"
         case contractors = "contractors"
         case empire = "empire"
+        case crypto = "crypto"
         case settings = "settings"
     }
 
@@ -562,6 +563,7 @@ struct ContentView: View {
         ("smart-build","BUILD AI","\u{1F3D7}","build"),
         ("contractors","DIRECTORY","\u{1F4D6}","build"),
         ("empire","EMPIRE","\u{1F3E6}","empire"),
+        ("crypto","CRYPTO","\u{1F48E}","empire"),
         ("settings","SETTINGS","\u{2699}\u{FE0F}","settings"),
     ]
 
@@ -714,6 +716,7 @@ struct ContentView: View {
         case .smartBuild: SmartBuildHubView()
         case .contractors: GlobalContractorDirectoryView()
         case .empire: EmpireDashboardView()
+        case .crypto: CryptoPaymentView()
         case .settings: SettingsProfileView()
         }
     }
