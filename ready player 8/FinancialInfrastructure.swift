@@ -18,6 +18,38 @@ struct PaymentTransaction: Identifiable, Codable {
     let date: Date
 }
 
+// MARK: - Payment Gateway Configuration
+
+struct PaymentGatewayConfig {
+    // Paddle (Merchant of Record) — standard card/bank payments
+    static let paddleEnabled: Bool = {
+        let key = KeychainHelper.read(key: "Paddle.APIKey") ?? ""
+        return !key.isEmpty
+    }()
+    static var paddleAPIKey: String { KeychainHelper.read(key: "Paddle.APIKey") ?? "" }
+    static var paddleWebhookSecret: String { KeychainHelper.read(key: "Paddle.WebhookSecret") ?? "" }
+
+    // Coinbase Commerce — crypto payments
+    static let coinbaseEnabled: Bool = {
+        let key = KeychainHelper.read(key: "Coinbase.APIKey") ?? ""
+        return !key.isEmpty
+    }()
+    static var coinbaseAPIKey: String { KeychainHelper.read(key: "Coinbase.APIKey") ?? "" }
+
+    // Supported standard payment methods
+    static let standardMethods = ["Visa", "Mastercard", "Amex", "Apple Pay", "Google Pay", "Bank Transfer", "PayPal", "ACH Direct"]
+
+    // Configure keys (called from Integration Hub)
+    static func configurePaddle(apiKey: String, webhookSecret: String) {
+        KeychainHelper.save(key: "Paddle.APIKey", data: apiKey)
+        KeychainHelper.save(key: "Paddle.WebhookSecret", data: webhookSecret)
+    }
+
+    static func configureCoinbase(apiKey: String) {
+        KeychainHelper.save(key: "Coinbase.APIKey", data: apiKey)
+    }
+}
+
 @MainActor
 final class ConstructionOSPay: ObservableObject {
     static let shared = ConstructionOSPay()
@@ -26,6 +58,7 @@ final class ConstructionOSPay: ObservableObject {
     @Published var pendingOut: Double = 0
     @Published var transactions: [PaymentTransaction] = []
     @Published var processingFeeRate: Double = 0.015  // 1.5%
+    @Published var paymentGateway: String = PaymentGatewayConfig.paddleEnabled ? "Paddle" : "Demo"
 
     private let key = "ConstructOS.Pay.Transactions"
     init() {
@@ -37,10 +70,15 @@ final class ConstructionOSPay: ObservableObject {
 
     func sendPayment(to: String, amount: Double, type: String, project: String) {
         let fee = amount * processingFeeRate
-        let tx = PaymentTransaction(fromName: "You", toName: to, amount: amount, type: type, projectRef: project, status: "processing", fee: fee, date: Date())
+        let tx = PaymentTransaction(fromName: "You", toName: to, amount: amount, type: type, projectRef: project, status: PaymentGatewayConfig.paddleEnabled ? "processing" : "demo", fee: fee, date: Date())
         transactions.insert(tx, at: 0)
         pendingOut += amount
         saveJSON(key, value: transactions)
+
+        // If Paddle is configured, create a real transaction
+        if PaymentGatewayConfig.paddleEnabled {
+            Task { await createPaddleTransaction(amount: amount, to: to, type: type) }
+        }
     }
 
     func requestPayment(from: String, amount: Double, type: String, project: String) {
@@ -48,6 +86,32 @@ final class ConstructionOSPay: ObservableObject {
         transactions.insert(tx, at: 0)
         pendingIn += amount
         saveJSON(key, value: transactions)
+    }
+
+    private func createPaddleTransaction(amount: Double, to: String, type: String) async {
+        // Paddle API integration — creates a transaction via their REST API
+        guard !PaymentGatewayConfig.paddleAPIKey.isEmpty,
+              let url = URL(string: "https://api.paddle.com/transactions") else { return }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(PaymentGatewayConfig.paddleAPIKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "items": [["quantity": 1]],
+            "custom_data": ["to": to, "type": type, "platform": "ios"]
+        ]
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body)
+            let (_, response) = try await URLSession.shared.data(for: request)
+            if let httpResponse = response as? HTTPURLResponse {
+                print("Paddle transaction: HTTP \(httpResponse.statusCode)")
+            }
+        } catch {
+            print("Paddle transaction error: \(error.localizedDescription)")
+        }
     }
 }
 

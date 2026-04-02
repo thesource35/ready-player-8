@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #080E12;
+  --surface: #0F1C24;
+  --panel: #162832;
+  --border: #33545E;
+  --accent: #F29E3D;
+  --gold: #FCC757;
+  --cyan: #4AC4CC;
+  --green: #69D294;
+  --red: #D94D48;
+  --purple: #8A8FCC;
+  --text: #F0F8F8;
+  --muted: #9EBDC2;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', system-ui, sans-serif;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}

@@ -65,23 +65,65 @@ final class CryptoPaymentManager: ObservableObject {
     @Published var pendingCryptoPayments: Int = 0
 
     private let key = "ConstructOS.Crypto.Transactions"
+    private let ratesKey = "ConstructOS.Crypto.Rates"
+    private let ratesTimestampKey = "ConstructOS.Crypto.RatesTimestamp"
 
-    // Mock exchange rates (in production: live API from CoinGecko/CoinMarketCap)
-    let exchangeRates: [String: Double] = [
-        "BTC": 67842.50,
-        "ETH": 3456.78,
-        "SOL": 178.92,
-        "USDC": 1.00,
-        "USDT": 1.00,
-        "MATIC": 0.72,
-        "AVAX": 38.45,
-        "LINK": 18.62,
+    // Live exchange rates — fetched from CoinGecko, cached 60s, fallback to defaults
+    @Published var exchangeRates: [String: Double] = [
+        "BTC": 67842.50, "ETH": 3456.78, "SOL": 178.92, "USDC": 1.00,
+        "USDT": 1.00, "MATIC": 0.72, "AVAX": 38.45, "LINK": 18.62,
+    ]
+    @Published var priceChanges24h: [String: Double] = [:]
+    @Published var ratesLastUpdated: Date? = nil
+
+    private static let coinGeckoURL = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,usd-coin,tether,matic-network,avalanche-2,chainlink&vs_currencies=usd&include_24hr_change=true"
+    private static let symbolMap: [String: String] = [
+        "bitcoin": "BTC", "ethereum": "ETH", "solana": "SOL", "usd-coin": "USDC",
+        "tether": "USDT", "matic-network": "MATIC", "avalanche-2": "AVAX", "chainlink": "LINK",
     ]
 
     init() {
         transactions = loadJSON(key, default: mockCryptoTransactions)
         totalCryptoReceived = transactions.filter { $0.status == "confirmed" }.reduce(0) { $0 + $1.usdEquivalent }
         pendingCryptoPayments = transactions.filter { $0.status == "pending" || $0.status == "confirming" }.count
+
+        // Load cached rates from disk
+        let cached: [String: Double] = loadJSON(ratesKey, default: [:])
+        if !cached.isEmpty { exchangeRates = cached }
+
+        // Fetch live rates from CoinGecko
+        Task { await fetchLiveRates() }
+    }
+
+    func fetchLiveRates() async {
+        let lastFetch = UserDefaults.standard.double(forKey: ratesTimestampKey)
+        let now = Date().timeIntervalSince1970
+        guard now - lastFetch > 60 else { return }
+
+        guard let url = URL(string: Self.coinGeckoURL) else { return }
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else { return }
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: [String: Double]] {
+                var newRates: [String: Double] = [:]
+                var newChanges: [String: Double] = [:]
+                for (coinId, values) in json {
+                    if let symbol = Self.symbolMap[coinId], let price = values["usd"] {
+                        newRates[symbol] = price
+                        if let change = values["usd_24h_change"] {
+                            newChanges[symbol] = (change * 100).rounded() / 100
+                        }
+                    }
+                }
+                if !newRates.isEmpty {
+                    exchangeRates = newRates
+                    priceChanges24h = newChanges
+                    ratesLastUpdated = Date()
+                    saveJSON(ratesKey, value: newRates)
+                    UserDefaults.standard.set(now, forKey: ratesTimestampKey)
+                }
+            }
+        } catch { }
     }
 
     func cryptoAmount(usd: Double, chain: String) -> Double {

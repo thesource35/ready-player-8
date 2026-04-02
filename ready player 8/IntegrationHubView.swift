@@ -144,6 +144,51 @@ final class IntegrationHub: ObservableObject {
     @Published var microsoft365LastSyncAt: String = "Never"
     @Published var microsoft365PendingItems: Int = 0
 
+    // Payment Gateway — Paddle (Merchant of Record)
+    @Published var paddleConnected: Bool = false
+    @Published var paddleAPIKey: String = ""
+    @Published var paddleWebhookSecret: String = ""
+    @Published var paddleStatus: String = "Not connected"
+    @Published var paddleEnvironment: String = "sandbox"
+
+    // Crypto Payments — Coinbase Commerce
+    @Published var coinbaseConnected: Bool = false
+    @Published var coinbaseAPIKey: String = ""
+    @Published var coinbaseWebhookSecret: String = ""
+    @Published var coinbaseStatus: String = "Not connected"
+
+    // CoinGecko — Live crypto prices (no key needed)
+    @Published var coinGeckoStatus: String = "Connected (free API)"
+
+    // Mapbox — Maps & satellite
+    @Published var mapboxConnected: Bool = false
+    @Published var mapboxToken: String = ""
+    @Published var mapboxStatus: String = "Not connected"
+
+    func configurePaddle() {
+        guard !paddleAPIKey.isEmpty else { return }
+        KeychainHelper.save(key: "Paddle.APIKey", data: paddleAPIKey)
+        KeychainHelper.save(key: "Paddle.WebhookSecret", data: paddleWebhookSecret)
+        paddleConnected = true
+        paddleStatus = "Connected (\(paddleEnvironment))"
+        PaymentGatewayConfig.configurePaddle(apiKey: paddleAPIKey, webhookSecret: paddleWebhookSecret)
+    }
+
+    func configureCoinbase() {
+        guard !coinbaseAPIKey.isEmpty else { return }
+        KeychainHelper.save(key: "Coinbase.APIKey", data: coinbaseAPIKey)
+        coinbaseConnected = true
+        coinbaseStatus = "Connected"
+        PaymentGatewayConfig.configureCoinbase(apiKey: coinbaseAPIKey)
+    }
+
+    func configureMapbox() {
+        guard !mapboxToken.isEmpty else { return }
+        KeychainHelper.save(key: "Mapbox.Token", data: mapboxToken)
+        mapboxConnected = true
+        mapboxStatus = "Connected"
+    }
+
     private let configKeyPrefix = "ConstructOS.Integrations.Backend."
     private let businessPlatformKeyPrefix = "ConstructOS.Integrations.BusinessPlatform."
     private let redactedSecretToken = "[REDACTED]"

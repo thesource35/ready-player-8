@@ -1,0 +1,13 @@
+{
+  "name": "ConstructionOS",
+  "short_name": "ConstructOS",
+  "description": "The operating system for the $13 trillion construction industry",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080E12",
+  "theme_color": "#F29E3D",
+  "icons": [
+    { "src": "/logo-sm.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -1,0 +1,120 @@
+export default function OpsPage() {
+  const alerts = [
+    { title: "Delayed conduit shipment", detail: "PO-4422 pushed from 03-13 to 03-20. Electrical rough-in impacted.", owner: "Procurement", severity: 3, due: "Today 4PM" },
+    { title: "Open recordable incident", detail: "Grid B-7 fall incident corrective action still open.", owner: "Safety", severity: 3, due: "Today 1PM" },
+    { title: "Pending CO over $20k", detail: "CO-003 foundation depth increase pending owner approval.", owner: "PM", severity: 2, due: "Tomorrow 10AM" },
+    { title: "Inspection prep", detail: "Fire-stopping punch list has 6 unresolved tags.", owner: "Superintendent", severity: 1, due: "Tomorrow 8AM" },
+  ];
+
+  const queue = [
+    { action: "Call Graybar and lock revised delivery truck", team: "Procurement", eta: "45m", ref: "PO-4422" },
+    { action: "Submit CO-003 backup package with geotech memo", team: "PM", eta: "30m", ref: "CO-003" },
+    { action: "Close scaffold harness corrective action", team: "Safety", eta: "25m", ref: "INC-03-14" },
+    { action: "Notify drywall foreman of revised sequence", team: "Field Ops", eta: "15m", ref: "SEQ-DELTA" },
+  ];
+
+  const panels = [
+    { title: "Change Orders", items: [
+      { ref: "CO-001", desc: "Add elevator pit waterproofing", amount: "+$14,200", status: "APPROVED" },
+      { ref: "CO-002", desc: "Upgrade to impact-rated windows", amount: "+$38,500", status: "PENDING" },
+      { ref: "CO-003", desc: "Foundation depth increase", amount: "+$22,800", status: "SUBMITTED" },
+    ]},
+    { title: "Safety Incidents", items: [
+      { ref: "INC-03-14", desc: "Fall from scaffold — Grid B-7", amount: "Recordable", status: "OPEN" },
+      { ref: "INC-03-08", desc: "Near-miss crane swing", amount: "Near-miss", status: "CLOSED" },
+      { ref: "INC-02-28", desc: "Eye injury — grinding", amount: "First Aid", status: "CLOSED" },
+    ]},
+    { title: "RFIs", items: [
+      { ref: "RFI-042", desc: "Confirm MEP routing at grid line D-4", amount: "Structural", status: "OPEN" },
+      { ref: "RFI-041", desc: "Alternate masonry detail at parapet", amount: "Arch", status: "ANSWERED" },
+      { ref: "RFI-040", desc: "Confirm fire-rated assembly at shaft", amount: "Fire/Life", status: "ANSWERED" },
+    ]},
+  ];
+
+  const sevColor = (s: number) => s >= 3 ? "var(--red)" : s === 2 ? "var(--gold)" : "var(--cyan)";
+  const sevLabel = (s: number) => s >= 3 ? "CRITICAL" : s === 2 ? "HIGH" : "NORMAL";
+  const critCount = alerts.filter(a => a.severity >= 3).length;
+  const highCount = alerts.filter(a => a.severity === 2).length;
+  const todayCount = alerts.filter(a => a.due.toLowerCase().includes("today")).length;
+
+  return (
+    <div style={{ padding: 20, maxWidth: 1200, margin: "0 auto" }}>
+      <div style={{ background: "var(--surface)", borderRadius: 14, padding: 20, marginBottom: 16 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 4, color: "var(--accent)" }}>OPS</div>
+        <h1 style={{ fontSize: 24, fontWeight: 900, margin: "4px 0" }}>Operations Command Center</h1>
+        <p style={{ fontSize: 12, color: "var(--muted)" }}>12-panel ops suite: change orders, safety, materials, punch list, RFIs, submittals, budget</p>
+      </div>
+
+      {/* Stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
+        {[
+          { val: critCount, label: "CRITICAL", color: "var(--red)" },
+          { val: highCount, label: "HIGH", color: "var(--gold)" },
+          { val: todayCount, label: "DUE TODAY", color: "var(--accent)" },
+          { val: queue.length, label: "QUEUE", color: "var(--cyan)" },
+        ].map(s => (
+          <div key={s.label} style={{ textAlign: "center", padding: 14, background: "var(--surface)", borderRadius: 10 }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: s.color }}>{s.val}</div>
+            <div style={{ fontSize: 8, fontWeight: 800, letterSpacing: 2, color: "var(--muted)" }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Priority Alerts */}
+      <h2 style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, color: "var(--red)", marginBottom: 10 }}>PRIORITY ALERTS</h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+        {alerts.map(a => (
+          <div key={a.title} style={{ background: "var(--surface)", borderRadius: 10, padding: 14, borderLeft: `3px solid ${sevColor(a.severity)}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+              <span style={{ fontSize: 12, fontWeight: 800 }}>{a.title}</span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <span style={{ fontSize: 8, fontWeight: 900, color: sevColor(a.severity) }}>{sevLabel(a.severity)}</span>
+                <span style={{ fontSize: 9, color: "var(--gold)" }}>Due: {a.due}</span>
+              </div>
+            </div>
+            <p style={{ fontSize: 10, color: "var(--muted)", margin: "2px 0" }}>{a.detail}</p>
+            <span style={{ fontSize: 9, color: "var(--cyan)" }}>Owner: {a.owner}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Action Queue */}
+      <h2 style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, color: "var(--cyan)", marginBottom: 10 }}>ACTION QUEUE</h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+        {queue.map(q => (
+          <div key={q.ref} style={{ background: "var(--surface)", borderRadius: 10, padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700 }}>{q.action}</div>
+              <div style={{ fontSize: 9, color: "var(--muted)", marginTop: 2 }}>{q.team} &bull; Ref: {q.ref}</div>
+            </div>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <span style={{ fontSize: 10, fontWeight: 800, color: "var(--gold)" }}>ETA {q.eta}</span>
+              <a href="/login" style={{ background: "var(--green)", color: "var(--bg)", border: "none", borderRadius: 4, padding: "4px 10px", fontSize: 9, fontWeight: 800, cursor: "pointer", textDecoration: "none" }}>DONE</a>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Ops Panels */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: 16 }}>
+        {panels.map(panel => (
+          <div key={panel.title}>
+            <h3 style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, color: "var(--gold)", marginBottom: 10 }}>{panel.title.toUpperCase()}</h3>
+            {panel.items.map(item => (
+              <div key={item.ref} style={{ background: "var(--surface)", borderRadius: 8, padding: 12, marginBottom: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <span style={{ fontSize: 11, fontWeight: 800 }}>{item.ref}</span>
+                  <span style={{ fontSize: 10, color: "var(--muted)", marginLeft: 8 }}>{item.desc}</span>
+                </div>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: "var(--accent)" }}>{item.amount}</span>
+                  <span style={{ fontSize: 8, fontWeight: 900, color: item.status === "APPROVED" || item.status === "CLOSED" || item.status === "ANSWERED" ? "var(--green)" : item.status === "OPEN" ? "var(--red)" : "var(--gold)" }}>{item.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
