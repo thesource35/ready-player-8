@@ -343,7 +343,7 @@ struct SocialFeedView: View {
                             }
                         }
                         Spacer()
-                        Button { } label: {
+                        Button { ToastManager.shared.show("Coming soon") } label: {
                             Text("APPLY").font(.system(size: 9, weight: .bold)).foregroundColor(.black)
                                 .padding(.horizontal, 12).padding(.vertical, 6).background(Theme.accent).cornerRadius(6)
                         }.buttonStyle(.plain)
@@ -396,8 +396,8 @@ struct SocialFeedView: View {
                             Text("Listed by \(post.authorName)").font(.system(size: 9)).foregroundColor(Theme.muted)
                             if post.authorVerified { Image(systemName: "checkmark.seal.fill").font(.system(size: 8)).foregroundColor(Theme.cyan) }
                             Spacer()
-                            Button { } label: { Text("CONTACT").font(.system(size: 9, weight: .bold)).foregroundColor(.black).padding(.horizontal, 10).padding(.vertical, 5).background(Theme.accent).cornerRadius(5) }.buttonStyle(.plain)
-                            Button { } label: { Text("SAVE").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.cyan).padding(.horizontal, 10).padding(.vertical, 5).background(Theme.cyan.opacity(0.1)).cornerRadius(5) }.buttonStyle(.plain)
+                            Button { ToastManager.shared.show("Coming soon") } label: { Text("CONTACT").font(.system(size: 9, weight: .bold)).foregroundColor(.black).padding(.horizontal, 10).padding(.vertical, 5).background(Theme.accent).cornerRadius(5) }.buttonStyle(.plain)
+                            Button { ToastManager.shared.show("Coming soon") } label: { Text("SAVE").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.cyan).padding(.horizontal, 10).padding(.vertical, 5).background(Theme.cyan.opacity(0.1)).cornerRadius(5) }.buttonStyle(.plain)
                         }
                     }.padding(12).background(Theme.surface).cornerRadius(10)
                 }
@@ -490,8 +490,8 @@ struct SocialFeedView: View {
                         }
                     }
                     HStack(spacing: 6) {
-                        Button { } label: { Text("FOLLOW").font(.system(size: 9, weight: .bold)).foregroundColor(.black).frame(maxWidth: .infinity).padding(.vertical, 7).background(Theme.accent).cornerRadius(6) }.buttonStyle(.plain)
-                        Button { } label: { Text("VIEW PROJECTS").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.cyan).frame(maxWidth: .infinity).padding(.vertical, 7).background(Theme.cyan.opacity(0.1)).cornerRadius(6) }.buttonStyle(.plain)
+                        Button { ToastManager.shared.show("Coming soon") } label: { Text("FOLLOW").font(.system(size: 9, weight: .bold)).foregroundColor(.black).frame(maxWidth: .infinity).padding(.vertical, 7).background(Theme.accent).cornerRadius(6) }.buttonStyle(.plain)
+                        Button { ToastManager.shared.show("Coming soon") } label: { Text("VIEW PROJECTS").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.cyan).frame(maxWidth: .infinity).padding(.vertical, 7).background(Theme.cyan.opacity(0.1)).cornerRadius(6) }.buttonStyle(.plain)
                     }
                 }.padding(14).background(Theme.surface).cornerRadius(12)
             }
@@ -541,7 +541,7 @@ struct FeedPostCard: View {
                         Text(job.location).font(.system(size: 10)).foregroundColor(Theme.muted)
                         if job.urgent { Text("URGENT").font(.system(size: 8, weight: .black)).foregroundColor(Theme.red) }
                     }
-                    Button { } label: { Text("APPLY NOW").font(.system(size: 10, weight: .bold)).foregroundColor(.black).frame(maxWidth: .infinity).padding(.vertical, 8).background(Theme.green).cornerRadius(6) }.buttonStyle(.plain)
+                    Button { ToastManager.shared.show("Coming soon") } label: { Text("APPLY NOW").font(.system(size: 10, weight: .bold)).foregroundColor(.black).frame(maxWidth: .infinity).padding(.vertical, 8).background(Theme.green).cornerRadius(6) }.buttonStyle(.plain)
                 }.padding(10).background(Theme.green.opacity(0.04)).cornerRadius(8)
             }
 
@@ -583,7 +583,7 @@ struct FeedPostCard: View {
                 actionButton(icon: "bubble.left", label: "\(post.comments)", color: Theme.cyan)
                 actionButton(icon: "arrow.turn.up.right", label: "\(post.shares)", color: Theme.green)
                 Spacer()
-                Button { } label: { Image(systemName: "bookmark").font(.system(size: 12)).foregroundColor(Theme.muted) }.buttonStyle(.plain)
+                Button { ToastManager.shared.show("Coming soon") } label: { Image(systemName: "bookmark").font(.system(size: 12)).foregroundColor(Theme.muted) }.buttonStyle(.plain)
             }
         }
         .padding(14).background(Theme.surface).cornerRadius(12)
@@ -591,7 +591,7 @@ struct FeedPostCard: View {
     }
 
     private func actionButton(icon: String, label: String, color: Color) -> some View {
-        Button { } label: {
+        Button { ToastManager.shared.show("Coming soon") } label: {
             HStack(spacing: 4) {
                 Image(systemName: icon).font(.system(size: 12))
                 Text(label).font(.system(size: 10, weight: .semibold))

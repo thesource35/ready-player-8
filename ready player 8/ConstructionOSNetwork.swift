@@ -1084,14 +1084,14 @@ struct ConstructionOSPostCard: View {
                     }.frame(maxWidth: .infinity)
                 }.buttonStyle(.plain)
 
-                Button(action: {}) {
+                Button(action: { ToastManager.shared.show("Coming soon") }) {
                     HStack(spacing: 4) {
                         Image(systemName: "bubble.left").font(.system(size: 11)).foregroundColor(Theme.muted)
                         Text("\(commentCount)").font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.muted)
                     }.frame(maxWidth: .infinity)
                 }.buttonStyle(.plain)
 
-                Button(action: {}) {
+                Button(action: { ToastManager.shared.show("Coming soon") }) {
                     HStack(spacing: 4) {
                         Image(systemName: "arrowshape.turn.up.forward").font(.system(size: 11)).foregroundColor(Theme.muted)
                         Text("Share").font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.muted)
@@ -1324,7 +1324,7 @@ struct BNCrewCard: View {
                         .overlay(RoundedRectangle(cornerRadius: 7).stroke(Theme.accent.opacity(0.5), lineWidth: 1))
                         .cornerRadius(7)
                 }.buttonStyle(.plain)
-                Button(action: {}) {
+                Button(action: { ToastManager.shared.show("Coming soon") }) {
                     Text("Message")
                         .font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.cyan)
                         .frame(maxWidth: .infinity).frame(height: 30)
@@ -1400,7 +1400,7 @@ struct BNJobCard: View {
                         .background(hasApplied ? Theme.muted : (job.urgent ? Theme.red : Theme.accent))
                         .cornerRadius(7)
                 }.buttonStyle(.plain)
-                Button(action: {}) {
+                Button(action: { ToastManager.shared.show("Coming soon") }) {
                     Text("SAVE JOB").font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.gold)
                         .frame(width: 80).frame(height: 30)
                         .background(Theme.gold.opacity(0.12))

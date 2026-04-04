@@ -354,8 +354,8 @@ struct EmpireDashboardView: View {
             }
 
             HStack(spacing: 8) {
-                Button { } label: { Label("SEND", systemImage: "arrow.up.circle.fill").font(.system(size: 10, weight: .bold)).foregroundColor(.black).frame(maxWidth: .infinity).padding(.vertical, 10).background(Theme.accent).cornerRadius(8) }.buttonStyle(.plain)
-                Button { } label: { Label("REQUEST", systemImage: "arrow.down.circle.fill").font(.system(size: 10, weight: .bold)).foregroundColor(.black).frame(maxWidth: .infinity).padding(.vertical, 10).background(Theme.green).cornerRadius(8) }.buttonStyle(.plain)
+                Button { ToastManager.shared.show("Coming soon") } label: { Label("SEND", systemImage: "arrow.up.circle.fill").font(.system(size: 10, weight: .bold)).foregroundColor(.black).frame(maxWidth: .infinity).padding(.vertical, 10).background(Theme.accent).cornerRadius(8) }.buttonStyle(.plain)
+                Button { ToastManager.shared.show("Coming soon") } label: { Label("REQUEST", systemImage: "arrow.down.circle.fill").font(.system(size: 10, weight: .bold)).foregroundColor(.black).frame(maxWidth: .infinity).padding(.vertical, 10).background(Theme.green).cornerRadius(8) }.buttonStyle(.plain)
             }
 
             ForEach(pay.transactions) { tx in
@@ -400,7 +400,7 @@ struct EmpireDashboardView: View {
                         VStack(spacing: 1) { Text("$\(String(format: "%.0f", offer.invoiceAmount * offer.fee / 1000))K").font(.system(size: 14, weight: .heavy)).foregroundColor(Theme.gold); Text("FEE (2.5%)").font(.system(size: 7)).foregroundColor(Theme.muted) }
                     }
                     if offer.status == "available" {
-                        Button { } label: { Text("GET FUNDED IN \(offer.daysToFund) DAY").font(.system(size: 10, weight: .bold)).foregroundColor(.black).frame(maxWidth: .infinity).padding(.vertical, 8).background(Theme.green).cornerRadius(6) }.buttonStyle(.plain)
+                        Button { ToastManager.shared.show("Coming soon") } label: { Text("GET FUNDED IN \(offer.daysToFund) DAY").font(.system(size: 10, weight: .bold)).foregroundColor(.black).frame(maxWidth: .infinity).padding(.vertical, 8).background(Theme.green).cornerRadius(6) }.buttonStyle(.plain)
                     }
                 }.padding(12).background(Theme.surface).cornerRadius(10)
             }
@@ -578,7 +578,7 @@ struct EmpireDashboardView: View {
                         Text("\(report.dataPoints) data points").font(.system(size: 8)).foregroundColor(Theme.muted)
                         Text("Updated \(report.lastUpdated)").font(.system(size: 8)).foregroundColor(Theme.muted)
                         Spacer()
-                        Button { } label: { Text("BUY").font(.system(size: 8, weight: .bold)).foregroundColor(.black).padding(.horizontal, 10).padding(.vertical, 4).background(Theme.accent).cornerRadius(4) }.buttonStyle(.plain)
+                        Button { ToastManager.shared.show("Coming soon") } label: { Text("BUY").font(.system(size: 8, weight: .bold)).foregroundColor(.black).padding(.horizontal, 10).padding(.vertical, 4).background(Theme.accent).cornerRadius(4) }.buttonStyle(.plain)
                     }
                 }.padding(10).background(Theme.surface).cornerRadius(8)
             }

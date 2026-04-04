@@ -191,7 +191,7 @@ struct ComingSoonOverlay: View {
             }
             .padding(14).background(Theme.surface).cornerRadius(10).frame(maxWidth: 320)
 
-            Button { } label: {
+            Button { ToastManager.shared.show("Coming soon") } label: {
                 Text("NOTIFY ME WHEN LIVE").font(.system(size: 11, weight: .bold)).foregroundColor(.black)
                     .frame(maxWidth: 280).padding(.vertical, 12)
                     .background(Theme.gold).cornerRadius(8)

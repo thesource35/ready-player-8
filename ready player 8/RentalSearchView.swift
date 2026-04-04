@@ -1531,12 +1531,12 @@ struct RentalItemCard: View {
                     }
 
                     HStack(spacing: 8) {
-                        Button { } label: {
+                        Button { ToastManager.shared.show("Coming soon") } label: {
                             Text("RENT NOW").font(.system(size: 10, weight: .bold)).foregroundColor(.black)
                                 .frame(maxWidth: .infinity).padding(.vertical, 8)
                                 .background(Theme.accent).cornerRadius(6)
                         }.buttonStyle(.plain)
-                        Button { } label: {
+                        Button { ToastManager.shared.show("Coming soon") } label: {
                             Text("GET QUOTE").font(.system(size: 10, weight: .bold)).foregroundColor(Theme.accent)
                                 .frame(maxWidth: .infinity).padding(.vertical, 8)
                                 .background(Theme.accent.opacity(0.12)).cornerRadius(6)

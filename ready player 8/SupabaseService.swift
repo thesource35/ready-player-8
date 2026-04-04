@@ -557,10 +557,21 @@ final class SupabaseService: ObservableObject {
 
     /// Allowed table names — prevents injection via table parameter
     private static let allowedTables: Set<String> = [
+        // Core tables
         "cs_projects", "cs_contracts", "cs_market_data", "cs_ai_messages",
+        // Wealth suite
         "cs_wealth_opportunities", "cs_decision_journal", "cs_psychology_sessions",
-        "cs_leverage_snapshots", "cs_wealth_tracking", "cs_daily_logs",
-        "cs_verification_requests"
+        "cs_leverage_snapshots", "cs_wealth_tracking",
+        // Ops panels
+        "cs_ops_alerts", "cs_ops_actions", "cs_change_orders", "cs_safety_incidents",
+        "cs_material_deliveries", "cs_punch_list", "cs_subcontractors", "cs_daily_costs",
+        "cs_submittals", "cs_project_accounts", "cs_contract_accounts", "cs_portfolio_metrics",
+        "cs_rfis",
+        // Field & trade
+        "cs_daily_logs", "cs_timecards", "cs_permits", "cs_tax_expenses",
+        "cs_electrical_leads", "cs_fuel_log", "cs_punch_pro",
+        // System
+        "cs_verification_requests",
     ]
 
     /// Validates table name against allowlist

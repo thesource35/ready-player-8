@@ -40,7 +40,7 @@ struct ComplianceView: View {
                     VStack(alignment: .leading, spacing: 2) { Text(t.0).font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text); Text("\(t.1) \u{2022} \(t.2)").font(.system(size: 9)).foregroundColor(Theme.muted) }
                     Spacer()
                     if t.3 { Text("REQUIRED").font(.system(size: 7, weight: .black)).foregroundColor(Theme.red) }
-                    Button { } label: { Text("START").font(.system(size: 8, weight: .bold)).foregroundColor(.black).padding(.horizontal, 8).padding(.vertical, 4).background(Theme.gold).cornerRadius(4) }.buttonStyle(.plain)
+                    Button { ToastManager.shared.show("Coming soon") } label: { Text("START").font(.system(size: 8, weight: .bold)).foregroundColor(.black).padding(.horizontal, 8).padding(.vertical, 4).background(Theme.gold).cornerRadius(4) }.buttonStyle(.plain)
                 }.padding(10).background(Theme.surface).cornerRadius(8)
             }
         }
