@@ -4,12 +4,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "smoke": "node scripts/smoke.mjs",
+    "linkcheck": "node scripts/link-health.mjs",
+    "test": "vitest run",
+    "verify": "npm run lint && npm run typecheck && npx next build --webpack"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.64",
+    "@next/swc-darwin-arm64": "^16.2.2",
     "@supabase/ssr": "^0.10.0",
     "@supabase/supabase-js": "^2.101.1",
     "@vercel/analytics": "^2.0.1",
@@ -27,6 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.4"
   }
 }

@@ -1,19 +1,72 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import PremiumFeatureGate from "@/app/components/PremiumFeatureGate";
+import SubscriberActionButton from "@/app/components/SubscriberActionButton";
+
+interface Project {
+  name: string;
+  client: string;
+  type: string;
+  status: string;
+  progress: number;
+  budget: string;
+  score: number;
+  superintendent: string;
+  startDate: string;
+  endDate: string;
+}
+
+const fallbackProjects: Project[] = [
+  { name: "Riverside Lofts", client: "Metro Development", type: "Mixed-Use", status: "On Track", progress: 72, budget: "$4.2M", score: 88, superintendent: "Mike Torres", startDate: "Jan 2026", endDate: "Nov 2026" },
+  { name: "Harbor Crossing", client: "Harbor Industries", type: "Commercial", status: "Ahead", progress: 45, budget: "$8.1M", score: 92, superintendent: "Sarah Kim", startDate: "Mar 2026", endDate: "Feb 2027" },
+  { name: "Pine Ridge Ph.2", client: "Urban Living", type: "Residential", status: "Delayed", progress: 28, budget: "$2.8M", score: 61, superintendent: "James Wright", startDate: "Feb 2026", endDate: "Sep 2026" },
+  { name: "Skyline Tower", client: "Apex Corp", type: "High-Rise", status: "On Track", progress: 15, budget: "$22.5M", score: 85, superintendent: "David Chen", startDate: "Apr 2026", endDate: "Dec 2027" },
+  { name: "Metro Station Retrofit", client: "City of Houston", type: "Infrastructure", status: "At Risk", progress: 55, budget: "$6.3M", score: 54, superintendent: "Ana Rodriguez", startDate: "Nov 2025", endDate: "Aug 2026" },
+];
 
 export default function ProjectsPage() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
-  const allProjects = [
-    { name: "Riverside Lofts", client: "Metro Development", type: "Mixed-Use", status: "On Track", progress: 72, budget: "$4.2M", score: 88, superintendent: "Mike Torres", startDate: "Jan 2026", endDate: "Nov 2026" },
-    { name: "Harbor Crossing", client: "Harbor Industries", type: "Commercial", status: "Ahead", progress: 45, budget: "$8.1M", score: 92, superintendent: "Sarah Kim", startDate: "Mar 2026", endDate: "Feb 2027" },
-    { name: "Pine Ridge Ph.2", client: "Urban Living", type: "Residential", status: "Delayed", progress: 28, budget: "$2.8M", score: 61, superintendent: "James Wright", startDate: "Feb 2026", endDate: "Sep 2026" },
-    { name: "Skyline Tower", client: "Apex Corp", type: "High-Rise", status: "On Track", progress: 15, budget: "$22.5M", score: 85, superintendent: "David Chen", startDate: "Apr 2026", endDate: "Dec 2027" },
-    { name: "Metro Station Retrofit", client: "City of Houston", type: "Infrastructure", status: "At Risk", progress: 55, budget: "$6.3M", score: 54, superintendent: "Ana Rodriguez", startDate: "Nov 2025", endDate: "Aug 2026" },
-  ];
+  const [showAddProject, setShowAddProject] = useState(false);
+  const [draftProject, setDraftProject] = useState({
+    name: "",
+    client: "",
+    type: "Commercial",
+    budget: "",
+  });
+  const [projectList, setProjectList] = useState<Project[]>(fallbackProjects);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetch("/api/projects")
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data: Record<string, unknown>[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setProjectList(data.map(p => ({
+            name: (p.name as string) || "",
+            client: (p.client as string) || "",
+            type: (p.type as string) || "",
+            status: (p.status as string) || "On Track",
+            progress: (p.progress as number) || 0,
+            budget: (p.budget as string) || "$0",
+            score: Number(p.score) || 0,
+            superintendent: (p.superintendent as string) || (p.team as string) || "Unassigned",
+            startDate: (p.startDate as string) || (p.start_date as string) || "TBD",
+            endDate: (p.endDate as string) || (p.end_date as string) || "TBD",
+          })));
+        }
+        setIsLoading(false);
+      })
+      .catch(() => { setError("Failed to load projects"); setIsLoading(false); });
+  }, []);
 
   const statusFilters = ["All", "On Track", "Ahead", "Delayed", "At Risk"];
-  const projects = allProjects.filter(p => {
+  const projects = projectList.filter(p => {
     const matchesSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.client.toLowerCase().includes(search.toLowerCase()) || p.type.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filterStatus === "All" || p.status === filterStatus;
     return matchesSearch && matchesFilter;
@@ -24,7 +77,30 @@ export default function ProjectsPage() {
 
   const statusColor = (s: string) => s === "On Track" ? "var(--green)" : s === "Ahead" ? "var(--cyan)" : s === "At Risk" ? "var(--red)" : "var(--gold)";
 
+  function addProject() {
+    if (!draftProject.name || !draftProject.client) return;
+
+    setProjectList(prev => [
+      {
+        name: draftProject.name,
+        client: draftProject.client,
+        type: draftProject.type,
+        status: "On Track",
+        progress: 0,
+        budget: draftProject.budget || "$0",
+        score: 80,
+        superintendent: "Unassigned",
+        startDate: "TBD",
+        endDate: "TBD",
+      },
+      ...prev,
+    ]);
+    setDraftProject({ name: "", client: "", type: "Commercial", budget: "" });
+    setShowAddProject(false);
+  }
+
   return (
+    <PremiumFeatureGate feature="projects">
     <div style={{ padding: 20, maxWidth: 1200, margin: "0 auto" }}>
       {/* Header */}
       <div style={{ background: "var(--surface)", borderRadius: 14, padding: 20, marginBottom: 16, border: "1px solid rgba(74,196,204,0.08)" }}>
@@ -34,12 +110,31 @@ export default function ProjectsPage() {
             <h1 style={{ fontSize: 24, fontWeight: 900, margin: "4px 0" }}>Project Command</h1>
             <p style={{ fontSize: 12, color: "var(--muted)" }}>Full project lifecycle management with real-time tracking</p>
           </div>
-          <a href="/login" style={{ background: "var(--accent)", color: "var(--bg)", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 700, fontSize: 12, cursor: "pointer", textDecoration: "none", display: "inline-block" }}>+ Add Project</a>
+          <SubscriberActionButton label="+ Add Project" onPaidClick={() => setShowAddProject(v => !v)} style={{ background: "var(--accent)", color: "var(--bg)", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "inline-block" }} />
         </div>
       </div>
 
+      {showAddProject && (
+        <div style={{ background: "var(--surface)", borderRadius: 12, padding: 16, marginBottom: 16, border: "1px solid rgba(74,196,204,0.12)" }}>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, color: "var(--accent)", marginBottom: 10 }}>NEW PROJECT</div>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 2fr 1fr 1fr", gap: 10 }}>
+            <input placeholder="Project name" value={draftProject.name} onChange={e => setDraftProject(prev => ({ ...prev, name: e.target.value }))} />
+            <input placeholder="Client" value={draftProject.client} onChange={e => setDraftProject(prev => ({ ...prev, client: e.target.value }))} />
+            <input placeholder="Type" value={draftProject.type} onChange={e => setDraftProject(prev => ({ ...prev, type: e.target.value }))} />
+            <input placeholder="Budget" value={draftProject.budget} onChange={e => setDraftProject(prev => ({ ...prev, budget: e.target.value }))} />
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+            <button onClick={addProject} style={{ background: "var(--accent)", color: "var(--bg)", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Save Project</button>
+            <button onClick={() => setShowAddProject(false)} style={{ background: "var(--surface)", color: "var(--muted)", border: "1px solid rgba(51,84,94,0.3)", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Cancel</button>
+          </div>
+        </div>
+      )}
+
       {/* Search */}
-      <input placeholder="Search projects, clients, types..." value={search} onChange={e => setSearch(e.target.value)} style={{ width: "100%", marginBottom: 12 }} />
+      <input aria-label="Search projects" placeholder="Search projects, clients, types..." value={search} onChange={e => setSearch(e.target.value)} style={{ width: "100%", marginBottom: 12 }} />
+
+      {isLoading && <div style={{ textAlign: "center", padding: 40, color: "var(--muted)" }}>Loading projects...</div>}
+      {error && <div role="alert" style={{ textAlign: "center", padding: 16, color: "var(--red)", background: "rgba(217,77,72,0.1)", borderRadius: 10, marginBottom: 12 }}>{error}</div>}
 
       {/* Status Filters */}
       <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
@@ -90,5 +185,6 @@ export default function ProjectsPage() {
         ))}
       </div>
     </div>
+    </PremiumFeatureGate>
   );
 }

@@ -1,5 +1,8 @@
 "use client";
-import { useState } from "react";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import PremiumFeatureGate from "@/app/components/PremiumFeatureGate";
+import FeatureAccessLink from "@/app/components/FeatureAccessLink";
 
 const stories = [
   { name: "Marcus R.", initials: "MR", trade: "General", site: "Harborview", viewed: false },
@@ -70,8 +73,43 @@ const tabs = ["Feed", "Jobs", "Market", "DMs", "Companies"];
 export default function FeedPage() {
   const [activeTab, setActiveTab] = useState(0);
   const [feedFilter, setFeedFilter] = useState("all");
+  const [posts, setPosts] = useState(feedPosts);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredPosts = feedFilter === "all" ? feedPosts : feedPosts.filter(p =>
+  useEffect(() => {
+    setIsLoading(true);
+    fetch("/api/feed")
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data: Record<string, unknown>[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setPosts(data.map(p => ({
+            name: (p.name as string) || (p.author_name as string) || "",
+            title: (p.title as string) || (p.author_title as string) || "",
+            company: (p.company as string) || (p.author_company as string) || "",
+            initials: (p.initials as string) || ((p.author_name as string) || "").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
+            verified: (p.verified as boolean) ?? true,
+            content: (p.content as string) || "",
+            tags: (p.tags as string[]) || [],
+            likes: (p.likes as number) || 0,
+            comments: (p.comments as number) || 0,
+            shares: (p.shares as number) || 0,
+            time: (p.time as string) || (p.created_at as string) || "",
+            type: (p.type as string) || (p.post_type as string) || "update",
+            photos: (p.photos as number) || (p.photo_count as number) || 0,
+            trade: (p.trade as string) || "General",
+            location: (p.location as string) || "",
+          })));
+        }
+        setIsLoading(false);
+      })
+      .catch(() => { setError("Failed to load feed"); setIsLoading(false); });
+  }, []);
+
+  const filteredPosts = feedFilter === "all" ? posts : posts.filter(p =>
     feedFilter === "hiring" ? p.type === "hiring" :
     feedFilter === "selling" ? p.type === "selling" :
     feedFilter === "available" ? p.type === "available" :
@@ -82,6 +120,7 @@ export default function FeedPage() {
   const typeColor = (t: string) => t === "hiring" ? "#69D294" : t === "selling" ? "#FCC757" : t === "bid" ? "#4AC4CC" : t === "available" ? "#8A8FCC" : t === "project" ? "#F29E3D" : "";
 
   return (
+    <PremiumFeatureGate feature="feed">
     <div className="max-w-3xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4 p-4 rounded-2xl" style={{ background: "#0F1C24", border: "1px solid rgba(74,196,204,0.08)" }}>
@@ -97,9 +136,12 @@ export default function FeedPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex mb-4 rounded-lg overflow-hidden" style={{ background: "#0F1C24" }}>
+      {isLoading && <div style={{ textAlign: "center", padding: 40, color: "var(--muted)" }}>Loading network...</div>}
+      {error && <div role="alert" style={{ textAlign: "center", padding: 16, color: "var(--red)", background: "rgba(217,77,72,0.1)", borderRadius: 10, marginBottom: 12 }}>{error}</div>}
+
+      <div className="flex mb-4 rounded-lg overflow-hidden" style={{ background: "#0F1C24" }} role="tablist" aria-label="Network tabs">
         {tabs.map((t, i) => (
-          <button key={t} onClick={() => setActiveTab(i)} className="flex-1 py-2.5 text-[10px] font-bold tracking-wider relative" style={{ background: activeTab === i ? "rgba(242,158,61,0.08)" : "transparent", color: activeTab === i ? "#F29E3D" : "#9EBDC2" }}>
+          <button key={t} onClick={() => setActiveTab(i)} role="tab" aria-selected={activeTab === i} aria-label={`${t} tab`} className="flex-1 py-2.5 text-[10px] font-bold tracking-wider relative" style={{ background: activeTab === i ? "rgba(242,158,61,0.08)" : "transparent", color: activeTab === i ? "#F29E3D" : "#9EBDC2" }}>
             {t.toUpperCase()}
             {t === "DMs" && dms.some(d => d.unread > 0) && <span className="absolute top-1.5 right-1/4 w-1.5 h-1.5 rounded-full bg-[#D94D48]" />}
           </button>
@@ -130,7 +172,7 @@ export default function FeedPage() {
           <div className="rounded-xl p-3 mb-4 flex gap-3 items-center" style={{ background: "#0F1C24" }}>
             <div className="w-9 h-9 rounded-full flex items-center justify-center text-[10px] font-black text-black shrink-0" style={{ background: "linear-gradient(135deg, #F29E3D, #FCC757)" }}>YOU</div>
             <div className="flex-1 py-2 px-3 rounded-lg text-xs text-[#9EBDC2]" style={{ background: "#162832" }}>Share a project update, job post, or equipment listing...</div>
-            <a href="/login" className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-black" style={{ background: "linear-gradient(90deg, #F29E3D, #FCC757)", textDecoration: "none" }}>POST</a>
+            <FeatureAccessLink feature="jobs" paidHref="/jobs#post-job" previewHref="/jobs#post-job" className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-black" style={{ background: "linear-gradient(90deg, #F29E3D, #FCC757)", textDecoration: "none" }}>POST</FeatureAccessLink>
           </div>
 
           {/* Feed Filters */}
@@ -167,7 +209,7 @@ export default function FeedPage() {
                     {p.job.urgent && <span className="text-[8px] font-black text-[#D94D48] bg-[rgba(217,77,72,0.1)] px-2 py-0.5 rounded">URGENT</span>}
                   </div>
                   <div className="text-base font-black text-[#69D294] mb-2">{p.job.pay}</div>
-                  <a href="/login" className="block w-full py-2 rounded-lg text-xs font-bold text-black text-center" style={{ background: "#69D294" }}>APPLY NOW</a>
+                  <FeatureAccessLink feature="jobs" paidHref="/jobs" previewHref="/jobs" className="block w-full py-2 rounded-lg text-xs font-bold text-black text-center" style={{ background: "#69D294", textDecoration: "none" }}>OPEN LIVE JOB</FeatureAccessLink>
                 </div>
               )}
 
@@ -196,6 +238,17 @@ export default function FeedPage() {
       {/* Jobs Tab */}
       {activeTab === 1 && (
         <>
+          <div className="rounded-xl p-4 mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3" style={{ background: "rgba(105,210,148,0.06)", border: "1px solid rgba(105,210,148,0.12)" }}>
+            <div>
+              <div className="text-[10px] font-black tracking-[0.2em] text-[#69D294] mb-1">LIVE JOBS FLOW</div>
+              <div className="text-sm font-bold">The real jobs board now lives on its own live route.</div>
+              <div className="text-[11px] text-[#9EBDC2] mt-1">Open the dedicated board to post roles into the database and keep the hiring feed moving.</div>
+            </div>
+            <div className="flex gap-2">
+              <FeatureAccessLink feature="jobs" paidHref="/jobs" previewHref="/jobs" className="px-3 py-2 rounded-lg text-[10px] font-bold text-black text-center" style={{ background: "#69D294", textDecoration: "none" }}>OPEN JOBS BOARD</FeatureAccessLink>
+              <FeatureAccessLink feature="jobs" paidHref="/jobs#post-job" previewHref="/jobs#post-job" className="px-3 py-2 rounded-lg text-[10px] font-bold text-[#F29E3D] border border-[#F29E3D] text-center" style={{ textDecoration: "none" }}>POST A JOB</FeatureAccessLink>
+            </div>
+          </div>
           <div className="grid grid-cols-3 gap-2 mb-4">
             <div className="text-center p-3 rounded-lg" style={{ background: "#0F1C24" }}><div className="text-lg font-black text-[#F29E3D]">{jobs.length}</div><div className="text-[7px] font-bold text-[#9EBDC2]">OPEN JOBS</div></div>
             <div className="text-center p-3 rounded-lg" style={{ background: "#0F1C24" }}><div className="text-lg font-black text-[#D94D48]">{jobs.filter(j => j.urgent).length}</div><div className="text-[7px] font-bold text-[#9EBDC2]">URGENT</div></div>
@@ -218,7 +271,7 @@ export default function FeedPage() {
                 <span>Start: {j.start}</span><span>{j.duration}</span><span>{j.applicants} applicants</span>
               </div>
               <div className="flex gap-1 flex-wrap mb-3">{j.reqs.map(r => <span key={r} className="text-[8px] px-2 py-0.5 rounded" style={{ background: "rgba(105,210,148,0.08)", color: "#69D294" }}>{r}</span>)}</div>
-              <a href="/login" className="block w-full py-2 rounded-lg text-xs font-bold text-black text-center" style={{ background: "linear-gradient(90deg, #F29E3D, #FCC757)" }}>APPLY</a>
+              <FeatureAccessLink feature="jobs" paidHref="/jobs" previewHref="/jobs" className="block w-full py-2 rounded-lg text-xs font-bold text-black text-center" style={{ background: "linear-gradient(90deg, #F29E3D, #FCC757)", textDecoration: "none" }}>OPEN LIVE JOB</FeatureAccessLink>
             </div>
           ))}
         </>
@@ -245,7 +298,7 @@ export default function FeedPage() {
                 </div>
               </div>
               <div className="flex gap-2 text-[10px] text-[#9EBDC2]"><span>Seller: {m.seller}</span></div>
-              <a href="/login" className="block w-full mt-3 py-2 rounded-lg text-xs font-bold text-black text-center" style={{ background: m.type === "sell" ? "#FCC757" : "#4AC4CC" }}>{m.type === "sell" ? "CONTACT SELLER" : "REQUEST RENTAL"}</a>
+              <Link href="/login?redirect=%2Ffeed" className="block w-full mt-3 py-2 rounded-lg text-xs font-bold text-black text-center" style={{ background: m.type === "sell" ? "#FCC757" : "#4AC4CC" }}>{m.type === "sell" ? "CONTACT SELLER" : "REQUEST RENTAL"}</Link>
             </div>
           ))}
         </>
@@ -331,11 +384,12 @@ export default function FeedPage() {
                   <span className="text-[#9EBDC2]">{c.connections} connections</span>
                 </div>
               </div>
-              <a href="/login" className="px-3 py-1.5 rounded-lg text-[9px] font-bold text-black shrink-0 text-center" style={{ background: "#4AC4CC", textDecoration: "none" }}>FOLLOW</a>
+              <Link href="/login?redirect=%2Ffeed" className="px-3 py-1.5 rounded-lg text-[9px] font-bold text-black shrink-0 text-center" style={{ background: "#4AC4CC", textDecoration: "none" }}>FOLLOW</Link>
             </div>
           ))}
         </>
       )}
     </div>
+    </PremiumFeatureGate>
   );
 }
