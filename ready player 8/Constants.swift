@@ -70,6 +70,7 @@ enum SupabaseTable {
     static let leverageSnapshots = "cs_leverage_snapshots"
     static let wealthTracking = "cs_wealth_tracking"
     static let dailyLogs = "cs_daily_logs"
+    static let taxExpenses = "cs_tax_expenses"
     static let verificationRequests = "cs_verification_requests"
 }
 
