@@ -11,6 +11,7 @@ import Combine
 
 @MainActor
 final class DataSyncManager: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = DataSyncManager()
     private let supabase = SupabaseService.shared
 

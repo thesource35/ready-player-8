@@ -130,13 +130,16 @@ struct ValidatedTextField: View {
 struct GlobalSearchView: View {
     @Binding var isPresented: Bool
     @State private var query = ""
+    @State private var debouncedQuery = ""
     @State private var results: [(category: String, title: String, detail: String, icon: String)] = []
+    @State private var debounceTask: Task<Void, Never>?
 
     private func search(_ q: String) {
         guard q.count >= 2 else { results = []; return }
         let lq = q.lowercased()
         var hits: [(category: String, title: String, detail: String, icon: String)] = []
 
+        // Local search (instant — mock data)
         for p in mockProjects where p.name.lowercased().contains(lq) || p.client.lowercased().contains(lq) {
             hits.append(("Projects", p.name, p.client, "\u{1F3D7}"))
         }
@@ -144,6 +147,23 @@ struct GlobalSearchView: View {
             hits.append(("Contracts", c.title, c.client, "\u{1F4CB}"))
         }
         results = hits
+
+        // Server-side search (Supabase full-text via ilike)
+        let svc = SupabaseService.shared
+        guard svc.isConfigured else { return }
+        Task {
+            // Sanitize search input — strip SQL wildcards and special chars
+            let sanitized = lq.replacingOccurrences(of: "%", with: "").replacingOccurrences(of: "'", with: "").replacingOccurrences(of: "\"", with: "").replacingOccurrences(of: ";", with: "")
+            guard !sanitized.isEmpty else { return }
+            if let remote: [SupabaseProject] = try? await svc.fetch(SupabaseTable.projects, query: ["name": "ilike.*\(sanitized)*"]) {
+                let serverHits = remote.map { ("Projects (remote)", $0.name, $0.client, "\u{1F3D7}") }
+                await MainActor.run {
+                    // Merge server results, dedup by title
+                    let existingTitles = Set(results.map(\.title))
+                    results += serverHits.filter { !existingTitles.contains($0.1) }
+                }
+            }
+        }
     }
 
     var body: some View {
@@ -152,7 +172,15 @@ struct GlobalSearchView: View {
                 Image(systemName: "magnifyingglass").foregroundColor(Theme.muted)
                 TextField("Search projects, contracts, crew...", text: $query)
                     .font(.system(size: 14)).foregroundColor(Theme.text)
-                    .onChange(of: query) { _, newVal in search(newVal) }
+                    .onChange(of: query) { _, newVal in
+                        debounceTask?.cancel()
+                        debounceTask = Task {
+                            try? await Task.sleep(for: .milliseconds(300))
+                            guard !Task.isCancelled else { return }
+                            debouncedQuery = newVal
+                            search(newVal)
+                        }
+                    }
                 if !query.isEmpty {
                     Button { query = ""; results = [] } label: {
                         Image(systemName: "xmark.circle.fill").foregroundColor(Theme.muted)
@@ -198,13 +226,41 @@ struct OnboardingView: View {
     @Binding var isComplete: Bool
     @State private var currentStep = 0
 
-    private let steps: [(icon: String, title: String, detail: String)] = [
-        ("\u{1F3D7}", "Welcome to ConstructionOS", "Your all-in-one command center for construction project management, field operations, and business intelligence."),
-        ("\u{2699}\u{FE0F}", "Configure Your Backend", "Connect to Supabase in the Integration Hub to enable cloud sync, real-time data, and team collaboration."),
-        ("\u{1F4CB}", "Track Projects & Contracts", "Manage active jobs, bid pipelines, change orders, and subcontractor scorecards from a single dashboard."),
-        ("\u{1F48E}", "Wealth Intelligence Suite", "Access the Money Lens, Psychology Decoder, Power Thinking, Leverage System, and Opportunity Filter."),
-        ("\u{1F680}", "You\u{2019}re Ready", "Explore the tabs, customize your role preset, and start building your construction command center."),
-    ]
+    /// Onboarding variant — supports A/B testing by selecting step content
+    enum OnboardingVariant: String, CaseIterable {
+        case standard = "A"
+        case quickStart = "B"
+
+        var steps: [(icon: String, title: String, detail: String)] {
+            switch self {
+            case .standard:
+                return [
+                    ("\u{1F3D7}", "Welcome to ConstructionOS", "Your all-in-one command center for construction project management, field operations, and business intelligence."),
+                    ("\u{2699}\u{FE0F}", "Configure Your Backend", "Connect to Supabase in the Integration Hub to enable cloud sync, real-time data, and team collaboration."),
+                    ("\u{1F4CB}", "Track Projects & Contracts", "Manage active jobs, bid pipelines, change orders, and subcontractor scorecards from a single dashboard."),
+                    ("\u{1F48E}", "Wealth Intelligence Suite", "Access the Money Lens, Psychology Decoder, Power Thinking, Leverage System, and Opportunity Filter."),
+                    ("\u{1F680}", "You\u{2019}re Ready", "Explore the tabs, customize your role preset, and start building your construction command center."),
+                ]
+            case .quickStart:
+                return [
+                    ("\u{1F3D7}", "Welcome to ConstructionOS", "The construction industry's operating system. 32 tabs, 56 AI tools, one platform."),
+                    ("\u{26A1}", "Quick Setup", "Just connect your Supabase backend in Settings \u{2192} Integration Hub. Everything else works out of the box."),
+                    ("\u{1F680}", "Let\u{2019}s Build", "You're ready. Start with Projects or ask Angelic AI anything about your jobsite."),
+                ]
+            }
+        }
+    }
+
+    /// Variant is assigned randomly on first launch and persisted
+    @AppStorage("ConstructOS.Onboarding.Variant") private var variantRaw = ""
+    private var variant: OnboardingVariant {
+        if let v = OnboardingVariant(rawValue: variantRaw) { return v }
+        let assigned = OnboardingVariant.allCases.randomElement()!
+        DispatchQueue.main.async { variantRaw = assigned.rawValue }
+        return assigned
+    }
+
+    private var steps: [(icon: String, title: String, detail: String)] { variant.steps }
 
     var body: some View {
         ZStack {
@@ -349,6 +405,7 @@ import UserNotifications
 
 @MainActor
 final class NotificationManager: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = NotificationManager()
     @Published var isAuthorized = false
 
@@ -361,30 +418,71 @@ final class NotificationManager: ObservableObject {
         }
     }
 
-    func scheduleInspectionReminder(site: String, type: String, dueDate: Date) {
+    func scheduleInspectionReminder(site: String, type: String, dueDate: Date, imageData: Data? = nil) {
         let content = UNMutableNotificationContent()
-        content.title = "Inspection Due"
-        content.body = "\(type) at \(site) is due"
-        content.sound = .default
+        content.title = "🔍 Inspection Due"
+        content.subtitle = site
+        content.body = "\(type) inspection is due. Tap to view details."
+        content.sound = .defaultCritical
+        content.categoryIdentifier = "INSPECTION_REMINDER"
+
+        // Rich media attachment (site photo)
+        if let imageData {
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("inspection-\(UUID().uuidString).jpg")
+            try? imageData.write(to: tempURL)
+            if let attachment = try? UNNotificationAttachment(identifier: "image", url: tempURL) {
+                content.attachments = [attachment]
+            }
+        }
 
         let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour], from: dueDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        let request = UNNotificationRequest(identifier: "inspection-\(UUID().uuidString)", content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request)
     }
 
     func scheduleBidDeadline(contract: String, deadline: Date) {
         let content = UNMutableNotificationContent()
-        content.title = "Bid Deadline"
-        content.body = "\(contract) bid is due"
-        content.sound = .default
+        content.title = "📋 Bid Deadline Tomorrow"
+        content.subtitle = contract
+        content.body = "\(contract) bid is due tomorrow. Tap to review."
+        content.sound = .defaultCritical
+        content.categoryIdentifier = "BID_DEADLINE"
 
         let alertDate = Calendar.current.date(byAdding: .day, value: -1, to: deadline) ?? deadline
         let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour], from: alertDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        let request = UNNotificationRequest(identifier: "bid-\(UUID().uuidString)", content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request)
     }
+
+    /// Schedule a reminder after a time interval (e.g. "remind me in 30 minutes")
+    func scheduleTimerReminder(title: String, body: String, after seconds: TimeInterval) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: seconds, repeats: false)
+        let request = UNNotificationRequest(identifier: "timer-\(UUID().uuidString)", content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    #if os(iOS)
+    /// Schedule a geofence notification when arriving at a job site
+    func scheduleLocationReminder(title: String, body: String, latitude: Double, longitude: Double, radius: Double = 200) {
+        let content = UNMutableNotificationContent()
+        content.title = "📍 \(title)"
+        content.body = body
+        content.sound = .default
+        let center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        let region = CLCircularRegion(center: center, radius: radius, identifier: "site-\(UUID().uuidString)")
+        region.notifyOnEntry = true
+        region.notifyOnExit = false
+        let trigger = UNLocationNotificationTrigger(region: region, repeats: false)
+        let request = UNNotificationRequest(identifier: "location-\(UUID().uuidString)", content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request)
+    }
+    #endif
 }
 
 // MARK: - ========== Document Attachment Manager ==========
@@ -400,6 +498,7 @@ struct DocumentAttachment: Identifiable, Codable {
 
 @MainActor
 final class DocumentStore: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = DocumentStore()
     @Published var attachments: [DocumentAttachment] = []
 
@@ -550,12 +649,115 @@ struct PDFExporter {
     }
 }
 
+extension PDFExporter {
+    /// Enhanced report with image support
+    struct PDFSection {
+        let heading: String
+        let content: String
+        var imageData: Data?  // PNG or JPEG
+        var chartValues: [Double]?  // Simple bar chart
+        var chartLabels: [String]?
+    }
+
+    #if os(iOS)
+    static func generateEnhancedReport(title: String, sections: [PDFSection]) -> Data? {
+        let pageWidth: CGFloat = 612
+        let pageHeight: CGFloat = 792
+        let margin: CGFloat = 50
+        let contentWidth = pageWidth - margin * 2
+
+        let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight))
+        return renderer.pdfData { context in
+            context.beginPage()
+            var yPos: CGFloat = margin
+
+            // Title
+            let titleAttrs: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 24, weight: .bold), .foregroundColor: UIColor.black
+            ]
+            NSAttributedString(string: title, attributes: titleAttrs)
+                .draw(in: CGRect(x: margin, y: yPos, width: contentWidth, height: 40))
+            yPos += 50
+
+            for section in sections {
+                if yPos > pageHeight - margin - 200 { context.beginPage(); yPos = margin }
+
+                // Heading
+                let headAttrs: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 16, weight: .semibold), .foregroundColor: UIColor.black
+                ]
+                NSAttributedString(string: section.heading, attributes: headAttrs)
+                    .draw(in: CGRect(x: margin, y: yPos, width: contentWidth, height: 24))
+                yPos += 28
+
+                // Content text
+                let bodyAttrs: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 11), .foregroundColor: UIColor.darkGray
+                ]
+                let bodyStr = NSAttributedString(string: section.content, attributes: bodyAttrs)
+                let bodyRect = bodyStr.boundingRect(with: CGSize(width: contentWidth, height: .greatestFiniteMagnitude), options: [.usesLineFragmentOrigin], context: nil)
+                bodyStr.draw(in: CGRect(x: margin, y: yPos, width: contentWidth, height: bodyRect.height))
+                yPos += bodyRect.height + 12
+
+                // Image
+                if let imageData = section.imageData, let image = UIImage(data: imageData) {
+                    let maxImageHeight: CGFloat = 200
+                    let aspectRatio = image.size.width / image.size.height
+                    let imgWidth = min(contentWidth, maxImageHeight * aspectRatio)
+                    let imgHeight = imgWidth / aspectRatio
+                    if yPos + imgHeight > pageHeight - margin { context.beginPage(); yPos = margin }
+                    image.draw(in: CGRect(x: margin, y: yPos, width: imgWidth, height: imgHeight))
+                    yPos += imgHeight + 12
+                }
+
+                // Simple bar chart
+                if let values = section.chartValues, !values.isEmpty {
+                    let chartHeight: CGFloat = 120
+                    let barWidth = contentWidth / CGFloat(values.count) - 4
+                    let maxVal = values.max() ?? 1
+                    if yPos + chartHeight > pageHeight - margin { context.beginPage(); yPos = margin }
+
+                    let ctx = UIGraphicsGetCurrentContext()!
+                    for (i, val) in values.enumerated() {
+                        let barHeight = (val / maxVal) * (chartHeight - 20)
+                        let x = margin + CGFloat(i) * (barWidth + 4)
+                        let y = yPos + chartHeight - 20 - barHeight
+                        ctx.setFillColor(UIColor(red: 0.95, green: 0.62, blue: 0.24, alpha: 1).cgColor)
+                        ctx.fill(CGRect(x: x, y: y, width: barWidth, height: barHeight))
+
+                        // Label
+                        if let labels = section.chartLabels, i < labels.count {
+                            let labelAttrs: [NSAttributedString.Key: Any] = [
+                                .font: UIFont.systemFont(ofSize: 7), .foregroundColor: UIColor.gray
+                            ]
+                            NSAttributedString(string: labels[i], attributes: labelAttrs)
+                                .draw(in: CGRect(x: x, y: yPos + chartHeight - 16, width: barWidth, height: 14))
+                        }
+                    }
+                    yPos += chartHeight + 12
+                }
+
+                yPos += 8
+            }
+
+            // Footer
+            let footAttrs: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 8), .foregroundColor: UIColor.lightGray
+            ]
+            NSAttributedString(string: "Generated by ConstructionOS", attributes: footAttrs)
+                .draw(in: CGRect(x: margin, y: pageHeight - 30, width: contentWidth, height: 12))
+        }
+    }
+    #endif
+}
+
 // MARK: - ========== Calendar Integration ==========
 
 import EventKit
 
 @MainActor
 final class CalendarManager: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = CalendarManager()
     private let store = EKEventStore()
     @Published var isAuthorized = false
@@ -677,9 +879,12 @@ import UniformTypeIdentifiers
 
 @MainActor
 final class SpotlightIndexer {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = SpotlightIndexer()
 
+    /// Re-index projects — deletes stale entries first
     func indexProjects(_ projects: [Project]) {
+        CSSearchableIndex.default().deleteSearchableItems(withDomainIdentifiers: ["com.constructionos.projects"])
         var items: [CSSearchableItem] = []
         for project in projects {
             let attrs = CSSearchableItemAttributeSet(contentType: .text)
@@ -697,7 +902,9 @@ final class SpotlightIndexer {
         CSSearchableIndex.default().indexSearchableItems(items)
     }
 
+    /// Re-index contracts — deletes stale entries first
     func indexContracts(_ contracts: [SupabaseContract]) {
+        CSSearchableIndex.default().deleteSearchableItems(withDomainIdentifiers: ["com.constructionos.contracts"])
         var items: [CSSearchableItem] = []
         for contract in contracts {
             let attrs = CSSearchableItemAttributeSet(contentType: .text)
@@ -715,7 +922,9 @@ final class SpotlightIndexer {
         CSSearchableIndex.default().indexSearchableItems(items)
     }
 
+    /// Re-index rental items — deletes stale entries first
     func indexRentalItems(_ items: [RentalItem]) {
+        CSSearchableIndex.default().deleteSearchableItems(withDomainIdentifiers: ["com.constructionos.rentals"])
         var searchItems: [CSSearchableItem] = []
         for rental in items {
             let attrs = CSSearchableItemAttributeSet(contentType: .text)

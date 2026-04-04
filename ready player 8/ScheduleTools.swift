@@ -214,7 +214,7 @@ struct FuelEntry: Identifiable, Codable {
 }
 
 struct FuelLogView: View {
-    @State private var entries: [FuelEntry] = []
+     private var entries: [FuelEntry] = loadJSON("ConstructOS.Fleet.FuelEntries", default: [FuelEntry]())
     @State private var showAdd = false
 
     private let mockEntries: [FuelEntry] = [

@@ -109,9 +109,20 @@ struct ready_player_8App: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 #endif
 
+    @StateObject private var supabase = SupabaseService.shared
+    @StateObject private var analytics = AnalyticsEngine.shared
+    @StateObject private var crashReporter = CrashReporter.shared
+    @StateObject private var persistence = PersistenceController.shared
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(supabase)
+                .environmentObject(analytics)
+                .environmentObject(crashReporter)
+                .environmentObject(persistence)
+                .environment(ToastManager.shared)
+                .environment(\.managedObjectContext, persistence.container.viewContext)
         }
     }
 }

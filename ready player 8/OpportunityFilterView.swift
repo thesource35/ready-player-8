@@ -11,8 +11,8 @@ struct OpportunityFilterView: View {
     @AppStorage("ConstructOS.Wealth.OpportunitiesRaw") private var opportunitiesRaw: String = ""
     @AppStorage("ConstructOS.Wealth.ArchivedOpportunitiesRaw") private var archivedRaw: String = ""
 
-    @State private var opportunities: [WealthOpportunity] = []
-    @State private var archivedOpportunities: [WealthOpportunity] = []
+     private var opportunities: [WealthOpportunity] = loadJSON(StorageKey.opportunitiesRaw, default: [WealthOpportunity]())
+     private var archivedOpportunities: [WealthOpportunity] = loadJSON(StorageKey.archivedOpportunitiesRaw, default: [WealthOpportunity]())
     @State private var showOpportunitySheet = false
     @State private var showFromContractSheet = false
     @State private var viewMode: OpportunityViewMode = .active
@@ -304,7 +304,7 @@ struct OpportunityFilterView: View {
 
     private func loadContracts() async {
         guard supabase.isConfigured else { return }
-        do { remoteContracts = try await supabase.fetch("cs_contracts") } catch { /* fallback */ }
+        do { remoteContracts = try await supabase.fetch(SupabaseTable.contracts) } catch { /* fallback */ }
     }
 
     // MARK: - Helpers
@@ -348,7 +348,7 @@ struct OpportunityFilterView: View {
                     contractId: opp.contractId,
                     status: opp.status
                 )
-                try? await supabase.insert("cs_wealth_opportunities", record: dto)
+                try? await supabase.insert(SupabaseTable.wealthOpportunities, record: dto)
             }
         }
     }

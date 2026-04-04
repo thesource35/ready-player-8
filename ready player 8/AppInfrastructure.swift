@@ -7,6 +7,7 @@ import Combine
 
 @MainActor
 final class AnalyticsEngine: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = AnalyticsEngine()
 
     @Published var events: [AnalyticsEvent] = []
@@ -71,6 +72,7 @@ struct AnalyticsEvent: Codable, Identifiable {
 
 @MainActor
 final class CrashReporter: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = CrashReporter()
 
     @Published var crashLogs: [CrashLog] = []

@@ -251,13 +251,13 @@ final class IntegrationHub: ObservableObject {
         backendProvider = provider
         switch provider {
         case .supabase:
-            if trimmed(backendBaseURL).isEmpty {
-                backendBaseURL = "https://your-project.supabase.co"
+            if trimmed(backendBaseURL).isEmpty || isPlaceholderBaseURL(backendBaseURL) {
+                backendBaseURL = ""
             }
             backendProjectId = ""
         case .firebase:
-            if trimmed(backendProjectId).isEmpty {
-                backendProjectId = "your-firebase-project-id"
+            if trimmed(backendProjectId).isEmpty || isPlaceholderProjectId(backendProjectId) {
+                backendProjectId = ""
             }
             backendBaseURL = ""
             backendAuthToken = ""
@@ -403,6 +403,8 @@ final class IntegrationHub: ObservableObject {
         }
         backendBaseURL = KeychainHelper.read(key: "Backend.BaseURL") ?? UserDefaults.standard.string(forKey: configKeyPrefix + "BaseURL") ?? ""
         backendProjectId = UserDefaults.standard.string(forKey: configKeyPrefix + "ProjectID") ?? ""
+        if isPlaceholderBaseURL(backendBaseURL) { backendBaseURL = "" }
+        if isPlaceholderProjectId(backendProjectId) { backendProjectId = "" }
         backendApiKey = KeychainHelper.read(key: "Backend.ApiKey") ?? UserDefaults.standard.string(forKey: configKeyPrefix + "ApiKey") ?? ""
         backendAuthToken = KeychainHelper.read(key: "Backend.AuthToken") ?? UserDefaults.standard.string(forKey: configKeyPrefix + "AuthToken") ?? ""
     }
@@ -989,12 +991,12 @@ final class IntegrationHub: ObservableObject {
         switch backendProvider {
         case .supabase:
             var missing: [String] = []
-            if trimmed(backendBaseURL).isEmpty { missing.append("base URL") }
+            if trimmed(backendBaseURL).isEmpty || isPlaceholderBaseURL(backendBaseURL) { missing.append("base URL") }
             if trimmed(backendApiKey).isEmpty { missing.append("API key") }
             return missing
         case .firebase:
             var missing: [String] = []
-            if trimmed(backendProjectId).isEmpty { missing.append("project ID") }
+            if trimmed(backendProjectId).isEmpty || isPlaceholderProjectId(backendProjectId) { missing.append("project ID") }
             if trimmed(backendApiKey).isEmpty { missing.append("API key") }
             return missing
         }
@@ -1007,6 +1009,18 @@ final class IntegrationHub: ObservableObject {
 
     private func trimmed(_ value: String) -> String {
         value.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func isPlaceholderBaseURL(_ value: String) -> Bool {
+        let cleaned = trimmed(value).lowercased()
+        if cleaned.isEmpty { return false }
+        return cleaned.contains("your-project.supabase.co") || cleaned.contains("<your-project>")
+    }
+
+    private func isPlaceholderProjectId(_ value: String) -> Bool {
+        let cleaned = trimmed(value).lowercased()
+        if cleaned.isEmpty { return false }
+        return cleaned == "your-firebase-project-id" || cleaned.contains("<your-project-id>")
     }
 
     private func isRedactedSecret(_ value: String) -> Bool {
@@ -1066,7 +1080,7 @@ struct PlatformIntegrationPanel: View {
                 )
                 Spacer()
                 Text(hub.backendStatus.uppercased())
-                    .font(.system(size: 8, weight: .bold))
+                    .font(.system(size: 11, weight: .bold))
                     .foregroundColor(.black)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
@@ -1100,12 +1114,12 @@ struct PlatformIntegrationPanel: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text("BUSINESS PLATFORMS")
-                        .font(.system(size: 8, weight: .black))
+                        .font(.system(size: 11, weight: .black))
                         .tracking(1)
                         .foregroundColor(Theme.cyan)
                     Spacer()
                     Text("Outlook + QuickBooks + Microsoft 365")
-                        .font(.system(size: 8, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(Theme.muted)
                 }
 
@@ -1116,14 +1130,14 @@ struct PlatformIntegrationPanel: View {
                         } label: {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(platform.rawValue)
-                                    .font(.system(size: 8, weight: .black))
+                                    .font(.system(size: 11, weight: .black))
                                     .foregroundColor(hub.selectedBusinessPlatform == platform ? .black : platform.color)
                                 Text(platform.subtitle)
-                                    .font(.system(size: 8, weight: .semibold))
+                                    .font(.system(size: 11, weight: .semibold))
                                     .foregroundColor(hub.selectedBusinessPlatform == platform ? Color.black.opacity(0.75) : Theme.muted)
                                     .lineLimit(2)
                                 Text(hub.businessPlatformConnected(for: platform) ? "CONNECTED" : "NOT CONNECTED")
-                                    .font(.system(size: 8, weight: .bold))
+                                    .font(.system(size: 11, weight: .bold))
                                     .foregroundColor(hub.businessPlatformConnected(for: platform) ? Theme.green : Theme.red)
                             }
                             .padding(8)
@@ -1142,7 +1156,7 @@ struct PlatformIntegrationPanel: View {
                             .foregroundColor(hub.selectedBusinessPlatform.color)
                         Spacer()
                         Text("Last sync: \(hub.businessPlatformLastSync(for: hub.selectedBusinessPlatform))")
-                            .font(.system(size: 8, weight: .semibold))
+                            .font(.system(size: 11, weight: .semibold))
                             .foregroundColor(Theme.muted)
                     }
 
@@ -1150,13 +1164,13 @@ struct PlatformIntegrationPanel: View {
                         HStack(spacing: 6) {
                             TextField("Outlook tenant", text: $hub.outlookTenant)
                                 .textFieldStyle(.plain)
-                                .font(.system(size: 8, weight: .semibold))
+                                .font(.system(size: 11, weight: .semibold))
                                 .padding(6)
                                 .background(Theme.surface)
                                 .cornerRadius(6)
                             TextField("Mailbox", text: $hub.outlookMailbox)
                                 .textFieldStyle(.plain)
-                                .font(.system(size: 8, weight: .semibold))
+                                .font(.system(size: 11, weight: .semibold))
                                 .padding(6)
                                 .background(Theme.surface)
                                 .cornerRadius(6)
@@ -1165,13 +1179,13 @@ struct PlatformIntegrationPanel: View {
                         HStack(spacing: 6) {
                             TextField("Company ID", text: $hub.quickBooksCompanyID)
                                 .textFieldStyle(.plain)
-                                .font(.system(size: 8, weight: .semibold))
+                                .font(.system(size: 11, weight: .semibold))
                                 .padding(6)
                                 .background(Theme.surface)
                                 .cornerRadius(6)
                             TextField("Realm ID", text: $hub.quickBooksRealm)
                                 .textFieldStyle(.plain)
-                                .font(.system(size: 8, weight: .semibold))
+                                .font(.system(size: 11, weight: .semibold))
                                 .padding(6)
                                 .background(Theme.surface)
                                 .cornerRadius(6)
@@ -1180,13 +1194,13 @@ struct PlatformIntegrationPanel: View {
                         HStack(spacing: 6) {
                             TextField("Microsoft tenant", text: $hub.microsoft365Tenant)
                                 .textFieldStyle(.plain)
-                                .font(.system(size: 8, weight: .semibold))
+                                .font(.system(size: 11, weight: .semibold))
                                 .padding(6)
                                 .background(Theme.surface)
                                 .cornerRadius(6)
                             TextField("SharePoint / OneDrive path", text: $hub.microsoft365Site)
                                 .textFieldStyle(.plain)
-                                .font(.system(size: 8, weight: .semibold))
+                                .font(.system(size: 11, weight: .semibold))
                                 .padding(6)
                                 .background(Theme.surface)
                                 .cornerRadius(6)
@@ -1201,7 +1215,7 @@ struct PlatformIntegrationPanel: View {
                                 hub.connectBusinessPlatform(hub.selectedBusinessPlatform)
                             }
                         }
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundColor(.black)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -1212,31 +1226,31 @@ struct PlatformIntegrationPanel: View {
                         Button("DISCONNECT") {
                             hub.disconnectBusinessPlatform(hub.selectedBusinessPlatform)
                         }
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundColor(Theme.muted)
                         .buttonStyle(.plain)
                         .opacity(hub.businessPlatformConnected(for: hub.selectedBusinessPlatform) ? 1 : 0.45)
                         .disabled(!hub.businessPlatformConnected(for: hub.selectedBusinessPlatform))
 
                         Text(hub.businessPlatformStatus(for: hub.selectedBusinessPlatform))
-                            .font(.system(size: 8, weight: .semibold))
+                            .font(.system(size: 11, weight: .semibold))
                             .foregroundColor(Theme.muted)
                             .lineLimit(1)
 
                         Spacer()
 
                         Text("Queue: \(hub.businessPlatformPendingItems(for: hub.selectedBusinessPlatform))")
-                            .font(.system(size: 8, weight: .black))
+                            .font(.system(size: 11, weight: .black))
                             .foregroundColor(hub.selectedBusinessPlatform.color)
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("RECOMMENDED WORKFLOWS")
-                            .font(.system(size: 8, weight: .black))
+                            .font(.system(size: 11, weight: .black))
                             .foregroundColor(Theme.muted)
                         ForEach(hub.recommendedWorkflows(for: hub.selectedBusinessPlatform), id: \.self) { workflow in
                             Text("• \(workflow)")
-                                .font(.system(size: 8, weight: .semibold))
+                                .font(.system(size: 11, weight: .semibold))
                                 .foregroundColor(Theme.text)
                         }
                     }
@@ -1249,11 +1263,11 @@ struct PlatformIntegrationPanel: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
                     Text("BACKEND TARGET")
-                        .font(.system(size: 8, weight: .black))
+                        .font(.system(size: 11, weight: .black))
                         .foregroundColor(Theme.muted)
                     ForEach(IntegrationBackendProvider.allCases, id: \.rawValue) { provider in
                         Button(provider.rawValue) { hub.backendProvider = provider }
-                            .font(.system(size: 8, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundColor(hub.backendProvider == provider ? .black : provider.color)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
@@ -1266,10 +1280,10 @@ struct PlatformIntegrationPanel: View {
 
                 HStack(spacing: 6) {
                     Text("QUICK PRESETS")
-                        .font(.system(size: 8, weight: .black))
+                        .font(.system(size: 11, weight: .black))
                         .foregroundColor(Theme.muted)
                     Button("SUPABASE STARTER") { hub.applyPreset(.supabase) }
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundColor(.black)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -1277,7 +1291,7 @@ struct PlatformIntegrationPanel: View {
                         .cornerRadius(5)
                         .buttonStyle(.plain)
                     Button("FIREBASE STARTER") { hub.applyPreset(.firebase) }
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundColor(.black)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -1290,13 +1304,13 @@ struct PlatformIntegrationPanel: View {
                 HStack(spacing: 6) {
                     TextField("Base URL (Supabase)", text: $hub.backendBaseURL)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 8, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .padding(6)
                         .background(Theme.surface)
                         .cornerRadius(6)
                     TextField("Project ID (Firebase)", text: $hub.backendProjectId)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 8, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .padding(6)
                         .background(Theme.surface)
                         .cornerRadius(6)
@@ -1305,13 +1319,13 @@ struct PlatformIntegrationPanel: View {
                 HStack(spacing: 6) {
                     SecureField("API Key", text: $hub.backendApiKey)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 8, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .padding(6)
                         .background(Theme.surface)
                         .cornerRadius(6)
                     SecureField("Auth Token (optional)", text: $hub.backendAuthToken)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 8, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .padding(6)
                         .background(Theme.surface)
                         .cornerRadius(6)
@@ -1319,7 +1333,7 @@ struct PlatformIntegrationPanel: View {
 
                 HStack(spacing: 6) {
                     Button("SAVE CONFIG") { hub.saveBackendConfig() }
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundColor(.black)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -1327,7 +1341,7 @@ struct PlatformIntegrationPanel: View {
                         .cornerRadius(5)
                         .buttonStyle(.plain)
                     Button("TEST CONNECTION") { hub.testConnection() }
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundColor(.black)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -1337,7 +1351,7 @@ struct PlatformIntegrationPanel: View {
                         .disabled(!hub.isConfigReady)
                         .opacity(hub.isConfigReady ? 1 : 0.45)
                     Text(hub.connectionStatus)
-                        .font(.system(size: 8, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(Theme.muted)
                         .lineLimit(1)
                     Spacer()
@@ -1345,7 +1359,7 @@ struct PlatformIntegrationPanel: View {
 
                 HStack(spacing: 6) {
                     Button("RUN LIVE CHECK") { hub.runLiveValidation() }
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundColor(.black)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -1355,25 +1369,25 @@ struct PlatformIntegrationPanel: View {
                         .disabled(!hub.isConfigReady)
                         .opacity(hub.isConfigReady ? 1 : 0.45)
                     Text(hub.liveValidationStatus)
-                        .font(.system(size: 8, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(Theme.muted)
                         .lineLimit(1)
                     Spacer()
                 }
 
                 Text(hub.readinessStatus)
-                    .font(.system(size: 8, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(hub.isConfigReady ? Theme.green : Theme.gold)
                     .lineLimit(1)
 
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Text("CONFIG TRANSFER")
-                            .font(.system(size: 8, weight: .black))
+                            .font(.system(size: 11, weight: .black))
                             .foregroundColor(Theme.muted)
                         Spacer()
                         Button("EXPORT JSON") { hub.exportConfigPayload() }
-                            .font(.system(size: 8, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundColor(.black)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
@@ -1381,7 +1395,7 @@ struct PlatformIntegrationPanel: View {
                             .cornerRadius(5)
                             .buttonStyle(.plain)
                         Button("IMPORT JSON") { hub.importConfigPayload() }
-                            .font(.system(size: 8, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundColor(.black)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
@@ -1391,7 +1405,7 @@ struct PlatformIntegrationPanel: View {
                         Button(hub.includeSecretsInExport ? "SECRETS ON" : "SECRETS OFF") {
                             hub.includeSecretsInExport.toggle()
                         }
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundColor(.black)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -1401,21 +1415,21 @@ struct PlatformIntegrationPanel: View {
                     }
 
                     Text(hub.includeSecretsInExport ? "Warning: export includes API key/token" : "Safe mode: secrets are redacted on export")
-                        .font(.system(size: 8, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(hub.includeSecretsInExport ? Theme.red : Theme.green)
                         .lineLimit(1)
 
                     HStack(spacing: 6) {
                         SecureField("Transfer passphrase (optional)", text: $hub.signaturePassphrase)
                             .textFieldStyle(.plain)
-                            .font(.system(size: 8, weight: .semibold))
+                            .font(.system(size: 11, weight: .semibold))
                             .padding(6)
                             .background(Theme.surface)
                             .cornerRadius(6)
                         Button(hub.requireSignatureOnImport ? "REQUIRE SIGNATURE" : "SIGNATURE OPTIONAL") {
                             hub.requireSignatureOnImport.toggle()
                         }
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundColor(.black)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -1425,14 +1439,14 @@ struct PlatformIntegrationPanel: View {
                     }
 
                     TextEditor(text: $hub.configTransferPayload)
-                        .font(.system(size: 8, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .frame(height: 86)
                         .padding(4)
                         .background(Theme.surface)
                         .cornerRadius(6)
 
                     Text(hub.configTransferStatus)
-                        .font(.system(size: 8, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(Theme.muted)
                         .lineLimit(1)
                 }
@@ -1444,7 +1458,7 @@ struct PlatformIntegrationPanel: View {
             HStack(spacing: 6) {
                 ForEach(IntegrationRole.allCases, id: \.rawValue) { role in
                     Button(role.rawValue) { hub.signIn(role: role) }
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundColor(hub.role == role ? .black : role.color)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -1453,7 +1467,7 @@ struct PlatformIntegrationPanel: View {
                         .buttonStyle(.plain)
                 }
                 Button("SIGN OUT") { hub.signOut() }
-                    .font(.system(size: 8, weight: .bold))
+                    .font(.system(size: 11, weight: .bold))
                     .foregroundColor(Theme.muted)
                     .buttonStyle(.plain)
                 Spacer()
@@ -1499,7 +1513,7 @@ struct PlatformIntegrationPanel: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text("BACKEND HEALTH")
-                        .font(.system(size: 8, weight: .black))
+                        .font(.system(size: 11, weight: .black))
                         .tracking(1)
                         .foregroundColor(hub.healthColor)
                     Spacer()
@@ -1527,7 +1541,7 @@ struct PlatformIntegrationPanel: View {
                 }
 
                 Text(hub.healthSummary)
-                    .font(.system(size: 8, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(Theme.muted)
                     .lineLimit(1)
             }
@@ -1538,7 +1552,7 @@ struct PlatformIntegrationPanel: View {
             if !hub.checkHistory.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("RECENT CHECKS")
-                        .font(.system(size: 8, weight: .black))
+                        .font(.system(size: 11, weight: .black))
                         .tracking(1)
                         .foregroundColor(Theme.cyan)
 
@@ -1551,19 +1565,19 @@ struct PlatformIntegrationPanel: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 HStack(spacing: 6) {
                                     Text(record.stage)
-                                        .font(.system(size: 8, weight: .black))
+                                        .font(.system(size: 11, weight: .black))
                                         .foregroundColor(record.accent)
                                     Text(record.timestamp)
-                                        .font(.system(size: 8, weight: .semibold))
+                                        .font(.system(size: 11, weight: .semibold))
                                         .foregroundColor(Theme.muted)
                                     if let latencyMS = record.latencyMS {
                                         Text("· \(latencyMS)ms")
-                                            .font(.system(size: 8, weight: .semibold))
+                                            .font(.system(size: 11, weight: .semibold))
                                             .foregroundColor(Theme.muted)
                                     }
                                 }
                                 Text(record.detail)
-                                    .font(.system(size: 8, weight: .semibold))
+                                    .font(.system(size: 11, weight: .semibold))
                                     .foregroundColor(Theme.text)
                                     .lineLimit(2)
                             }
@@ -1578,7 +1592,7 @@ struct PlatformIntegrationPanel: View {
 
             if let latestEvent = hub.analyticsEvents.first {
                 Text("Last telemetry: \(latestEvent)")
-                    .font(.system(size: 8, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(Theme.muted)
                     .lineLimit(1)
             }
@@ -1592,16 +1606,16 @@ struct PlatformIntegrationPanel: View {
     private func integrationCard(title: String, subtitle: String, actionLabel: String, action: @escaping () -> Void, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.system(size: 8, weight: .black))
+                .font(.system(size: 11, weight: .black))
                 .tracking(1)
                 .foregroundColor(color)
             Text(subtitle)
-                .font(.system(size: 8, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundColor(Theme.muted)
                 .lineLimit(2)
             Spacer(minLength: 0)
             Button(actionLabel, action: action)
-                .font(.system(size: 8, weight: .bold))
+                .font(.system(size: 11, weight: .bold))
                 .foregroundColor(.black)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
@@ -1618,7 +1632,7 @@ struct PlatformIntegrationPanel: View {
     private func healthMetric(label: String, value: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.system(size: 8, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundColor(Theme.muted)
             Text(value)
                 .font(.system(size: 11, weight: .black))

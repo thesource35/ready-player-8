@@ -38,7 +38,7 @@ struct ProjectsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
+            LazyVStack(alignment: .leading, spacing: 14) {
                 // Header
                 projectsHeader
                 // Stats row
@@ -245,7 +245,7 @@ struct ProjectsView: View {
         errorMessage = nil
         defer { isLoading = false }
         do {
-            projects = try await supabase.fetch("cs_projects")
+            projects = try await supabase.fetch(SupabaseTable.projects)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -253,7 +253,7 @@ struct ProjectsView: View {
 
     private func saveProject(_ project: SupabaseProject) async {
         do {
-            try await supabase.insert("cs_projects", record: project)
+            try await supabase.insert(SupabaseTable.projects, record: project)
             await loadProjects()
         } catch {
             errorMessage = error.localizedDescription
@@ -263,7 +263,7 @@ struct ProjectsView: View {
     private func updateProject(_ project: SupabaseProject) async {
         guard let id = project.id else { return }
         do {
-            try await supabase.update("cs_projects", id: id, record: project)
+            try await supabase.update(SupabaseTable.projects, id: id, record: project)
             await loadProjects()
         } catch {
             errorMessage = error.localizedDescription
@@ -272,7 +272,7 @@ struct ProjectsView: View {
 
     private func deleteProject(id: String) async {
         do {
-            try await supabase.delete("cs_projects", id: id)
+            try await supabase.delete(SupabaseTable.projects, id: id)
             projects.removeAll { $0.id == id }
         } catch {
             errorMessage = error.localizedDescription

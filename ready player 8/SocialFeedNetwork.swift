@@ -120,6 +120,7 @@ struct ProjectPortfolio: Identifiable {
 
 @MainActor
 final class VerificationStore: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = VerificationStore()
     @Published var isVerified = false
     @AppStorage("ConstructOS.Verification.Active") var verificationActive = false

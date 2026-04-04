@@ -110,7 +110,7 @@ struct ElectricalFiberView: View {
     @State private var activeSubTab: ElecSubTab = .directory
     @State private var searchQuery = ""
     @State private var selectedTrade: ElectricalTrade? = nil
-    @State private var leads: [ElectricalLead] = []
+     private var leads: [ElectricalLead] = loadJSON("ConstructOS.Electrical.Leads", default: [ElectricalLead]())
     @State private var showPostLead = false
 
     enum ElecSubTab: String, CaseIterable {

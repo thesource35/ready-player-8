@@ -5,7 +5,7 @@ import SwiftUI
 enum AuthStep { case login, signup, twoFactor, forgotPassword, companySelect }
 
 struct AuthGateView: View {
-    @ObservedObject var supabase = SupabaseService.shared
+    @EnvironmentObject var supabase: SupabaseService
     @ObservedObject var profileStore = UserProfileStore.shared
     @State private var email = ""
     @State private var password = ""
@@ -90,10 +90,13 @@ struct AuthGateView: View {
                     VStack(spacing: 6) {
                         Text("Trusted by 142,891 construction professionals").font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.5))
                         HStack(spacing: 16) {
-                            Button("Terms of Service") {}.font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
-                            Button("Privacy Policy") {}.font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
-                            Button("Support") {}.font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
-                        }.buttonStyle(.plain)
+                            Link("Terms of Service", destination: URL(string: "https://constructionos.world/terms")!)
+                                .font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
+                            Link("Privacy Policy", destination: URL(string: "https://constructionos.world/privacy")!)
+                                .font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
+                            Link("Support", destination: URL(string: "https://constructionos.world/support")!)
+                                .font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
+                        }
                     }
 
                     Spacer().frame(height: 40)
@@ -239,7 +242,7 @@ struct AuthGateView: View {
                 guard !company.isEmpty else { error = "Company name is required"; return }
                 guard !jobTitle.isEmpty else { error = "Job title is required"; return }
                 guard !location.isEmpty else { error = "Location is required"; return }
-                guard password.count >= 8 else { error = "Password must be at least 8 characters"; return }
+                guard password.count >= AppConstants.Auth.minPasswordLength else { error = "Password must be at least \(AppConstants.Auth.minPasswordLength) characters"; return }
                 guard password == confirmPassword else { error = "Passwords do not match"; return }
                 isLoading = true; error = nil
 
@@ -355,25 +358,30 @@ struct AuthGateView: View {
                     error = nil
                 }.font(.system(size: 12, weight: .semibold)).foregroundColor(Theme.cyan)
 
-                Button("Use backup code") {}.font(.system(size: 12, weight: .semibold)).foregroundColor(Theme.muted)
+                Button("Use backup code") {
+                    // TODO: Implement backup code verification flow
+                    error = "Backup code verification coming soon"
+                }.font(.system(size: 12, weight: .semibold)).foregroundColor(Theme.muted)
             }
 
-            // For App Review — remove before production
+            #if DEBUG
+            // Demo access — DEBUG builds only, stripped from production
             Button {
-                supabase.accessToken = supabase.accessToken ?? "verified"
+                supabase.accessToken = supabase.accessToken ?? UUID().uuidString
                 if profileStore.currentUser == nil {
                     let _ = profileStore.createAccount(profile: UserProfile(
-                        email: "reviewer@apple.com", fullName: "App Reviewer", company: "Apple",
-                        jobTitle: "Reviewer", trade: "General", birthdate: "01/01/2000",
-                        yearsExperience: 1, phone: "", bio: "App Store Review",
-                        location: "Cupertino, CA", certifications: [], skills: [],
+                        email: "demo@constructionos.app", fullName: "Demo User", company: "ConstructionOS",
+                        jobTitle: "Demo", trade: "General", birthdate: "01/01/2000",
+                        yearsExperience: 1, phone: "", bio: "Demo account",
+                        location: "Austin, TX", certifications: [], skills: [],
                         connectionIDs: [], pendingConnectionIDs: [],
-                        joinedDate: Date(), isVerified: true
+                        joinedDate: Date(), isVerified: false
                     ))
                 }
             } label: {
                 Text("Continue to demo").font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.3))
             }.buttonStyle(.plain)
+            #endif
 
             Spacer().frame(height: 24)
         }
@@ -490,14 +498,14 @@ struct AuthGateView: View {
     private func verify2FA() {
         guard twoFactorCode.count == 6 else { return }
         isLoading = true
-        // Simulate 2FA verification
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1.0))
             if twoFactorCode == "000000" {
                 error = "Invalid code. Please try again."
                 twoFactorCode = ""
             } else {
                 // 2FA verified — proceed to app
-                if supabase.accessToken == nil { supabase.accessToken = "verified" }
+                if supabase.accessToken == nil { supabase.accessToken = UUID().uuidString }
                 if supabase.currentUserEmail == nil { supabase.currentUserEmail = email }
             }
             isLoading = false
@@ -507,7 +515,7 @@ struct AuthGateView: View {
 
 struct ContentView: View {
     @StateObject private var actionLog = RiskActionLogStore()
-    @ObservedObject private var supabase = SupabaseService.shared
+    @EnvironmentObject private var supabase: SupabaseService
     @State private var activeNav: NavTab = .home
     @State private var pulse = false
 

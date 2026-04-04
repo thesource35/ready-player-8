@@ -16,7 +16,7 @@ struct MoneyLensView: View {
     // MARK: - Wealth Tracking
     @AppStorage("ConstructOS.Wealth.TrackingRaw") private var trackingRaw: String = ""
     @AppStorage("ConstructOS.Wealth.CapitalAllocation") private var capitalAllocationRaw: String = ""
-    @State private var trackingEntries: [WealthTrackingEntry] = []
+     private var trackingEntries: [WealthTrackingEntry] = loadJSON(StorageKey.trackingRaw, default: [WealthTrackingEntry]())
     @State private var showTrackingSheet = false
 
     // MARK: - Capital Allocation
@@ -396,8 +396,8 @@ struct MoneyLensView: View {
     private func loadRemoteData() async {
         guard supabase.isConfigured else { return }
         do {
-            remoteProjects = try await supabase.fetch("cs_projects")
-            remoteContracts = try await supabase.fetch("cs_contracts")
+            remoteProjects = try await supabase.fetch(SupabaseTable.projects)
+            remoteContracts = try await supabase.fetch(SupabaseTable.contracts)
         } catch { /* fall back to mock */ }
     }
 
@@ -429,7 +429,7 @@ struct MoneyLensView: View {
                     margin: entry.margin,
                     notes: entry.notes
                 )
-                try? await supabase.insert("cs_wealth_tracking", record: dto)
+                try? await supabase.insert(SupabaseTable.wealthTracking, record: dto)
             }
         }
     }

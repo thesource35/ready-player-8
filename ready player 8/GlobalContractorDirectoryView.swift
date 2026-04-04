@@ -104,7 +104,7 @@ struct GlobalContractorDirectoryView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
+            LazyVStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(spacing: 6) { Text("\u{1F4D6}").font(.system(size: 18)); Text("GLOBAL DIRECTORY").font(.system(size: 11, weight: .bold)).tracking(3).foregroundColor(Theme.accent) }

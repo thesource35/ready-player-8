@@ -28,7 +28,7 @@ struct MarketView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
+            LazyVStack(alignment: .leading, spacing: 14) {
                 marketHeader
                 marketRegionFilter
                 if isLoading {
@@ -198,8 +198,8 @@ struct MarketView: View {
         guard supabase.isConfigured else { return }
         isLoading = true; errorMessage = nil; defer { isLoading = false }
         do {
-            let mData: [SupabaseMarketData] = try await supabase.fetch("cs_market_data")
-            let cData: [SupabaseContract] = try await supabase.fetch("cs_contracts")
+            let mData: [SupabaseMarketData] = try await supabase.fetch(SupabaseTable.marketData)
+            let cData: [SupabaseContract] = try await supabase.fetch(SupabaseTable.contracts)
             marketData = mData
             contracts = cData
         } catch {

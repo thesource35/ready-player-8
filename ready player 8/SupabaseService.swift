@@ -134,10 +134,24 @@ enum SupabaseError: LocalizedError {
 
 // MARK: - Service
 
+@MainActor
 final class SupabaseService: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = SupabaseService()
 
     private let configKeyPrefix = "ConstructOS.Integrations.Backend."
+
+    // MARK: - Rate Limiting
+    private var lastRequestTime: Date = .distantPast
+    private let minRequestInterval: TimeInterval = 0.1  // 100ms between requests (10 req/sec max)
+
+    private func throttle() async {
+        let elapsed = Date().timeIntervalSince(lastRequestTime)
+        if elapsed < minRequestInterval {
+            try? await Task.sleep(for: .seconds(minRequestInterval - elapsed))
+        }
+        lastRequestTime = Date()
+    }
     private let decoder: JSONDecoder = {
         let d = JSONDecoder()
         d.keyDecodingStrategy = .convertFromSnakeCase
@@ -272,54 +286,130 @@ final class SupabaseService: ObservableObject {
         let table: String
         let jsonPayload: Data
         let createdAt: Date
+        var retryCount: Int = 0
     }
 
     @Published var pendingWrites: [PendingWrite] = []
     @Published var isLoading: Bool = false
     @Published var lastError: String? = nil
+    @Published var conflictCount: Int = 0
 
     private let pendingWritesKey = "ConstructOS.Sync.PendingWrites"
+    private let maxRetries = 3
+    private let maxPendingAge: TimeInterval = 7 * 24 * 3600 // 7 days
 
     func queueWrite<T: Encodable>(_ table: String, record: T) {
         guard let payload = try? encoder.encode(record) else { return }
         let pending = PendingWrite(table: table, jsonPayload: payload, createdAt: Date())
         pendingWrites.append(pending)
+        // Enforce queue size limit
+        if pendingWrites.count > 100 {
+            pendingWrites = Array(pendingWrites.suffix(100))
+        }
         savePendingWrites()
     }
 
     func flushPendingWrites() async {
         guard isConfigured else { return }
         var remaining: [PendingWrite] = []
-        for write in pendingWrites {
+        var conflicts = 0
+        for var write in pendingWrites {
+            // Drop stale writes older than max age
+            if Date().timeIntervalSince(write.createdAt) > maxPendingAge { continue }
             do {
                 guard let url = URL(string: "\(baseURL)/rest/v1/\(write.table)") else { continue }
                 var request = URLRequest(url: url)
                 request.httpMethod = "POST"
-                applyHeaders(&request)
-                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                request.setValue("return=minimal", forHTTPHeaderField: "Prefer")
+                applyHeaders(&request, contentType: true)
+                // Use upsert to resolve conflicts — last write wins
+                request.setValue("resolution=merge-duplicates", forHTTPHeaderField: "Prefer")
                 request.httpBody = write.jsonPayload
                 let (data, response) = try await URLSession.shared.data(for: request)
-                try checkHTTPStatus(data: data, response: response)
+                let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+                // Handle conflict (409) — retry with PATCH
+                if statusCode == 409 {
+                    conflicts += 1
+                    request.httpMethod = "PATCH"
+                    request.setValue("return=minimal", forHTTPHeaderField: "Prefer")
+                    let (retryData, retryResponse) = try await URLSession.shared.data(for: request)
+                    try checkHTTPStatus(data: retryData, response: retryResponse)
+                } else {
+                    try checkHTTPStatus(data: data, response: response)
+                }
             } catch {
-                remaining.append(write)
+                write.retryCount += 1
+                if write.retryCount < maxRetries {
+                    remaining.append(write)
+                }
+                // Exceeded retries — drop the write to prevent queue buildup
             }
         }
         await MainActor.run {
             pendingWrites = remaining
+            conflictCount += conflicts
             savePendingWrites()
         }
     }
 
 
-    // MARK: - Real-Time Subscriptions (Polling)
+    // MARK: - Real-Time Subscriptions (WebSocket with polling fallback)
 
     @Published var lastSyncAt: Date?
+    private var realtimeTask: URLSessionWebSocketTask?
     private var syncTimer: Timer?
+    private var realtimeConnected = false
 
-    func startRealtimeSync(interval: TimeInterval = 30) {
+    /// Connect to Supabase Realtime via WebSocket. Falls back to polling if unavailable.
+    func startRealtimeSync(tables: [String] = ["cs_projects", "cs_contracts"]) {
+        stopRealtimeSync()
+
+        guard isConfigured,
+              let wsURL = URL(string: baseURL.replacingOccurrences(of: "https://", with: "wss://") + "/realtime/v1/websocket?apikey=\(apiKey)&vsn=1.0.0") else {
+            startPollingFallback()
+            return
+        }
+
+        let task = URLSession.shared.webSocketTask(with: wsURL)
+        realtimeTask = task
+        task.resume()
+
+        // Join channels for each table
+        for table in tables {
+            let joinMsg = """
+            {"topic":"realtime:\(table)","event":"phx_join","payload":{},"ref":"\(UUID().uuidString.prefix(8))"}
+            """
+            task.send(.string(joinMsg)) { [weak self] error in
+                if error != nil {
+                    Task { @MainActor [weak self] in self?.startPollingFallback() }
+                }
+            }
+        }
+
+        realtimeConnected = true
+        listenForMessages()
+    }
+
+    private func listenForMessages() {
+        realtimeTask?.receive { [weak self] result in
+            Task { @MainActor [weak self] in
+                switch result {
+                case .success:
+                    self?.lastSyncAt = Date()
+                    self?.objectWillChange.send()
+                    self?.listenForMessages() // Continue listening
+                case .failure:
+                    self?.realtimeConnected = false
+                    self?.startPollingFallback()
+                }
+            }
+        }
+    }
+
+    /// Polling fallback when WebSocket is unavailable
+    private func startPollingFallback() {
+        guard !realtimeConnected else { return }
         syncTimer?.invalidate()
-        syncTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+        syncTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
                 self?.lastSyncAt = Date()
                 self?.objectWillChange.send()
@@ -328,6 +418,9 @@ final class SupabaseService: ObservableObject {
     }
 
     func stopRealtimeSync() {
+        realtimeTask?.cancel(with: .goingAway, reason: nil)
+        realtimeTask = nil
+        realtimeConnected = false
         syncTimer?.invalidate()
         syncTimer = nil
     }
@@ -356,15 +449,29 @@ final class SupabaseService: ObservableObject {
 
     // MARK: Fetch
 
-    func fetch<T: Decodable>(_ table: String, query: [String: String] = [:]) async throws -> [T] {
+    /// Fetch records with optional pagination and ordering
+    func fetch<T: Decodable>(
+        _ table: String,
+        query: [String: String] = [:],
+        limit: Int? = nil,
+        offset: Int? = nil,
+        orderBy: String? = nil,
+        ascending: Bool = false
+    ) async throws -> [T] {
         guard isConfigured else { throw SupabaseError.notConfigured }
+        try validateTable(table)
+        await throttle()
         var components = URLComponents(string: "\(baseURL)/rest/v1/\(table)")!
-        if !query.isEmpty {
-            components.queryItems = query.map { URLQueryItem(name: $0.key, value: $0.value) }
-        }
+        var queryItems = query.map { URLQueryItem(name: $0.key, value: $0.value) }
+        if let limit { queryItems.append(URLQueryItem(name: "limit", value: "\(limit)")) }
+        if let offset { queryItems.append(URLQueryItem(name: "offset", value: "\(offset)")) }
+        if let orderBy { queryItems.append(URLQueryItem(name: "order", value: "\(orderBy).\(ascending ? "asc" : "desc")")) }
+        if !queryItems.isEmpty { components.queryItems = queryItems }
         guard let url = components.url else { throw SupabaseError.httpError(400, "Invalid URL") }
         var request = URLRequest(url: url)
         applyHeaders(&request)
+        // Request total count header for pagination
+        if limit != nil { request.setValue("count=exact", forHTTPHeaderField: "Prefer") }
         let (data, response) = try await URLSession.shared.data(for: request)
         try checkHTTPStatus(data: data, response: response)
         do {
@@ -374,10 +481,25 @@ final class SupabaseService: ObservableObject {
         }
     }
 
+    /// Fetch a single page of results with total count
+    func fetchPaginated<T: Decodable>(
+        _ table: String,
+        query: [String: String] = [:],
+        page: Int = 0,
+        pageSize: Int = 50,
+        orderBy: String? = "created_at"
+    ) async throws -> (items: [T], hasMore: Bool) {
+        let offset = page * pageSize
+        let items: [T] = try await fetch(table, query: query, limit: pageSize + 1, offset: offset, orderBy: orderBy)
+        let hasMore = items.count > pageSize
+        return (Array(items.prefix(pageSize)), hasMore)
+    }
+
     // MARK: Insert
 
     func insert<T: Encodable>(_ table: String, record: T) async throws {
         guard isConfigured else { throw SupabaseError.notConfigured }
+        try validateTable(table)
         guard let url = URL(string: "\(baseURL)/rest/v1/\(table)") else {
             throw SupabaseError.httpError(400, "Invalid URL")
         }
@@ -398,7 +520,9 @@ final class SupabaseService: ObservableObject {
 
     func update<T: Encodable>(_ table: String, id: String, record: T) async throws {
         guard isConfigured else { throw SupabaseError.notConfigured }
-        guard let url = URL(string: "\(baseURL)/rest/v1/\(table)?id=eq.\(id)") else {
+        try validateTable(table)
+        let safeID = sanitizeID(id)
+        guard let url = URL(string: "\(baseURL)/rest/v1/\(table)?id=eq.\(safeID)") else {
             throw SupabaseError.httpError(400, "Invalid URL")
         }
         var request = URLRequest(url: url)
@@ -417,7 +541,9 @@ final class SupabaseService: ObservableObject {
 
     func delete(_ table: String, id: String) async throws {
         guard isConfigured else { throw SupabaseError.notConfigured }
-        guard let url = URL(string: "\(baseURL)/rest/v1/\(table)?id=eq.\(id)") else {
+        try validateTable(table)
+        let safeID = sanitizeID(id)
+        guard let url = URL(string: "\(baseURL)/rest/v1/\(table)?id=eq.\(safeID)") else {
             throw SupabaseError.httpError(400, "Invalid URL")
         }
         var request = URLRequest(url: url)
@@ -429,9 +555,30 @@ final class SupabaseService: ObservableObject {
 
     // MARK: Private Helpers
 
+    /// Allowed table names — prevents injection via table parameter
+    private static let allowedTables: Set<String> = [
+        "cs_projects", "cs_contracts", "cs_market_data", "cs_ai_messages",
+        "cs_wealth_opportunities", "cs_decision_journal", "cs_psychology_sessions",
+        "cs_leverage_snapshots", "cs_wealth_tracking", "cs_daily_logs",
+        "cs_verification_requests"
+    ]
+
+    /// Validates table name against allowlist
+    private func validateTable(_ table: String) throws {
+        guard Self.allowedTables.contains(table) else {
+            throw SupabaseError.httpError(400, "Invalid table name: \(table)")
+        }
+    }
+
+    /// Sanitizes a string for safe use in URL query parameters
+    private func sanitizeID(_ id: String) -> String {
+        // Only allow UUID-safe characters
+        id.filter { $0.isLetter || $0.isNumber || $0 == "-" }
+    }
+
     private func applyHeaders(_ request: inout URLRequest, contentType: Bool = false) {
         request.setValue(apiKey, forHTTPHeaderField: "apikey")
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(accessToken ?? apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if contentType {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -520,7 +667,7 @@ struct SupabaseAIMessage: Codable, Identifiable, Sendable {
     }
 }
 
-// MARK: - Wealth Suite DTOs
+// MARK: - Wealth Suite DTOs (with validation)
 
 struct SupabaseWealthOpportunity: Codable, Identifiable, Sendable {
     var id: String?
@@ -533,6 +680,23 @@ struct SupabaseWealthOpportunity: Codable, Identifiable, Sendable {
         case id, name, status
         case wealthSignal = "wealth_signal"
         case contractId = "contract_id"
+    }
+
+    /// Resolve the linked contract (lazy fetch)
+    func linkedContract(from contracts: [SupabaseContract]) -> SupabaseContract? {
+        guard let cid = contractId else { return nil }
+        return contracts.first { $0.id == cid }
+    }
+
+    var hasLinkedContract: Bool { contractId != nil && !contractId!.isEmpty }
+
+    var isValid: Bool { !name.isEmpty && (0...100).contains(wealthSignal) && ["active", "archived", "pending"].contains(status) }
+    var validationErrors: [String] {
+        var errors: [String] = []
+        if name.isEmpty { errors.append("Name is required") }
+        if !(0...100).contains(wealthSignal) { errors.append("Wealth signal must be 0-100") }
+        if !["active", "archived", "pending"].contains(status) { errors.append("Invalid status") }
+        return errors
     }
 }
 
@@ -555,6 +719,19 @@ struct SupabaseDecisionJournal: Codable, Identifiable, Sendable {
         case gatesPassed = "gates_passed"
         case outcomeStatus = "outcome_status"
     }
+
+    static let validThinkingModes = ["Strategic", "Analytical", "Creative", "Intuitive"]
+    static let validOutcomeStatuses = ["pending", "successful", "failed", "revisit"]
+
+    var isValid: Bool { !title.isEmpty && (0...5).contains(gatesPassed) }
+    var validationErrors: [String] {
+        var errors: [String] = []
+        if title.isEmpty { errors.append("Title is required") }
+        if !(0...5).contains(gatesPassed) { errors.append("Gates passed must be 0-5") }
+        if !Self.validThinkingModes.contains(thinkingMode) { errors.append("Invalid thinking mode") }
+        if !Self.validOutcomeStatuses.contains(outcomeStatus) { errors.append("Invalid outcome status") }
+        return errors
+    }
 }
 
 struct SupabasePsychologySession: Codable, Identifiable, Sendable {
@@ -566,6 +743,8 @@ struct SupabasePsychologySession: Codable, Identifiable, Sendable {
         case id, score
         case profileLabel = "profile_label"
     }
+
+    var isValid: Bool { (0...100).contains(score) && !profileLabel.isEmpty }
 }
 
 struct SupabaseLeverageSnapshot: Codable, Identifiable, Sendable {
@@ -576,6 +755,8 @@ struct SupabaseLeverageSnapshot: Codable, Identifiable, Sendable {
         case id
         case totalScore = "total_score"
     }
+
+    var isValid: Bool { (0...500).contains(totalScore) }
 }
 
 struct SupabaseWealthTracking: Codable, Identifiable, Sendable {
@@ -588,6 +769,16 @@ struct SupabaseWealthTracking: Codable, Identifiable, Sendable {
 
     enum CodingKeys: String, CodingKey {
         case id, name, revenue, expenses, margin, notes
+    }
+
+    var isValid: Bool { !name.isEmpty && revenue >= 0 && expenses >= 0 }
+    var computedMargin: Double { revenue > 0 ? ((revenue - expenses) / revenue) * 100 : 0 }
+    var validationErrors: [String] {
+        var errors: [String] = []
+        if name.isEmpty { errors.append("Name is required") }
+        if revenue < 0 { errors.append("Revenue must be non-negative") }
+        if expenses < 0 { errors.append("Expenses must be non-negative") }
+        return errors
     }
 }
 

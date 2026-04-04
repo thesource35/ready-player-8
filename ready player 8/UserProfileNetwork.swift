@@ -40,6 +40,7 @@ struct UserProfile: Identifiable, Codable {
 
 @MainActor
 final class UserProfileStore: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = UserProfileStore()
 
     @Published var currentUser: UserProfile?

@@ -41,7 +41,7 @@ struct ContractsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
+            LazyVStack(alignment: .leading, spacing: 14) {
                 contractsHeader
                 contractStatsRow
                 contractFilterBar
@@ -216,23 +216,23 @@ struct ContractsView: View {
     private func loadContracts() async {
         guard supabase.isConfigured else { return }
         isLoading = true; errorMessage = nil; defer { isLoading = false }
-        do { contracts = try await supabase.fetch("cs_contracts") }
+        do { contracts = try await supabase.fetch(SupabaseTable.contracts) }
         catch { errorMessage = error.localizedDescription }
     }
 
     private func saveContract(_ contract: SupabaseContract) async {
-        do { try await supabase.insert("cs_contracts", record: contract); await loadContracts() }
+        do { try await supabase.insert(SupabaseTable.contracts, record: contract); await loadContracts() }
         catch { errorMessage = error.localizedDescription }
     }
 
     private func updateContract(_ contract: SupabaseContract) async {
         guard let id = contract.id else { return }
-        do { try await supabase.update("cs_contracts", id: id, record: contract); await loadContracts() }
+        do { try await supabase.update(SupabaseTable.contracts, id: id, record: contract); await loadContracts() }
         catch { errorMessage = error.localizedDescription }
     }
 
     private func deleteContract(id: String) async {
-        do { try await supabase.delete("cs_contracts", id: id); contracts.removeAll { $0.id == id } }
+        do { try await supabase.delete(SupabaseTable.contracts, id: id); contracts.removeAll { $0.id == id } }
         catch { errorMessage = error.localizedDescription }
     }
 }

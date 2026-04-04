@@ -52,6 +52,7 @@ struct PaymentGatewayConfig {
 
 @MainActor
 final class ConstructionOSPay: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = ConstructionOSPay()
     @Published var balance: Double = 0
     @Published var pendingIn: Double = 0
@@ -141,6 +142,7 @@ struct FactoringOffer: Identifiable {
 
 @MainActor
 final class ConstructionOSCapital: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = ConstructionOSCapital()
     @Published var creditLine: Double = 500000
     @Published var available: Double = 347000
@@ -171,6 +173,7 @@ struct InsuranceQuote: Identifiable {
 
 @MainActor
 final class ConstructionOSInsurance: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = ConstructionOSInsurance()
     @Published var riskScore: Int = 82
     @Published var quotes: [InsuranceQuote] = []

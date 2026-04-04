@@ -1,9 +1,83 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1" systemVersion="11A491" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="true" userDefinedModelVersionIdentifier="">
+    <entity name="CDProject" representedClassName="CDProject" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="client" attributeType="String" defaultValueString=""/>
+        <attribute name="type" attributeType="String" defaultValueString="General"/>
+        <attribute name="status" attributeType="String" defaultValueString="Active"/>
+        <attribute name="progress" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="budget" attributeType="String" defaultValueString="$0"/>
+        <attribute name="score" attributeType="String" defaultValueString="—"/>
+        <attribute name="team" attributeType="String" defaultValueString=""/>
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="syncedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="CDContract" representedClassName="CDContract" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="title" attributeType="String" defaultValueString=""/>
+        <attribute name="client" attributeType="String" defaultValueString=""/>
+        <attribute name="location" attributeType="String" defaultValueString=""/>
+        <attribute name="sector" attributeType="String" defaultValueString=""/>
+        <attribute name="stage" attributeType="String" defaultValueString="Pursuit"/>
+        <attribute name="package" attributeType="String" defaultValueString=""/>
+        <attribute name="budget" attributeType="String" defaultValueString="$0"/>
+        <attribute name="bidDue" attributeType="String" defaultValueString=""/>
+        <attribute name="liveFeedStatus" attributeType="String" defaultValueString=""/>
+        <attribute name="bidders" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="score" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="watchCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="syncedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="CDMarketData" representedClassName="CDMarketData" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="city" attributeType="String" defaultValueString=""/>
+        <attribute name="vacancy" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="newBiz" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="closed" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="trend" attributeType="String" defaultValueString="flat"/>
+        <attribute name="updatedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="CDAIMessage" representedClassName="CDAIMessage" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="sessionId" attributeType="String" defaultValueString=""/>
+        <attribute name="role" attributeType="String" defaultValueString="user"/>
+        <attribute name="content" attributeType="String" defaultValueString=""/>
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="CDWealthTracking" representedClassName="CDWealthTracking" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="revenue" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="expenses" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="margin" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="notes" attributeType="String" defaultValueString=""/>
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="CDDecisionJournal" representedClassName="CDDecisionJournal" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="title" attributeType="String" defaultValueString=""/>
+        <attribute name="context" attributeType="String" defaultValueString=""/>
+        <attribute name="thinkingMode" attributeType="String" defaultValueString="Strategic"/>
+        <attribute name="decision" attributeType="String" defaultValueString=""/>
+        <attribute name="firstOrder" attributeType="String" defaultValueString=""/>
+        <attribute name="secondOrder" attributeType="String" defaultValueString=""/>
+        <attribute name="gatesPassed" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="outcomeStatus" attributeType="String" defaultValueString="pending"/>
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="reviewedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+    </entity>
     <entity name="Item" representedClassName="Item" syncable="YES" codeGenerationType="class">
         <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
     </entity>
     <elements>
-        <element name="Item" positionX="-63" positionY="-18" width="128" height="44"/>
+        <element name="CDProject" positionX="-63" positionY="-18" width="128" height="208"/>
+        <element name="CDContract" positionX="160" positionY="-18" width="128" height="284"/>
+        <element name="CDMarketData" positionX="-63" positionY="200" width="128" height="148"/>
+        <element name="CDAIMessage" positionX="160" positionY="200" width="128" height="118"/>
+        <element name="CDWealthTracking" positionX="-63" positionY="400" width="128" height="148"/>
+        <element name="CDDecisionJournal" positionX="160" positionY="400" width="128" height="208"/>
+        <element name="Item" positionX="380" positionY="-18" width="128" height="44"/>
     </elements>
 </model>

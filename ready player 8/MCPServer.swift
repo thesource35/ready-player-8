@@ -9,6 +9,7 @@ import Combine
 
 @MainActor
 final class MCPToolServer: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = MCPToolServer()
 
     // MARK: - Tool Definitions (sent to Claude in API call)

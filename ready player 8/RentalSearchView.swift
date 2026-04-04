@@ -108,7 +108,7 @@ enum RentalProvider: String, CaseIterable {
         switch self {
         case .unitedRentals: return "https://www.unitedrentals.com"
         case .dozr: return "https://dozr.com"
-        case .toolsy: return "https://toolsy.com"
+        case .toolsy: return "https://www.toolsy.ca"
         case .rentMyEquipment: return "https://www.rentmyequipment.com"
         case .sunbelt: return "https://www.sunbeltrentals.com"
         case .herc: return "https://www.hercrentals.com"
@@ -119,8 +119,8 @@ enum RentalProvider: String, CaseIterable {
         switch self {
         case .unitedRentals: return "https://www.unitedrentals.com/marketplace/equipment?ref=constructionos"
         case .dozr: return "https://dozr.com/equipment-rental?ref=constructionos"
-        case .toolsy: return "https://toolsy.com/rentals?ref=constructionos"
-        case .rentMyEquipment: return "https://www.rentmyequipment.com/search?ref=constructionos"
+        case .toolsy: return "https://www.toolsy.ca"
+        case .rentMyEquipment: return "https://www.rentmyequipment.com/listings"
         case .sunbelt: return "https://www.sunbeltrentals.com/equipment?ref=constructionos"
         case .herc: return "https://www.hercrentals.com/us/equipment.html?ref=constructionos"
         }
@@ -208,13 +208,17 @@ struct ProviderAccount: Codable, Identifiable {
     var apiToken: String?         // stored in Keychain, not UserDefaults
 }
 
+@MainActor
 final class RentalProviderManager: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = RentalProviderManager()
 
     @Published var connectedProviders: Set<String> = []
     @Published var quoteRequests: [RentalQuoteRequest] = []
     @Published var accounts: [String: ProviderAccount] = [:]  // keyed by provider rawValue
     @Published var syncStatus: [String: String] = [:]          // provider -> "syncing"/"synced"/"error"
+    @Published var linkAlertMessage: String? = nil
+    @Published var linkAlertURL: URL? = nil
 
     private let connectedKey = "ConstructOS.Rentals.ConnectedProviders"
     private let quotesKey = "ConstructOS.Rentals.QuoteRequests"
@@ -331,6 +335,48 @@ final class RentalProviderManager: ObservableObject {
         saveJSON(accountsKey, value: list)
     }
 
+    @MainActor
+    private func openWithoutCheck(_ url: URL) {
+        #if os(iOS)
+        UIApplication.shared.open(url)
+        #elseif os(macOS)
+        NSWorkspace.shared.open(url)
+        #endif
+    }
+
+    @MainActor
+    func dismissLinkAlert() {
+        linkAlertMessage = nil
+        linkAlertURL = nil
+    }
+
+    @MainActor
+    func openPendingLink() {
+        guard let url = linkAlertURL else {
+            dismissLinkAlert()
+            return
+        }
+        openWithoutCheck(url)
+        dismissLinkAlert()
+    }
+
+    private func openExternalURL(_ urlString: String, label: String) {
+        guard let url = URL(string: urlString) else { return }
+        Task {
+            let result = await LinkHealthService.shared.check(urlString: urlString)
+            guard result.isReachable else {
+                await MainActor.run {
+                    linkAlertURL = url
+                    linkAlertMessage = "\(label) link appears unavailable right now."
+                }
+                return
+            }
+            await MainActor.run {
+                openWithoutCheck(url)
+            }
+        }
+    }
+
     func openProvider(_ provider: RentalProvider) {
         #if os(iOS)
         // Try app scheme first, fallback to website
@@ -340,31 +386,24 @@ final class RentalProviderManager: ObservableObject {
                 return
             }
         }
-        if let url = URL(string: provider.websiteURL) {
-            UIApplication.shared.open(url)
-        }
+        openExternalURL(provider.websiteURL, label: provider.rawValue)
         #elseif os(macOS)
-        if let url = URL(string: provider.websiteURL) {
-            NSWorkspace.shared.open(url)
-        }
+        openExternalURL(provider.websiteURL, label: provider.rawValue)
         #endif
     }
 
     func openSearch(_ provider: RentalProvider, query: String = "") {
         var urlStr = provider.searchURL
         if !query.isEmpty, let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-            urlStr += "?q=\(encoded)"
+            let separator = urlStr.contains("?") ? "&" : "?"
+            urlStr += "\(separator)q=\(encoded)"
         }
-        #if os(iOS)
-        if let url = URL(string: urlStr) { UIApplication.shared.open(url) }
-        #elseif os(macOS)
-        if let url = URL(string: urlStr) { NSWorkspace.shared.open(url) }
-        #endif
+        openExternalURL(urlStr, label: "\(provider.rawValue) search")
     }
 
     func openAppStore(_ provider: RentalProvider) {
         #if os(iOS)
-        if let appID = provider.appStoreID, let url = URL(string: "itms-apps://apple.com/app/id\(appID)") {
+        if let appID = provider.appStoreID, let url = URL(string: "itms-apps://apps.apple.com/app/id\(appID)") {
             UIApplication.shared.open(url)
         }
         #endif
@@ -471,6 +510,15 @@ struct RentalProviderHubView: View {
                     showQuoteSheet = false
                 }
             }
+        }
+        .alert("Link unavailable", isPresented: Binding(
+            get: { manager.linkAlertMessage != nil },
+            set: { if !$0 { manager.dismissLinkAlert() } }
+        )) {
+            Button("Open anyway") { manager.openPendingLink() }
+            Button("Cancel", role: .cancel) { manager.dismissLinkAlert() }
+        } message: {
+            Text(manager.linkAlertMessage ?? "This link is temporarily unavailable.")
         }
     }
 }
@@ -1516,6 +1564,7 @@ import CoreLocation
 
 @MainActor
 final class RentalLocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = RentalLocationManager()
     private let manager = CLLocationManager()
     @Published var userLocation: CLLocation?
@@ -1648,6 +1697,7 @@ struct OperatorListing: Identifiable {
 
 @MainActor
 final class RentalDataStore: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = RentalDataStore()
 
     @Published var favorites: [RentalFavorite] = []
@@ -2304,7 +2354,8 @@ struct AIEquipmentRecommenderView: View {
             recs.append(("JLG 1932R Scissor Lift", "General elevated access", "$120/day"))
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(800))
             recommendations = recs
             isThinking = false
         }

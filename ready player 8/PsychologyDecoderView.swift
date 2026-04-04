@@ -344,7 +344,7 @@ struct PsychologyDecoderView: View {
                     score: session.score,
                     profileLabel: session.profileLabel
                 )
-                try? await supabase.insert("cs_psychology_sessions", record: dto)
+                try? await supabase.insert(SupabaseTable.psychologySessions, record: dto)
             }
         }
     }

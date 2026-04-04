@@ -80,8 +80,8 @@ private let mockCPAs: [TaxCPA] = [
 
 struct TaxAccountantView: View {
     @State private var activeSubTab: TaxSubTab = .expenses
-    @State private var expenses: [TaxExpense] = []
-    @State private var subPayments: [SubcontractorPayment] = []
+     private var expenses: [TaxExpense] = loadJSON("ConstructOS.Tax.Expenses", default: [TaxExpense]())
+     private var subPayments: [SubcontractorPayment] = loadJSON("ConstructOS.Tax.SubPayments", default: [SubcontractorPayment]())
     @State private var showAddExpense = false
     @State private var isLoading = false
     @State private var errorMessage: String?

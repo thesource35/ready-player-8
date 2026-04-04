@@ -35,6 +35,7 @@ struct AngelicAIView: View {
     @State private var inputText = ""
     @State private var isThinking = false
     @State private var errorMessage: String?
+    @State private var lastFailedMessage: String?
     @State private var showKeySetup = false
     @State private var tempAPIKey = ""
     @State private var scrollID: UUID?
@@ -325,13 +326,24 @@ struct AngelicAIView: View {
 
         await persistMessage(userMsg)
 
-        do {
-            let response = try await callClaude(userMessage: text)
-            let aiMsg = AIMessage(role: .assistant, content: response, timestamp: Date())
-            messages.append(aiMsg)
-            await persistMessage(aiMsg)
-        } catch {
-            errorMessage = error.localizedDescription
+        // Retry with exponential backoff (max 2 retries)
+        var lastError: Error?
+        for attempt in 0..<3 {
+            do {
+                if attempt > 0 { try await Task.sleep(for: .seconds(Double(attempt) * 2)) }
+                let response = try await callClaude(userMessage: text)
+                let aiMsg = AIMessage(role: .assistant, content: response, timestamp: Date())
+                messages.append(aiMsg)
+                await persistMessage(aiMsg)
+                lastError = nil
+                break
+            } catch {
+                lastError = error
+            }
+        }
+        if let lastError {
+            errorMessage = "\(lastError.localizedDescription). Tap to retry."
+            lastFailedMessage = text
         }
         isThinking = false
     }
@@ -340,9 +352,14 @@ struct AngelicAIView: View {
 
     private let mcpServer = MCPToolServer.shared
 
+    /// Anthropic API endpoint — configurable via UserDefaults for testing/proxy
+    private var anthropicEndpoint: String {
+        UserDefaults.standard.string(forKey: "ConstructOS.AngelicAI.Endpoint") ?? "https://api.anthropic.com/v1/messages"
+    }
+
     private func callClaude(userMessage: String) async throws -> String {
         guard !apiKey.isEmpty else { throw AngelicError.noAPIKey }
-        guard let url = URL(string: "https://api.anthropic.com/v1/messages") else {
+        guard let url = URL(string: anthropicEndpoint) else {
             throw AngelicError.invalidURL
         }
 
@@ -444,7 +461,7 @@ struct AngelicAIView: View {
         guard supabase.isConfigured else { return }
         do {
             let stored: [SupabaseAIMessage] = try await supabase.fetch(
-                "cs_ai_messages",
+                SupabaseTable.aiMessages,
                 query: ["session_id": "eq.\(sessionID)", "order": "created_at.asc"]
             )
             messages = stored.map {
@@ -469,7 +486,7 @@ struct AngelicAIView: View {
             content: message.content,
             createdAt: nil
         )
-        do { try await supabase.insert("cs_ai_messages", record: record) }
+        do { try await supabase.insert(SupabaseTable.aiMessages, record: record) }
         catch { print("[AngelicAI] Persist error: \(error.localizedDescription)") }
     }
 }
