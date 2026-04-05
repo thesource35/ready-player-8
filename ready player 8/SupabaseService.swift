@@ -793,7 +793,7 @@ final class SupabaseService: ObservableObject {
 
 // MARK: - Codable DTOs
 
-struct SupabaseProject: Codable, Identifiable, Sendable {
+struct SupabaseProject: Codable, Identifiable, Sendable, Equatable {
     var id: String?
     var name: String
     var client: String
@@ -809,7 +809,7 @@ struct SupabaseProject: Codable, Identifiable, Sendable {
     }
 }
 
-struct SupabaseContract: Codable, Identifiable, Sendable {
+struct SupabaseContract: Codable, Identifiable, Sendable, Equatable {
     var id: String?
     var title: String
     var client: String
@@ -834,7 +834,7 @@ struct SupabaseContract: Codable, Identifiable, Sendable {
     }
 }
 
-struct SupabaseMarketData: Codable, Identifiable, Sendable {
+struct SupabaseMarketData: Codable, Identifiable, Sendable, Equatable {
     var id: String?
     var city: String
     var vacancy: Double

@@ -257,10 +257,10 @@ struct FeedbackInsight: Identifiable {
     let impact: String
 }
 
-struct ChatMessage: Identifiable {
-    let id = UUID()
-    enum Role { case user, ai }
-    enum DeliveryState: String {
+struct ChatMessage: Identifiable, Codable, Equatable {
+    var id = UUID()
+    enum Role: String, Codable { case user, ai }
+    enum DeliveryState: String, Codable {
         case sending = "Sending"
         case delivered = "Delivered"
         case read = "Read"

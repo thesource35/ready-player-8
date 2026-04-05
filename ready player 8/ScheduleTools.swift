@@ -616,7 +616,7 @@ struct LocalizedStrings {
 
 // MARK: - ========== Estimating / Bid Builder ==========
 
-struct EstimateLineItem: Identifiable, Codable {
+struct EstimateLineItem: Identifiable, Codable, Equatable {
     var id = UUID()
     let costCode: String
     let description: String
@@ -629,14 +629,20 @@ struct EstimateLineItem: Identifiable, Codable {
 }
 
 struct EstimatingView: View {
-    @State private var items: [EstimateLineItem] = [
-        EstimateLineItem(costCode: "03 30 00", description: "Cast-in-Place Concrete", quantity: 240, unit: "CY", unitCost: 185),
-        EstimateLineItem(costCode: "05 12 00", description: "Structural Steel Framing", quantity: 48, unit: "TON", unitCost: 3200),
-        EstimateLineItem(costCode: "06 11 00", description: "Wood Framing", quantity: 12400, unit: "BF", unitCost: 1.85),
-        EstimateLineItem(costCode: "09 29 00", description: "Gypsum Board", quantity: 18500, unit: "SF", unitCost: 2.40),
-        EstimateLineItem(costCode: "22 11 00", description: "Plumbing Piping", quantity: 1, unit: "LS", unitCost: 142000),
-        EstimateLineItem(costCode: "26 05 00", description: "Electrical Wiring", quantity: 1, unit: "LS", unitCost: 198000),
-    ]
+    @State private var items: [EstimateLineItem] = {
+        let stored: [EstimateLineItem] = loadJSON("ConstructOS.Schedule.EstimateItemsRaw", default: [])
+        if stored.isEmpty {
+            return [
+                EstimateLineItem(costCode: "03 30 00", description: "Cast-in-Place Concrete", quantity: 240, unit: "CY", unitCost: 185),
+                EstimateLineItem(costCode: "05 12 00", description: "Structural Steel Framing", quantity: 48, unit: "TON", unitCost: 3200),
+                EstimateLineItem(costCode: "06 11 00", description: "Wood Framing", quantity: 12400, unit: "BF", unitCost: 1.85),
+                EstimateLineItem(costCode: "09 29 00", description: "Gypsum Board", quantity: 18500, unit: "SF", unitCost: 2.40),
+                EstimateLineItem(costCode: "22 11 00", description: "Plumbing Piping", quantity: 1, unit: "LS", unitCost: 142000),
+                EstimateLineItem(costCode: "26 05 00", description: "Electrical Wiring", quantity: 1, unit: "LS", unitCost: 198000),
+            ]
+        }
+        return stored
+    }()
     @State private var projectName = "New Project Estimate"
     @State private var globalMarkup = 15.0
 
@@ -670,6 +676,9 @@ struct EstimatingView: View {
             }
         }
         .padding(14).background(Theme.surface).cornerRadius(12).premiumGlow(cornerRadius: 12, color: Theme.gold)
+        .onChange(of: items) { _, newValue in
+            saveJSON("ConstructOS.Schedule.EstimateItemsRaw", value: newValue)
+        }
     }
 }
 

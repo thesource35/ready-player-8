@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - ========== ContractsView.swift ==========
 
 struct ContractsView: View {
-    @State private var contracts: [SupabaseContract] = []
+    @State private var contracts: [SupabaseContract] = loadJSON("ConstructOS.Contracts.DataRaw", default: [SupabaseContract]())
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var searchText = ""
@@ -65,6 +65,21 @@ struct ContractsView: View {
             }
         }
         .task { await loadContracts() }
+        .onChange(of: contracts) { _, newValue in
+            saveJSON("ConstructOS.Contracts.DataRaw", value: newValue)
+        }
+        .onChange(of: filterStage) { _, newStage in
+            guard supabase.isConfigured, newStage != "All" else { return }
+            Task {
+                do {
+                    let query: [String: String] = ["stage": "eq.\(newStage)"]
+                    let remote: [SupabaseContract] = try await supabase.fetch("cs_contracts", query: query)
+                    await MainActor.run { contracts = remote }
+                } catch {
+                    CrashReporter.shared.reportError("Contracts filter refetch failed: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 
     // MARK: - Sub-views

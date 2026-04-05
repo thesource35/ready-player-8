@@ -4,12 +4,12 @@ import SwiftUI
 // MARK: - ========== MarketView.swift ==========
 
 struct MarketView: View {
-    @State private var marketData: [SupabaseMarketData] = []
-    @State private var contracts: [SupabaseContract] = []
+    @State private var marketData: [SupabaseMarketData] = loadJSON("ConstructOS.Market.DataRaw", default: [SupabaseMarketData]())
+    @State private var contracts: [SupabaseContract] = loadJSON("ConstructOS.Market.ContractsRaw", default: [SupabaseContract]())
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var regionFilter = "All"
-    @State private var watchedIDs: Set<String> = []
+    @State private var watchedIDs: Set<String> = Set(loadJSON("ConstructOS.Market.WatchedIDs", default: [String]()))
 
     private let regions = ["All", "Northeast", "Southeast", "Midwest", "West", "International"]
     private let supabase = SupabaseService.shared
@@ -45,6 +45,15 @@ struct MarketView: View {
         }
         .background(Theme.bg.ignoresSafeArea())
         .task { await loadData() }
+        .onChange(of: marketData) { _, newValue in
+            saveJSON("ConstructOS.Market.DataRaw", value: newValue)
+        }
+        .onChange(of: contracts) { _, newValue in
+            saveJSON("ConstructOS.Market.ContractsRaw", value: newValue)
+        }
+        .onChange(of: watchedIDs) { _, newValue in
+            saveJSON("ConstructOS.Market.WatchedIDs", value: Array(newValue))
+        }
     }
 
     // MARK: - Sub-views

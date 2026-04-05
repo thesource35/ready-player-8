@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - ========== ProjectsView.swift ==========
 
 struct ProjectsView: View {
-    @State private var projects: [SupabaseProject] = []
+    @State private var projects: [SupabaseProject] = loadJSON("ConstructOS.Projects.DataRaw", default: [SupabaseProject]())
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var searchText = ""
@@ -66,6 +66,21 @@ struct ProjectsView: View {
             }
         }
         .task { await loadProjects() }
+        .onChange(of: projects) { _, newValue in
+            saveJSON("ConstructOS.Projects.DataRaw", value: newValue)
+        }
+        .onChange(of: filterStatus) { _, newFilter in
+            guard supabase.isConfigured, newFilter != "All" else { return }
+            Task {
+                do {
+                    let query: [String: String] = ["status": "eq.\(newFilter)"]
+                    let remote: [SupabaseProject] = try await supabase.fetch("cs_projects", query: query)
+                    await MainActor.run { projects = remote }
+                } catch {
+                    CrashReporter.shared.reportError("Projects filter refetch failed: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 
     // MARK: - Sub-views

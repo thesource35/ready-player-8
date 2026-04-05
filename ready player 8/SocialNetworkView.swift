@@ -42,21 +42,27 @@ struct NetworkView: View {
     @State private var apksAutoRotate = true
     @State private var apksPriority = 2
     @State private var photoMessagingTodoDone = true
-    @State private var callEvents: [String] = []
-    @State private var directMessages: [ChatMessage] = [
-        ChatMessage(
-            role: .ai,
-            text: "Encrypted room initialized. Ephemeral mode active.",
-            timestamp: Date().addingTimeInterval(-90),
-            deliveryState: .read
-        ),
-        ChatMessage(
-            role: .user,
-            text: "Crew standup in 5. Bring Site Gamma into room.",
-            timestamp: Date().addingTimeInterval(-45),
-            deliveryState: .read
-        )
-    ]
+    @State private var callEvents: [String] = loadJSON("ConstructOS.SocialNetwork.CallEventsRaw", default: [String]())
+    @State private var directMessages: [ChatMessage] = {
+        let stored: [ChatMessage] = loadJSON("ConstructOS.SocialNetwork.DirectMessagesRaw", default: [])
+        if stored.isEmpty {
+            return [
+                ChatMessage(
+                    role: .ai,
+                    text: "Encrypted room initialized. Ephemeral mode active.",
+                    timestamp: Date().addingTimeInterval(-90),
+                    deliveryState: .read
+                ),
+                ChatMessage(
+                    role: .user,
+                    text: "Crew standup in 5. Bring Site Gamma into room.",
+                    timestamp: Date().addingTimeInterval(-45),
+                    deliveryState: .read
+                )
+            ]
+        }
+        return stored
+    }()
 
     @State private var messageTicker = Date()
     private let messageTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -517,6 +523,12 @@ struct NetworkView: View {
         }
         .onChange(of: selectedPhotoItem) { _, newValue in
             loadSelectedPhoto(newValue)
+        }
+        .onChange(of: callEvents) { _, newValue in
+            saveJSON("ConstructOS.SocialNetwork.CallEventsRaw", value: newValue)
+        }
+        .onChange(of: directMessages) { _, newValue in
+            saveJSON("ConstructOS.SocialNetwork.DirectMessagesRaw", value: newValue)
         }
     }
 }
