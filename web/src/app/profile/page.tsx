@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { useState } from "react";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function ProfilePage() {
   const [form, setForm] = useState({
     fullName: "Donovan Fagan", email: "admin@constructionos.world", phone: "(713) 555-0100",
@@ -18,7 +20,7 @@ export default function ProfilePage() {
   const handleSave = () => {
     // Validate required fields
     if (!form.fullName.trim()) { setValidationError("Full name is required"); return; }
-    if (!form.email.trim() || !form.email.includes("@")) { setValidationError("Valid email is required"); return; }
+    if (!form.email.trim() || !EMAIL_REGEX.test(form.email.trim())) { setValidationError("Please enter a valid email address"); return; }
     if (!form.trade.trim()) { setValidationError("Trade is required"); return; }
     setValidationError(null);
     // In production: save to Supabase cs_user_profiles

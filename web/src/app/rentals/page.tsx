@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^\+?[\d\s\-().]{7,20}$/;
+
 const categories = ["Heavy Equipment","Earthmoving","Cranes","Aerial Lifts","Concrete","Generators","Hand Tools","Demolition","Vehicles","Compaction"];
 
 const providers = [
@@ -36,6 +39,7 @@ export default function RentalsPage() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [validationError, setValidationError] = useState("");
   const [form, setForm] = useState({
     fullName: "", email: "", phone: "", company: "",
     equipmentType: "", category: "", projectName: "", projectLocation: "",
@@ -52,6 +56,15 @@ export default function RentalsPage() {
 
   const submitLead = async () => {
     if (!form.fullName || !form.email || !form.equipmentType) return;
+    setValidationError("");
+    if (!EMAIL_REGEX.test(form.email.trim())) {
+      setValidationError("Please enter a valid email address");
+      return;
+    }
+    if (form.phone && !PHONE_REGEX.test(form.phone.trim())) {
+      setValidationError("Please enter a valid phone number");
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch("/api/leads", {
@@ -59,10 +72,17 @@ export default function RentalsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, quantity: parseInt(form.quantity) || 1 }),
       });
-      if (res.ok) setSubmitted(true);
-    } catch { /* fallback */ }
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: "Submission failed" }));
+        setValidationError(errData.error || "Failed to submit quote request");
+        setSubmitting(false);
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      setValidationError("Network error. Please try again.");
+    }
     setSubmitting(false);
-    setSubmitted(true);
   };
 
   // Quote submitted confirmation
@@ -139,6 +159,7 @@ export default function RentalsPage() {
             <input placeholder="Company name" value={form.company} onChange={e => update("company", e.target.value)} />
           </div>
 
+          {validationError && <div className="mb-3 p-3 rounded-lg text-xs font-bold text-center" style={{ background: 'rgba(217,77,72,0.1)', color: '#D94D48' }}>{validationError}</div>}
           <button onClick={submitLead} disabled={!form.fullName || !form.email || !form.equipmentType || submitting} className="w-full py-4 rounded-xl text-base font-bold text-black cursor-pointer" style={{ background: form.fullName && form.email && form.equipmentType ? "linear-gradient(90deg, #F29E3D, #FCC757)" : "#33545E", border: "none" }}>
             {submitting ? "Submitting..." : "GET FREE QUOTES FROM 3 PROVIDERS"}
           </button>

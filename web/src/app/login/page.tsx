@@ -4,6 +4,8 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function LoginPage() {
   return (
     <Suspense fallback={<div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#080E12" }}><p style={{ color: "#9EBDC2" }}>Loading...</p></div>}>
@@ -40,6 +42,12 @@ function LoginContent() {
     setError("");
     setSuccess("");
     setLoading(true);
+
+    if (!EMAIL_REGEX.test(form.email.trim())) {
+      setError("Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
 
     const supabase = createClient();
 
@@ -126,6 +134,11 @@ function LoginContent() {
 
   async function handleForgotPassword() {
     setError(""); setSuccess(""); setLoading(true);
+    if (!EMAIL_REGEX.test(form.email.trim())) {
+      setError("Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
     const supabase = createClient();
     if (supabase && form.email) {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(form.email, {
