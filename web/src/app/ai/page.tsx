@@ -71,7 +71,7 @@ export default function AIPage() {
       // Fallback: demo response when API key is not set
       setMessages(prev => [...prev, {
         role: "assistant",
-        content: `Great question about "${text}". In the full ConstructionOS platform, I connect to 56 MCP tools with real-time access to all your project data, crew deployment, equipment tracking, financial records, and more.\n\nTo enable live AI responses, add your Anthropic API key in the Integration Hub (/hub) or set the ANTHROPIC_API_KEY environment variable.\n\nHere's what I can help with:\n• Project status & risk scoring\n• Equipment rental recommendations\n• RFI and submittal drafting\n• Budget analysis & forecasting\n• Safety compliance checks\n• Bid preparation assistance`
+        content: `Great question about "${text}". In the full ConstructionOS platform, I connect to 56 MCP tools with real-time access to all your project data, crew deployment, equipment tracking, financial records, and more.\n\nTo enable live AI responses, configure AI in the Integration Hub (/hub).\n\nHere's what I can help with:\n• Project status & risk scoring\n• Equipment rental recommendations\n• RFI and submittal drafting\n• Budget analysis & forecasting\n• Safety compliance checks\n• Bid preparation assistance`
       }]);
     }
 
