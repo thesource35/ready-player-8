@@ -306,6 +306,88 @@ final class SupabaseService: ObservableObject {
         }
     }
 
+    // MARK: - MFA (Multi-Factor Authentication)
+
+    struct MFAFactor: Codable {
+        let id: String
+        let factorType: String
+        let status: String
+
+        enum CodingKeys: String, CodingKey {
+            case id
+            case factorType = "factor_type"
+            case status
+        }
+    }
+
+    struct MFAChallengeResponse: Codable {
+        let id: String
+    }
+
+    func listMFAFactors() async throws -> [MFAFactor] {
+        guard isConfigured, let token = accessToken else { return [] }
+        guard let url = URL(string: "\(baseURL)/auth/v1/factors") else { return [] }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue(apiKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else { return [] }
+        return (try? JSONDecoder().decode([MFAFactor].self, from: data)) ?? []
+    }
+
+    func hasMFAEnabled() async -> Bool {
+        let factors = (try? await listMFAFactors()) ?? []
+        return factors.contains { $0.factorType == "totp" && $0.status == "verified" }
+    }
+
+    func createMFAChallenge(factorId: String) async throws -> String {
+        guard isConfigured, let token = accessToken else { throw SupabaseError.notConfigured }
+        guard let url = URL(string: "\(baseURL)/auth/v1/factors/\(factorId)/challenge") else {
+            throw SupabaseError.httpError(0, "Invalid URL")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(apiKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            let body = String(data: data, encoding: .utf8) ?? ""
+            throw SupabaseError.httpError((response as? HTTPURLResponse)?.statusCode ?? 0, body)
+        }
+        let challenge = try JSONDecoder().decode(MFAChallengeResponse.self, from: data)
+        return challenge.id
+    }
+
+    func verifyMFA(factorId: String, challengeId: String, code: String) async throws {
+        guard isConfigured, let token = accessToken else { throw SupabaseError.notConfigured }
+        guard let url = URL(string: "\(baseURL)/auth/v1/factors/\(factorId)/verify") else {
+            throw SupabaseError.httpError(0, "Invalid URL")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(apiKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try encoder.encode(["challenge_id": challengeId, "code": code])
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            let body = String(data: data, encoding: .utf8) ?? ""
+            throw SupabaseError.httpError((response as? HTTPURLResponse)?.statusCode ?? 0, body)
+        }
+        if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let newAccessToken = json["access_token"] as? String {
+            await MainActor.run {
+                accessToken = newAccessToken
+                KeychainHelper.save(key: "Auth.AccessToken", data: newAccessToken)
+                if let refresh = json["refresh_token"] as? String {
+                    KeychainHelper.save(key: "Auth.RefreshToken", data: refresh)
+                }
+            }
+        }
+    }
+
     // MARK: - Session Auto-Refresh (AUTH-03)
 
     func startAutoRefresh() {

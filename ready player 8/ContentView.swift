@@ -25,6 +25,9 @@ struct AuthGateView: View {
     @State private var isLoading = false
     @State private var rememberMe = true
     @State private var show2FASetup = false
+    @State private var mfaFactorId: String?
+    @State private var mfaChallengeId: String?
+    @State private var useBackupCode = false
 
     var body: some View {
         ZStack {
@@ -149,7 +152,20 @@ struct AuthGateView: View {
                 Task {
                     do {
                         try await supabase.signIn(email: email, password: password)
-                        await MainActor.run { step = .twoFactor }
+                        let hasMFA = await supabase.hasMFAEnabled()
+                        await MainActor.run {
+                            if hasMFA {
+                                step = .twoFactor
+                                Task {
+                                    let factors = (try? await supabase.listMFAFactors()) ?? []
+                                    if let totpFactor = factors.first(where: { $0.factorType == "totp" && $0.status == "verified" }) {
+                                        mfaFactorId = totpFactor.id
+                                        mfaChallengeId = try? await supabase.createMFAChallenge(factorId: totpFactor.id)
+                                    }
+                                }
+                            }
+                            // No MFA — user is already authenticated (accessToken set by signIn)
+                        }
                     } catch {
                         await MainActor.run { self.error = "Invalid email or password. Please try again." }
                     }
@@ -351,9 +367,17 @@ struct AuthGateView: View {
                 }.font(.system(size: 12, weight: .semibold)).foregroundColor(Theme.cyan)
 
                 Button("Use backup code") {
-                    // TODO: Implement backup code verification flow
-                    error = "Backup code verification coming soon"
+                    useBackupCode = true
+                    twoFactorCode = ""
+                    error = nil
                 }.font(.system(size: 12, weight: .semibold)).foregroundColor(Theme.muted)
+
+                if useBackupCode {
+                    VStack(spacing: 8) {
+                        Text("Enter your backup recovery code").font(.system(size: 11)).foregroundColor(Theme.muted)
+                        authField(icon: "key.fill", placeholder: "Backup code (e.g. xxxx-xxxx-xxxx)", text: $twoFactorCode, isSecure: false)
+                    }
+                }
             }
 
             #if DEBUG
@@ -487,18 +511,24 @@ struct AuthGateView: View {
 
     private func verify2FA() {
         guard twoFactorCode.count == 6 else { return }
+        guard let factorId = mfaFactorId, let challengeId = mfaChallengeId else {
+            error = "MFA not configured. Contact support."
+            return
+        }
         isLoading = true
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1.0))
-            if twoFactorCode == "000000" {
-                error = "Invalid code. Please try again."
-                twoFactorCode = ""
-            } else {
-                // 2FA verified — proceed to app
-                if supabase.accessToken == nil { supabase.accessToken = UUID().uuidString }
-                if supabase.currentUserEmail == nil { supabase.currentUserEmail = email }
+        Task {
+            do {
+                try await supabase.verifyMFA(factorId: factorId, challengeId: challengeId, code: twoFactorCode)
+            } catch {
+                await MainActor.run {
+                    self.error = "Invalid verification code. Please try again."
+                    twoFactorCode = ""
+                    Task {
+                        mfaChallengeId = try? await supabase.createMFAChallenge(factorId: factorId)
+                    }
+                }
             }
-            isLoading = false
+            await MainActor.run { isLoading = false }
         }
     }
 }
