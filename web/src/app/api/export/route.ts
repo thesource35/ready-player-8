@@ -6,13 +6,10 @@ export async function GET() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !key) {
-    // Return demo export data
-    return NextResponse.json({
-      exported_at: new Date().toISOString(),
-      platform: "ConstructionOS",
-      tables: { projects: 5, contracts: 7, daily_logs: 3, timecards: 4, punch_items: 8 },
-      message: "Demo export — connect Supabase for real data export",
-    });
+    return NextResponse.json(
+      { error: "Export unavailable — Supabase is not configured" },
+      { status: 503 }
+    );
   }
 
   const supabase = createClient(url, key);

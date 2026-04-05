@@ -103,7 +103,12 @@ export async function GET() {
       return NextResponse.json({ jobs: getFallbackJobs(), source: "sample" });
     }
 
-    const liveJobs = (data ?? [])
+    if (!Array.isArray(data)) {
+      console.error("Jobs: unexpected response shape — expected array, got:", typeof data);
+      return NextResponse.json({ jobs: getFallbackJobs(), source: "sample" });
+    }
+
+    const liveJobs = data
       .map(parseJobListing)
       .map((job) => (canRevealContactEmail ? job : { ...job, contactEmail: "" }));
     return NextResponse.json({
