@@ -365,10 +365,16 @@ final class ConstructionOSNetworkService: ObservableObject {
     }
 
     private func loadState() {
-        guard
-            let data = UserDefaults.standard.data(forKey: storageKey),
-            let snapshot = try? JSONDecoder().decode(ConstructionOSNetworkSnapshot.self, from: data)
-        else {
+        guard let data = UserDefaults.standard.data(forKey: storageKey) else {
+            posts = mockConstructionOSNetworkPosts
+            return
+        }
+
+        let snapshot: ConstructionOSNetworkSnapshot
+        do {
+            snapshot = try JSONDecoder().decode(ConstructionOSNetworkSnapshot.self, from: data)
+        } catch {
+            CrashReporter.shared.reportError("Network snapshot decode failed: \(error.localizedDescription)")
             posts = mockConstructionOSNetworkPosts
             return
         }
@@ -440,8 +446,12 @@ final class ConstructionOSNetworkService: ObservableObject {
             persistedPosts: persistedPosts
         )
 
-        guard let data = try? JSONEncoder().encode(snapshot) else { return }
-        UserDefaults.standard.set(data, forKey: storageKey)
+        do {
+            let data = try JSONEncoder().encode(snapshot)
+            UserDefaults.standard.set(data, forKey: storageKey)
+        } catch {
+            CrashReporter.shared.reportError("Network snapshot encode failed: \(error.localizedDescription)")
+        }
     }
 
     private func extractTags(from text: String) -> [String] {
@@ -926,6 +936,7 @@ struct ConstructionOSNetworkPanel: View {
 
         Task {
             guard let data = try? await item.loadTransferable(type: Data.self) else {
+                CrashReporter.shared.reportError("Photo load failed for network post comment")
                 await MainActor.run {
                     commentPhotoDrafts[postID] = nil
                     commentPhotoSelections[postID] = nil

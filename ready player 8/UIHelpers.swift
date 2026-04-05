@@ -155,13 +155,17 @@ struct GlobalSearchView: View {
             // Sanitize search input — strip SQL wildcards and special chars
             let sanitized = lq.replacingOccurrences(of: "%", with: "").replacingOccurrences(of: "'", with: "").replacingOccurrences(of: "\"", with: "").replacingOccurrences(of: ";", with: "")
             guard !sanitized.isEmpty else { return }
-            if let remote: [SupabaseProject] = try? await svc.fetch(SupabaseTable.projects, query: ["name": "ilike.*\(sanitized)*"]) {
+            do {
+                let remote: [SupabaseProject] = try await svc.fetch(SupabaseTable.projects, query: ["name": "ilike.*\(sanitized)*"])
                 let serverHits = remote.map { ("Projects (remote)", $0.name, $0.client, "\u{1F3D7}") }
                 await MainActor.run {
                     // Merge server results, dedup by title
                     let existingTitles = Set(results.map(\.title))
                     results += serverHits.filter { !existingTitles.contains($0.1) }
                 }
+            } catch {
+                // Expected: Supabase may not be configured for project search
+                CrashReporter.shared.reportError("Project search failed: \(error.localizedDescription)")
             }
         }
     }
@@ -430,9 +434,12 @@ final class NotificationManager: ObservableObject {
         // Rich media attachment (site photo)
         if let imageData {
             let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("inspection-\(UUID().uuidString).jpg")
-            try? imageData.write(to: tempURL)
-            if let attachment = try? UNNotificationAttachment(identifier: "image", url: tempURL) {
+            do {
+                try imageData.write(to: tempURL)
+                let attachment = try UNNotificationAttachment(identifier: "image", url: tempURL)
                 content.attachments = [attachment]
+            } catch {
+                CrashReporter.shared.reportError("Notification attachment failed: \(error.localizedDescription)")
             }
         }
 
@@ -518,7 +525,11 @@ final class DocumentStore: ObservableObject {
             return
         }
         let fileURL = docsDir.appendingPathComponent(fileName)
-        try? data.write(to: fileURL)
+        do {
+            try data.write(to: fileURL)
+        } catch {
+            CrashReporter.shared.reportError("File write failed to \(fileURL.lastPathComponent): \(error.localizedDescription)")
+        }
 
         let attachment = DocumentAttachment(
             name: name, type: type, dataSize: data.count,
@@ -792,21 +803,29 @@ final class CalendarManager: ObservableObject {
     }
 
     func addInspectionToCalendar(site: String, type: String, date: Date) {
-        try? addEvent(
-            title: "[Inspection] \(type) — \(site)",
-            startDate: date,
-            endDate: Calendar.current.date(byAdding: .hour, value: 2, to: date) ?? date,
-            notes: "ConstructionOS inspection reminder"
-        )
+        do {
+            try addEvent(
+                title: "[Inspection] \(type) — \(site)",
+                startDate: date,
+                endDate: Calendar.current.date(byAdding: .hour, value: 2, to: date) ?? date,
+                notes: "ConstructionOS inspection reminder"
+            )
+        } catch {
+            CrashReporter.shared.reportError("Calendar inspection event creation failed: \(error.localizedDescription)")
+        }
     }
 
     func addBidDeadlineToCalendar(contract: String, deadline: Date) {
-        try? addEvent(
-            title: "[Bid Due] \(contract)",
-            startDate: deadline,
-            endDate: Calendar.current.date(byAdding: .hour, value: 1, to: deadline) ?? deadline,
-            notes: "ConstructionOS bid deadline"
-        )
+        do {
+            try addEvent(
+                title: "[Bid Due] \(contract)",
+                startDate: deadline,
+                endDate: Calendar.current.date(byAdding: .hour, value: 1, to: deadline) ?? deadline,
+                notes: "ConstructionOS bid deadline"
+            )
+        } catch {
+            CrashReporter.shared.reportError("Calendar bid deadline event creation failed: \(error.localizedDescription)")
+        }
     }
 }
 
