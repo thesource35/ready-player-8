@@ -1,7 +1,19 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
+  // Rate limit: 5 lead submissions per minute per IP (AUTH-11)
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    || req.headers.get("x-real-ip")
+    || "unknown";
+  if (!checkRateLimit(ip, 5, 60_000)) {
+    return NextResponse.json(
+      { error: "Too many submissions. Please wait a minute before trying again." },
+      { status: 429, headers: getRateLimitHeaders(ip, 5) }
+    );
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -42,7 +54,10 @@ export async function POST(req: Request) {
     // Database → Webhooks → New Webhook → Table: cs_rental_leads → Event: INSERT
     // URL: your email service (e.g., Resend, SendGrid, or Zapier webhook)
 
-    return NextResponse.json({ success: true, id: data.id });
+    return NextResponse.json(
+      { success: true, id: data.id },
+      { headers: getRateLimitHeaders(ip, 5) }
+    );
   } catch (err) {
     console.error("Lead API error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
