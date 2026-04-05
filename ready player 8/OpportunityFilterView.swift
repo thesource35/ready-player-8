@@ -304,7 +304,12 @@ struct OpportunityFilterView: View {
 
     private func loadContracts() async {
         guard supabase.isConfigured else { return }
-        do { remoteContracts = try await supabase.fetch(SupabaseTable.contracts) } catch { /* fallback */ }
+        do {
+            remoteContracts = try await supabase.fetch(SupabaseTable.contracts)
+        } catch {
+            // Expected: Supabase may not be configured — fall back to local contracts
+            CrashReporter.shared.reportError("OpportunityFilter contract fetch failed (using local): \(error.localizedDescription)")
+        }
     }
 
     // MARK: - Helpers

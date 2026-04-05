@@ -304,6 +304,7 @@ final class IntegrationHub: ObservableObject {
             trackEvent(includeSecretsInExport ? "backend_config_exported_with_secrets" : "backend_config_exported_redacted")
         } catch {
             configTransferStatus = "Export failed"
+            CrashReporter.shared.reportError("Config export failed: \(error.localizedDescription)")
         }
     }
 
@@ -397,6 +398,7 @@ final class IntegrationHub: ObservableObject {
             trackEvent("backend_config_imported")
         } catch {
             configTransferStatus = "Import failed"
+            CrashReporter.shared.reportError("Config import failed: \(error.localizedDescription)")
         }
     }
 
@@ -989,6 +991,7 @@ final class IntegrationHub: ObservableObject {
                 trackEvent("cloud_export_success")
             } catch {
                 cloudExportStatus = "Cloud export failed"
+                CrashReporter.shared.reportError("Cloud export failed: \(error.localizedDescription)")
             }
         } else {
             cloudExportStatus = "iCloud unavailable (enable capability)"

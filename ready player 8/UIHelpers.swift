@@ -414,6 +414,7 @@ final class NotificationManager: ObservableObject {
             let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound])
             isAuthorized = granted
         } catch {
+            CrashReporter.shared.reportError("Notification authorization failed: \(error.localizedDescription)")
             isAuthorized = false
         }
     }

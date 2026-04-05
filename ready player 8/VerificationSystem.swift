@@ -154,7 +154,8 @@ final class VerificationManager: ObservableObject {
                     try await svc.insert(SupabaseTable.verificationRequests, record: req)
                     self?.currentRequest?.status = "submitted"
                 } catch {
-                    // Backend unavailable — fall back to local-only review
+                    // Expected: Backend unavailable — fall back to local-only review
+                    CrashReporter.shared.reportError("Verification backend unavailable (local fallback): \(error.localizedDescription)")
                     self?.currentRequest?.status = "reviewing"
                 }
             } else {
