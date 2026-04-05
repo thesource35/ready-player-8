@@ -214,7 +214,9 @@ final class SupabaseService: ObservableObject {
 
     func signUp(email: String, password: String) async throws {
         guard isConfigured else { throw SupabaseError.notConfigured }
-        let url = URL(string: "\(baseURL)/auth/v1/signup")!
+        guard let url = URL(string: "\(baseURL)/auth/v1/signup") else {
+            throw SupabaseError.httpError(400, "Invalid signup URL from baseURL: \(baseURL)")
+        }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue(apiKey, forHTTPHeaderField: "apikey")
@@ -239,7 +241,9 @@ final class SupabaseService: ObservableObject {
 
     func signIn(email: String, password: String) async throws {
         guard isConfigured else { throw SupabaseError.notConfigured }
-        let url = URL(string: "\(baseURL)/auth/v1/token?grant_type=password")!
+        guard let url = URL(string: "\(baseURL)/auth/v1/token?grant_type=password") else {
+            throw SupabaseError.httpError(400, "Invalid token URL from baseURL: \(baseURL)")
+        }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue(apiKey, forHTTPHeaderField: "apikey")
@@ -603,7 +607,9 @@ final class SupabaseService: ObservableObject {
         guard isConfigured else { throw SupabaseError.notConfigured }
         try validateTable(table)
         await throttle()
-        var components = URLComponents(string: "\(baseURL)/rest/v1/\(table)")!
+        guard var components = URLComponents(string: "\(baseURL)/rest/v1/\(table)") else {
+            throw SupabaseError.httpError(400, "Invalid URL components for table: \(table)")
+        }
         var queryItems = query.map { URLQueryItem(name: $0.key, value: $0.value) }
         if let limit { queryItems.append(URLQueryItem(name: "limit", value: "\(limit)")) }
         if let offset { queryItems.append(URLQueryItem(name: "offset", value: "\(offset)")) }
@@ -841,7 +847,7 @@ struct SupabaseWealthOpportunity: Codable, Identifiable, Sendable {
         return contracts.first { $0.id == cid }
     }
 
-    var hasLinkedContract: Bool { contractId != nil && !contractId!.isEmpty }
+    var hasLinkedContract: Bool { !(contractId ?? "").isEmpty }
 
     var isValid: Bool { !name.isEmpty && (0...100).contains(wealthSignal) && ["active", "archived", "pending"].contains(status) }
     var validationErrors: [String] {
