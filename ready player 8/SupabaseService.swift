@@ -141,6 +141,23 @@ final class SupabaseService: ObservableObject {
 
     private let configKeyPrefix = "ConstructOS.Integrations.Backend."
 
+    init() {
+        migrateCredentials()
+    }
+
+    /// Migrate legacy UserDefaults credentials to Keychain on first launch (SEC-02, SEC-03)
+    private func migrateCredentials() {
+        let keys = ["BaseURL", "ApiKey"]
+        for key in keys {
+            if KeychainHelper.read(key: "Backend.\(key)") == nil {
+                if let legacy = UserDefaults.standard.string(forKey: configKeyPrefix + key), !legacy.isEmpty {
+                    KeychainHelper.save(key: "Backend.\(key)", data: legacy)
+                    UserDefaults.standard.removeObject(forKey: configKeyPrefix + key)
+                }
+            }
+        }
+    }
+
     // MARK: - Rate Limiting
     private var lastRequestTime: Date = .distantPast
     private let minRequestInterval: TimeInterval = 0.1  // 100ms between requests (10 req/sec max)

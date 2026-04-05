@@ -244,6 +244,10 @@ final class IntegrationHub: ObservableObject {
         UserDefaults.standard.set(backendProjectId, forKey: configKeyPrefix + "ProjectID")
         KeychainHelper.save(key: "Backend.ApiKey", data: backendApiKey)
         KeychainHelper.save(key: "Backend.AuthToken", data: backendAuthToken)
+        // Clean up any legacy UserDefaults secret entries
+        UserDefaults.standard.removeObject(forKey: configKeyPrefix + "BaseURL")
+        UserDefaults.standard.removeObject(forKey: configKeyPrefix + "ApiKey")
+        UserDefaults.standard.removeObject(forKey: configKeyPrefix + "AuthToken")
         trackEvent("backend_config_saved")
     }
 
@@ -407,6 +411,16 @@ final class IntegrationHub: ObservableObject {
         if isPlaceholderProjectId(backendProjectId) { backendProjectId = "" }
         backendApiKey = KeychainHelper.read(key: "Backend.ApiKey") ?? UserDefaults.standard.string(forKey: configKeyPrefix + "ApiKey") ?? ""
         backendAuthToken = KeychainHelper.read(key: "Backend.AuthToken") ?? UserDefaults.standard.string(forKey: configKeyPrefix + "AuthToken") ?? ""
+
+        // Migrate legacy UserDefaults secrets to Keychain (SEC-02, SEC-03)
+        let secretKeys = ["BaseURL", "ApiKey", "AuthToken"]
+        for key in secretKeys {
+            if KeychainHelper.read(key: "Backend.\(key)") == nil,
+               let legacy = UserDefaults.standard.string(forKey: configKeyPrefix + key), !legacy.isEmpty {
+                KeychainHelper.save(key: "Backend.\(key)", data: legacy)
+                UserDefaults.standard.removeObject(forKey: configKeyPrefix + key)
+            }
+        }
     }
 
     func connectBusinessPlatform(_ platform: BusinessPlatform) {

@@ -28,7 +28,7 @@ struct AIMessage: Identifiable {
 // MARK: - View
 
 struct AngelicAIView: View {
-    @State private var apiKey: String = ""
+    @State private var apiKey: String = KeychainHelper.read(key: "AngelicAI.APIKey") ?? ""
     @AppStorage("ConstructOS.AngelicAI.SessionID") private var sessionID: String = UUID().uuidString
 
     @State private var messages: [AIMessage] = []
@@ -73,10 +73,21 @@ struct AngelicAIView: View {
         .sheet(isPresented: $showKeySetup) {
             APIKeySheet(tempKey: $tempAPIKey) { key in
                 apiKey = key
+                KeychainHelper.save(key: "AngelicAI.APIKey", data: key)
                 showKeySetup = false
             }
         }
-        .task { if !apiKey.isEmpty { await loadHistory() } }
+        .task {
+            // Migrate legacy UserDefaults API key to Keychain
+            if apiKey.isEmpty {
+                if let legacyKey = UserDefaults.standard.string(forKey: "ConstructOS.AngelicAI.APIKey"), !legacyKey.isEmpty {
+                    apiKey = legacyKey
+                    KeychainHelper.save(key: "AngelicAI.APIKey", data: legacyKey)
+                    UserDefaults.standard.removeObject(forKey: "ConstructOS.AngelicAI.APIKey")
+                }
+            }
+            if !apiKey.isEmpty { await loadHistory() }
+        }
     }
 
     // MARK: - Header
@@ -165,6 +176,7 @@ struct AngelicAIView: View {
                     Button {
                         if !tempAPIKey.isEmpty {
                             apiKey = tempAPIKey
+                            KeychainHelper.save(key: "AngelicAI.APIKey", data: tempAPIKey)
                             tempAPIKey = ""
                         }
                     } label: {
@@ -595,7 +607,7 @@ private struct APIKeySheet: View {
             ZStack {
                 Theme.bg.ignoresSafeArea()
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Your API key is stored locally in app storage. It is never sent anywhere except directly to api.anthropic.com.")
+                    Text("Your API key is stored securely in the device Keychain. It is never sent anywhere except directly to api.anthropic.com.")
                         .font(.system(size: 12))
                         .foregroundColor(Theme.muted)
                         .padding(14)
