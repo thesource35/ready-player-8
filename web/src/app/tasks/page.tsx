@@ -45,10 +45,14 @@ export default function TasksPage() {
   const [filter, setFilter] = useState("all");
   const [todos, setTodos] = useState(initialTodos);
   const [dismissedReminders, setDismissedReminders] = useState<Set<number>>(new Set());
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/tasks")
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((data: { todos?: Record<string, unknown>[]; events?: Record<string, unknown>[]; reminders?: Record<string, unknown>[] }) => {
         if (data.todos && Array.isArray(data.todos) && data.todos.length > 0) {
           setTodos(data.todos.map((t, i) => ({
@@ -64,7 +68,7 @@ export default function TasksPage() {
           })));
         }
       })
-      .catch(() => { console.error("[Fetch] Load failed"); });
+      .catch((err) => { setFetchError(`Failed to load tasks: ${err.message}`); });
   }, []);
   const tabs = ["Tasks", "Schedule", "AI Reminders"];
 
@@ -79,6 +83,12 @@ export default function TasksPage() {
 
   return (
     <div style={{ padding: 20, maxWidth: 1000, margin: "0 auto" }}>
+      {fetchError && (
+        <div style={{ background: "var(--surface)", border: "1px solid var(--red)", borderRadius: 10, padding: "10px 14px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ color: "var(--red)", fontSize: 12 }}>{fetchError}</span>
+          <button onClick={() => setFetchError(null)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 14 }}>✕</button>
+        </div>
+      )}
       <div style={{ background: "var(--surface)", borderRadius: 14, padding: 20, marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>

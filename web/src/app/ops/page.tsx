@@ -63,10 +63,14 @@ export default function OpsPage() {
   const [alerts, setAlerts] = useState<Alert[]>(fallbackAlerts);
   const [queue] = useState<QueueItem[]>(fallbackQueue);
   const [panels, setPanels] = useState<Panel[]>(fallbackPanels);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/ops")
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((data: { alerts?: Record<string, unknown>[]; rfis?: Record<string, unknown>[]; changeOrders?: Record<string, unknown>[] }) => {
         if (data.alerts && data.alerts.length > 0) {
           setAlerts(data.alerts.map(a => ({
@@ -101,7 +105,7 @@ export default function OpsPage() {
           });
         }
       })
-      .catch(() => { console.error("[Fetch] Load failed"); });
+      .catch((err) => { setFetchError(`Failed to load ops data: ${err.message}`); });
   }, []);
 
   const sevColor = (s: number) => s >= 3 ? "var(--red)" : s === 2 ? "var(--gold)" : "var(--cyan)";
@@ -113,6 +117,12 @@ export default function OpsPage() {
   return (
     <PremiumFeatureGate feature="ops">
     <div style={{ padding: 20, maxWidth: 1200, margin: "0 auto" }}>
+      {fetchError && (
+        <div style={{ background: "var(--surface)", border: "1px solid var(--red)", borderRadius: 10, padding: "10px 14px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ color: "var(--red)", fontSize: 12 }}>{fetchError}</span>
+          <button onClick={() => setFetchError(null)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 14 }}>✕</button>
+        </div>
+      )}
       <div style={{ background: "var(--surface)", borderRadius: 14, padding: 20, marginBottom: 16 }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 4, color: "var(--accent)" }}>OPS</div>
         <h1 style={{ fontSize: 24, fontWeight: 900, margin: "4px 0" }}>Operations Command Center</h1>
