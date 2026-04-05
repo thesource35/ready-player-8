@@ -85,7 +85,10 @@ Plans:
   2. ContentView footer URL force unwraps replaced with guard-let (graceful no-op if URL invalid)
   3. PersistenceController fatalError replaced with fallback that logs error and continues with in-memory store
   4. OperationsField/OperationsCore and SecurityAccessView force unwraps guarded safely
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [x] 04-01-PLAN.md — Service layer crash safety (SupabaseService force unwraps, PersistenceController fatalError)
+- [x] 04-02-PLAN.md — View layer crash safety (ContentView, OperationsField, OperationsCore, SecurityAccessView, UIHelpers)
 
 ### Phase 5: iOS Error Handling & State Persistence
 **Goal**: Every iOS operation that can fail either recovers gracefully or shows a clear error message, and all user-created data survives app restarts
@@ -99,7 +102,12 @@ Plans:
   5. App warns or truncates gracefully if any AppStorage JSON key approaches 1MB
   6. Filtering projects/contracts triggers fresh Supabase fetch; AI messages are session-isolated per user
   7. SupabaseService validates tokens actually arrived on signUp/signIn and falls back gracefully when no credentials exist
-**Plans**: TBD
+**Plans:** 4 plans
+Plans:
+- [ ] 05-01-PLAN.md — Service layer hardening (SupabaseService auth/token validation, AppStorageJSON size guard)
+- [ ] 05-02-PLAN.md — View-layer error handling (empty catches, try? replacement, print leaks, deprecated API)
+- [ ] 05-03-PLAN.md — Core view state persistence (ProjectsView, ContractsView, MarketView, SocialNetwork, ScheduleTools) + filter refetch
+- [ ] 05-04-PLAN.md — AngelicAI hardening (mock indicator, session isolation, message persistence)
 
 ### Phase 6: Web Security & Validation
 **Goal**: Web endpoints reject malformed input, verify webhook signatures, protect against CSRF, and persist data correctly
@@ -202,8 +210,8 @@ Phases 11, 12 execute last (after the code they test is stable).
 | 1. Secrets & Infrastructure Cleanup | 3/3 | Complete | 2026-04-05 |
 | 2. Authentication | 0/3 | Planned | - |
 | 3. Row-Level Security | 0/2 | Planned | - |
-| 4. iOS Crash Safety | 0/TBD | Not started | - |
-| 5. iOS Error Handling & State Persistence | 0/TBD | Not started | - |
+| 4. iOS Crash Safety | 0/2 | Planned | - |
+| 5. iOS Error Handling & State Persistence | 0/4 | Planned | - |
 | 6. Web Security & Validation | 0/TBD | Not started | - |
 | 7. Web Error Handling & Consistency | 0/TBD | Not started | - |
 | 8. Web UX & Loading States | 0/TBD | Not started | - |
