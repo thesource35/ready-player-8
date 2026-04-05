@@ -3,6 +3,7 @@ import { fetchTable, insertRow, getAuthenticatedClient } from "@/lib/supabase/fe
 import type { FeedPost } from "@/lib/supabase/types";
 import { MOCK_FEED_POSTS } from "@/lib/mock-data";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { verifyCsrfOrigin } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,10 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  if (!verifyCsrfOrigin(req)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { user } = await getAuthenticatedClient();
   if (!user) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });

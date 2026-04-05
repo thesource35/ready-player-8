@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchTable, insertRow, updateOwnedRow, deleteOwnedRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { verifyCsrfOrigin } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,10 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  if (!verifyCsrfOrigin(req)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { user } = await getAuthenticatedClient();
   if (!user) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
@@ -46,6 +51,10 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
+  if (!verifyCsrfOrigin(req)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { user } = await getAuthenticatedClient();
   if (!user) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
@@ -70,6 +79,10 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  if (!verifyCsrfOrigin(req)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { user } = await getAuthenticatedClient();
   if (!user) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });

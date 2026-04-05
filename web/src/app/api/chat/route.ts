@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { verifyCsrfOrigin } from "@/lib/csrf";
 
 // Simple rate limiter: max 20 requests per minute per IP
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
@@ -21,6 +22,10 @@ export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
   if (!checkRateLimit(ip)) {
     return NextResponse.json({ error: "Rate limit exceeded. Please wait a minute." }, { status: 429 });
+  }
+
+  if (!verifyCsrfOrigin(req)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;

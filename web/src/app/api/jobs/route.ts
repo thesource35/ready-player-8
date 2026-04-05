@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { getSupabaseServerKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { buildJobTags, getFallbackJobs, parseJobListing } from "@/lib/jobs";
 import { hasFeatureAccess } from "@/lib/subscription/featureAccess";
+import { verifyCsrfOrigin } from "@/lib/csrf";
 
 const MAX_TEXT = 2000;
 
@@ -116,6 +117,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!verifyCsrfOrigin(request)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const contentType = request.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
     return NextResponse.json({ error: "Expected application/json" }, { status: 415 });
