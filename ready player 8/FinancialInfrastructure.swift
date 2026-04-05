@@ -108,10 +108,12 @@ final class ConstructionOSPay: ObservableObject {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
             let (_, response) = try await URLSession.shared.data(for: request)
             if let httpResponse = response as? HTTPURLResponse {
+                #if DEBUG
                 print("Paddle transaction: HTTP \(httpResponse.statusCode)")
+                #endif
             }
         } catch {
-            print("Paddle transaction error: \(error.localizedDescription)")
+            CrashReporter.shared.reportError("Paddle transaction error: \(error.localizedDescription)")
         }
     }
 }

@@ -496,7 +496,7 @@ struct AuthGateView: View {
                 TextField(placeholder, text: text)
                     .font(.system(size: 14)).foregroundColor(Theme.text)
                     #if os(iOS)
-                    .autocapitalization(.none)
+                    .textInputAutocapitalization(.never)
                     #endif
             }
         }

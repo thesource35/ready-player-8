@@ -398,7 +398,10 @@ struct MoneyLensView: View {
         do {
             remoteProjects = try await supabase.fetch(SupabaseTable.projects)
             remoteContracts = try await supabase.fetch(SupabaseTable.contracts)
-        } catch { /* fall back to mock */ }
+        } catch {
+            // Expected: Supabase may not be configured — fall back to mock data
+            CrashReporter.shared.reportError("MoneyLens remote load failed (using mock): \(error.localizedDescription)")
+        }
     }
 
     private func loadPersistedState() {
