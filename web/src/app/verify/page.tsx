@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 const trades = [
@@ -47,8 +49,8 @@ export default function VerifyPage() {
               <div><span className="text-[#9EBDC2]">Tier:</span> <span style={{ color: tier.color }}>{tier.name}</span></div>
             </div>
           </div>
-          <a href="/feed" className="block w-full py-3 rounded-xl text-sm font-bold text-black mb-3" style={{ background: "linear-gradient(90deg, #F29E3D, #FCC757)" }}>Back to Network</a>
-          <a href="/cos-network" className="text-xs text-[#9EBDC2]">View verification tiers</a>
+          <Link href="/feed" className="block w-full py-3 rounded-xl text-sm font-bold text-black mb-3" style={{ background: "linear-gradient(90deg, #F29E3D, #FCC757)" }}>Back to Network</Link>
+          <Link href="/cos-network" className="text-xs text-[#9EBDC2]">View verification tiers</Link>
         </div>
       </div>
     );
@@ -58,7 +60,7 @@ export default function VerifyPage() {
     <div className="min-h-screen px-4 py-10" style={{ background: "#080E12" }}>
       <div className="max-w-lg mx-auto">
         <div className="text-center mb-8">
-          <img src="/logo.png" alt="ConstructionOS" className="w-14 h-14 rounded-xl mx-auto mb-3" />
+          <Image src="/logo.png" alt="ConstructionOS" width={56} height={56} className="rounded-xl mx-auto mb-3" />
           <h1 className="text-xl font-black">Get Verified</h1>
           <p className="text-xs text-[#9EBDC2] mt-1">License verification against state databases. Stand out on the network.</p>
         </div>

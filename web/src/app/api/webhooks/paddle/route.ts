@@ -13,19 +13,24 @@ export async function POST(req: Request) {
     switch (eventType) {
       case "subscription.created":
         // TODO: Update user subscription in Supabase
-        console.log("Paddle subscription created:", body.data?.id);
+        // Structured log for production observability
+        console.info("[Paddle] subscription created:", body.data?.id);
         break;
       case "subscription.updated":
-        console.log("Paddle subscription updated:", body.data?.id);
+        // Structured log for production observability
+        console.info("[Paddle] subscription updated:", body.data?.id);
         break;
       case "subscription.canceled":
-        console.log("Paddle subscription canceled:", body.data?.id);
+        // Structured log for production observability
+        console.info("[Paddle] subscription canceled:", body.data?.id);
         break;
       case "transaction.completed":
-        console.log("Paddle transaction completed:", body.data?.id);
+        // Structured log for production observability
+        console.info("[Paddle] transaction completed:", body.data?.id);
         break;
       default:
-        console.log("Paddle webhook:", eventType);
+        // Structured log for production observability
+        console.info("[Paddle] webhook:", eventType);
     }
 
     return NextResponse.json({ received: true });

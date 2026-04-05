@@ -1,8 +1,19 @@
 "use client";
-import { useState } from "react";
+import Image from "next/image";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#080E12" }}><p style={{ color: "#9EBDC2" }}>Loading...</p></div>}>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
+  const searchParams = useSearchParams();
   const [isSignup, setIsSignup] = useState(false);
   const [step, setStep] = useState<"auth"|"2fa"|"forgot">("auth");
   const [code, setCode] = useState("");
@@ -14,10 +25,18 @@ export default function LoginPage() {
     fullName: "", company: "", title: "", trade: "", location: "", experience: "", phone: "", bio: "",
   });
 
+  const redirectPath = searchParams.get("redirect");
+  const nextPath = redirectPath && redirectPath.startsWith("/") ? redirectPath : "/feed";
+  const authError = searchParams.get("error");
+  const authErrorMessage = authError === "auth_failed"
+    ? "Sign-in could not be completed. Please try again."
+    : searchParams.get("error_description") || "";
+
   const update = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
 
   async function handleAuth() {
     setError("");
+    setSuccess("");
     setLoading(true);
 
     const supabase = createClient();
@@ -41,7 +60,7 @@ export default function LoginPage() {
                 trade: form.trade,
                 location: form.location,
               },
-              emailRedirectTo: `${window.location.origin}/auth/callback`,
+              emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
             },
           });
           if (signUpError) { setError(signUpError.message); setLoading(false); return; }
@@ -51,7 +70,7 @@ export default function LoginPage() {
             password: form.password,
           });
           if (signInError) { setError(signInError.message); setLoading(false); return; }
-          window.location.href = "/feed";
+          window.location.assign(nextPath);
           return;
         }
       } catch {
@@ -67,14 +86,22 @@ export default function LoginPage() {
   }
 
   async function handleOAuth(provider: "apple" | "google") {
+    setError("");
+    setLoading(true);
     const supabase = createClient();
     if (supabase) {
-      await supabase.auth.signInWithOAuth({
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
+        options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}` },
       });
+
+      if (oauthError) {
+        setError(oauthError.message);
+        setLoading(false);
+      }
     } else {
       setStep("2fa");
+      setLoading(false);
     }
   }
 
@@ -83,7 +110,7 @@ export default function LoginPage() {
     const supabase = createClient();
     if (supabase && form.email) {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(form.email, {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
       });
       if (resetError) { setError(resetError.message); }
       else { setSuccess("Password reset link sent to " + form.email); }
@@ -98,7 +125,7 @@ export default function LoginPage() {
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#080E12' }}>
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <img src="/logo.png" alt="ConstructionOS" className="w-16 h-16 rounded-xl mx-auto mb-4" style={{ boxShadow: '0 0 40px rgba(242,158,61,0.2)' }} />
+            <Image src="/logo.png" alt="ConstructionOS" width={64} height={64} className="rounded-xl mx-auto mb-4" style={{ boxShadow: '0 0 40px rgba(242,158,61,0.2)' }} />
             <h1 className="text-2xl font-black">Reset Password</h1>
             <p className="text-xs text-[#9EBDC2] mt-2">Enter your email and we&apos;ll send you a reset link</p>
           </div>
@@ -136,10 +163,10 @@ export default function LoginPage() {
                 ))}
               </div>
               <input type="text" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\D/g,""))} className="opacity-0 absolute" autoFocus />
-              <button onClick={() => { if(code.length===6) window.location.href="/feed"; }} className="w-full py-3 rounded-xl font-bold text-black cursor-pointer" style={{ background: code.length===6 ? 'linear-gradient(90deg, #F29E3D, #FCC757)' : '#33545E', border: 'none' }}>VERIFY</button>
+              <button onClick={() => { if(code.length===6) window.location.assign(nextPath); }} className="w-full py-3 rounded-xl font-bold text-black cursor-pointer" style={{ background: code.length===6 ? 'linear-gradient(90deg, #F29E3D, #FCC757)' : '#33545E', border: 'none' }}>VERIFY</button>
             </>
           )}
-          <p className="text-xs text-[#9EBDC2] mt-4 cursor-pointer" onClick={() => window.location.href="/feed"}>Continue to app →</p>
+          <p className="text-xs text-[#9EBDC2] mt-4 cursor-pointer" onClick={() => window.location.assign(nextPath)}>Continue to app →</p>
         </div>
       </div>
     );
@@ -149,14 +176,14 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#080E12' }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src="/logo.png" alt="ConstructionOS" className="w-16 h-16 rounded-xl mx-auto mb-4" style={{ boxShadow: '0 0 40px rgba(242,158,61,0.2)' }} />
+          <Image src="/logo.png" alt="ConstructionOS" width={64} height={64} className="rounded-xl mx-auto mb-4" style={{ boxShadow: '0 0 40px rgba(242,158,61,0.2)' }} />
           <h1 className="text-2xl font-black tracking-wide">CONSTRUCT<span className="text-[#F29E3D]">OS</span></h1>
           <p className="text-xs tracking-widest text-[#9EBDC2] mt-1">CONSTRUCTION COMMAND CENTER</p>
         </div>
         <div className="rounded-2xl p-6" style={{ background: 'rgba(15,28,36,0.6)', border: '1px solid rgba(51,84,94,0.3)' }}>
           <h2 className="text-lg font-bold text-center mb-5">{isSignup ? "Create your account" : "Sign in to your account"}</h2>
 
-          {error && <div className="mb-4 p-3 rounded-lg text-xs font-bold text-center" style={{ background: 'rgba(217,77,72,0.1)', color: '#D94D48', border: '1px solid rgba(217,77,72,0.2)' }}>{error}</div>}
+          {(error || authErrorMessage) && <div className="mb-4 p-3 rounded-lg text-xs font-bold text-center" style={{ background: 'rgba(217,77,72,0.1)', color: '#D94D48', border: '1px solid rgba(217,77,72,0.2)' }}>{error || authErrorMessage}</div>}
 
           {/* SSO */}
           <button onClick={() => handleOAuth("apple")} className="w-full py-3 rounded-xl font-semibold text-black bg-white mb-2 text-sm cursor-pointer" style={{ border: 'none' }}>🍎 Continue with Apple</button>

@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function ProfilePage() {
@@ -12,7 +13,14 @@ export default function ProfilePage() {
 
   const update = (key: string, value: string) => { setForm(prev => ({ ...prev, [key]: value })); setSaved(false); };
 
+  const [validationError, setValidationError] = useState<string | null>(null);
+
   const handleSave = () => {
+    // Validate required fields
+    if (!form.fullName.trim()) { setValidationError("Full name is required"); return; }
+    if (!form.email.trim() || !form.email.includes("@")) { setValidationError("Valid email is required"); return; }
+    if (!form.trade.trim()) { setValidationError("Trade is required"); return; }
+    setValidationError(null);
     // In production: save to Supabase cs_user_profiles
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
@@ -59,8 +67,8 @@ export default function ProfilePage() {
       <button onClick={handleSave} style={{ width: "100%", padding: "14px 0", borderRadius: 12, fontSize: 14, fontWeight: 800, color: "var(--bg)", background: "linear-gradient(90deg, var(--accent), var(--gold))", border: "none", cursor: "pointer" }}>SAVE PROFILE</button>
 
       <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-        <a href="/verify" style={{ flex: 1, textAlign: "center", padding: 12, borderRadius: 10, fontSize: 11, fontWeight: 700, color: "var(--gold)", border: "1px solid var(--gold)", textDecoration: "none" }}>Get Verified</a>
-        <a href="/settings" style={{ flex: 1, textAlign: "center", padding: 12, borderRadius: 10, fontSize: 11, fontWeight: 700, color: "var(--muted)", border: "1px solid var(--border)", textDecoration: "none" }}>Settings</a>
+        <Link href="/verify" style={{ flex: 1, textAlign: "center", padding: 12, borderRadius: 10, fontSize: 11, fontWeight: 700, color: "var(--gold)", border: "1px solid var(--gold)", textDecoration: "none" }}>Get Verified</Link>
+        <Link href="/settings" style={{ flex: 1, textAlign: "center", padding: 12, borderRadius: 10, fontSize: 11, fontWeight: 700, color: "var(--muted)", border: "1px solid var(--border)", textDecoration: "none" }}>Settings</Link>
       </div>
     </div>
   );

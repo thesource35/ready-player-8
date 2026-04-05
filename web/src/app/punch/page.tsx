@@ -1,14 +1,52 @@
+"use client";
+import { useState, useEffect } from "react";
+
+interface PunchItem {
+  id: string;
+  description: string;
+  location: string;
+  trade: string;
+  priority: string;
+  status: string;
+  assignee: string;
+  dueDate: string;
+  photos: number;
+}
+
+const fallbackItems: PunchItem[] = [
+  { id: "PL-001", description: "Touch-up paint at stairwell B-2, scuff marks on east wall", location: "Building A, Level 2", trade: "Painting", priority: "HIGH", status: "OPEN", assignee: "Carlos M.", dueDate: "Apr 2", photos: 3 },
+  { id: "PL-002", description: "HVAC diffuser not aligned in conference room 204", location: "Building A, Level 2", trade: "HVAC", priority: "MEDIUM", status: "IN PROGRESS", assignee: "HVAC Team", dueDate: "Apr 3", photos: 2 },
+  { id: "PL-003", description: "Door hardware loose on suite 310 entry", location: "Building A, Level 3", trade: "Finish Carpentry", priority: "HIGH", status: "OPEN", assignee: "James W.", dueDate: "Apr 1", photos: 1 },
+  { id: "PL-004", description: "Caulk gap at window frame, unit 405", location: "Building B, Level 4", trade: "Exterior", priority: "CRITICAL", status: "OPEN", assignee: "Exterior Crew", dueDate: "Mar 31", photos: 4 },
+  { id: "PL-005", description: "Floor tile grout color mismatch — lobby east wing", location: "Building A, Level 1", trade: "Tile", priority: "MEDIUM", status: "COMPLETE", assignee: "Tile Sub", dueDate: "Mar 28", photos: 5 },
+  { id: "PL-006", description: "Electrical outlet cover plate missing, hallway 2F", location: "Building A, Level 2", trade: "Electrical", priority: "LOW", status: "OPEN", assignee: "Prime Electric", dueDate: "Apr 5", photos: 1 },
+  { id: "PL-007", description: "Fire caulking incomplete at penetration, shaft 3", location: "Building B, Level 3", trade: "Fire/Life Safety", priority: "CRITICAL", status: "IN PROGRESS", assignee: "FireSafe", dueDate: "Apr 1", photos: 2 },
+  { id: "PL-008", description: "Drywall nail pop — corridor 4A", location: "Building B, Level 4", trade: "Drywall", priority: "LOW", status: "COMPLETE", assignee: "Drywall Crew", dueDate: "Mar 29", photos: 1 },
+];
+
 export default function PunchPage() {
-  const items = [
-    { id: "PL-001", description: "Touch-up paint at stairwell B-2, scuff marks on east wall", location: "Building A, Level 2", trade: "Painting", priority: "HIGH", status: "OPEN", assignee: "Carlos M.", dueDate: "Apr 2", photos: 3 },
-    { id: "PL-002", description: "HVAC diffuser not aligned in conference room 204", location: "Building A, Level 2", trade: "HVAC", priority: "MEDIUM", status: "IN PROGRESS", assignee: "HVAC Team", dueDate: "Apr 3", photos: 2 },
-    { id: "PL-003", description: "Door hardware loose on suite 310 entry", location: "Building A, Level 3", trade: "Finish Carpentry", priority: "HIGH", status: "OPEN", assignee: "James W.", dueDate: "Apr 1", photos: 1 },
-    { id: "PL-004", description: "Caulk gap at window frame, unit 405", location: "Building B, Level 4", trade: "Exterior", priority: "CRITICAL", status: "OPEN", assignee: "Exterior Crew", dueDate: "Mar 31", photos: 4 },
-    { id: "PL-005", description: "Floor tile grout color mismatch — lobby east wing", location: "Building A, Level 1", trade: "Tile", priority: "MEDIUM", status: "COMPLETE", assignee: "Tile Sub", dueDate: "Mar 28", photos: 5 },
-    { id: "PL-006", description: "Electrical outlet cover plate missing, hallway 2F", location: "Building A, Level 2", trade: "Electrical", priority: "LOW", status: "OPEN", assignee: "Prime Electric", dueDate: "Apr 5", photos: 1 },
-    { id: "PL-007", description: "Fire caulking incomplete at penetration, shaft 3", location: "Building B, Level 3", trade: "Fire/Life Safety", priority: "CRITICAL", status: "IN PROGRESS", assignee: "FireSafe", dueDate: "Apr 1", photos: 2 },
-    { id: "PL-008", description: "Drywall nail pop — corridor 4A", location: "Building B, Level 4", trade: "Drywall", priority: "LOW", status: "COMPLETE", assignee: "Drywall Crew", dueDate: "Mar 29", photos: 1 },
-  ];
+  const [items, setItems] = useState<PunchItem[]>(fallbackItems);
+
+  useEffect(() => {
+    fetch("/api/punch")
+      .then(res => res.json())
+      .then((data: Record<string, unknown>[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setItems(data.map((p, i) => ({
+            id: (p.id as string) || `PL-${String(i + 1).padStart(3, "0")}`,
+            description: (p.description as string) || "",
+            location: (p.location as string) || "",
+            trade: (p.trade as string) || "",
+            priority: (p.priority as string) || "MEDIUM",
+            status: (p.status as string) || "OPEN",
+            assignee: (p.assignee as string) || "",
+            dueDate: (p.dueDate as string) || (p.due_date as string) || "",
+            photos: (p.photos as number) || (p.photo_count as number) || 0,
+          })));
+        }
+      })
+      .catch(() => { console.error("[Fetch] Load failed"); });
+  }, []);
 
   const open = items.filter(i => i.status === "OPEN").length;
   const inProgress = items.filter(i => i.status === "IN PROGRESS").length;

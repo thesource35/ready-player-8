@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import PremiumFeatureGate from "@/app/components/PremiumFeatureGate";
@@ -124,7 +125,7 @@ export default function FeedPage() {
     <div className="max-w-3xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4 p-4 rounded-2xl" style={{ background: "#0F1C24", border: "1px solid rgba(74,196,204,0.08)" }}>
-        <img src="/logo-sm.png" alt="COS" className="w-10 h-10 rounded-xl" />
+        <Image src="/logo-sm.png" alt="COS" width={40} height={40} className="rounded-xl" />
         <div className="flex-1">
           <div className="text-xs font-black tracking-[0.2em] text-[#F29E3D]">CONSTRUCTIONOS NETWORK</div>
           <div className="text-xs text-[#9EBDC2]">Instagram for construction — 142,891 professionals</div>
