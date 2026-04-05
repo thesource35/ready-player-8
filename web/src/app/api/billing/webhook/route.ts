@@ -8,11 +8,11 @@ export const dynamic = "force-dynamic";
 
 // Set this in your environment after configuring the webhook in Square Dashboard.
 // Square Dashboard → Webhooks → your endpoint → Signature Key
-const SQUARE_WEBHOOK_SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || "";
+const SQUARE_WEBHOOK_SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
 
 // The full URL Square sends the webhook to — needed for signature computation.
 // Example: https://constructionos.world/api/billing/webhook
-const SQUARE_WEBHOOK_URL = process.env.SQUARE_WEBHOOK_URL || "";
+const SQUARE_WEBHOOK_URL = process.env.SQUARE_WEBHOOK_URL;
 
 // ─── Signature verification ────────────────────────────────────────────
 // Square signs every webhook with HMAC-SHA256(signatureKey, requestUrl + rawBody).
@@ -112,24 +112,31 @@ function extractEmail(data: Record<string, unknown>): string {
 // ─── Webhook handler ───────────────────────────────────────────────────
 
 export async function POST(req: Request) {
+  // Reject all requests when signature key is not configured
+  if (!SQUARE_WEBHOOK_SIGNATURE_KEY) {
+    console.error("[Webhook] SQUARE_WEBHOOK_SIGNATURE_KEY is not configured — rejecting all webhook requests");
+    return NextResponse.json(
+      { error: "Webhook signature verification not configured" },
+      { status: 503 },
+    );
+  }
+
   // Read raw body BEFORE parsing — needed for signature verification
   const rawBody = await req.text();
 
-  // Verify HMAC signature when configured
-  if (SQUARE_WEBHOOK_SIGNATURE_KEY) {
-    const signature = req.headers.get("x-square-hmacsha256-signature");
-    if (!signature) {
-      console.error("[Webhook] Missing x-square-hmacsha256-signature header");
-      return NextResponse.json({ error: "Missing signature" }, { status: 401 });
-    }
+  // Verify HMAC signature on every request
+  const signature = req.headers.get("x-square-hmacsha256-signature");
+  if (!signature) {
+    console.error("[Webhook] Missing x-square-hmacsha256-signature header");
+    return NextResponse.json({ error: "Missing signature" }, { status: 401 });
+  }
 
-    const webhookUrl = SQUARE_WEBHOOK_URL || req.url;
-    const isValid = await verifySquareSignature(rawBody, signature, webhookUrl, SQUARE_WEBHOOK_SIGNATURE_KEY);
+  const webhookUrl = SQUARE_WEBHOOK_URL || req.url;
+  const isValid = await verifySquareSignature(rawBody, signature, webhookUrl, SQUARE_WEBHOOK_SIGNATURE_KEY);
 
-    if (!isValid) {
-      console.error("[Webhook] Invalid signature — request rejected");
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
+  if (!isValid) {
+    console.error("[Webhook] Invalid signature — request rejected");
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
   const url = getSupabaseUrl();
