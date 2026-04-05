@@ -1,6 +1,15 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 const sites = [
   { name: "Riverside Lofts", lat: 29.7604, lng: -95.3698, status: "ACTIVE", crews: 24, deliveries: 3, alerts: 1, zone: "Zone A — North" },
   { name: "Harbor Crossing", lat: 29.7480, lng: -95.3580, status: "ACTIVE", crews: 18, deliveries: 1, alerts: 0, zone: "Zone B — East" },
@@ -69,11 +78,11 @@ export default function MapsPage() {
 
           const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
             <div style="background:#0F1C24;color:#F0F8F8;padding:10px;border-radius:8px;min-width:160px;font-family:system-ui;">
-              <div style="font-size:12px;font-weight:800;margin-bottom:4px;">${site.name}</div>
-              <div style="font-size:9px;color:${color};font-weight:900;margin-bottom:6px;">${site.status}</div>
+              <div style="font-size:12px;font-weight:800;margin-bottom:4px;">${escapeHtml(site.name)}</div>
+              <div style="font-size:9px;color:${escapeHtml(color)};font-weight:900;margin-bottom:6px;">${escapeHtml(site.status)}</div>
               <div style="font-size:10px;color:#9EBDC2;">
-                ${site.crews} crews &bull; ${site.deliveries} deliveries &bull; ${site.alerts} alerts<br/>
-                ${site.zone}
+                ${escapeHtml(String(site.crews))} crews &bull; ${escapeHtml(String(site.deliveries))} deliveries &bull; ${escapeHtml(String(site.alerts))} alerts<br/>
+                ${escapeHtml(site.zone)}
               </div>
             </div>
           `);
