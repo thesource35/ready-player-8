@@ -1,3 +1,5 @@
+// DEPRECATED: This file is replaced by middleware.ts (Phase 2, AUTH-05)
+// It is no longer imported anywhere. Safe to delete in a future cleanup.
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
