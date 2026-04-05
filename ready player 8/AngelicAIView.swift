@@ -12,16 +12,27 @@ import SwiftUI
 
 // MARK: - Message model
 
-struct AIMessage: Identifiable {
-    let id = UUID()
+struct AIMessage: Identifiable, Codable, Equatable {
+    var id: UUID
     let role: AIRole
     let content: String
     let timestamp: Date
 
-    enum AIRole { case user, assistant }
+    enum AIRole: String, Codable { case user, assistant }
+
+    init(role: AIRole, content: String, timestamp: Date = Date()) {
+        self.id = UUID()
+        self.role = role
+        self.content = content
+        self.timestamp = timestamp
+    }
 
     var timestampLabel: String {
         let f = DateFormatter(); f.dateFormat = "h:mm a"; return f.string(from: timestamp)
+    }
+
+    static func == (lhs: AIMessage, rhs: AIMessage) -> Bool {
+        lhs.id == rhs.id && lhs.content == rhs.content
     }
 }
 
@@ -34,6 +45,7 @@ struct AngelicAIView: View {
     @State private var messages: [AIMessage] = []
     @State private var inputText = ""
     @State private var isThinking = false
+    @State private var isUsingFallback = false
     @State private var errorMessage: String?
     @State private var lastFailedMessage: String?
     @State private var showKeySetup = false
@@ -63,8 +75,33 @@ struct AngelicAIView: View {
             angelicHeader
             Divider().overlay(Theme.border)
             if apiKey.isEmpty {
+                HStack(spacing: 4) {
+                    Image(systemName: "key.slash")
+                        .font(.system(size: 10))
+                    Text("DEMO MODE — Configure API key in settings")
+                        .font(.system(size: 9, weight: .medium))
+                }
+                .foregroundColor(Theme.gold)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Theme.surface.opacity(0.6))
+                .cornerRadius(6)
                 apiKeySetupView
             } else {
+                if isUsingFallback {
+                    HStack(spacing: 4) {
+                        Image(systemName: "antenna.radiowaves.left.and.right.slash")
+                            .font(.system(size: 10))
+                        Text("OFFLINE MODE")
+                            .font(.system(size: 9, weight: .bold))
+                            .tracking(1)
+                    }
+                    .foregroundColor(Theme.muted)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Theme.surface.opacity(0.6))
+                    .cornerRadius(6)
+                }
                 chatArea
                 inputBar
             }
@@ -86,7 +123,17 @@ struct AngelicAIView: View {
                     UserDefaults.standard.removeObject(forKey: "ConstructOS.AngelicAI.APIKey")
                 }
             }
+            // Load local messages first, then try remote
+            let localKey = "ConstructOS.AngelicAI.Messages.\(sessionID)"
+            let localMessages: [AIMessage] = loadJSON(localKey, default: [])
+            if !localMessages.isEmpty {
+                messages = localMessages
+            }
             if !apiKey.isEmpty { await loadHistory() }
+        }
+        .onChange(of: messages) { _, newValue in
+            let localKey = "ConstructOS.AngelicAI.Messages.\(sessionID)"
+            saveJSON(localKey, value: newValue)
         }
     }
 
@@ -409,12 +456,21 @@ struct AngelicAIView: View {
                 throw AngelicError.apiError(http.statusCode, body)
             }
 
-            guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let jsonObject: Any
+            do {
+                jsonObject = try JSONSerialization.jsonObject(with: data)
+            } catch {
+                CrashReporter.shared.reportError("[AngelicAI] API response parse failed: \(error.localizedDescription)")
+                isUsingFallback = true
+                throw AngelicError.parseError
+            }
+            guard let json = jsonObject as? [String: Any],
                   let contentBlocks = json["content"] as? [[String: Any]],
                   let stopReason = json["stop_reason"] as? String
             else {
                 throw AngelicError.parseError
             }
+            isUsingFallback = false
 
             // Check if Claude wants to use tools
             if stopReason == "tool_use" {
@@ -485,7 +541,7 @@ struct AngelicAIView: View {
             }
         } catch {
             // History load failures are non-critical — continue with empty chat
-            print("[AngelicAI] History load error: \(error.localizedDescription)")
+            CrashReporter.shared.reportError("[AngelicAI] History load error: \(error.localizedDescription)")
         }
     }
 
@@ -499,7 +555,7 @@ struct AngelicAIView: View {
             createdAt: nil
         )
         do { try await supabase.insert(SupabaseTable.aiMessages, record: record) }
-        catch { print("[AngelicAI] Persist error: \(error.localizedDescription)") }
+        catch { CrashReporter.shared.reportError("[AngelicAI] Persist error: \(error.localizedDescription)") }
     }
 }
 
