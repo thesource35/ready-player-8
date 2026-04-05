@@ -93,12 +93,18 @@ struct AuthGateView: View {
                     VStack(spacing: 6) {
                         Text("Trusted by 142,891 construction professionals").font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.5))
                         HStack(spacing: 16) {
-                            Link("Terms of Service", destination: URL(string: "https://constructionos.world/terms")!)
-                                .font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
-                            Link("Privacy Policy", destination: URL(string: "https://constructionos.world/privacy")!)
-                                .font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
-                            Link("Support", destination: URL(string: "https://constructionos.world/support")!)
-                                .font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
+                            if let termsURL = URL(string: "https://constructionos.world/terms") {
+                                Link("Terms of Service", destination: termsURL)
+                                    .font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
+                            }
+                            if let privacyURL = URL(string: "https://constructionos.world/privacy") {
+                                Link("Privacy Policy", destination: privacyURL)
+                                    .font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
+                            }
+                            if let supportURL = URL(string: "https://constructionos.world/support") {
+                                Link("Support", destination: supportURL)
+                                    .font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
+                            }
                         }
                     }
 

@@ -255,7 +255,7 @@ struct OnboardingView: View {
     @AppStorage("ConstructOS.Onboarding.Variant") private var variantRaw = ""
     private var variant: OnboardingVariant {
         if let v = OnboardingVariant(rawValue: variantRaw) { return v }
-        let assigned = OnboardingVariant.allCases.randomElement()!
+        guard let assigned = OnboardingVariant.allCases.randomElement() else { return .standard }
         DispatchQueue.main.async { variantRaw = assigned.rawValue }
         return assigned
     }
@@ -509,7 +509,13 @@ final class DocumentStore: ObservableObject {
     func add(name: String, type: String, data: Data, projectRef: String? = nil) {
         // Save data to app documents directory
         let fileName = "\(UUID().uuidString)_\(name)"
-        let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        guard let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            CrashReporter.shared.reportError(
+                AppError.unknown(NSError(domain: "DocumentStore", code: 1, userInfo: [NSLocalizedDescriptionKey: "No documents directory available"])),
+                context: "DocumentStore.add"
+            )
+            return
+        }
         let fileURL = docsDir.appendingPathComponent(fileName)
         try? data.write(to: fileURL)
 
@@ -717,7 +723,7 @@ extension PDFExporter {
                     let maxVal = values.max() ?? 1
                     if yPos + chartHeight > pageHeight - margin { context.beginPage(); yPos = margin }
 
-                    let ctx = UIGraphicsGetCurrentContext()!
+                    guard let ctx = UIGraphicsGetCurrentContext() else { return }
                     for (i, val) in values.enumerated() {
                         let barHeight = (val / maxVal) * (chartHeight - 20)
                         let x = margin + CGFloat(i) * (barWidth + 4)
