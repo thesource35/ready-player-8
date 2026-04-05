@@ -201,7 +201,8 @@ func securityTwoFactorCode(secret: String, at date: Date = Date()) -> String {
     let key = SymmetricKey(data: secretData)
     let digest = HMAC<Insecure.SHA1>.authenticationCode(for: counterData, using: key)
     let hash = Array(digest)
-    let offset = Int(hash.last! & 0x0F)
+    guard let lastByte = hash.last else { return "000000" }
+    let offset = Int(lastByte & 0x0F)
     let binary = (UInt32(hash[offset] & 0x7F) << 24)
         | (UInt32(hash[offset + 1]) << 16)
         | (UInt32(hash[offset + 2]) << 8)

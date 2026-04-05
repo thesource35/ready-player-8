@@ -706,10 +706,10 @@ struct WeatherDayCard: View {
         }
         .padding(9)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(day.riskFlags.isEmpty ? Theme.surface.opacity(0.6) : day.riskFlags.first!.color.opacity(0.08))
+        .background(day.riskFlags.first?.color.opacity(0.08) ?? Theme.surface.opacity(0.6))
         .overlay(
             RoundedRectangle(cornerRadius: 9)
-                .stroke(day.riskFlags.isEmpty ? Theme.border.opacity(0.3) : day.riskFlags.first!.color.opacity(0.4), lineWidth: 0.9)
+                .stroke(day.riskFlags.first?.color.opacity(0.4) ?? Theme.border.opacity(0.3), lineWidth: 0.9)
         )
         .cornerRadius(9)
     }

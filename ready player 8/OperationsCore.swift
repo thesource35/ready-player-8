@@ -498,9 +498,9 @@ struct SafetyIncidentPanel: View {
     @State private var newStatus: IncidentStatus = .open
 
     private var filtered: [SafetyIncident] {
-        incidents.filter {
-            (filterType == nil || $0.type == filterType!) &&
-            (filterStatus == nil || $0.status == filterStatus!)
+        incidents.filter { incident in
+            (filterType.map { incident.type == $0 } ?? true) &&
+            (filterStatus.map { incident.status == $0 } ?? true)
         }
     }
 
