@@ -279,16 +279,24 @@ final class SupabaseService: ObservableObject {
         request.setValue(apiKey, forHTTPHeaderField: "apikey")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let body: [String: String] = ["refresh_token": refreshToken]
-        request.httpBody = try? JSONEncoder().encode(body)
-        guard let (data, response) = try? await URLSession.shared.data(for: request),
-              let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return false }
-        await MainActor.run {
-            accessToken = json["access_token"] as? String
-            if let token = accessToken { KeychainHelper.save(key: "Auth.AccessToken", data: token) }
-            if let refresh = json["refresh_token"] as? String { KeychainHelper.save(key: "Auth.RefreshToken", data: refresh) }
+        do {
+            request.httpBody = try JSONEncoder().encode(body)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode),
+                  let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                CrashReporter.shared.reportError("Token refresh failed: bad response")
+                return false
+            }
+            await MainActor.run {
+                accessToken = json["access_token"] as? String
+                if let token = accessToken { KeychainHelper.save(key: "Auth.AccessToken", data: token) }
+                if let refresh = json["refresh_token"] as? String { KeychainHelper.save(key: "Auth.RefreshToken", data: refresh) }
+            }
+            return accessToken != nil
+        } catch {
+            CrashReporter.shared.reportError("Token refresh error: \(error.localizedDescription)")
+            return false
         }
-        return true
     }
 
     // MARK: - Password Reset (AUTH-10)
@@ -337,11 +345,22 @@ final class SupabaseService: ObservableObject {
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else { return [] }
-        return (try? JSONDecoder().decode([MFAFactor].self, from: data)) ?? []
+        do {
+            return try JSONDecoder().decode([MFAFactor].self, from: data)
+        } catch {
+            CrashReporter.shared.reportError("MFA factors decode failed: \(error.localizedDescription)")
+            return []
+        }
     }
 
     func hasMFAEnabled() async -> Bool {
-        let factors = (try? await listMFAFactors()) ?? []
+        let factors: [MFAFactor]
+        do {
+            factors = try await listMFAFactors()
+        } catch {
+            CrashReporter.shared.reportError("MFA check failed: \(error.localizedDescription)")
+            return false
+        }
         return factors.contains { $0.factorType == "totp" && $0.status == "verified" }
     }
 
@@ -380,15 +399,19 @@ final class SupabaseService: ObservableObject {
             let body = String(data: data, encoding: .utf8) ?? ""
             throw SupabaseError.httpError((response as? HTTPURLResponse)?.statusCode ?? 0, body)
         }
-        if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let newAccessToken = json["access_token"] as? String {
-            await MainActor.run {
-                accessToken = newAccessToken
-                KeychainHelper.save(key: "Auth.AccessToken", data: newAccessToken)
-                if let refresh = json["refresh_token"] as? String {
-                    KeychainHelper.save(key: "Auth.RefreshToken", data: refresh)
+        do {
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let newAccessToken = json["access_token"] as? String {
+                await MainActor.run {
+                    accessToken = newAccessToken
+                    KeychainHelper.save(key: "Auth.AccessToken", data: newAccessToken)
+                    if let refresh = json["refresh_token"] as? String {
+                        KeychainHelper.save(key: "Auth.RefreshToken", data: refresh)
+                    }
                 }
             }
+        } catch {
+            CrashReporter.shared.reportError("MFA verify response parse failed: \(error.localizedDescription)")
         }
     }
 
@@ -445,7 +468,13 @@ final class SupabaseService: ObservableObject {
     private let maxPendingAge: TimeInterval = 7 * 24 * 3600 // 7 days
 
     func queueWrite<T: Encodable>(_ table: String, record: T) {
-        guard let payload = try? encoder.encode(record) else { return }
+        let payload: Data
+        do {
+            payload = try encoder.encode(record)
+        } catch {
+            CrashReporter.shared.reportError("Failed to encode pending write for \(table): \(error.localizedDescription)")
+            return
+        }
         let pending = PendingWrite(table: table, jsonPayload: payload, createdAt: Date())
         pendingWrites.append(pending)
         // Enforce queue size limit
@@ -466,7 +495,7 @@ final class SupabaseService: ObservableObject {
                 guard let url = URL(string: "\(baseURL)/rest/v1/\(write.table)") else { continue }
                 var request = URLRequest(url: url)
                 request.httpMethod = "POST"
-                applyHeaders(&request, contentType: true)
+                try applyHeaders(&request, contentType: true)
                 // Use upsert to resolve conflicts — last write wins
                 request.setValue("resolution=merge-duplicates", forHTTPHeaderField: "Prefer")
                 request.httpBody = write.jsonPayload
@@ -617,7 +646,7 @@ final class SupabaseService: ObservableObject {
         if !queryItems.isEmpty { components.queryItems = queryItems }
         guard let url = components.url else { throw SupabaseError.httpError(400, "Invalid URL") }
         var request = URLRequest(url: url)
-        applyHeaders(&request)
+        try applyHeaders(&request)
         // Request total count header for pagination
         if limit != nil { request.setValue("count=exact", forHTTPHeaderField: "Prefer") }
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -653,7 +682,7 @@ final class SupabaseService: ObservableObject {
         }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        applyHeaders(&request, contentType: true)
+        try applyHeaders(&request, contentType: true)
         request.setValue("return=representation", forHTTPHeaderField: "Prefer")
         do {
             request.httpBody = try encoder.encode(record)
@@ -675,7 +704,7 @@ final class SupabaseService: ObservableObject {
         }
         var request = URLRequest(url: url)
         request.httpMethod = "PATCH"
-        applyHeaders(&request, contentType: true)
+        try applyHeaders(&request, contentType: true)
         do {
             request.httpBody = try encoder.encode(record)
         } catch {
@@ -696,7 +725,7 @@ final class SupabaseService: ObservableObject {
         }
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
-        applyHeaders(&request)
+        try applyHeaders(&request)
         let (data, response) = try await URLSession.shared.data(for: request)
         try checkHTTPStatus(data: data, response: response)
     }
@@ -735,9 +764,18 @@ final class SupabaseService: ObservableObject {
         id.filter { $0.isLetter || $0.isNumber || $0 == "-" }
     }
 
-    private func applyHeaders(_ request: inout URLRequest, contentType: Bool = false) {
+    private func applyHeaders(_ request: inout URLRequest, contentType: Bool = false) throws {
         request.setValue(apiKey, forHTTPHeaderField: "apikey")
-        request.setValue("Bearer \(accessToken ?? apiKey)", forHTTPHeaderField: "Authorization")
+        // Use access token if available, fall back to API key, reject if neither exists
+        let authValue: String
+        if let token = accessToken, !token.isEmpty {
+            authValue = "Bearer \(token)"
+        } else if !apiKey.isEmpty {
+            authValue = "Bearer \(apiKey)"
+        } else {
+            throw SupabaseError.notConfigured
+        }
+        request.setValue(authValue, forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if contentType {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
