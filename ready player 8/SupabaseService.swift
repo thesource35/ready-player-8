@@ -159,6 +159,7 @@ final class SupabaseService: ObservableObject {
     }
 
     // MARK: - Rate Limiting
+    private var refreshTimer: Timer?
     private var lastRequestTime: Date = .distantPast
     private let minRequestInterval: TimeInterval = 0.1  // 100ms between requests (10 req/sec max)
 
@@ -231,6 +232,9 @@ final class SupabaseService: ObservableObject {
             if let token = accessToken { KeychainHelper.save(key: "Auth.AccessToken", data: token) }
             if let email = currentUserEmail { KeychainHelper.save(key: "Auth.Email", data: email) }
         }
+        guard accessToken != nil else {
+            throw SupabaseError.httpError(0, "Auth succeeded but no access token returned")
+        }
     }
 
     func signIn(email: String, password: String) async throws {
@@ -255,6 +259,10 @@ final class SupabaseService: ObservableObject {
             if let refresh = json?["refresh_token"] as? String { KeychainHelper.save(key: "Auth.RefreshToken", data: refresh) }
             if let email = currentUserEmail { KeychainHelper.save(key: "Auth.Email", data: email) }
         }
+        guard accessToken != nil else {
+            throw SupabaseError.httpError(0, "Auth succeeded but no access token returned")
+        }
+        startAutoRefresh()
     }
 
     func refreshToken() async -> Bool {
@@ -279,7 +287,42 @@ final class SupabaseService: ObservableObject {
         return true
     }
 
+    // MARK: - Password Reset (AUTH-10)
+
+    func resetPassword(email: String) async throws {
+        guard isConfigured else { throw SupabaseError.notConfigured }
+        guard let url = URL(string: "\(baseURL)/auth/v1/recover") else {
+            throw SupabaseError.httpError(0, "Invalid URL")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(apiKey, forHTTPHeaderField: "apikey")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try encoder.encode(["email": email])
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            let body = String(data: data, encoding: .utf8) ?? ""
+            throw SupabaseError.httpError((response as? HTTPURLResponse)?.statusCode ?? 0, body)
+        }
+    }
+
+    // MARK: - Session Auto-Refresh (AUTH-03)
+
+    func startAutoRefresh() {
+        refreshTimer?.invalidate()
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 50 * 60, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            Task { let _ = await self.refreshToken() }
+        }
+    }
+
+    func stopAutoRefresh() {
+        refreshTimer?.invalidate()
+        refreshTimer = nil
+    }
+
     func signOut() {
+        stopAutoRefresh()
         accessToken = nil
         currentUserEmail = nil
         KeychainHelper.delete(key: "Auth.AccessToken")
@@ -290,9 +333,9 @@ final class SupabaseService: ObservableObject {
     func restoreSession() {
         accessToken = KeychainHelper.read(key: "Auth.AccessToken")
         currentUserEmail = KeychainHelper.read(key: "Auth.Email")
-        // Auto-refresh if token exists but may be expired
         if accessToken != nil {
             Task { let _ = await refreshToken() }
+            startAutoRefresh()
         }
     }
 
