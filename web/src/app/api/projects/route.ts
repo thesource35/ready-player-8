@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchTable, insertRow, deleteRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
+import { fetchTable, insertRow, deleteOwnedRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
 import type { Project } from "@/lib/supabase/types";
 import { MOCK_PROJECTS } from "@/lib/mock-data";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -62,6 +62,9 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Valid id is required" }, { status: 400 });
   }
 
-  const success = await deleteRow("cs_projects", id);
-  return NextResponse.json({ success });
+  const success = await deleteOwnedRow("cs_projects", id, user.id);
+  if (!success) {
+    return NextResponse.json({ error: "Not found or not owned" }, { status: 404 });
+  }
+  return NextResponse.json({ success: true });
 }

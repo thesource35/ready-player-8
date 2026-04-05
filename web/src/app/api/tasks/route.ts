@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchTable, insertRow, updateRow, deleteRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
+import { fetchTable, insertRow, updateOwnedRow, deleteOwnedRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -62,9 +62,9 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Valid id is required" }, { status: 400 });
   }
 
-  const row = await updateRow(targetTable, id, updates);
+  const row = await updateOwnedRow(targetTable, id, user.id, updates);
   if (!row) {
-    return NextResponse.json({ error: "Failed to update" }, { status: 500 });
+    return NextResponse.json({ error: "Not found or not owned" }, { status: 404 });
   }
   return NextResponse.json(row);
 }
@@ -85,6 +85,9 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Valid id is required" }, { status: 400 });
   }
 
-  const success = await deleteRow(targetTable, id);
-  return NextResponse.json({ success });
+  const success = await deleteOwnedRow(targetTable, id, user.id);
+  if (!success) {
+    return NextResponse.json({ error: "Not found or not owned" }, { status: 404 });
+  }
+  return NextResponse.json({ success: true });
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchTable, insertRow, updateRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
+import { fetchTable, insertRow, updateOwnedRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
 import type { PunchItem } from "@/lib/supabase/types";
 import { MOCK_PUNCH_ITEMS } from "@/lib/mock-data";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -59,7 +59,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Valid id is required" }, { status: 400 });
   }
 
-  const item = await updateRow<PunchItem>("cs_punch_pro", id, updates);
-  if (!item) return NextResponse.json({ error: "Failed to update" }, { status: 500 });
+  const item = await updateOwnedRow<PunchItem>("cs_punch_pro", id, user.id, updates);
+  if (!item) return NextResponse.json({ error: "Not found or not owned" }, { status: 404 });
   return NextResponse.json(item);
 }
