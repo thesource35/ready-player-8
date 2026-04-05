@@ -39,18 +39,38 @@ final class PersistenceController: ObservableObject {
 
         // Configure for CloudKit sync
         guard let description = container.persistentStoreDescriptions.first else {
-            fatalError("No persistent store descriptions found")
+            CrashReporter.shared.reportError(
+                AppError.unknown(NSError(domain: "PersistenceController", code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "No persistent store descriptions found — using in-memory fallback"])),
+                context: "PersistenceController.init"
+            )
+            let memDesc = NSPersistentStoreDescription()
+            memDesc.type = NSInMemoryStoreType
+            container.persistentStoreDescriptions = [memDesc]
+            // Continue with in-memory store — data won't persist but app won't crash
+            container.loadPersistentStores { _, error in
+                if let error {
+                    CrashReporter.shared.reportError(
+                        AppError.unknown(error),
+                        context: "PersistenceController.init.inMemoryFallback"
+                    )
+                }
+            }
+            container.viewContext.automaticallyMergesChangesFromParent = true
+            container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+            return
         }
         description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
 
         container.loadPersistentStores { _, error in
             if let error {
-                // In production, log but don't crash — fall back to in-memory
+                CrashReporter.shared.reportError(
+                    AppError.unknown(error),
+                    context: "PersistenceController.loadPersistentStores"
+                )
                 #if DEBUG
-                fatalError("Core Data load failed: \(error)")
-                #else
-                print("Core Data load failed: \(error). Using in-memory fallback.")
+                assertionFailure("Core Data load failed: \(error)")
                 #endif
             }
         }
