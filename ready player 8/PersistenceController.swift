@@ -95,6 +95,7 @@ final class PersistenceController: ObservableObject {
             #if DEBUG
             print("Core Data save error: \(error)")
             #endif
+            CrashReporter.shared.reportError("Core Data save error: \(error.localizedDescription)")
         }
     }
 
