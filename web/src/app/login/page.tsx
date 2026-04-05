@@ -17,6 +17,8 @@ function LoginContent() {
   const [isSignup, setIsSignup] = useState(false);
   const [step, setStep] = useState<"auth"|"2fa"|"forgot">("auth");
   const [code, setCode] = useState("");
+  const [mfaFactorId, setMfaFactorId] = useState("");
+  const [mfaChallengeId, setMfaChallengeId] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -70,6 +72,23 @@ function LoginContent() {
             password: form.password,
           });
           if (signInError) { setError(signInError.message); setLoading(false); return; }
+
+          // Check if user has MFA enrolled
+          const { data: factorsData } = await supabase.auth.mfa.listFactors();
+          const totpFactors = factorsData?.totp?.filter(f => f.status === "verified") ?? [];
+
+          if (totpFactors.length > 0) {
+            const factor = totpFactors[0];
+            setMfaFactorId(factor.id);
+            const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: factor.id });
+            if (challengeError) { setError("Could not start 2FA verification. Please try again."); setLoading(false); return; }
+            setMfaChallengeId(challengeData.id);
+            setStep("2fa");
+            setLoading(false);
+            return;
+          }
+
+          // No MFA — proceed to app
           window.location.assign(nextPath);
           return;
         }
@@ -80,8 +99,8 @@ function LoginContent() {
       }
     }
 
-    // Fallback: go to 2FA step (demo mode if Supabase not configured)
-    setStep("2fa");
+    // Demo mode: if Supabase not configured, proceed directly to app
+    window.location.assign(nextPath);
     setLoading(false);
   }
 
@@ -163,10 +182,32 @@ function LoginContent() {
                 ))}
               </div>
               <input type="text" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\D/g,""))} className="opacity-0 absolute" autoFocus />
-              <button onClick={() => { if(code.length===6) window.location.assign(nextPath); }} className="w-full py-3 rounded-xl font-bold text-black cursor-pointer" style={{ background: code.length===6 ? 'linear-gradient(90deg, #F29E3D, #FCC757)' : '#33545E', border: 'none' }}>VERIFY</button>
+              <button onClick={async () => {
+                if (code.length !== 6) return;
+                setError("");
+                setLoading(true);
+                const supabase = createClient();
+                if (supabase && mfaFactorId && mfaChallengeId) {
+                  const { error: verifyError } = await supabase.auth.mfa.verify({
+                    factorId: mfaFactorId,
+                    challengeId: mfaChallengeId,
+                    code,
+                  });
+                  if (verifyError) {
+                    setError("Invalid code. Please try again.");
+                    setCode("");
+                    const { data: newChallenge } = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
+                    if (newChallenge) setMfaChallengeId(newChallenge.id);
+                    setLoading(false);
+                    return;
+                  }
+                }
+                window.location.assign(nextPath);
+                setLoading(false);
+              }} className="w-full py-3 rounded-xl font-bold text-black cursor-pointer" style={{ background: code.length===6 ? 'linear-gradient(90deg, #F29E3D, #FCC757)' : '#33545E', border: 'none' }}>{loading ? "Verifying..." : "VERIFY"}</button>
+              {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
             </>
           )}
-          <p className="text-xs text-[#9EBDC2] mt-4 cursor-pointer" onClick={() => window.location.assign(nextPath)}>Continue to app →</p>
         </div>
       </div>
     );
