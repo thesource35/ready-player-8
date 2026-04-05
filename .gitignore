@@ -1,0 +1,38 @@
+# Planning artifacts
+.planning/
+
+# Environment files (secrets)
+.env
+.env.*
+.env.local
+.env.*.local
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Xcode
+xcuserdata/
+DerivedData/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+
+# Build artifacts
+build/
+*.ipa
+
+# Certificates and keys
+*.pem
+*.p12
+*.key
+
+# Node
+node_modules/
+.next/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
