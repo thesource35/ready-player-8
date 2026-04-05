@@ -112,19 +112,7 @@ struct AuthGateView: View {
             Text("Sign in to your account").font(.system(size: 16, weight: .bold)).foregroundColor(Theme.text)
                 .padding(.top, 24)
 
-            // SSO Buttons
-            VStack(spacing: 10) {
-                ssoButton(icon: "apple.logo", text: "Continue with Apple", bgColor: .white, textColor: .black)
-                ssoButton(icon: "g.circle.fill", text: "Continue with Google", bgColor: Color(red: 0.26, green: 0.52, blue: 0.96), textColor: .white)
-                ssoButton(icon: "building.2.fill", text: "Continue with SSO", bgColor: Theme.surface, textColor: Theme.text)
-            }.padding(.horizontal, 24)
-
-            // Divider
-            HStack {
-                Rectangle().fill(Theme.border.opacity(0.3)).frame(height: 1)
-                Text("or sign in with email").font(.system(size: 10, weight: .semibold)).foregroundColor(Theme.muted).fixedSize()
-                Rectangle().fill(Theme.border.opacity(0.3)).frame(height: 1)
-            }.padding(.horizontal, 24)
+            // SSO buttons hidden — OAuth (Apple, Google) deferred to v2 (AUTH-09)
 
             // Email & Password
             VStack(spacing: 12) {
@@ -266,7 +254,11 @@ struct AuthGateView: View {
                 Task {
                     do {
                         try await supabase.signUp(email: email, password: password)
-                    } catch { /* Supabase optional — local profile is primary */ }
+                    } catch let signUpError {
+                        await MainActor.run {
+                            self.error = "Account created locally but server signup failed: \(signUpError.localizedDescription)"
+                        }
+                    }
                     await MainActor.run {
                         profileStore.emailConfirmationSent = true
                         step = .twoFactor
@@ -398,11 +390,23 @@ struct AuthGateView: View {
             authField(icon: "envelope.fill", placeholder: "Work email address", text: $email, isSecure: false)
 
             Button {
-                error = nil
-                // Simulate sending reset email
-                error = "Reset link sent to \(email)"
+                guard !email.isEmpty else { error = "Email is required"; return }
+                isLoading = true; error = nil
+                Task {
+                    do {
+                        try await supabase.resetPassword(email: email)
+                        await MainActor.run {
+                            error = "Password reset link sent to \(email). Check your inbox."
+                        }
+                    } catch {
+                        await MainActor.run {
+                            self.error = "Could not send reset link. Please check your email and try again."
+                        }
+                    }
+                    await MainActor.run { isLoading = false }
+                }
             } label: {
-                Text("SEND RESET LINK").font(.system(size: 13, weight: .bold)).tracking(1)
+                Text(isLoading ? "Sending..." : "SEND RESET LINK").font(.system(size: 13, weight: .bold)).tracking(1)
                     .foregroundColor(.black).frame(maxWidth: .infinity).frame(height: 48)
                     .background(LinearGradient(colors: [Theme.accent, Theme.gold], startPoint: .leading, endPoint: .trailing))
                     .cornerRadius(10)
@@ -472,21 +476,7 @@ struct AuthGateView: View {
         .padding(.horizontal, 24)
     }
 
-    private func ssoButton(icon: String, text: String, bgColor: Color, textColor: Color) -> some View {
-        Button {
-            supabase.accessToken = "sso"
-            supabase.currentUserEmail = "sso@constructionos.app"
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: icon).font(.system(size: 16)).foregroundColor(textColor)
-                Text(text).font(.system(size: 13, weight: .semibold)).foregroundColor(textColor)
-            }
-            .frame(maxWidth: .infinity).frame(height: 44)
-            .background(bgColor.opacity(icon == "building.2.fill" ? 1 : 0.95))
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.border.opacity(0.2), lineWidth: icon == "building.2.fill" ? 1 : 0))
-            .cornerRadius(10)
-        }.buttonStyle(.plain)
-    }
+    // ssoButton removed — OAuth (Apple, Google) deferred to v2 (AUTH-09)
 
     private func trustBadge(icon: String, text: String) -> some View {
         VStack(spacing: 4) {
