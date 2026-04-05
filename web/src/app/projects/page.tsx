@@ -35,6 +35,8 @@ export default function ProjectsPage() {
     budget: "",
   });
   const [projectList, setProjectList] = useState<Project[]>(fallbackProjects);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [addLoading, setAddLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,26 +79,62 @@ export default function ProjectsPage() {
 
   const statusColor = (s: string) => s === "On Track" ? "var(--green)" : s === "Ahead" ? "var(--cyan)" : s === "At Risk" ? "var(--red)" : "var(--gold)";
 
-  function addProject() {
-    if (!draftProject.name || !draftProject.client) return;
+  async function addProject() {
+    setAddError(null);
 
-    setProjectList(prev => [
-      {
-        name: draftProject.name,
-        client: draftProject.client,
-        type: draftProject.type,
-        status: "On Track",
-        progress: 0,
-        budget: draftProject.budget || "$0",
-        score: 80,
-        superintendent: "Unassigned",
-        startDate: "TBD",
-        endDate: "TBD",
-      },
-      ...prev,
-    ]);
-    setDraftProject({ name: "", client: "", type: "Commercial", budget: "" });
-    setShowAddProject(false);
+    // Client-side validation
+    if (!draftProject.name.trim()) {
+      setAddError("Project name is required");
+      return;
+    }
+    if (!draftProject.client.trim()) {
+      setAddError("Client name is required");
+      return;
+    }
+
+    setAddLoading(true);
+    try {
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: draftProject.name.trim(),
+          client: draftProject.client.trim(),
+          type: draftProject.type.trim() || "Commercial",
+          budget: draftProject.budget.trim() || "$0",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setAddError(data.error || "Failed to create project");
+        setAddLoading(false);
+        return;
+      }
+
+      // Add the server-returned project to local list
+      setProjectList(prev => [
+        {
+          name: data.name || draftProject.name,
+          client: data.client || draftProject.client,
+          type: data.type || draftProject.type,
+          status: data.status || "On Track",
+          progress: data.progress || 0,
+          budget: data.budget || draftProject.budget || "$0",
+          score: data.score || 80,
+          superintendent: data.team || "Unassigned",
+          startDate: data.start_date || "TBD",
+          endDate: data.end_date || "TBD",
+        },
+        ...prev,
+      ]);
+      setDraftProject({ name: "", client: "", type: "Commercial", budget: "" });
+      setShowAddProject(false);
+    } catch {
+      setAddError("Network error. Please try again.");
+    }
+    setAddLoading(false);
   }
 
   return (
@@ -110,7 +148,7 @@ export default function ProjectsPage() {
             <h1 style={{ fontSize: 24, fontWeight: 900, margin: "4px 0" }}>Project Command</h1>
             <p style={{ fontSize: 12, color: "var(--muted)" }}>Full project lifecycle management with real-time tracking</p>
           </div>
-          <SubscriberActionButton label="+ Add Project" onPaidClick={() => setShowAddProject(v => !v)} style={{ background: "var(--accent)", color: "var(--bg)", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "inline-block" }} />
+          <SubscriberActionButton label="+ Add Project" onPaidClick={() => { setAddError(null); setShowAddProject(v => !v); }} style={{ background: "var(--accent)", color: "var(--bg)", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "inline-block" }} />
         </div>
       </div>
 
@@ -118,20 +156,34 @@ export default function ProjectsPage() {
         <div style={{ background: "var(--surface)", borderRadius: 12, padding: 16, marginBottom: 16, border: "1px solid rgba(74,196,204,0.12)" }}>
           <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, color: "var(--accent)", marginBottom: 10 }}>NEW PROJECT</div>
           <div style={{ display: "grid", gridTemplateColumns: "2fr 2fr 1fr 1fr", gap: 10 }}>
-            <input placeholder="Project name" value={draftProject.name} onChange={e => setDraftProject(prev => ({ ...prev, name: e.target.value }))} />
-            <input placeholder="Client" value={draftProject.client} onChange={e => setDraftProject(prev => ({ ...prev, client: e.target.value }))} />
-            <input placeholder="Type" value={draftProject.type} onChange={e => setDraftProject(prev => ({ ...prev, type: e.target.value }))} />
-            <input placeholder="Budget" value={draftProject.budget} onChange={e => setDraftProject(prev => ({ ...prev, budget: e.target.value }))} />
+            <input placeholder="Project name" maxLength={200} value={draftProject.name} onChange={e => setDraftProject(prev => ({ ...prev, name: e.target.value }))} />
+            <input placeholder="Client" maxLength={200} value={draftProject.client} onChange={e => setDraftProject(prev => ({ ...prev, client: e.target.value }))} />
+            <input placeholder="Type" maxLength={100} value={draftProject.type} onChange={e => setDraftProject(prev => ({ ...prev, type: e.target.value }))} />
+            <input placeholder="Budget" maxLength={50} value={draftProject.budget} onChange={e => setDraftProject(prev => ({ ...prev, budget: e.target.value }))} />
           </div>
+          {addError && (
+            <div style={{
+              marginTop: 8,
+              padding: "8px 12px",
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 700,
+              color: "var(--red)",
+              background: "rgba(217,77,72,0.1)",
+              border: "1px solid rgba(217,77,72,0.2)",
+            }}>
+              {addError}
+            </div>
+          )}
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-            <button onClick={addProject} style={{ background: "var(--accent)", color: "var(--bg)", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Save Project</button>
+            <button onClick={addProject} disabled={addLoading} style={{ background: addLoading ? "var(--panel)" : "var(--accent)", color: "var(--bg)", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: addLoading ? "default" : "pointer", opacity: addLoading ? 0.6 : 1 }}>{addLoading ? "Saving..." : "Save Project"}</button>
             <button onClick={() => setShowAddProject(false)} style={{ background: "var(--surface)", color: "var(--muted)", border: "1px solid rgba(51,84,94,0.3)", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Cancel</button>
           </div>
         </div>
       )}
 
       {/* Search */}
-      <input aria-label="Search projects" placeholder="Search projects, clients, types..." value={search} onChange={e => setSearch(e.target.value)} style={{ width: "100%", marginBottom: 12 }} />
+      <input aria-label="Search projects" placeholder="Search projects, clients, types..." maxLength={200} value={search} onChange={e => setSearch(e.target.value)} style={{ width: "100%", marginBottom: 12 }} />
 
       {isLoading && <div style={{ textAlign: "center", padding: 40, color: "var(--muted)" }}>Loading projects...</div>}
       {error && <div role="alert" style={{ textAlign: "center", padding: 16, color: "var(--red)", background: "rgba(217,77,72,0.1)", borderRadius: 10, marginBottom: 12 }}>{error}</div>}
