@@ -104,10 +104,10 @@ Plans:
   7. SupabaseService validates tokens actually arrived on signUp/signIn and falls back gracefully when no credentials exist
 **Plans:** 4 plans
 Plans:
-- [ ] 05-01-PLAN.md — Service layer hardening (SupabaseService auth/token validation, AppStorageJSON size guard)
-- [ ] 05-02-PLAN.md — View-layer error handling (empty catches, try? replacement, print leaks, deprecated API)
-- [ ] 05-03-PLAN.md — Core view state persistence (ProjectsView, ContractsView, MarketView, SocialNetwork, ScheduleTools) + filter refetch
-- [ ] 05-04-PLAN.md — AngelicAI hardening (mock indicator, session isolation, message persistence)
+- [x] 05-01-PLAN.md — Service layer hardening (SupabaseService auth/token validation, AppStorageJSON size guard)
+- [x] 05-02-PLAN.md — View-layer error handling (empty catches, try? replacement, print leaks, deprecated API)
+- [x] 05-03-PLAN.md — Core view state persistence (ProjectsView, ContractsView, MarketView, SocialNetwork, ScheduleTools) + filter refetch
+- [x] 05-04-PLAN.md — AngelicAI hardening (mock indicator, session isolation, message persistence)
 
 ### Phase 6: Web Security & Validation
 **Goal**: Web endpoints reject malformed input, verify webhook signatures, protect against CSRF, and persist data correctly
@@ -119,7 +119,11 @@ Plans:
   3. Paddle webhook requests with invalid signatures are rejected; valid ones update subscription status in Supabase
   4. Login, profile, jobs, and rental forms validate email/phone format with proper regex before submission
   5. Text inputs enforce maxLength limits; rental form does not show success when API fails; addProject persists to database; add form shows validation feedback
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [x] 06-01-PLAN.md — API security hardening (Zod validation, CSRF protection, Paddle webhook signature + subscription update)
+- [x] 06-02-PLAN.md — Client-side form validation (email/phone regex, maxLength on login/profile/jobs/rentals)
+- [x] 06-03-PLAN.md — Projects page database persistence and validation feedback
 **UI hint**: yes
 
 ### Phase 7: Web Error Handling & Consistency
@@ -132,7 +136,11 @@ Plans:
   3. All 8 API routes missing try/catch around req.json() are wrapped; Jobs API validates response body shape
   4. Export API returns 503 when Supabase not configured (not fake data with 200); POST routes return 201; DELETE routes return proper error status on failure
   5. Single rate limiting implementation across all routes; all protected routes use same getAuthenticatedClient() pattern; chat route uses AI SDK instead of raw fetch
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 07-01-PLAN.md — Chat route AI SDK migration, export 503 fix, Jobs validation, env startup instrumentation
+- [ ] 07-02-PLAN.md — CRUD routes req.json() try/catch, POST 201 status, DELETE error codes, auth consistency
+- [ ] 07-03-PLAN.md — Client-side error visibility on tasks, punch, and ops pages
 
 ### Phase 8: Web UX & Loading States
 **Goal**: Every web page handles errors visibly with error boundaries, shows loading/empty states, and gates premium features consistently
@@ -212,8 +220,8 @@ Phases 11, 12 execute last (after the code they test is stable).
 | 3. Row-Level Security | 0/2 | Planned | - |
 | 4. iOS Crash Safety | 0/2 | Planned | - |
 | 5. iOS Error Handling & State Persistence | 0/4 | Planned | - |
-| 6. Web Security & Validation | 0/TBD | Not started | - |
-| 7. Web Error Handling & Consistency | 0/TBD | Not started | - |
+| 6. Web Security & Validation | 0/3 | Planned | - |
+| 7. Web Error Handling & Consistency | 0/3 | Planned | - |
 | 8. Web UX & Loading States | 0/TBD | Not started | - |
 | 9. Web Performance & Dynamic Content | 0/TBD | Not started | - |
 | 10. Accessibility & SEO | 0/TBD | Not started | - |
