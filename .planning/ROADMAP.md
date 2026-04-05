@@ -71,7 +71,10 @@ Plans:
   4. Web app sends auth token with every Supabase request; PATCH/DELETE routes verify ownership before modifying rows
   5. Jobs API uses anon key for public GET (not service role key that bypasses RLS)
   6. Supabase migration files exist with version history (not just a single schema.sql)
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 03-01-PLAN.md — Supabase migration files (user_id columns, backfill, RLS policies)
+- [ ] 03-02-PLAN.md — Web API ownership checks and Jobs API fix
 
 ### Phase 4: iOS Crash Safety
 **Goal**: No force unwrap or fatalError can crash the app at runtime -- all replaced with safe unwrapping and graceful fallbacks
@@ -198,7 +201,7 @@ Phases 11, 12 execute last (after the code they test is stable).
 |-------|----------------|--------|-----------|
 | 1. Secrets & Infrastructure Cleanup | 3/3 | Complete | 2026-04-05 |
 | 2. Authentication | 0/3 | Planned | - |
-| 3. Row-Level Security | 0/TBD | Not started | - |
+| 3. Row-Level Security | 0/2 | Planned | - |
 | 4. iOS Crash Safety | 0/TBD | Not started | - |
 | 5. iOS Error Handling & State Persistence | 0/TBD | Not started | - |
 | 6. Web Security & Validation | 0/TBD | Not started | - |
