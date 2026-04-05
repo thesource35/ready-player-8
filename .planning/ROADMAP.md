@@ -39,9 +39,9 @@ Decimal phases appear between their surrounding integers in numeric order.
   5. Supabase secret key is rotated, .gitignore covers .env*/DS_Store/xcuserdata/DerivedData, orphaned folders removed, @next/swc-darwin-arm64 removed, iOS deployment target is valid
 **Plans:** 3 plans
 Plans:
-- [ ] 01-01-PLAN.md — iOS Keychain credential migration (Anthropic, Supabase, UserDefaults migration)
-- [ ] 01-02-PLAN.md — Web security hardening (env validation, Square webhook, CSP, Mapbox XSS)
-- [ ] 01-03-PLAN.md — Repo hygiene and infrastructure (key rotation, gitignore, deps cleanup, deployment target)
+- [x] 01-01-PLAN.md — iOS Keychain credential migration (Anthropic, Supabase, UserDefaults migration)
+- [x] 01-02-PLAN.md — Web security hardening (env validation, Square webhook, CSP, Mapbox XSS)
+- [x] 01-03-PLAN.md — Repo hygiene and infrastructure (key rotation, gitignore, deps cleanup, deployment target)
 
 ### Phase 2: Authentication
 **Goal**: Users must sign in to access their data on both iOS and web, with real auth flows replacing all fake/stub implementations
@@ -52,9 +52,13 @@ Plans:
   2. iOS user stays logged in across app restarts (auth token in Keychain, auto-refreshed before expiry)
   3. Web user stays logged in across browser sessions (cookie-based via @supabase/ssr, middleware-validated)
   4. Developer can bypass auth in DEBUG builds using existing demo mode
-  5. 2FA TOTP validates against server (not just regex); backup code flow works; SSO buttons use real OAuth; forgot-password makes real API call
+  5. 2FA TOTP validates against server (not just regex); backup code flow works; SSO buttons hidden (deferred to v2); forgot-password makes real API call
   6. Leads endpoint is rate-limited or CAPTCHA-protected (no longer open to spam)
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 02-01-PLAN.md — iOS auth hardening (real forgot-password, hide SSO, session auto-refresh, token validation)
+- [ ] 02-02-PLAN.md — Web auth middleware and leads rate limiting (middleware.ts, session validation, rate limit)
+- [ ] 02-03-PLAN.md — 2FA server verification on both platforms (Supabase MFA, backup codes, real TOTP)
 
 ### Phase 3: Row-Level Security
 **Goal**: Every Supabase table enforces per-user data isolation -- users can only read/write their own rows, with versioned migration files
@@ -192,8 +196,8 @@ Phases 11, 12 execute last (after the code they test is stable).
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Secrets & Infrastructure Cleanup | 0/3 | Planned | - |
-| 2. Authentication | 0/TBD | Not started | - |
+| 1. Secrets & Infrastructure Cleanup | 3/3 | Complete | 2026-04-05 |
+| 2. Authentication | 0/3 | Planned | - |
 | 3. Row-Level Security | 0/TBD | Not started | - |
 | 4. iOS Crash Safety | 0/TBD | Not started | - |
 | 5. iOS Error Handling & State Persistence | 0/TBD | Not started | - |
