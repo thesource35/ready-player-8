@@ -119,19 +119,19 @@ export default function RentalsPage() {
 
           <div className="rounded-xl p-4 mb-4" style={{ background: "#0F1C24" }}>
             <div className="text-[10px] font-black tracking-[0.15em] text-[#F29E3D] mb-3">EQUIPMENT DETAILS</div>
-            <input placeholder="Equipment type (e.g., 20-ton Excavator)" value={form.equipmentType} onChange={e => update("equipmentType", e.target.value)} className="mb-3" />
+            <input placeholder="Equipment type (e.g., 20-ton Excavator)" value={form.equipmentType} onChange={e => update("equipmentType", e.target.value)} maxLength={200} className="mb-3" />
             <select value={form.category} onChange={e => update("category", e.target.value)} className="mb-3">
               <option value="">Select category</option>
               {categories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             <div className="flex gap-3">
-              <input placeholder="Quantity" type="number" min="1" value={form.quantity} onChange={e => update("quantity", e.target.value)} className="mb-3" style={{ width: "30%" }} />
+              <input placeholder="Quantity" type="number" min="1" value={form.quantity} onChange={e => update("quantity", e.target.value)} maxLength={4} className="mb-3" style={{ width: "30%" }} />
               <select value={form.rentalDuration} onChange={e => update("rentalDuration", e.target.value)} className="mb-3" style={{ width: "70%" }}>
                 <option value="">Rental duration</option>
                 {durations.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
-            <input placeholder="Start date (e.g., Apr 15, 2026)" value={form.rentalStart} onChange={e => update("rentalStart", e.target.value)} className="mb-3" />
+            <input placeholder="Start date (e.g., Apr 15, 2026)" value={form.rentalStart} onChange={e => update("rentalStart", e.target.value)} maxLength={50} className="mb-3" />
             <select value={form.budgetRange} onChange={e => update("budgetRange", e.target.value)}>
               <option value="">Budget range</option>
               {budgets.map(b => <option key={b} value={b}>{b}</option>)}
@@ -140,23 +140,23 @@ export default function RentalsPage() {
 
           <div className="rounded-xl p-4 mb-4" style={{ background: "#0F1C24" }}>
             <div className="text-[10px] font-black tracking-[0.15em] text-[#4AC4CC] mb-3">PROJECT INFO</div>
-            <input placeholder="Project name" value={form.projectName} onChange={e => update("projectName", e.target.value)} className="mb-3" />
-            <input placeholder="Project location (city, state)" value={form.projectLocation} onChange={e => update("projectLocation", e.target.value)} className="mb-3" />
+            <input placeholder="Project name" value={form.projectName} onChange={e => update("projectName", e.target.value)} maxLength={300} className="mb-3" />
+            <input placeholder="Project location (city, state)" value={form.projectLocation} onChange={e => update("projectLocation", e.target.value)} maxLength={300} className="mb-3" />
             <div className="flex items-center gap-3 mb-3">
               <label className="flex items-center gap-2 text-xs cursor-pointer">
                 <input type="checkbox" checked={form.deliveryNeeded} onChange={e => update("deliveryNeeded", e.target.checked)} />
                 Delivery to jobsite needed
               </label>
             </div>
-            <textarea placeholder="Additional notes (specific specs, attachments needed, etc.)" value={form.notes} onChange={e => update("notes", e.target.value)} className="min-h-[60px]" />
+            <textarea placeholder="Additional notes (specific specs, attachments needed, etc.)" value={form.notes} onChange={e => update("notes", e.target.value)} maxLength={2000} className="min-h-[60px]" />
           </div>
 
           <div className="rounded-xl p-4 mb-4" style={{ background: "#0F1C24" }}>
             <div className="text-[10px] font-black tracking-[0.15em] text-[#69D294] mb-3">YOUR CONTACT INFO</div>
-            <input placeholder="Full name *" value={form.fullName} onChange={e => update("fullName", e.target.value)} className="mb-3" />
-            <input placeholder="Email address *" type="email" value={form.email} onChange={e => update("email", e.target.value)} className="mb-3" />
-            <input placeholder="Phone number" type="tel" value={form.phone} onChange={e => update("phone", e.target.value)} className="mb-3" />
-            <input placeholder="Company name" value={form.company} onChange={e => update("company", e.target.value)} />
+            <input placeholder="Full name *" value={form.fullName} onChange={e => update("fullName", e.target.value)} maxLength={200} className="mb-3" />
+            <input placeholder="Email address *" type="email" value={form.email} onChange={e => update("email", e.target.value)} maxLength={254} className="mb-3" />
+            <input placeholder="Phone number" type="tel" value={form.phone} onChange={e => update("phone", e.target.value)} maxLength={20} className="mb-3" />
+            <input placeholder="Company name" value={form.company} onChange={e => update("company", e.target.value)} maxLength={200} />
           </div>
 
           {validationError && <div className="mb-3 p-3 rounded-lg text-xs font-bold text-center" style={{ background: 'rgba(217,77,72,0.1)', color: '#D94D48' }}>{validationError}</div>}

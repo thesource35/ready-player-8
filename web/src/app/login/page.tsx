@@ -164,7 +164,7 @@ function LoginContent() {
           <div className="rounded-2xl p-6" style={{ background: 'rgba(15,28,36,0.6)', border: '1px solid rgba(51,84,94,0.3)' }}>
             {error && <div className="mb-4 p-3 rounded-lg text-xs font-bold text-center" style={{ background: 'rgba(217,77,72,0.1)', color: '#D94D48' }}>{error}</div>}
             {success && <div className="mb-4 p-3 rounded-lg text-xs font-bold text-center" style={{ background: 'rgba(105,210,148,0.1)', color: '#69D294' }}>{success}</div>}
-            <input placeholder="Work email address" type="email" value={form.email} onChange={e => update("email", e.target.value)} className="mb-4" />
+            <input placeholder="Work email address" type="email" value={form.email} onChange={e => update("email", e.target.value)} maxLength={254} className="mb-4" />
             <button onClick={handleForgotPassword} disabled={loading || !form.email} className="w-full py-3 rounded-xl font-bold text-black text-sm cursor-pointer" style={{ background: form.email ? 'linear-gradient(90deg, #F29E3D, #FCC757)' : '#33545E', border: 'none' }}>
               {loading ? "Sending..." : "SEND RESET LINK"}
             </button>
@@ -246,21 +246,21 @@ function LoginContent() {
 
           {isSignup && (
             <>
-              <input placeholder="Full name" value={form.fullName} onChange={e => update("fullName", e.target.value)} className="mb-3" />
-              <input placeholder="Company name" value={form.company} onChange={e => update("company", e.target.value)} className="mb-3" />
-              <input placeholder="Job title" value={form.title} onChange={e => update("title", e.target.value)} className="mb-3" />
+              <input placeholder="Full name" value={form.fullName} onChange={e => update("fullName", e.target.value)} maxLength={200} className="mb-3" />
+              <input placeholder="Company name" value={form.company} onChange={e => update("company", e.target.value)} maxLength={200} className="mb-3" />
+              <input placeholder="Job title" value={form.title} onChange={e => update("title", e.target.value)} maxLength={100} className="mb-3" />
               <div className="flex gap-2 flex-wrap mb-3">
                 {["General","Electrical","Concrete","Steel","Plumbing","HVAC","Roofing","Solar"].map(t => (
                   <span key={t} onClick={() => update("trade", t)} className="text-xs px-3 py-1.5 rounded-md cursor-pointer font-bold" style={{ background: form.trade === t ? '#F29E3D' : '#162832', color: form.trade === t ? '#080E12' : '#9EBDC2' }}>{t}</span>
                 ))}
               </div>
-              <input placeholder="City, State" value={form.location} onChange={e => update("location", e.target.value)} className="mb-3" />
-              <input placeholder="Phone number" value={form.phone} onChange={e => update("phone", e.target.value)} className="mb-3" />
+              <input placeholder="City, State" value={form.location} onChange={e => update("location", e.target.value)} maxLength={200} className="mb-3" />
+              <input placeholder="Phone number" value={form.phone} onChange={e => update("phone", e.target.value)} maxLength={20} className="mb-3" />
             </>
           )}
-          <input placeholder="Work email address" type="email" value={form.email} onChange={e => update("email", e.target.value)} className="mb-3" />
-          <input placeholder="Password" type="password" value={form.password} onChange={e => update("password", e.target.value)} className="mb-4" />
-          {isSignup && <input placeholder="Confirm password" type="password" value={form.confirmPassword} onChange={e => update("confirmPassword", e.target.value)} className="mb-4" />}
+          <input placeholder="Work email address" type="email" value={form.email} onChange={e => update("email", e.target.value)} maxLength={254} className="mb-3" />
+          <input placeholder="Password" type="password" value={form.password} onChange={e => update("password", e.target.value)} maxLength={128} className="mb-4" />
+          {isSignup && <input placeholder="Confirm password" type="password" value={form.confirmPassword} onChange={e => update("confirmPassword", e.target.value)} maxLength={128} className="mb-4" />}
 
           <button onClick={handleAuth} disabled={loading || !form.email || !form.password} className="w-full py-3 rounded-xl font-bold text-black text-sm cursor-pointer" style={{ background: form.email && form.password ? 'linear-gradient(90deg, #F29E3D, #FCC757)' : '#33545E', border: 'none' }}>
             {loading ? "Please wait..." : isSignup ? "CREATE ACCOUNT" : "SIGN IN"}

@@ -304,13 +304,13 @@ export default function JobsPage() {
 
             {canPostJobs ? (
               <form onSubmit={handleSubmit} className="space-y-3">
-                <input value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} placeholder="Job title" />
+                <input value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} placeholder="Job title" maxLength={200} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <input value={form.company} onChange={(event) => setForm((current) => ({ ...current, company: event.target.value }))} placeholder="Company name" />
-                  <input value={form.location} onChange={(event) => setForm((current) => ({ ...current, location: event.target.value }))} placeholder="City, State" />
+                  <input value={form.company} onChange={(event) => setForm((current) => ({ ...current, company: event.target.value }))} placeholder="Company name" maxLength={200} />
+                  <input value={form.location} onChange={(event) => setForm((current) => ({ ...current, location: event.target.value }))} placeholder="City, State" maxLength={200} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <input value={form.pay} onChange={(event) => setForm((current) => ({ ...current, pay: event.target.value }))} placeholder="Pay range or salary" />
+                  <input value={form.pay} onChange={(event) => setForm((current) => ({ ...current, pay: event.target.value }))} placeholder="Pay range or salary" maxLength={50} />
                   <select value={form.trade} onChange={(event) => setForm((current) => ({ ...current, trade: event.target.value }))}>
                     {tradeOptions.map((trade) => <option key={trade} value={trade}>{trade}</option>)}
                   </select>
@@ -319,12 +319,12 @@ export default function JobsPage() {
                   <select value={form.employmentType} onChange={(event) => setForm((current) => ({ ...current, employmentType: event.target.value }))}>
                     {employmentTypes.map((type) => <option key={type} value={type}>{type}</option>)}
                   </select>
-                  <input value={form.startLabel} onChange={(event) => setForm((current) => ({ ...current, startLabel: event.target.value }))} placeholder="Start date or label" />
+                  <input value={form.startLabel} onChange={(event) => setForm((current) => ({ ...current, startLabel: event.target.value }))} placeholder="Start date or label" maxLength={100} />
                 </div>
-                <input value={form.duration} onChange={(event) => setForm((current) => ({ ...current, duration: event.target.value }))} placeholder="Duration (optional)" />
-                <textarea value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} placeholder="Role description" rows={5} />
-                <input value={form.requirements} onChange={(event) => setForm((current) => ({ ...current, requirements: event.target.value }))} placeholder="Requirements, comma separated" />
-                <input value={form.contactEmail} onChange={(event) => setForm((current) => ({ ...current, contactEmail: event.target.value }))} placeholder="Application email (optional)" type="email" />
+                <input value={form.duration} onChange={(event) => setForm((current) => ({ ...current, duration: event.target.value }))} placeholder="Duration (optional)" maxLength={100} />
+                <textarea value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} placeholder="Role description" rows={5} maxLength={5000} />
+                <input value={form.requirements} onChange={(event) => setForm((current) => ({ ...current, requirements: event.target.value }))} placeholder="Requirements, comma separated" maxLength={2000} />
+                <input value={form.contactEmail} onChange={(event) => setForm((current) => ({ ...current, contactEmail: event.target.value }))} placeholder="Application email (optional)" type="email" maxLength={254} />
                 <label className="flex items-center gap-3 text-sm font-bold text-[#9EBDC2]">
                   <input type="checkbox" checked={form.urgent} onChange={(event) => setForm((current) => ({ ...current, urgent: event.target.checked }))} />
                   Mark this opening urgent

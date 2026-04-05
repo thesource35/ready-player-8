@@ -45,25 +45,25 @@ export default function ProfilePage() {
 
       <div style={{ background: "var(--surface)", borderRadius: 14, padding: 20, marginBottom: 16 }}>
         <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, color: "var(--accent)", marginBottom: 12 }}>PERSONAL INFO</div>
-        <input placeholder="Full name" value={form.fullName} onChange={e => update("fullName", e.target.value)} style={{ marginBottom: 10 }} />
-        <input placeholder="Email" type="email" value={form.email} onChange={e => update("email", e.target.value)} style={{ marginBottom: 10 }} />
-        <input placeholder="Phone" value={form.phone} onChange={e => update("phone", e.target.value)} style={{ marginBottom: 10 }} />
-        <input placeholder="Location" value={form.location} onChange={e => update("location", e.target.value)} style={{ marginBottom: 10 }} />
-        <textarea placeholder="Bio" value={form.bio} onChange={e => update("bio", e.target.value)} style={{ marginBottom: 10, minHeight: 60 }} />
+        <input placeholder="Full name" value={form.fullName} onChange={e => update("fullName", e.target.value)} maxLength={200} style={{ marginBottom: 10 }} />
+        <input placeholder="Email" type="email" value={form.email} onChange={e => update("email", e.target.value)} maxLength={254} style={{ marginBottom: 10 }} />
+        <input placeholder="Phone" value={form.phone} onChange={e => update("phone", e.target.value)} maxLength={20} style={{ marginBottom: 10 }} />
+        <input placeholder="Location" value={form.location} onChange={e => update("location", e.target.value)} maxLength={200} style={{ marginBottom: 10 }} />
+        <textarea placeholder="Bio" value={form.bio} onChange={e => update("bio", e.target.value)} maxLength={1000} style={{ marginBottom: 10, minHeight: 60 }} />
       </div>
 
       <div style={{ background: "var(--surface)", borderRadius: 14, padding: 20, marginBottom: 16 }}>
         <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, color: "var(--cyan)", marginBottom: 12 }}>PROFESSIONAL INFO</div>
-        <input placeholder="Company name" value={form.company} onChange={e => update("company", e.target.value)} style={{ marginBottom: 10 }} />
-        <input placeholder="Job title" value={form.title} onChange={e => update("title", e.target.value)} style={{ marginBottom: 10 }} />
+        <input placeholder="Company name" value={form.company} onChange={e => update("company", e.target.value)} maxLength={200} style={{ marginBottom: 10 }} />
+        <input placeholder="Job title" value={form.title} onChange={e => update("title", e.target.value)} maxLength={100} style={{ marginBottom: 10 }} />
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
           {["General","Electrical","Concrete","Steel","Plumbing","HVAC","Roofing","Solar","Fiber","Crane"].map(t => (
             <span key={t} onClick={() => update("trade", t)} style={{ fontSize: 10, fontWeight: 700, padding: "5px 10px", borderRadius: 6, background: form.trade === t ? "var(--accent)" : "var(--panel)", color: form.trade === t ? "var(--bg)" : "var(--muted)", cursor: "pointer" }}>{t}</span>
           ))}
         </div>
-        <input placeholder="Years of experience" value={form.experience} onChange={e => update("experience", e.target.value)} style={{ marginBottom: 10 }} />
-        <input placeholder="License number (optional)" value={form.licenseNumber} onChange={e => update("licenseNumber", e.target.value)} style={{ marginBottom: 10 }} />
-        <input placeholder="License state" value={form.licenseState} onChange={e => update("licenseState", e.target.value)} />
+        <input placeholder="Years of experience" value={form.experience} onChange={e => update("experience", e.target.value)} maxLength={3} style={{ marginBottom: 10 }} />
+        <input placeholder="License number (optional)" value={form.licenseNumber} onChange={e => update("licenseNumber", e.target.value)} maxLength={50} style={{ marginBottom: 10 }} />
+        <input placeholder="License state" value={form.licenseState} onChange={e => update("licenseState", e.target.value)} maxLength={10} />
       </div>
 
       <button onClick={handleSave} style={{ width: "100%", padding: "14px 0", borderRadius: 12, fontSize: 14, fontWeight: 800, color: "var(--bg)", background: "linear-gradient(90deg, var(--accent), var(--gold))", border: "none", cursor: "pointer" }}>SAVE PROFILE</button>
