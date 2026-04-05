@@ -35,7 +35,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   }
 
-  const body = await req.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   const { table, ...data } = body;
   const targetTable = typeof table === "string" ? table : "cs_todos";
 
@@ -47,7 +52,7 @@ export async function POST(req: Request) {
   if (!row) {
     return NextResponse.json({ error: "Failed to create" }, { status: 500 });
   }
-  return NextResponse.json(row);
+  return NextResponse.json(row, { status: 201 });
 }
 
 export async function PATCH(req: Request) {
@@ -60,8 +65,13 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   }
 
-  const body = await req.json();
-  const { table, id, ...updates } = body;
+  let patchBody: Record<string, unknown>;
+  try {
+    patchBody = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+  const { table, id, ...updates } = patchBody;
   const targetTable = typeof table === "string" ? table : "cs_todos";
 
   if (!isTasksTable(targetTable)) {
@@ -71,7 +81,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Valid id is required" }, { status: 400 });
   }
 
-  const row = await updateOwnedRow(targetTable, id, user.id, updates);
+  const row = await updateOwnedRow(targetTable, id as string, user.id, updates);
   if (!row) {
     return NextResponse.json({ error: "Not found or not owned" }, { status: 404 });
   }
@@ -88,7 +98,13 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   }
 
-  const { table, id } = await req.json();
+  let deleteBody: Record<string, unknown>;
+  try {
+    deleteBody = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+  const { table, id } = deleteBody as { table?: string; id?: string };
   const targetTable = typeof table === "string" ? table : "cs_todos";
 
   if (!isTasksTable(targetTable)) {

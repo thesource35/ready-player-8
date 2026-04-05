@@ -32,7 +32,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   }
 
-  const body = await req.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   const content = typeof body.content === "string" ? body.content.trim() : "";
   if (!content) {
     return NextResponse.json({ error: "Post content is required" }, { status: 400 });
@@ -56,5 +61,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
   }
 
-  return NextResponse.json(post);
+  return NextResponse.json(post, { status: 201 });
 }

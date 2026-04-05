@@ -31,7 +31,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   }
 
-  const body = await req.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   const name = typeof body.name === "string" ? body.name.trim() : "";
   if (!name) {
     return NextResponse.json({ error: "Project name is required" }, { status: 400 });
@@ -45,7 +50,7 @@ export async function POST(req: Request) {
     status: typeof body.status === "string" ? body.status.trim() : "On Track",
     progress: typeof body.progress === "number" ? body.progress : 0,
     budget: typeof body.budget === "string" ? body.budget.trim() : "$0",
-    score: typeof body.score === "number" ? body.score : 0,
+    score: typeof body.score === "string" ? body.score.trim() : typeof body.score === "number" ? String(body.score) : "0",
     team: typeof body.team === "string" ? body.team.trim() : "",
   });
 
@@ -53,7 +58,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Failed to create project" }, { status: 500 });
   }
 
-  return NextResponse.json(project);
+  return NextResponse.json(project, { status: 201 });
 }
 
 export async function DELETE(req: Request) {
@@ -66,7 +71,13 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   }
 
-  const { id } = await req.json();
+  let deleteBody: Record<string, unknown>;
+  try {
+    deleteBody = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+  const { id } = deleteBody as { id?: string };
   if (typeof id !== "string" || !id) {
     return NextResponse.json({ error: "Valid id is required" }, { status: 400 });
   }

@@ -31,7 +31,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   }
 
-  const body = await req.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   const title = typeof body.title === "string" ? body.title.trim() : "";
   if (!title) {
     return NextResponse.json({ error: "Contract title is required" }, { status: 400 });
@@ -53,5 +58,5 @@ export async function POST(req: Request) {
   if (!contract) {
     return NextResponse.json({ error: "Failed to create" }, { status: 500 });
   }
-  return NextResponse.json(contract);
+  return NextResponse.json(contract, { status: 201 });
 }

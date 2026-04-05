@@ -31,7 +31,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   }
 
-  const body = await req.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   const description = typeof body.description === "string" ? body.description.trim() : "";
   if (!description) {
     return NextResponse.json({ error: "Description is required" }, { status: 400 });
@@ -50,7 +55,7 @@ export async function POST(req: Request) {
   });
 
   if (!item) return NextResponse.json({ error: "Failed to create" }, { status: 500 });
-  return NextResponse.json(item);
+  return NextResponse.json(item, { status: 201 });
 }
 
 export async function PATCH(req: Request) {
@@ -63,7 +68,13 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   }
 
-  const { id, ...updates } = await req.json();
+  let patchBody: Record<string, unknown>;
+  try {
+    patchBody = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+  const { id, ...updates } = patchBody;
   if (typeof id !== "string" || !id) {
     return NextResponse.json({ error: "Valid id is required" }, { status: 400 });
   }
