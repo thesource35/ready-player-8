@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 const base = {
   siteName: "ConstructionOS",
   url: "https://constructionos.world",
+  images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "ConstructionOS" }],
 };
 
 export const pageMetadata: Record<string, Metadata> = {

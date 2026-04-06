@@ -14,11 +14,13 @@ export const metadata: Metadata = {
     url: "https://constructionos.world",
     siteName: "ConstructionOS",
     type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "ConstructionOS - The Construction Command Center" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "ConstructionOS — The Construction Command Center",
     description: "32 tabs, 56 AI tools, equipment rentals, social network for 142K+ construction professionals.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "ConstructionOS - The Construction Command Center" }],
   },
   robots: { index: true, follow: true },
 };
