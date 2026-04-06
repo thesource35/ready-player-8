@@ -369,6 +369,12 @@ export default function JobsPage() {
                 <div className="text-[11px] font-black tracking-[0.2em] text-[#4AC4CC] mb-2">LOADING JOBS</div>
                 <p className="text-sm text-[#9EBDC2]">Pulling the latest jobs board entries now.</p>
               </div>
+            ) : jobs.length === 0 ? (
+              <div style={{ borderRadius: 16, padding: 32, textAlign: "center", background: "var(--surface)", border: "1px solid rgba(51,84,94,0.2)" }}>
+                <div style={{ fontSize: 48, marginBottom: 8 }}>&#x1F4CB;</div>
+                <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 8 }}>No Jobs Found</div>
+                <div style={{ fontSize: 13, color: "var(--muted)" }}>No job listings are available right now. Check back soon for new opportunities.</div>
+              </div>
             ) : filteredJobs.length === 0 ? (
               <div className="rounded-3xl p-8 text-center" style={{ background: "#0F1C24" }}>
                 <div className="text-xl font-black mb-2">No jobs in this filter yet</div>
