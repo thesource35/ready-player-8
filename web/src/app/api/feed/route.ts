@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchTable, insertRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
+import { fetchTable, fetchTablePaginated, insertRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
 import type { FeedPost } from "@/lib/supabase/types";
 import { MOCK_FEED_POSTS } from "@/lib/mock-data";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -10,16 +10,20 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const ip = req.headers.get("x-forwarded-for") ?? "unknown";
   if (!checkRateLimit(ip)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  const posts = await fetchTable<FeedPost>("cs_feed_posts", {
+
+  const { searchParams } = new URL(req.url);
+  const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10) || 0);
+
+  const result = await fetchTablePaginated<FeedPost>("cs_feed_posts", {
     order: { column: "created_at", ascending: false },
-    limit: 50,
+    page,
   });
 
-  if (posts.length === 0) {
-    return NextResponse.json(MOCK_FEED_POSTS);
+  if (result.data.length === 0 && page === 0) {
+    return NextResponse.json({ data: MOCK_FEED_POSTS, hasMore: false, total: MOCK_FEED_POSTS.length });
   }
 
-  return NextResponse.json(posts);
+  return NextResponse.json(result);
 }
 
 export async function POST(req: Request) {

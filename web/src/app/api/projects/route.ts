@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchTable, insertRow, deleteOwnedRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
+import { fetchTable, fetchTablePaginated, insertRow, deleteOwnedRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
 import type { Project } from "@/lib/supabase/types";
 import { MOCK_PROJECTS } from "@/lib/mock-data";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -10,15 +10,20 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const ip = req.headers.get("x-forwarded-for") ?? "unknown";
   if (!checkRateLimit(ip)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  const projects = await fetchTable<Project>("cs_projects", {
+
+  const { searchParams } = new URL(req.url);
+  const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10) || 0);
+
+  const result = await fetchTablePaginated<Project>("cs_projects", {
     order: { column: "created_at", ascending: false },
+    page,
   });
 
-  if (projects.length === 0) {
-    return NextResponse.json(MOCK_PROJECTS);
+  if (result.data.length === 0 && page === 0) {
+    return NextResponse.json({ data: MOCK_PROJECTS, hasMore: false, total: MOCK_PROJECTS.length });
   }
 
-  return NextResponse.json(projects);
+  return NextResponse.json(result);
 }
 
 export async function POST(req: Request) {

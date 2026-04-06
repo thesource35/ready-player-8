@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchTable, insertRow, updateOwnedRow, deleteOwnedRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
+import { fetchTable, fetchTablePaginated, insertRow, updateOwnedRow, deleteOwnedRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { verifyCsrfOrigin } from "@/lib/csrf";
 
@@ -16,13 +16,22 @@ export async function GET(req: Request) {
   const ip = req.headers.get("x-forwarded-for") ?? "unknown";
   if (!checkRateLimit(ip)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
-  const [todos, events, reminders] = await Promise.all([
-    fetchTable("cs_todos", { order: { column: "created_at", ascending: false } }),
+  const { searchParams } = new URL(req.url);
+  const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10) || 0);
+
+  const [todosResult, events, reminders] = await Promise.all([
+    fetchTablePaginated("cs_todos", { order: { column: "created_at", ascending: false }, page }),
     fetchTable("cs_schedule_events", { order: { column: "date" } }),
     fetchTable("cs_reminders", { order: { column: "trigger_at" } }),
   ]);
 
-  return NextResponse.json({ todos, events, reminders });
+  return NextResponse.json({
+    todos: todosResult.data,
+    events,
+    reminders,
+    hasMore: todosResult.hasMore,
+    total: todosResult.total,
+  });
 }
 
 export async function POST(req: Request) {

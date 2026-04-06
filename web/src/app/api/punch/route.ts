@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchTable, insertRow, updateOwnedRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
+import { fetchTable, fetchTablePaginated, insertRow, updateOwnedRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
 import type { PunchItem } from "@/lib/supabase/types";
 import { MOCK_PUNCH_ITEMS } from "@/lib/mock-data";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -10,15 +10,20 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const ip = req.headers.get("x-forwarded-for") ?? "unknown";
   if (!checkRateLimit(ip)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  const items = await fetchTable<PunchItem>("cs_punch_pro", {
+
+  const { searchParams } = new URL(req.url);
+  const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10) || 0);
+
+  const result = await fetchTablePaginated<PunchItem>("cs_punch_pro", {
     order: { column: "created_at", ascending: false },
+    page,
   });
 
-  if (items.length === 0) {
-    return NextResponse.json(MOCK_PUNCH_ITEMS);
+  if (result.data.length === 0 && page === 0) {
+    return NextResponse.json({ data: MOCK_PUNCH_ITEMS, hasMore: false, total: MOCK_PUNCH_ITEMS.length });
   }
 
-  return NextResponse.json(items);
+  return NextResponse.json(result);
 }
 
 export async function POST(req: Request) {
