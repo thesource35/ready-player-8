@@ -22,7 +22,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 8: Web UX & Loading States** - Error boundaries, loading indicators, SSR safety, feature gating
 - [ ] **Phase 9: Web Performance & Dynamic Content** - Rate limiting, pagination, payment fixes, dynamic content, image config
 - [x] **Phase 10: Accessibility & SEO** - Screen reader labels, metadata, robots/sitemap, PWA icon (completed 2026-04-06)
-- [ ] **Phase 11: iOS Tests** - Unit tests for Keychain, auth, persistence, and Supabase service plus CI test execution
+- [x] **Phase 11: iOS Tests** - Unit tests for Keychain, auth, persistence, and Supabase service plus CI test execution (completed 2026-04-06)
 - [ ] **Phase 12: Web Tests** - Unit tests for API routes, E2E tests for critical user flows
 
 ## Phase Details
@@ -205,10 +205,10 @@ Plans:
   3. Auth flow state transitions (login, logout, token refresh) have unit tests
   4. AppStorageJSON persistence has unit tests covering encode, decode, and size limit behavior
   5. CI pipeline runs `npm run test` (vitest) and `npm audit` in addition to lint/typecheck/build
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
-- [ ] 11-01-PLAN.md — iOS unit tests for SupabaseService CRUD, Keychain migration, auth flow, and AppStorageJSON
-- [ ] 11-02-PLAN.md — CI pipeline enhancement (vitest and npm audit steps)
+- [x] 11-01-PLAN.md — iOS unit tests for SupabaseService CRUD, Keychain migration, auth flow, and AppStorageJSON
+- [x] 11-02-PLAN.md — CI pipeline enhancement (vitest and npm audit steps)
 
 ### Phase 12: Web Tests
 **Goal**: Critical web code paths have automated tests that catch regressions in API routes, auth middleware, and end-to-end flows
@@ -221,7 +221,11 @@ Plans:
   4. E2E test confirms a user can sign up, log in, create a project, and see it listed
   5. E2E test confirms a user can send a chat message and receive an AI response
   6. Paddle webhook and checkout flow have unit tests for signature verification and payment method passthrough
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 12-01-PLAN.md — Unit tests for Chat API, Leads API, and auth middleware
+- [ ] 12-02-PLAN.md — Unit tests for Paddle webhook and checkout flow
+- [ ] 12-03-PLAN.md — Playwright E2E setup and specs for auth/project and chat flows
 
 ## Progress
 
@@ -242,5 +246,5 @@ Phases 11, 12 execute last (after the code they test is stable).
 | 8. Web UX & Loading States | 0/3 | Planned | - |
 | 9. Web Performance & Dynamic Content | 0/5 | Planned | - |
 | 10. Accessibility & SEO | 3/3 | Complete    | 2026-04-06 |
-| 11. iOS Tests | 0/2 | Planned | - |
-| 12. Web Tests | 0/TBD | Not started | - |
+| 11. iOS Tests | 2/2 | Complete    | 2026-04-06 |
+| 12. Web Tests | 0/3 | Planned | - |
