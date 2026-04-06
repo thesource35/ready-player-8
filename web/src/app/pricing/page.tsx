@@ -1,9 +1,23 @@
+import { plans } from "@/lib/billing/plans";
+
 export default function PricingPage() {
-  const tiers = [
-    { name: "Field Worker", price: "$9.99", annual: "$99.99/yr", color: "#4AC4CC", desc: "For every trade on the jobsite", features: ["All 31 tabs","56 AI tools","Equipment rentals","Construction network","GPS timecards","Punch list","Cert tracker","Job alerts"], popular: false },
-    { name: "Project Manager", price: "$24.99", annual: "$249.99/yr", color: "#FCC757", desc: "For supers, PMs, and estimators", features: ["Everything in Field Worker","Team management (25)","Client portal","Bid analytics","AIA invoicing","Gantt scheduling","CSI cost codes","PDF export"], popular: true },
-    { name: "Company Owner", price: "$49.99", annual: "$499.99/yr", color: "#F29E3D", desc: "For GCs and sub owners", features: ["Everything in PM","Unlimited team","AI pricing engine","White-label portal","Priority support","Custom integrations","Market intel reports","Surety bonds"], popular: false },
-  ];
+  const tiers = plans.map(p => ({
+    name: p.name,
+    price: p.price,
+    annual: `${p.annual}/yr`,
+    color: p.color,
+    desc: p.id === "field" ? "For every trade on the jobsite"
+        : p.id === "pm" ? "For supers, PMs, and estimators"
+        : "For GCs and sub owners",
+    features: p.id === "field"
+      ? ["All 31 tabs","56 AI tools","Equipment rentals","Construction network","GPS timecards","Punch list","Cert tracker","Job alerts"]
+      : p.id === "pm"
+      ? ["Everything in Field Worker","Team management (25)","Client portal","Bid analytics","AIA invoicing","Gantt scheduling","CSI cost codes","PDF export"]
+      : ["Everything in PM","Unlimited team","AI pricing engine","White-label portal","Priority support","Custom integrations","Market intel reports","Surety bonds"],
+    popular: "popular" in p && p.popular,
+    id: p.id,
+  }));
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-16">
       <div className="text-center mb-12">
@@ -23,23 +37,23 @@ export default function PricingPage() {
             <ul className="space-y-2 mb-6">
               {t.features.map(f => <li key={f} className="text-xs text-[#9EBDC2]"><span className="text-[#69D294] font-bold mr-1">✓</span> {f}</li>)}
             </ul>
-            <a href="/checkout" className="block w-full py-3 rounded-xl text-sm font-bold text-black text-center" style={{ background: t.color }}>START FREE TRIAL</a>
+            <a href={`/checkout?plan=${t.id}`} className="block w-full py-3 rounded-xl text-sm font-bold text-black text-center" style={{ background: t.color }}>START FREE TRIAL</a>
           </div>
         ))}
       </div>
 
       {/* Payment Methods */}
       <div className="rounded-2xl p-8 text-center mb-8" style={{ background: 'rgba(105,210,148,0.06)', border: '1px solid rgba(105,210,148,0.15)' }}>
-        <h2 className="text-2xl font-black mb-2">💳 Accepted Payment Methods</h2>
+        <h2 className="text-2xl font-black mb-2">Accepted Payment Methods</h2>
         <p className="text-sm text-[#9EBDC2] mb-5">Pay with your preferred method. Secure, instant processing.</p>
         <div className="flex flex-wrap gap-2 justify-center mb-4">
-          {["💳 Visa", "💳 Mastercard", "💳 Amex", "🍎 Apple Pay", "G Google Pay", "🏦 Bank Transfer", "📱 PayPal", "🔄 ACH Direct"].map(m => (
+          {["Visa", "Mastercard", "Amex", "Apple Pay", "Google Pay", "Bank Transfer", "PayPal", "ACH Direct"].map(m => (
             <span key={m} className="text-xs font-bold px-3 py-1.5 rounded-lg" style={{ background: 'rgba(105,210,148,0.1)', border: '1px solid rgba(105,210,148,0.2)', color: '#69D294' }}>{m}</span>
           ))}
         </div>
         <p className="text-xs text-[#69D294]">Powered by Square</p>
         <div className="flex justify-center gap-4 mt-3">
-          {["🔒 PCI DSS", "🛡 3D Secure", "✅ SOC 2"].map(b => (
+          {["PCI DSS", "3D Secure", "SOC 2"].map(b => (
             <span key={b} className="text-[10px] text-[#9EBDC2]">{b}</span>
           ))}
         </div>

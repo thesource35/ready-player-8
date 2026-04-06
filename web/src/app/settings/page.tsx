@@ -1,8 +1,40 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { createBrowserClient } from "@supabase/ssr";
+
 export default function SettingsPage() {
+  const [userEmail, setUserEmail] = useState("");
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) {
+      setUserName("Demo User");
+      setUserEmail("demo@constructionos.local");
+      return;
+    }
+    const supabase = createBrowserClient(url, key);
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setUserEmail(user.email || "");
+        setUserName(user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "User");
+      } else {
+        setUserName("Demo User");
+        setUserEmail("demo@constructionos.local");
+      }
+    });
+  }, []);
+
+  const displayName = userName || "Loading...";
+  const displayEmail = userEmail || "Loading...";
+  const avatarInitial = (userName || "U")[0].toUpperCase();
+
   const roles = [
-    { id: "SUPER", name: "Superintendent", icon: "🏗", desc: "Field-focused dashboards, daily logs, crew management" },
-    { id: "PM", name: "Project Manager", icon: "📋", desc: "RFIs, submittals, change orders, schedules, budgets" },
-    { id: "EXEC", name: "Executive", icon: "📊", desc: "P&L dashboards, pipeline analytics, risk scoring" },
+    { id: "SUPER", name: "Superintendent", icon: "\u{1F3D7}", desc: "Field-focused dashboards, daily logs, crew management" },
+    { id: "PM", name: "Project Manager", icon: "\u{1F4CB}", desc: "RFIs, submittals, change orders, schedules, budgets" },
+    { id: "EXEC", name: "Executive", icon: "\u{1F4CA}", desc: "P&L dashboards, pipeline analytics, risk scoring" },
   ];
 
   const subscriptionTiers = [
@@ -22,10 +54,10 @@ export default function SettingsPage() {
     <div style={{ padding: 20, maxWidth: 1200, margin: "0 auto" }}>
       {/* Profile Header */}
       <div style={{ background: "var(--surface)", borderRadius: 14, padding: 20, marginBottom: 16, display: "flex", gap: 16, alignItems: "center", border: "1px solid rgba(242,158,61,0.08)" }}>
-        <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg, var(--accent), var(--gold))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 900, color: "var(--bg)" }}>D</div>
+        <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg, var(--accent), var(--gold))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 900, color: "var(--bg)" }}>{avatarInitial}</div>
         <div>
-          <h1 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>Donovan Fagan</h1>
-          <p style={{ fontSize: 11, color: "var(--muted)", margin: "2px 0" }}>admin@constructionos.world</p>
+          <h1 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>{displayName}</h1>
+          <p style={{ fontSize: 11, color: "var(--muted)", margin: "2px 0" }}>{displayEmail}</p>
           <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
             <span style={{ fontSize: 8, fontWeight: 900, color: "var(--bg)", background: "var(--accent)", padding: "2px 8px", borderRadius: 3 }}>PROJECT MANAGER</span>
             <span style={{ fontSize: 8, fontWeight: 800, color: "var(--green)" }}>SUPABASE LINKED</span>
@@ -76,7 +108,7 @@ export default function SettingsPage() {
             <h3 style={{ fontSize: 14, fontWeight: 800, margin: "0 0 4px" }}>{t.name}</h3>
             <div style={{ fontSize: 18, fontWeight: 900, color: "var(--accent)", marginBottom: 10 }}>{t.price}</div>
             {t.features.map(f => (
-              <div key={f} style={{ fontSize: 9, color: "var(--muted)", padding: "2px 0" }}>✓ {f}</div>
+              <div key={f} style={{ fontSize: 9, color: "var(--muted)", padding: "2px 0" }}>{"\u2713"} {f}</div>
             ))}
           </div>
         ))}
