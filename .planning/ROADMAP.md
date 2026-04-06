@@ -154,9 +154,9 @@ Plans:
   5. Punch and trust pages are wrapped with PremiumFeatureGate
 **Plans:** 3 plans
 Plans:
-- [ ] 08-01-PLAN.md — Error boundaries for all 23 unprotected pages
-- [ ] 08-02-PLAN.md — Loading indicators and empty/unavailable states for maps, jobs, ai, punch, ops, tasks
-- [ ] 08-03-PLAN.md — SSR safety fix for AngelicPromptToggle and PremiumFeatureGate on punch/trust pages
+- [x] 08-01-PLAN.md — Error boundaries for all 23 unprotected pages
+- [x] 08-02-PLAN.md — Loading indicators and empty/unavailable states for maps, jobs, ai, punch, ops, tasks
+- [x] 08-03-PLAN.md — SSR safety fix for AngelicPromptToggle and PremiumFeatureGate on punch/trust pages
 **UI hint**: yes
 
 ### Phase 9: Web Performance & Dynamic Content
@@ -170,7 +170,12 @@ Plans:
   4. Settings page shows actual user; checkout shows trial info; prices consistent; footer year dynamic; marketing numbers real or removed; app version reads from Bundle
   5. Square checkout passes selected payment method and billing interval correctly
   6. Supabase tables have updated_at triggers
-**Plans**: TBD
+**Plans:** 4 plans
+Plans:
+- [ ] 09-01-PLAN.md — Distributed rate limiting (Upstash Redis + in-memory fallback) and JWT session validation in middleware
+- [ ] 09-02-PLAN.md — Pagination support, export API cap, chat summary prompt, lazy map popups, image config
+- [ ] 09-03-PLAN.md — Dynamic content fixes (settings user, pricing consistency, footer year, fake numbers removal, checkout trial info)
+- [ ] 09-04-PLAN.md — Square payment method passthrough and Supabase updated_at triggers
 **UI hint**: yes
 
 ### Phase 10: Accessibility & SEO
@@ -227,7 +232,7 @@ Phases 11, 12 execute last (after the code they test is stable).
 | 6. Web Security & Validation | 0/3 | Planned | - |
 | 7. Web Error Handling & Consistency | 0/3 | Planned | - |
 | 8. Web UX & Loading States | 0/3 | Planned | - |
-| 9. Web Performance & Dynamic Content | 0/TBD | Not started | - |
+| 9. Web Performance & Dynamic Content | 0/4 | Planned | - |
 | 10. Accessibility & SEO | 0/TBD | Not started | - |
 | 11. iOS Tests | 0/TBD | Not started | - |
 | 12. Web Tests | 0/TBD | Not started | - |
