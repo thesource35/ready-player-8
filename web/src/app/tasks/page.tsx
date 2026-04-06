@@ -174,7 +174,7 @@ export default function TasksPage() {
                   </div>
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <span style={{ fontSize: 8, fontWeight: 900, color: priorities[t.priority].color }}>{priorities[t.priority].label}</span>
+                  <span role="status" aria-label={`Priority: ${priorities[t.priority].label}`} style={{ fontSize: 8, fontWeight: 900, color: priorities[t.priority].color }}>{priorities[t.priority].label}</span>
                   <div style={{ fontSize: 9, color: "var(--gold)", marginTop: 2 }}>{t.due}</div>
                   {t.time && <div style={{ fontSize: 8, color: "var(--muted)" }}>{t.time}</div>}
                 </div>

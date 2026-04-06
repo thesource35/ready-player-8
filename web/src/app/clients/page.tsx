@@ -50,7 +50,7 @@ export default function ClientsPage() {
         <div key={p.name} style={{ background: "var(--surface)", borderRadius: 10, padding: 14, marginBottom: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <span style={{ fontSize: 13, fontWeight: 800 }}>{p.name}</span>
-            <span style={{ fontSize: 9, fontWeight: 900, color: p.status === "On Track" ? "var(--green)" : p.status === "Ahead" ? "var(--cyan)" : "var(--gold)" }}>{p.status}</span>
+            <span role="status" aria-label={`Status: ${p.status}`} style={{ fontSize: 9, fontWeight: 900, color: p.status === "On Track" ? "var(--green)" : p.status === "Ahead" ? "var(--cyan)" : "var(--gold)" }}>{p.status}</span>
           </div>
           <div style={{ background: "rgba(51,84,94,0.3)", borderRadius: 3, height: 6, marginBottom: 6 }}>
             <div style={{ background: "var(--accent)", borderRadius: 3, height: 6, width: `${p.progress}%` }} />
@@ -75,7 +75,7 @@ export default function ClientsPage() {
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {s.due !== "N/A" && <span style={{ fontSize: 9, fontWeight: 800, color: "var(--gold)" }}>Due: {s.due}</span>}
-            <span style={{ fontSize: 8, fontWeight: 900, color: s.status === "APPROVED" ? "var(--green)" : "var(--gold)" }}>{s.status}</span>
+            <span role="status" aria-label={`Status: ${s.status}`} style={{ fontSize: 8, fontWeight: 900, color: s.status === "APPROVED" ? "var(--green)" : "var(--gold)" }}>{s.status}</span>
           </div>
         </div>
       ))}
@@ -104,7 +104,7 @@ export default function ClientsPage() {
               <div style={{ display: "flex", gap: 12, fontSize: 10 }}>
                 <span style={{ color: "var(--muted)" }}>{m.attendees} attendees</span>
                 <span style={{ color: "var(--cyan)" }}>{m.actionItems} action items</span>
-                <span style={{ color: m.openIssues > 2 ? "var(--gold)" : "var(--green)" }}>{m.openIssues} open issues</span>
+                <span role="status" aria-label={`Open issues: ${m.openIssues}`} style={{ color: m.openIssues > 2 ? "var(--gold)" : "var(--green)" }}>{m.openIssues} open issues</span>
               </div>
             </div>
           ))}

@@ -171,7 +171,7 @@ export default function MapsPage() {
             <div key={s.name} style={{ background: "var(--surface)", borderRadius: 10, padding: 12, marginBottom: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                 <span style={{ fontSize: 12, fontWeight: 800 }}>{s.name}</span>
-                <span style={{ fontSize: 8, fontWeight: 900, color: s.status === "ACTIVE" ? "var(--green)" : s.status === "DELAYED" ? "var(--red)" : "var(--gold)" }}>{s.status}</span>
+                <span role="status" aria-label={`Status: ${s.status}`} style={{ fontSize: 8, fontWeight: 900, color: s.status === "ACTIVE" ? "var(--green)" : s.status === "DELAYED" ? "var(--red)" : "var(--gold)" }}>{s.status}</span>
               </div>
               <div style={{ display: "flex", gap: 12, fontSize: 10, color: "var(--muted)" }}>
                 <span>{s.crews} crews</span>

@@ -185,7 +185,7 @@ export default function OpsPage() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
               <span style={{ fontSize: 12, fontWeight: 800 }}>{a.title}</span>
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <span style={{ fontSize: 8, fontWeight: 900, color: sevColor(a.severity) }}>{sevLabel(a.severity)}</span>
+                <span role="status" aria-label={`Severity: ${sevLabel(a.severity)}`} style={{ fontSize: 8, fontWeight: 900, color: sevColor(a.severity) }}>{sevLabel(a.severity)}</span>
                 <span style={{ fontSize: 9, color: "var(--gold)" }}>Due: {a.due}</span>
               </div>
             </div>
@@ -247,7 +247,7 @@ export default function OpsPage() {
                 </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                   <span style={{ fontSize: 10, fontWeight: 800, color: "var(--accent)" }}>{item.amount}</span>
-                  <span style={{ fontSize: 8, fontWeight: 900, color: item.status === "APPROVED" || item.status === "CLOSED" || item.status === "ANSWERED" ? "var(--green)" : item.status === "OPEN" ? "var(--red)" : "var(--gold)" }}>{item.status}</span>
+                  <span role="status" aria-label={`Status: ${item.status}`} style={{ fontSize: 8, fontWeight: 900, color: item.status === "APPROVED" || item.status === "CLOSED" || item.status === "ANSWERED" ? "var(--green)" : item.status === "OPEN" ? "var(--red)" : "var(--gold)" }}>{item.status}</span>
                 </div>
               </div>
             ))}

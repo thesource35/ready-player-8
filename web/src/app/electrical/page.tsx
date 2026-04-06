@@ -58,7 +58,7 @@ export default function ElectricalPage() {
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <span style={{ fontSize: 12, fontWeight: 800 }}>{c.name}</span>
-                  <span style={{ fontSize: 8, fontWeight: 900, color: c.available ? "var(--green)" : "var(--muted)" }}>{c.available ? "AVAILABLE" : "BUSY"}</span>
+                  <span role="status" aria-label={`Status: ${c.available ? "Available" : "Busy"}`} style={{ fontSize: 8, fontWeight: 900, color: c.available ? "var(--green)" : "var(--muted)" }}>{c.available ? "AVAILABLE" : "BUSY"}</span>
                 </div>
                 <div style={{ fontSize: 9, color: "var(--muted)" }}>{c.company} &bull; {c.trade}</div>
               </div>
@@ -84,7 +84,7 @@ export default function ElectricalPage() {
             <div key={l.title} style={{ background: "var(--surface)", borderRadius: 8, padding: 12, marginBottom: 6 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
                 <span style={{ fontSize: 11, fontWeight: 800 }}>{l.title}</span>
-                <span style={{ fontSize: 8, fontWeight: 900, color: l.urgency === "HIGH" ? "var(--red)" : l.urgency === "MEDIUM" ? "var(--gold)" : "var(--green)" }}>{l.urgency}</span>
+                <span role="status" aria-label={`Urgency: ${l.urgency}`} style={{ fontSize: 8, fontWeight: 900, color: l.urgency === "HIGH" ? "var(--red)" : l.urgency === "MEDIUM" ? "var(--gold)" : "var(--green)" }}>{l.urgency}</span>
               </div>
               <div style={{ display: "flex", gap: 10, fontSize: 9, color: "var(--muted)" }}>
                 <span>{l.trade}</span><span>{l.location}</span><span style={{ color: "var(--gold)" }}>{l.budget}</span><span>{l.bids} bids</span>
@@ -100,7 +100,7 @@ export default function ElectricalPage() {
             <div key={f.name} style={{ background: "var(--surface)", borderRadius: 8, padding: 12, marginBottom: 6 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
                 <span style={{ fontSize: 11, fontWeight: 800 }}>{f.name}</span>
-                <span style={{ fontSize: 8, fontWeight: 900, color: f.status === "COMPLETE" ? "var(--green)" : f.status === "IN PROGRESS" ? "var(--cyan)" : "var(--gold)" }}>{f.status}</span>
+                <span role="status" aria-label={`Status: ${f.status}`} style={{ fontSize: 8, fontWeight: 900, color: f.status === "COMPLETE" ? "var(--green)" : f.status === "IN PROGRESS" ? "var(--cyan)" : "var(--gold)" }}>{f.status}</span>
               </div>
               <div style={{ display: "flex", gap: 10, fontSize: 9, color: "var(--muted)" }}>
                 <span>{f.isp}</span><span>{f.units} units</span>

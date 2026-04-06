@@ -108,7 +108,7 @@ export default function SchedulePage() {
                   <div style={{ fontSize: 8, color: "var(--muted)" }}>Week {m.week}</div>
                 </div>
               </div>
-              <span style={{ fontSize: 8, fontWeight: 900, color: m.status === "DONE" ? "var(--green)" : m.status === "IN PROGRESS" ? "var(--cyan)" : "var(--muted)" }}>{m.status}</span>
+              <span role="status" aria-label={`Status: ${m.status}`} style={{ fontSize: 8, fontWeight: 900, color: m.status === "DONE" ? "var(--green)" : m.status === "IN PROGRESS" ? "var(--cyan)" : "var(--muted)" }}>{m.status}</span>
             </div>
           ))}
         </div>
