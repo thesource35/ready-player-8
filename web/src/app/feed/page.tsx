@@ -77,38 +77,70 @@ export default function FeedPage() {
   const [posts, setPosts] = useState(feedPosts);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const mapPost = (p: Record<string, unknown>) => ({
+    name: (p.name as string) || (p.author_name as string) || "",
+    title: (p.title as string) || (p.author_title as string) || "",
+    company: (p.company as string) || (p.author_company as string) || "",
+    initials: (p.initials as string) || ((p.author_name as string) || "").split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase(),
+    verified: (p.verified as boolean) ?? true,
+    content: (p.content as string) || "",
+    tags: (p.tags as string[]) || [],
+    likes: (p.likes as number) || 0,
+    comments: (p.comments as number) || 0,
+    shares: (p.shares as number) || 0,
+    time: (p.time as string) || (p.created_at as string) || "",
+    type: (p.type as string) || (p.post_type as string) || "update",
+    photos: (p.photos as number) || (p.photo_count as number) || 0,
+    trade: (p.trade as string) || "General",
+    location: (p.location as string) || "",
+  });
 
   useEffect(() => {
     setIsLoading(true);
-    fetch("/api/feed")
+    fetch("/api/feed?page=0")
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((data: Record<string, unknown>[]) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setPosts(data.map(p => ({
-            name: (p.name as string) || (p.author_name as string) || "",
-            title: (p.title as string) || (p.author_title as string) || "",
-            company: (p.company as string) || (p.author_company as string) || "",
-            initials: (p.initials as string) || ((p.author_name as string) || "").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
-            verified: (p.verified as boolean) ?? true,
-            content: (p.content as string) || "",
-            tags: (p.tags as string[]) || [],
-            likes: (p.likes as number) || 0,
-            comments: (p.comments as number) || 0,
-            shares: (p.shares as number) || 0,
-            time: (p.time as string) || (p.created_at as string) || "",
-            type: (p.type as string) || (p.post_type as string) || "update",
-            photos: (p.photos as number) || (p.photo_count as number) || 0,
-            trade: (p.trade as string) || "General",
-            location: (p.location as string) || "",
-          })));
+      .then((result: Record<string, unknown> | Record<string, unknown>[]) => {
+        if (Array.isArray(result)) {
+          if (result.length > 0) setPosts(result.map(mapPost));
+          setHasMore(false);
+        } else {
+          const items = result.data as Record<string, unknown>[] | undefined;
+          if (Array.isArray(items) && items.length > 0) setPosts(items.map(mapPost));
+          setHasMore((result.hasMore as boolean) || false);
         }
         setIsLoading(false);
       })
       .catch(() => { setError("Failed to load feed"); setIsLoading(false); });
   }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const res = await fetch(`/api/feed?page=${nextPage}`);
+      const result = await res.json();
+      if (Array.isArray(result)) {
+        setPosts(prev => [...prev, ...result.map(mapPost)]);
+        setHasMore(false);
+      } else {
+        const items = result.data as Record<string, unknown>[] | undefined;
+        setPosts(prev => [...prev, ...(items || []).map(mapPost)]);
+        setHasMore(result.hasMore || false);
+      }
+      setPage(nextPage);
+    } catch {
+      // Silently fail — user can retry
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const filteredPosts = feedFilter === "all" ? posts : posts.filter(p =>
     feedFilter === "hiring" ? p.type === "hiring" :
@@ -233,6 +265,28 @@ export default function FeedPage() {
               </div>
             </div>
           ))}
+
+          {hasMore && (
+            <div style={{ textAlign: "center", padding: "20px 0" }}>
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                style={{
+                  background: "var(--accent, #FCC757)",
+                  color: "#0A1A2A",
+                  border: "none",
+                  borderRadius: 8,
+                  padding: "10px 28px",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: loadingMore ? "wait" : "pointer",
+                  opacity: loadingMore ? 0.6 : 1,
+                }}
+              >
+                {loadingMore ? "Loading..." : "Load More"}
+              </button>
+            </div>
+          )}
         </>
       )}
 

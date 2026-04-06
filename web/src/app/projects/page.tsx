@@ -39,33 +39,65 @@ export default function ProjectsPage() {
   const [addLoading, setAddLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const mapProject = (p: Record<string, unknown>): Project => ({
+    name: (p.name as string) || "",
+    client: (p.client as string) || "",
+    type: (p.type as string) || "",
+    status: (p.status as string) || "On Track",
+    progress: (p.progress as number) || 0,
+    budget: (p.budget as string) || "$0",
+    score: Number(p.score) || 0,
+    superintendent: (p.superintendent as string) || (p.team as string) || "Unassigned",
+    startDate: (p.startDate as string) || (p.start_date as string) || "TBD",
+    endDate: (p.endDate as string) || (p.end_date as string) || "TBD",
+  });
 
   useEffect(() => {
     setIsLoading(true);
-    fetch("/api/projects")
+    fetch("/api/projects?page=0")
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((data: Record<string, unknown>[]) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setProjectList(data.map(p => ({
-            name: (p.name as string) || "",
-            client: (p.client as string) || "",
-            type: (p.type as string) || "",
-            status: (p.status as string) || "On Track",
-            progress: (p.progress as number) || 0,
-            budget: (p.budget as string) || "$0",
-            score: Number(p.score) || 0,
-            superintendent: (p.superintendent as string) || (p.team as string) || "Unassigned",
-            startDate: (p.startDate as string) || (p.start_date as string) || "TBD",
-            endDate: (p.endDate as string) || (p.end_date as string) || "TBD",
-          })));
+      .then((result: Record<string, unknown> | Record<string, unknown>[]) => {
+        if (Array.isArray(result)) {
+          if (result.length > 0) setProjectList(result.map(mapProject));
+          setHasMore(false);
+        } else {
+          const items = result.data as Record<string, unknown>[] | undefined;
+          if (Array.isArray(items) && items.length > 0) setProjectList(items.map(mapProject));
+          setHasMore((result.hasMore as boolean) || false);
         }
         setIsLoading(false);
       })
       .catch(() => { setError("Failed to load projects"); setIsLoading(false); });
   }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const res = await fetch(`/api/projects?page=${nextPage}`);
+      const result = await res.json();
+      if (Array.isArray(result)) {
+        setProjectList(prev => [...prev, ...result.map(mapProject)]);
+        setHasMore(false);
+      } else {
+        const items = result.data as Record<string, unknown>[] | undefined;
+        setProjectList(prev => [...prev, ...(items || []).map(mapProject)]);
+        setHasMore(result.hasMore || false);
+      }
+      setPage(nextPage);
+    } catch {
+      // Silently fail — user can retry
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const statusFilters = ["All", "On Track", "Ahead", "Delayed", "At Risk"];
   const projects = projectList.filter(p => {
@@ -236,6 +268,28 @@ export default function ProjectsPage() {
           </div>
         ))}
       </div>
+
+      {hasMore && (
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            style={{
+              background: "var(--accent, #FCC757)",
+              color: "#0A1A2A",
+              border: "none",
+              borderRadius: 8,
+              padding: "10px 28px",
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: loadingMore ? "wait" : "pointer",
+              opacity: loadingMore ? 0.6 : 1,
+            }}
+          >
+            {loadingMore ? "Loading..." : "Load More"}
+          </button>
+        </div>
+      )}
     </div>
     </PremiumFeatureGate>
   );

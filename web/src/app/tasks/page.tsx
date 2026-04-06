@@ -47,31 +47,55 @@ export default function TasksPage() {
   const [dismissedReminders, setDismissedReminders] = useState<Set<number>>(new Set());
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const mapTodo = (t: Record<string, unknown>, i: number) => ({
+    id: (t.id as string) || String(i + 1),
+    title: (t.title as string) || "",
+    desc: (t.desc as string) || (t.description as string) || "",
+    priority: ((t.priority as string) || "medium") as Priority,
+    status: (t.status as string) || "pending",
+    category: (t.category as string) || "ops",
+    project: (t.project as string) || "",
+    due: (t.due as string) || (t.due_date as string) || "",
+    time: (t.time as string) || "",
+  });
 
   useEffect(() => {
-    fetch("/api/tasks")
+    fetch("/api/tasks?page=0")
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((data: { todos?: Record<string, unknown>[]; events?: Record<string, unknown>[]; reminders?: Record<string, unknown>[] }) => {
+      .then((data: { todos?: Record<string, unknown>[]; events?: Record<string, unknown>[]; reminders?: Record<string, unknown>[]; hasMore?: boolean }) => {
         if (data.todos && Array.isArray(data.todos) && data.todos.length > 0) {
-          setTodos(data.todos.map((t, i) => ({
-            id: (t.id as string) || String(i + 1),
-            title: (t.title as string) || "",
-            desc: (t.desc as string) || (t.description as string) || "",
-            priority: ((t.priority as string) || "medium") as Priority,
-            status: (t.status as string) || "pending",
-            category: (t.category as string) || "ops",
-            project: (t.project as string) || "",
-            due: (t.due as string) || (t.due_date as string) || "",
-            time: (t.time as string) || "",
-          })));
+          setTodos(data.todos.map(mapTodo));
         }
+        setHasMore(data.hasMore || false);
       })
       .catch((err) => { setFetchError(`Failed to load tasks: ${err.message}`); })
       .finally(() => { setLoading(false); });
   }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const res = await fetch(`/api/tasks?page=${nextPage}`);
+      const data = await res.json();
+      if (data.todos && Array.isArray(data.todos)) {
+        setTodos(prev => [...prev, ...data.todos.map(mapTodo)]);
+      }
+      setHasMore(data.hasMore || false);
+      setPage(nextPage);
+    } catch {
+      // Silently fail — user can retry
+    } finally {
+      setLoadingMore(false);
+    }
+  };
   const tabs = ["Tasks", "Schedule", "AI Reminders"];
 
   const filteredTodos = filter === "all" ? todos : todos.filter(t => t.category === filter);
@@ -157,6 +181,28 @@ export default function TasksPage() {
               </div>
             </div>
           ))}
+
+          {hasMore && (
+            <div style={{ textAlign: "center", padding: "20px 0" }}>
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                style={{
+                  background: "var(--accent, #FCC757)",
+                  color: "#0A1A2A",
+                  border: "none",
+                  borderRadius: 8,
+                  padding: "10px 28px",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: loadingMore ? "wait" : "pointer",
+                  opacity: loadingMore ? 0.6 : 1,
+                }}
+              >
+                {loadingMore ? "Loading..." : "Load More"}
+              </button>
+            </div>
+          )}
         </>
       )}
 

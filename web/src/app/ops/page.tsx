@@ -65,23 +65,29 @@ export default function OpsPage() {
   const [panels, setPanels] = useState<Panel[]>(fallbackPanels);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const mapAlert = (a: Record<string, unknown>): Alert => ({
+    title: (a.title as string) || "",
+    detail: (a.detail as string) || (a.description as string) || "",
+    owner: (a.owner as string) || "",
+    severity: (a.severity as number) || 1,
+    due: (a.due as string) || (a.due_date as string) || "",
+  });
 
   useEffect(() => {
-    fetch("/api/ops")
+    fetch("/api/ops?page=0")
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((data: { alerts?: Record<string, unknown>[]; rfis?: Record<string, unknown>[]; changeOrders?: Record<string, unknown>[] }) => {
+      .then((data: { alerts?: Record<string, unknown>[]; rfis?: Record<string, unknown>[]; changeOrders?: Record<string, unknown>[]; hasMore?: boolean }) => {
         if (data.alerts && data.alerts.length > 0) {
-          setAlerts(data.alerts.map(a => ({
-            title: (a.title as string) || "",
-            detail: (a.detail as string) || (a.description as string) || "",
-            owner: (a.owner as string) || "",
-            severity: (a.severity as number) || 1,
-            due: (a.due as string) || (a.due_date as string) || "",
-          })));
+          setAlerts(data.alerts.map(mapAlert));
         }
+        setHasMore(data.hasMore || false);
         const newPanels: Panel[] = [];
         if (data.changeOrders && data.changeOrders.length > 0) {
           newPanels.push({ title: "Change Orders", items: data.changeOrders.map(c => ({
@@ -109,6 +115,24 @@ export default function OpsPage() {
       .catch((err) => { setFetchError(`Failed to load ops data: ${err.message}`); })
       .finally(() => { setLoading(false); });
   }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const res = await fetch(`/api/ops?page=${nextPage}`);
+      const data = await res.json();
+      if (data.alerts && Array.isArray(data.alerts)) {
+        setAlerts(prev => [...prev, ...data.alerts.map(mapAlert)]);
+      }
+      setHasMore(data.hasMore || false);
+      setPage(nextPage);
+    } catch {
+      // Silently fail — user can retry
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const sevColor = (s: number) => s >= 3 ? "var(--red)" : s === 2 ? "var(--gold)" : "var(--cyan)";
   const sevLabel = (s: number) => s >= 3 ? "CRITICAL" : s === 2 ? "HIGH" : "NORMAL";
@@ -170,6 +194,28 @@ export default function OpsPage() {
           </div>
         ))}
       </div>
+
+      {hasMore && (
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            style={{
+              background: "var(--accent, #FCC757)",
+              color: "#0A1A2A",
+              border: "none",
+              borderRadius: 8,
+              padding: "10px 28px",
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: loadingMore ? "wait" : "pointer",
+              opacity: loadingMore ? 0.6 : 1,
+            }}
+          >
+            {loadingMore ? "Loading..." : "Load More"}
+          </button>
+        </div>
+      )}
 
       {/* Action Queue */}
       <h2 style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, color: "var(--cyan)", marginBottom: 10 }}>ACTION QUEUE</h2>

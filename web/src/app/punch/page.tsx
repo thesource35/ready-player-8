@@ -37,31 +37,63 @@ function PunchPageContent() {
   const [items, setItems] = useState<PunchItem[]>(fallbackItems);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const mapPunchItem = (p: Record<string, unknown>, i: number): PunchItem => ({
+    id: (p.id as string) || `PL-${String(i + 1).padStart(3, "0")}`,
+    description: (p.description as string) || "",
+    location: (p.location as string) || "",
+    trade: (p.trade as string) || "",
+    priority: (p.priority as string) || "MEDIUM",
+    status: (p.status as string) || "OPEN",
+    assignee: (p.assignee as string) || "",
+    dueDate: (p.dueDate as string) || (p.due_date as string) || "",
+    photos: (p.photos as number) || (p.photo_count as number) || 0,
+  });
 
   useEffect(() => {
-    fetch("/api/punch")
+    fetch("/api/punch?page=0")
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((data: Record<string, unknown>[]) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setItems(data.map((p, i) => ({
-            id: (p.id as string) || `PL-${String(i + 1).padStart(3, "0")}`,
-            description: (p.description as string) || "",
-            location: (p.location as string) || "",
-            trade: (p.trade as string) || "",
-            priority: (p.priority as string) || "MEDIUM",
-            status: (p.status as string) || "OPEN",
-            assignee: (p.assignee as string) || "",
-            dueDate: (p.dueDate as string) || (p.due_date as string) || "",
-            photos: (p.photos as number) || (p.photo_count as number) || 0,
-          })));
+      .then((result: Record<string, unknown> | Record<string, unknown>[]) => {
+        if (Array.isArray(result)) {
+          if (result.length > 0) setItems(result.map(mapPunchItem));
+          setHasMore(false);
+        } else {
+          const data = result.data as Record<string, unknown>[] | undefined;
+          if (Array.isArray(data) && data.length > 0) setItems(data.map(mapPunchItem));
+          setHasMore((result.hasMore as boolean) || false);
         }
       })
       .catch((err) => { setFetchError(`Failed to load punch items: ${err.message}`); })
       .finally(() => { setLoading(false); });
   }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const res = await fetch(`/api/punch?page=${nextPage}`);
+      const result = await res.json();
+      if (Array.isArray(result)) {
+        setItems(prev => [...prev, ...result.map(mapPunchItem)]);
+        setHasMore(false);
+      } else {
+        const data = result.data as Record<string, unknown>[] | undefined;
+        setItems(prev => [...prev, ...(data || []).map(mapPunchItem)]);
+        setHasMore(result.hasMore || false);
+      }
+      setPage(nextPage);
+    } catch {
+      // Silently fail — user can retry
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const open = items.filter(i => i.status === "OPEN").length;
   const inProgress = items.filter(i => i.status === "IN PROGRESS").length;
@@ -130,6 +162,28 @@ function PunchPageContent() {
           </div>
         </div>
       ))}
+
+      {hasMore && (
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            style={{
+              background: "var(--accent, #FCC757)",
+              color: "#0A1A2A",
+              border: "none",
+              borderRadius: 8,
+              padding: "10px 28px",
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: loadingMore ? "wait" : "pointer",
+              opacity: loadingMore ? 0.6 : 1,
+            }}
+          >
+            {loadingMore ? "Loading..." : "Load More"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

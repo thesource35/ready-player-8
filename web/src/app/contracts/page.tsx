@@ -31,33 +31,65 @@ export default function ContractsPage() {
   const [allContracts, setAllContracts] = useState<Contract[]>(fallbackContracts);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const stageFilters = ["All", "Pursuit", "Prequalifying Teams", "Open For Bid", "Negotiation", "Awarded", "Lost"];
+
+  const mapContract = (c: Record<string, unknown>): Contract => ({
+    title: (c.title as string) || "",
+    client: (c.client as string) || "",
+    sector: (c.sector as string) || "",
+    stage: (c.stage as string) || "",
+    value: (c.value as string) || (c.budget as string) || "",
+    score: (c.score as number) || 0,
+    watchCount: (c.watchCount as number) || (c.watch_count as number) || 0,
+    location: (c.location as string) || "",
+    deadline: (c.deadline as string) || (c.bid_due as string) || "N/A",
+  });
 
   useEffect(() => {
     setIsLoading(true);
-    fetch("/api/contracts")
+    fetch("/api/contracts?page=0")
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((data: Record<string, unknown>[]) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setAllContracts(data.map(c => ({
-            title: (c.title as string) || "",
-            client: (c.client as string) || "",
-            sector: (c.sector as string) || "",
-            stage: (c.stage as string) || "",
-            value: (c.value as string) || (c.budget as string) || "",
-            score: (c.score as number) || 0,
-            watchCount: (c.watchCount as number) || (c.watch_count as number) || 0,
-            location: (c.location as string) || "",
-            deadline: (c.deadline as string) || (c.bid_due as string) || "N/A",
-          })));
+      .then((result: Record<string, unknown> | Record<string, unknown>[]) => {
+        if (Array.isArray(result)) {
+          if (result.length > 0) setAllContracts(result.map(mapContract));
+          setHasMore(false);
+        } else {
+          const items = result.data as Record<string, unknown>[] | undefined;
+          if (Array.isArray(items) && items.length > 0) setAllContracts(items.map(mapContract));
+          setHasMore((result.hasMore as boolean) || false);
         }
         setIsLoading(false);
       })
       .catch(() => { setError("Failed to load contracts"); setIsLoading(false); });
   }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const res = await fetch(`/api/contracts?page=${nextPage}`);
+      const result = await res.json();
+      if (Array.isArray(result)) {
+        setAllContracts(prev => [...prev, ...result.map(mapContract)]);
+        setHasMore(false);
+      } else {
+        const items = result.data as Record<string, unknown>[] | undefined;
+        setAllContracts(prev => [...prev, ...(items || []).map(mapContract)]);
+        setHasMore(result.hasMore || false);
+      }
+      setPage(nextPage);
+    } catch {
+      // Silently fail — user can retry
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const contracts = allContracts.filter(c => {
     const matchesSearch = !search || c.title.toLowerCase().includes(search.toLowerCase()) || c.client.toLowerCase().includes(search.toLowerCase()) || c.sector.toLowerCase().includes(search.toLowerCase());
@@ -139,6 +171,28 @@ export default function ContractsPage() {
           </div>
         ))}
       </div>
+
+      {hasMore && (
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            style={{
+              background: "var(--accent, #FCC757)",
+              color: "#0A1A2A",
+              border: "none",
+              borderRadius: 8,
+              padding: "10px 28px",
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: loadingMore ? "wait" : "pointer",
+              opacity: loadingMore ? 0.6 : 1,
+            }}
+          >
+            {loadingMore ? "Loading..." : "Load More"}
+          </button>
+        </div>
+      )}
     </div>
     </PremiumFeatureGate>
   );
