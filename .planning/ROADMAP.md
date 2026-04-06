@@ -138,9 +138,9 @@ Plans:
   5. Single rate limiting implementation across all routes; all protected routes use same getAuthenticatedClient() pattern; chat route uses AI SDK instead of raw fetch
 **Plans:** 3 plans
 Plans:
-- [ ] 07-01-PLAN.md — Chat route AI SDK migration, export 503 fix, Jobs validation, env startup instrumentation
-- [ ] 07-02-PLAN.md — CRUD routes req.json() try/catch, POST 201 status, DELETE error codes, auth consistency
-- [ ] 07-03-PLAN.md — Client-side error visibility on tasks, punch, and ops pages
+- [x] 07-01-PLAN.md — Chat route AI SDK migration, export 503 fix, Jobs validation, env startup instrumentation
+- [x] 07-02-PLAN.md — CRUD routes req.json() try/catch, POST 201 status, DELETE error codes, auth consistency
+- [x] 07-03-PLAN.md — Client-side error visibility on tasks, punch, and ops pages
 
 ### Phase 8: Web UX & Loading States
 **Goal**: Every web page handles errors visibly with error boundaries, shows loading/empty states, and gates premium features consistently
@@ -152,7 +152,11 @@ Plans:
   3. AI page shows loading indicator during initial load; punch/ops/tasks pages show loading indicators during fetch
   4. AngelicPromptToggle checks typeof window before localStorage access (no SSR crash)
   5. Punch and trust pages are wrapped with PremiumFeatureGate
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 08-01-PLAN.md — Error boundaries for all 23 unprotected pages
+- [ ] 08-02-PLAN.md — Loading indicators and empty/unavailable states for maps, jobs, ai, punch, ops, tasks
+- [ ] 08-03-PLAN.md — SSR safety fix for AngelicPromptToggle and PremiumFeatureGate on punch/trust pages
 **UI hint**: yes
 
 ### Phase 9: Web Performance & Dynamic Content
@@ -222,7 +226,7 @@ Phases 11, 12 execute last (after the code they test is stable).
 | 5. iOS Error Handling & State Persistence | 0/4 | Planned | - |
 | 6. Web Security & Validation | 0/3 | Planned | - |
 | 7. Web Error Handling & Consistency | 0/3 | Planned | - |
-| 8. Web UX & Loading States | 0/TBD | Not started | - |
+| 8. Web UX & Loading States | 0/3 | Planned | - |
 | 9. Web Performance & Dynamic Content | 0/TBD | Not started | - |
 | 10. Accessibility & SEO | 0/TBD | Not started | - |
 | 11. iOS Tests | 0/TBD | Not started | - |
