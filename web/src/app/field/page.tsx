@@ -96,7 +96,7 @@ export default function FieldPage() {
                   <span style={{ fontSize: 11, fontWeight: 800 }}>{e.name}</span>
                   <span style={{ fontSize: 9, color: "var(--muted)", marginLeft: 6 }}>{e.tag}</span>
                 </div>
-                <span style={{ fontSize: 8, fontWeight: 900, color: e.status === "ACTIVE" ? "var(--green)" : e.status === "SERVICE DUE" ? "var(--gold)" : "var(--muted)" }}>{e.status}</span>
+                <span role="status" aria-label={`Status: ${e.status}`} style={{ fontSize: 8, fontWeight: 900, color: e.status === "ACTIVE" ? "var(--green)" : e.status === "SERVICE DUE" ? "var(--gold)" : "var(--muted)" }}>{e.status}</span>
               </div>
               <div style={{ display: "flex", gap: 10, fontSize: 9, color: "var(--muted)", marginTop: 4 }}>
                 <span>{e.category}</span><span>{e.site}</span><span>{e.hours} hrs</span><span>Next: {e.nextService}</span>
@@ -110,7 +110,7 @@ export default function FieldPage() {
             <div key={p.number} style={{ background: "var(--surface)", borderRadius: 8, padding: 12, marginBottom: 6 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 11, fontWeight: 800 }}>{p.number}</span>
-                <span style={{ fontSize: 8, fontWeight: 900, color: p.status === "ACTIVE" ? "var(--green)" : "var(--gold)" }}>{p.status}</span>
+                <span role="status" aria-label={`Status: ${p.status}`} style={{ fontSize: 8, fontWeight: 900, color: p.status === "ACTIVE" ? "var(--green)" : "var(--gold)" }}>{p.status}</span>
               </div>
               <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 2 }}>{p.type} &bull; {p.jurisdiction} &bull; {p.site}</div>
               <div style={{ display: "flex", gap: 10, fontSize: 9, color: "var(--muted)", marginTop: 2 }}>

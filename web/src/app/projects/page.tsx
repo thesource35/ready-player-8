@@ -188,10 +188,10 @@ export default function ProjectsPage() {
         <div style={{ background: "var(--surface)", borderRadius: 12, padding: 16, marginBottom: 16, border: "1px solid rgba(74,196,204,0.12)" }}>
           <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, color: "var(--accent)", marginBottom: 10 }}>NEW PROJECT</div>
           <div style={{ display: "grid", gridTemplateColumns: "2fr 2fr 1fr 1fr", gap: 10 }}>
-            <input placeholder="Project name" maxLength={200} value={draftProject.name} onChange={e => setDraftProject(prev => ({ ...prev, name: e.target.value }))} />
-            <input placeholder="Client" maxLength={200} value={draftProject.client} onChange={e => setDraftProject(prev => ({ ...prev, client: e.target.value }))} />
-            <input placeholder="Type" maxLength={100} value={draftProject.type} onChange={e => setDraftProject(prev => ({ ...prev, type: e.target.value }))} />
-            <input placeholder="Budget" maxLength={50} value={draftProject.budget} onChange={e => setDraftProject(prev => ({ ...prev, budget: e.target.value }))} />
+            <div><label htmlFor="project-name" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Project name</label><input id="project-name" placeholder="Project name" maxLength={200} value={draftProject.name} onChange={e => setDraftProject(prev => ({ ...prev, name: e.target.value }))} /></div>
+            <div><label htmlFor="project-client" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Client</label><input id="project-client" placeholder="Client" maxLength={200} value={draftProject.client} onChange={e => setDraftProject(prev => ({ ...prev, client: e.target.value }))} /></div>
+            <div><label htmlFor="project-type" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Type</label><input id="project-type" placeholder="Type" maxLength={100} value={draftProject.type} onChange={e => setDraftProject(prev => ({ ...prev, type: e.target.value }))} /></div>
+            <div><label htmlFor="project-budget" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Budget</label><input id="project-budget" placeholder="Budget" maxLength={50} value={draftProject.budget} onChange={e => setDraftProject(prev => ({ ...prev, budget: e.target.value }))} /></div>
           </div>
           {addError && (
             <div style={{

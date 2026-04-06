@@ -122,7 +122,7 @@ export default function SettingsPage() {
             <span style={{ fontSize: 11, fontWeight: 800 }}>{i.name}</span>
             <span style={{ fontSize: 9, color: "var(--muted)", marginLeft: 8 }}>{i.desc}</span>
           </div>
-          <span style={{ fontSize: 8, fontWeight: 900, color: i.status === "CONNECTED" || i.status === "CONFIGURED" ? "var(--green)" : "var(--muted)" }}>{i.status}</span>
+          <span role="status" aria-label={`Status: ${i.status}`} style={{ fontSize: 8, fontWeight: 900, color: i.status === "CONNECTED" || i.status === "CONFIGURED" ? "var(--green)" : "var(--muted)" }}>{i.status}</span>
         </div>
       ))}
 

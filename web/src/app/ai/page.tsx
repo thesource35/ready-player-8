@@ -125,7 +125,9 @@ export default function AIPage() {
 
       {/* Input */}
       <div className="flex gap-2">
+        <label htmlFor="chat-input" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Message</label>
         <input
+          id="chat-input"
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && send()}

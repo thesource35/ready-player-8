@@ -80,7 +80,7 @@ export default function AnalyticsPage() {
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <span style={{ fontSize: 18, fontWeight: 900, color: t.actual >= t.benchmark ? "var(--green)" : "var(--red)" }}>{t.actual}</span>
-            <span style={{ fontSize: 10, fontWeight: 800, color: t.delta.startsWith("+") ? "var(--green)" : "var(--red)" }}>{t.delta}</span>
+            <span role="status" aria-label={`Performance: ${t.delta} vs benchmark`} style={{ fontSize: 10, fontWeight: 800, color: t.delta.startsWith("+") ? "var(--green)" : "var(--red)" }}>{t.delta}</span>
           </div>
         </div>
       ))}
@@ -92,7 +92,7 @@ export default function AnalyticsPage() {
         <div key={r.project} style={{ background: "var(--surface)", borderRadius: 10, padding: 14, marginBottom: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <span style={{ fontSize: 13, fontWeight: 800 }}>{r.project}</span>
-            <span style={{ fontSize: 16, fontWeight: 900, color: riskColor(r.score) }}>{r.score}/100</span>
+            <span role="status" aria-label={`Risk score: ${r.score} out of 100`} style={{ fontSize: 16, fontWeight: 900, color: riskColor(r.score) }}>{r.score}/100</span>
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
             {r.factors.map(f => (

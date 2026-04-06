@@ -45,25 +45,35 @@ export default function ProfilePage() {
 
       <div style={{ background: "var(--surface)", borderRadius: 14, padding: 20, marginBottom: 16 }}>
         <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, color: "var(--accent)", marginBottom: 12 }}>PERSONAL INFO</div>
-        <input placeholder="Full name" value={form.fullName} onChange={e => update("fullName", e.target.value)} maxLength={200} style={{ marginBottom: 10 }} />
-        <input placeholder="Email" type="email" value={form.email} onChange={e => update("email", e.target.value)} maxLength={254} style={{ marginBottom: 10 }} />
-        <input placeholder="Phone" value={form.phone} onChange={e => update("phone", e.target.value)} maxLength={20} style={{ marginBottom: 10 }} />
-        <input placeholder="Location" value={form.location} onChange={e => update("location", e.target.value)} maxLength={200} style={{ marginBottom: 10 }} />
-        <textarea placeholder="Bio" value={form.bio} onChange={e => update("bio", e.target.value)} maxLength={1000} style={{ marginBottom: 10, minHeight: 60 }} />
+        <label htmlFor="profile-fullname" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Full name</label>
+        <input id="profile-fullname" placeholder="Full name" value={form.fullName} onChange={e => update("fullName", e.target.value)} maxLength={200} style={{ marginBottom: 10 }} />
+        <label htmlFor="profile-email" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Email</label>
+        <input id="profile-email" placeholder="Email" type="email" value={form.email} onChange={e => update("email", e.target.value)} maxLength={254} style={{ marginBottom: 10 }} />
+        <label htmlFor="profile-phone" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Phone</label>
+        <input id="profile-phone" placeholder="Phone" value={form.phone} onChange={e => update("phone", e.target.value)} maxLength={20} style={{ marginBottom: 10 }} />
+        <label htmlFor="profile-location" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Location</label>
+        <input id="profile-location" placeholder="Location" value={form.location} onChange={e => update("location", e.target.value)} maxLength={200} style={{ marginBottom: 10 }} />
+        <label htmlFor="profile-bio" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Bio</label>
+        <textarea id="profile-bio" placeholder="Bio" value={form.bio} onChange={e => update("bio", e.target.value)} maxLength={1000} style={{ marginBottom: 10, minHeight: 60 }} />
       </div>
 
       <div style={{ background: "var(--surface)", borderRadius: 14, padding: 20, marginBottom: 16 }}>
         <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, color: "var(--cyan)", marginBottom: 12 }}>PROFESSIONAL INFO</div>
-        <input placeholder="Company name" value={form.company} onChange={e => update("company", e.target.value)} maxLength={200} style={{ marginBottom: 10 }} />
-        <input placeholder="Job title" value={form.title} onChange={e => update("title", e.target.value)} maxLength={100} style={{ marginBottom: 10 }} />
+        <label htmlFor="profile-company" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Company name</label>
+        <input id="profile-company" placeholder="Company name" value={form.company} onChange={e => update("company", e.target.value)} maxLength={200} style={{ marginBottom: 10 }} />
+        <label htmlFor="profile-title" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Job title</label>
+        <input id="profile-title" placeholder="Job title" value={form.title} onChange={e => update("title", e.target.value)} maxLength={100} style={{ marginBottom: 10 }} />
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
           {["General","Electrical","Concrete","Steel","Plumbing","HVAC","Roofing","Solar","Fiber","Crane"].map(t => (
             <span key={t} onClick={() => update("trade", t)} style={{ fontSize: 10, fontWeight: 700, padding: "5px 10px", borderRadius: 6, background: form.trade === t ? "var(--accent)" : "var(--panel)", color: form.trade === t ? "var(--bg)" : "var(--muted)", cursor: "pointer" }}>{t}</span>
           ))}
         </div>
-        <input placeholder="Years of experience" value={form.experience} onChange={e => update("experience", e.target.value)} maxLength={3} style={{ marginBottom: 10 }} />
-        <input placeholder="License number (optional)" value={form.licenseNumber} onChange={e => update("licenseNumber", e.target.value)} maxLength={50} style={{ marginBottom: 10 }} />
-        <input placeholder="License state" value={form.licenseState} onChange={e => update("licenseState", e.target.value)} maxLength={10} />
+        <label htmlFor="profile-experience" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Years of experience</label>
+        <input id="profile-experience" placeholder="Years of experience" value={form.experience} onChange={e => update("experience", e.target.value)} maxLength={3} style={{ marginBottom: 10 }} />
+        <label htmlFor="profile-license" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>License number</label>
+        <input id="profile-license" placeholder="License number (optional)" value={form.licenseNumber} onChange={e => update("licenseNumber", e.target.value)} maxLength={50} style={{ marginBottom: 10 }} />
+        <label htmlFor="profile-license-state" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>License state</label>
+        <input id="profile-license-state" placeholder="License state" value={form.licenseState} onChange={e => update("licenseState", e.target.value)} maxLength={10} />
       </div>
 
       <button onClick={handleSave} style={{ width: "100%", padding: "14px 0", borderRadius: 12, fontSize: 14, fontWeight: 800, color: "var(--bg)", background: "linear-gradient(90deg, var(--accent), var(--gold))", border: "none", cursor: "pointer" }}>SAVE PROFILE</button>

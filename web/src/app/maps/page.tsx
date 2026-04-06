@@ -148,7 +148,7 @@ export default function MapsPage() {
       {/* Overlay Toggles */}
       <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
         {overlays.map(o => (
-          <button key={o} onClick={() => toggleOverlay(o)} style={{ fontSize: 9, fontWeight: 800, padding: "5px 10px", borderRadius: 6, background: activeOverlays.has(o) ? "var(--cyan)" : "var(--surface)", color: activeOverlays.has(o) ? "var(--bg)" : "var(--muted)", cursor: "pointer", border: "none" }}>{o}</button>
+          <button key={o} onClick={() => toggleOverlay(o)} aria-label={`Toggle ${o.toLowerCase()} overlay`} aria-pressed={activeOverlays.has(o)} style={{ fontSize: 9, fontWeight: 800, padding: "5px 10px", borderRadius: 6, background: activeOverlays.has(o) ? "var(--cyan)" : "var(--surface)", color: activeOverlays.has(o) ? "var(--bg)" : "var(--muted)", cursor: "pointer", border: "none" }}>{o}</button>
         ))}
       </div>
 
@@ -171,7 +171,7 @@ export default function MapsPage() {
             <div key={s.name} style={{ background: "var(--surface)", borderRadius: 10, padding: 12, marginBottom: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                 <span style={{ fontSize: 12, fontWeight: 800 }}>{s.name}</span>
-                <span style={{ fontSize: 8, fontWeight: 900, color: s.status === "ACTIVE" ? "var(--green)" : s.status === "DELAYED" ? "var(--red)" : "var(--gold)" }}>{s.status}</span>
+                <span role="status" aria-label={`Status: ${s.status}`} style={{ fontSize: 8, fontWeight: 900, color: s.status === "ACTIVE" ? "var(--green)" : s.status === "DELAYED" ? "var(--red)" : "var(--gold)" }}>{s.status}</span>
               </div>
               <div style={{ display: "flex", gap: 12, fontSize: 10, color: "var(--muted)" }}>
                 <span>{s.crews} crews</span>

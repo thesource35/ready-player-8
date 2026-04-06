@@ -119,20 +119,24 @@ export default function RentalsPage() {
 
           <div className="rounded-xl p-4 mb-4" style={{ background: "#0F1C24" }}>
             <div className="text-[10px] font-black tracking-[0.15em] text-[#F29E3D] mb-3">EQUIPMENT DETAILS</div>
-            <input placeholder="Equipment type (e.g., 20-ton Excavator)" value={form.equipmentType} onChange={e => update("equipmentType", e.target.value)} maxLength={200} className="mb-3" />
-            <select value={form.category} onChange={e => update("category", e.target.value)} className="mb-3">
+            <label htmlFor="rental-equipment" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Equipment type</label>
+            <input id="rental-equipment" placeholder="Equipment type (e.g., 20-ton Excavator)" value={form.equipmentType} onChange={e => update("equipmentType", e.target.value)} maxLength={200} className="mb-3" />
+            <label htmlFor="rental-category" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Category</label>
+            <select id="rental-category" value={form.category} onChange={e => update("category", e.target.value)} className="mb-3">
               <option value="">Select category</option>
               {categories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             <div className="flex gap-3">
-              <input placeholder="Quantity" type="number" min="1" value={form.quantity} onChange={e => update("quantity", e.target.value)} maxLength={4} className="mb-3" style={{ width: "30%" }} />
-              <select value={form.rentalDuration} onChange={e => update("rentalDuration", e.target.value)} className="mb-3" style={{ width: "70%" }}>
+              <div style={{ width: "30%" }}><label htmlFor="rental-quantity" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Quantity</label><input id="rental-quantity" placeholder="Quantity" type="number" min="1" value={form.quantity} onChange={e => update("quantity", e.target.value)} maxLength={4} className="mb-3" /></div>
+              <div style={{ width: "70%" }}><label htmlFor="rental-duration" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Rental duration</label><select id="rental-duration" value={form.rentalDuration} onChange={e => update("rentalDuration", e.target.value)} className="mb-3">
                 <option value="">Rental duration</option>
                 {durations.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
+              </select></div>
             </div>
-            <input placeholder="Start date (e.g., Apr 15, 2026)" value={form.rentalStart} onChange={e => update("rentalStart", e.target.value)} maxLength={50} className="mb-3" />
-            <select value={form.budgetRange} onChange={e => update("budgetRange", e.target.value)}>
+            <label htmlFor="rental-start" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Start date</label>
+            <input id="rental-start" placeholder="Start date (e.g., Apr 15, 2026)" value={form.rentalStart} onChange={e => update("rentalStart", e.target.value)} maxLength={50} className="mb-3" />
+            <label htmlFor="rental-budget" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Budget range</label>
+            <select id="rental-budget" value={form.budgetRange} onChange={e => update("budgetRange", e.target.value)}>
               <option value="">Budget range</option>
               {budgets.map(b => <option key={b} value={b}>{b}</option>)}
             </select>
@@ -140,23 +144,30 @@ export default function RentalsPage() {
 
           <div className="rounded-xl p-4 mb-4" style={{ background: "#0F1C24" }}>
             <div className="text-[10px] font-black tracking-[0.15em] text-[#4AC4CC] mb-3">PROJECT INFO</div>
-            <input placeholder="Project name" value={form.projectName} onChange={e => update("projectName", e.target.value)} maxLength={300} className="mb-3" />
-            <input placeholder="Project location (city, state)" value={form.projectLocation} onChange={e => update("projectLocation", e.target.value)} maxLength={300} className="mb-3" />
+            <label htmlFor="rental-project-name" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Project name</label>
+            <input id="rental-project-name" placeholder="Project name" value={form.projectName} onChange={e => update("projectName", e.target.value)} maxLength={300} className="mb-3" />
+            <label htmlFor="rental-project-location" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Project location</label>
+            <input id="rental-project-location" placeholder="Project location (city, state)" value={form.projectLocation} onChange={e => update("projectLocation", e.target.value)} maxLength={300} className="mb-3" />
             <div className="flex items-center gap-3 mb-3">
               <label className="flex items-center gap-2 text-xs cursor-pointer">
                 <input type="checkbox" checked={form.deliveryNeeded} onChange={e => update("deliveryNeeded", e.target.checked)} />
                 Delivery to jobsite needed
               </label>
             </div>
-            <textarea placeholder="Additional notes (specific specs, attachments needed, etc.)" value={form.notes} onChange={e => update("notes", e.target.value)} maxLength={2000} className="min-h-[60px]" />
+            <label htmlFor="rental-notes" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Additional notes</label>
+            <textarea id="rental-notes" placeholder="Additional notes (specific specs, attachments needed, etc.)" value={form.notes} onChange={e => update("notes", e.target.value)} maxLength={2000} className="min-h-[60px]" />
           </div>
 
           <div className="rounded-xl p-4 mb-4" style={{ background: "#0F1C24" }}>
             <div className="text-[10px] font-black tracking-[0.15em] text-[#69D294] mb-3">YOUR CONTACT INFO</div>
-            <input placeholder="Full name *" value={form.fullName} onChange={e => update("fullName", e.target.value)} maxLength={200} className="mb-3" />
-            <input placeholder="Email address *" type="email" value={form.email} onChange={e => update("email", e.target.value)} maxLength={254} className="mb-3" />
-            <input placeholder="Phone number" type="tel" value={form.phone} onChange={e => update("phone", e.target.value)} maxLength={20} className="mb-3" />
-            <input placeholder="Company name" value={form.company} onChange={e => update("company", e.target.value)} maxLength={200} />
+            <label htmlFor="rental-fullname" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Full name</label>
+            <input id="rental-fullname" placeholder="Full name *" value={form.fullName} onChange={e => update("fullName", e.target.value)} maxLength={200} className="mb-3" />
+            <label htmlFor="rental-email" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Email address</label>
+            <input id="rental-email" placeholder="Email address *" type="email" value={form.email} onChange={e => update("email", e.target.value)} maxLength={254} className="mb-3" />
+            <label htmlFor="rental-phone" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Phone number</label>
+            <input id="rental-phone" placeholder="Phone number" type="tel" value={form.phone} onChange={e => update("phone", e.target.value)} maxLength={20} className="mb-3" />
+            <label htmlFor="rental-company" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Company name</label>
+            <input id="rental-company" placeholder="Company name" value={form.company} onChange={e => update("company", e.target.value)} maxLength={200} />
           </div>
 
           {validationError && <div className="mb-3 p-3 rounded-lg text-xs font-bold text-center" style={{ background: 'rgba(217,77,72,0.1)', color: '#D94D48' }}>{validationError}</div>}
@@ -202,7 +213,7 @@ export default function RentalsPage() {
         ))}
       </div>
 
-      <div className="mb-4"><input placeholder="Search equipment, tools, vehicles..." className="w-full" /></div>
+      <div className="mb-4"><label htmlFor="rental-search" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Search equipment</label><input id="rental-search" aria-label="Search equipment" placeholder="Search equipment, tools, vehicles..." className="w-full" /></div>
 
       <div className="flex gap-2 overflow-x-auto pb-3 mb-6" style={{ scrollbarWidth: "none" }}>
         <span className="text-xs font-bold px-3 py-1.5 rounded-md cursor-pointer text-black shrink-0" style={{ background: "#F29E3D" }}>ALL</span>
