@@ -617,7 +617,7 @@ struct ContentView: View {
         Group {
             if profileStore.currentUser == nil {
                 // Login/Signup is ALWAYS the first screen — must have account to access app
-                AuthGateView(supabase: supabase)
+                AuthGateView()
             } else if !onboardingComplete {
                 OnboardingView(isComplete: $onboardingComplete)
             } else if BiometricAuthManager.shared.biometricEnabled && !biometricUnlocked {

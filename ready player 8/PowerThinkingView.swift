@@ -12,8 +12,8 @@ struct PowerThinkingView: View {
     @AppStorage("ConstructOS.Wealth.CustomScenariosRaw") private var customScenariosRaw: String = ""
     @AppStorage("ConstructOS.Wealth.QuestionResponsesRaw") private var questionResponsesRaw: String = ""
 
-     private var journalEntries: [DecisionJournalEntry] = loadJSON(StorageKey.decisionJournalRaw, default: [DecisionJournalEntry]())
-     private var customScenarios: [SecondOrderItem] = loadJSON(StorageKey.customScenariosRaw, default: [SecondOrderItem]())
+    @State private var journalEntries: [DecisionJournalEntry] = loadJSON(StorageKey.decisionJournalRaw, default: [DecisionJournalEntry]())
+    @State private var customScenarios: [SecondOrderItem] = loadJSON(StorageKey.customScenariosRaw, default: [SecondOrderItem]())
     @State private var questionResponses: [String: String] = [:]
     @State private var showJournalSheet = false
     @State private var showScenarioSheet = false

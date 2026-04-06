@@ -11,8 +11,8 @@ struct OpportunityFilterView: View {
     @AppStorage("ConstructOS.Wealth.OpportunitiesRaw") private var opportunitiesRaw: String = ""
     @AppStorage("ConstructOS.Wealth.ArchivedOpportunitiesRaw") private var archivedRaw: String = ""
 
-     private var opportunities: [WealthOpportunity] = loadJSON(StorageKey.opportunitiesRaw, default: [WealthOpportunity]())
-     private var archivedOpportunities: [WealthOpportunity] = loadJSON(StorageKey.archivedOpportunitiesRaw, default: [WealthOpportunity]())
+    @State private var opportunities: [WealthOpportunity] = loadJSON(StorageKey.opportunitiesRaw, default: [WealthOpportunity]())
+    @State private var archivedOpportunities: [WealthOpportunity] = loadJSON(StorageKey.archivedOpportunitiesRaw, default: [WealthOpportunity]())
     @State private var showOpportunitySheet = false
     @State private var showFromContractSheet = false
     @State private var viewMode: OpportunityViewMode = .active

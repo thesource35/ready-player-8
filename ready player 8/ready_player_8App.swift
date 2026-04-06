@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreData
 #if canImport(UIKit) && canImport(CarPlay)
 import UIKit
 import CarPlay

@@ -16,7 +16,7 @@ struct MoneyLensView: View {
     // MARK: - Wealth Tracking
     @AppStorage("ConstructOS.Wealth.TrackingRaw") private var trackingRaw: String = ""
     @AppStorage("ConstructOS.Wealth.CapitalAllocation") private var capitalAllocationRaw: String = ""
-     private var trackingEntries: [WealthTrackingEntry] = loadJSON(StorageKey.trackingRaw, default: [WealthTrackingEntry]())
+    @State private var trackingEntries: [WealthTrackingEntry] = loadJSON(StorageKey.trackingRaw, default: [WealthTrackingEntry]())
     @State private var showTrackingSheet = false
 
     // MARK: - Capital Allocation

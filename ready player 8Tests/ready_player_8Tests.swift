@@ -6,6 +6,8 @@
 //
 
 import Testing
+import Foundation
+import CoreData
 @testable import ready_player_8
 
 struct ConstructionOSTests {
@@ -162,7 +164,7 @@ struct ConstructionOSTests {
     // MARK: - Model Codable Tests
 
     @Test func changeOrderCodable() {
-        let co = ChangeOrderItem(number: "CO-001", title: "Test", amount: "$1,000", impactDays: "5", status: .pending, submittedDate: "03-25", decidedDate: "", description: "Test CO")
+        let co = ChangeOrderItem(number: "CO-001", title: "Test", costImpact: 1000, scheduleDays: 5, status: .pending, submittedDate: "03-25", decidedDate: "", description: "Test CO")
         let data = try? JSONEncoder().encode(co)
         #expect(data != nil)
         let decoded = try? JSONDecoder().decode(ChangeOrderItem.self, from: data!)
@@ -171,7 +173,7 @@ struct ConstructionOSTests {
     }
 
     @Test func safetyIncidentCodable() {
-        let inc = SafetyIncident(type: .nearMiss, date: "03-25", location: "Site A", description: "Test", crewMember: "John", correctiveAction: "Fixed", status: .open)
+        let inc = SafetyIncident(date: "03-25", type: .nearMiss, location: "Site A", description: "Test", crewMember: "John", correctiveAction: "Fixed", status: .open)
         let data = try? JSONEncoder().encode(inc)
         #expect(data != nil)
         let decoded = try? JSONDecoder().decode(SafetyIncident.self, from: data!)
@@ -447,6 +449,49 @@ struct ConstructionOSTests {
         #expect(result.contains("/day"))
     }
 
+    // MARK: - Keychain Migration Tests
+    // NOTE: These tests use fixed Keychain keys ("Backend.BaseURL", "Backend.ApiKey")
+    // shared by SupabaseService.init(). They cannot safely run in parallel with other
+    // tests that create SupabaseService instances. Run serially if flaky.
+
+    @Test @MainActor func keychainMigrationFromUserDefaults() {
+        // Setup: put legacy value in UserDefaults, ensure Keychain is empty
+        let legacyURL = "https://legacy-\(UUID().uuidString).supabase.co"
+        let udKey = "ConstructOS.Integrations.Backend.BaseURL"
+        UserDefaults.standard.set(legacyURL, forKey: udKey)
+        KeychainHelper.delete(key: "Backend.BaseURL")
+
+        // Act: creating SupabaseService triggers migrateCredentials()
+        let _ = SupabaseService()
+
+        // Assert: value migrated to Keychain, UserDefaults cleared
+        #expect(KeychainHelper.read(key: "Backend.BaseURL") == legacyURL)
+        #expect(UserDefaults.standard.string(forKey: udKey) == nil)
+
+        // Cleanup
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        UserDefaults.standard.removeObject(forKey: udKey)
+    }
+
+    @Test @MainActor func keychainMigrationSkipsIfKeychainExists() {
+        // Setup: Keychain already has a value, UserDefaults has a different one
+        let keychainValue = "keychain-\(UUID().uuidString)"
+        let legacyValue = "legacy-\(UUID().uuidString)"
+        let udKey = "ConstructOS.Integrations.Backend.BaseURL"
+        KeychainHelper.save(key: "Backend.BaseURL", data: keychainValue)
+        UserDefaults.standard.set(legacyValue, forKey: udKey)
+
+        // Act
+        let _ = SupabaseService()
+
+        // Assert: Keychain value NOT overwritten
+        #expect(KeychainHelper.read(key: "Backend.BaseURL") == keychainValue)
+
+        // Cleanup
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        UserDefaults.standard.removeObject(forKey: udKey)
+    }
+
     // MARK: - SupabaseService Tests
 
     @Test @MainActor func supabaseNotConfiguredByDefault() {
@@ -483,6 +528,132 @@ struct ConstructionOSTests {
             // (This tests the allowlist mechanism)
         }
         // Table name validation is tested indirectly — allowedTables set exists
+    }
+
+    // MARK: - SupabaseService CRUD Tests
+
+    @Test @MainActor func fetchThrowsNotConfigured() async {
+        let svc = SupabaseService()
+        // Ensure not configured by clearing any Keychain values
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+        do {
+            let _: [SupabaseProject] = try await svc.fetch("cs_projects")
+            #expect(Bool(false), "Expected notConfigured error")
+        } catch let error as SupabaseError {
+            if case .notConfigured = error {
+                // Expected
+            } else {
+                #expect(Bool(false), "Expected notConfigured, got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+    }
+
+    @Test @MainActor func insertThrowsNotConfigured() async {
+        let svc = SupabaseService()
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+        let project = SupabaseProject(name: "Test", client: "C", type: "G", status: "A", progress: 0, budget: "$0", score: "—", team: "")
+        do {
+            try await svc.insert("cs_projects", record: project)
+            #expect(Bool(false), "Expected notConfigured error")
+        } catch let error as SupabaseError {
+            if case .notConfigured = error {
+                // Expected
+            } else {
+                #expect(Bool(false), "Expected notConfigured, got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+    }
+
+    @Test @MainActor func updateThrowsNotConfigured() async {
+        let svc = SupabaseService()
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+        let project = SupabaseProject(name: "Test", client: "C", type: "G", status: "A", progress: 0, budget: "$0", score: "—", team: "")
+        do {
+            try await svc.update("cs_projects", id: "x", record: project)
+            #expect(Bool(false), "Expected notConfigured error")
+        } catch let error as SupabaseError {
+            if case .notConfigured = error {
+                // Expected
+            } else {
+                #expect(Bool(false), "Expected notConfigured, got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+    }
+
+    @Test @MainActor func deleteThrowsNotConfigured() async {
+        let svc = SupabaseService()
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+        do {
+            try await svc.delete("cs_projects", id: "x")
+            #expect(Bool(false), "Expected notConfigured error")
+        } catch let error as SupabaseError {
+            if case .notConfigured = error {
+                // Expected
+            } else {
+                #expect(Bool(false), "Expected notConfigured, got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+    }
+
+    @Test @MainActor func insertRejectsInvalidTable() async {
+        let svc = SupabaseService()
+        svc.configure(baseURL: "https://test.supabase.co", apiKey: "test-key")
+        let project = SupabaseProject(name: "Test", client: "C", type: "G", status: "A", progress: 0, budget: "$0", score: "—", team: "")
+        do {
+            try await svc.insert("invalid_table", record: project)
+            #expect(Bool(false), "Expected invalid table error")
+        } catch let error as SupabaseError {
+            if case .httpError(let code, _) = error {
+                #expect(code == 400)
+            } else {
+                #expect(Bool(false), "Expected httpError(400), got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+        // Cleanup: remove test credentials
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+    }
+
+    @Test @MainActor func deleteRejectsInvalidTable() async {
+        let svc = SupabaseService()
+        svc.configure(baseURL: "https://test.supabase.co", apiKey: "test-key")
+        do {
+            try await svc.delete("invalid_table", id: "x")
+            #expect(Bool(false), "Expected invalid table error")
+        } catch let error as SupabaseError {
+            if case .httpError(let code, _) = error {
+                #expect(code == 400)
+            } else {
+                #expect(Bool(false), "Expected httpError(400), got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+        // Cleanup
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+    }
+
+    @Test @MainActor func queueWriteEncodesRecord() {
+        let svc = SupabaseService()
+        let initialCount = svc.pendingWrites.count
+        let project = SupabaseProject(name: "Queue Test", client: "C", type: "G", status: "A", progress: 0, budget: "$0", score: "—", team: "")
+        svc.queueWrite("cs_projects", record: project)
+        #expect(svc.pendingWrites.count == initialCount + 1)
     }
 
     // MARK: - Error Type Tests

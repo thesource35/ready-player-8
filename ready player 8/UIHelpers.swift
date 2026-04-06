@@ -522,8 +522,7 @@ final class DocumentStore: ObservableObject {
         let fileName = "\(UUID().uuidString)_\(name)"
         guard let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             CrashReporter.shared.reportError(
-                AppError.unknown(NSError(domain: "DocumentStore", code: 1, userInfo: [NSLocalizedDescriptionKey: "No documents directory available"])),
-                context: "DocumentStore.add"
+                "DocumentStore.add: No documents directory available"
             )
             return
         }
@@ -740,7 +739,7 @@ extension PDFExporter {
 
                     guard let ctx = UIGraphicsGetCurrentContext() else { return }
                     for (i, val) in values.enumerated() {
-                        let barHeight = (val / maxVal) * (chartHeight - 20)
+                        let barHeight = CGFloat(val / maxVal) * (chartHeight - 20)
                         let x = margin + CGFloat(i) * (barWidth + 4)
                         let y = yPos + chartHeight - 20 - barHeight
                         ctx.setFillColor(UIColor(red: 0.95, green: 0.62, blue: 0.24, alpha: 1).cgColor)

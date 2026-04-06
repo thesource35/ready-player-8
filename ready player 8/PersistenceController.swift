@@ -3,6 +3,7 @@
 
 import CoreData
 import SwiftUI
+import Combine
 
 @MainActor
 final class PersistenceController: ObservableObject {
@@ -40,9 +41,7 @@ final class PersistenceController: ObservableObject {
         // Configure for CloudKit sync
         guard let description = container.persistentStoreDescriptions.first else {
             CrashReporter.shared.reportError(
-                AppError.unknown(NSError(domain: "PersistenceController", code: 1,
-                    userInfo: [NSLocalizedDescriptionKey: "No persistent store descriptions found — using in-memory fallback"])),
-                context: "PersistenceController.init"
+                "PersistenceController.init: No persistent store descriptions found — using in-memory fallback"
             )
             let memDesc = NSPersistentStoreDescription()
             memDesc.type = NSInMemoryStoreType
@@ -51,8 +50,7 @@ final class PersistenceController: ObservableObject {
             container.loadPersistentStores { _, error in
                 if let error {
                     CrashReporter.shared.reportError(
-                        AppError.unknown(error),
-                        context: "PersistenceController.init.inMemoryFallback"
+                        "PersistenceController.init.inMemoryFallback: \(error.localizedDescription)"
                     )
                 }
             }
@@ -66,8 +64,7 @@ final class PersistenceController: ObservableObject {
         container.loadPersistentStores { _, error in
             if let error {
                 CrashReporter.shared.reportError(
-                    AppError.unknown(error),
-                    context: "PersistenceController.loadPersistentStores"
+                    "PersistenceController.loadPersistentStores: \(error.localizedDescription)"
                 )
                 #if DEBUG
                 assertionFailure("Core Data load failed: \(error)")
