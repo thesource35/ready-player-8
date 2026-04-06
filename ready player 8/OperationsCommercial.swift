@@ -1456,6 +1456,7 @@ struct RFITrackerPanel: View {
                         .font(.system(size: 11, weight: .bold))
                         .foregroundColor(Theme.muted)
                 }
+                .accessibilityLabel(expanded ? "Collapse section" : "Expand section")
             }
             .padding(.horizontal, 14)
             .padding(.top, 12)

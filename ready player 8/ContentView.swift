@@ -136,6 +136,7 @@ struct AuthGateView: View {
                             Text("Remember me").font(.system(size: 11)).foregroundColor(Theme.muted)
                         }
                     }.buttonStyle(.plain)
+                    .accessibilityLabel(rememberMe ? "Remember me, selected" : "Remember me, not selected")
                     Spacer()
                     Button { step = .forgotPassword } label: {
                         Text("Forgot password?").font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.accent)

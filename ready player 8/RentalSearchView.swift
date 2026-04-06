@@ -558,6 +558,7 @@ struct ProviderIntegrationCard: View {
                     Image(systemName: expanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 10, weight: .bold)).foregroundColor(Theme.muted)
                 }.buttonStyle(.plain)
+                .accessibilityLabel(expanded ? "Collapse details" : "Expand details")
             }
 
             if expanded {
@@ -1399,6 +1400,7 @@ struct RentalSearchView: View {
                         Button { searchQuery = "" } label: {
                             Image(systemName: "xmark.circle.fill").foregroundColor(Theme.muted)
                         }.buttonStyle(.plain)
+                        .accessibilityLabel("Clear search")
                     }
                     Toggle("$ Sort", isOn: $sortByPrice)
                         .font(.system(size: 9, weight: .bold))
@@ -1508,6 +1510,7 @@ struct RentalItemCard: View {
                     Image(systemName: store.isFavorite(item) ? "heart.fill" : "heart")
                         .font(.system(size: 10)).foregroundColor(store.isFavorite(item) ? Theme.red : Theme.muted)
                 }.buttonStyle(.plain)
+                .accessibilityLabel(store.isFavorite(item) ? "Remove from favorites" : "Add to favorites")
                 Button { withAnimation { expanded.toggle() } } label: {
                     Text(expanded ? "LESS" : "MORE").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.accent)
                 }.buttonStyle(.plain)
@@ -1825,6 +1828,7 @@ struct RentalCalculatorView: View {
                         Button { selectedItems.remove(at: i) } label: {
                             Image(systemName: "xmark").font(.system(size: 8)).foregroundColor(Theme.red)
                         }.buttonStyle(.plain)
+                        .accessibilityLabel("Remove from quote")
                     }
                     .padding(6).background(Theme.panel).cornerRadius(6)
                 }
@@ -1971,6 +1975,7 @@ struct PriceAlertsPanel: View {
                     Button { store.removePriceAlert(alert) } label: {
                         Image(systemName: "xmark").font(.system(size: 8)).foregroundColor(Theme.red)
                     }.buttonStyle(.plain)
+                    .accessibilityLabel("Remove price alert")
                 }
                 .padding(6).background(Theme.panel).cornerRadius(6)
             }
@@ -2026,6 +2031,7 @@ struct BundleBuilderView: View {
                     Button { bundleItems.remove(at: i) } label: {
                         Image(systemName: "minus.circle").font(.system(size: 10)).foregroundColor(Theme.red)
                     }.buttonStyle(.plain)
+                    .accessibilityLabel("Remove from bundle")
                 }
             }
 
@@ -2490,6 +2496,7 @@ struct ProviderReviewsPanel: View {
                     Image(systemName: i <= value.wrappedValue ? "star.fill" : "star")
                         .font(.system(size: 10)).foregroundColor(Theme.gold)
                 }.buttonStyle(.plain)
+                .accessibilityLabel("Rate \(i) star\(i == 1 ? "" : "s")")
             }
         }
     }

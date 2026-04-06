@@ -584,6 +584,7 @@ struct FeedPostCard: View {
                 actionButton(icon: "arrow.turn.up.right", label: "\(post.shares)", color: Theme.green)
                 Spacer()
                 Button { ToastManager.shared.show("Coming soon") } label: { Image(systemName: "bookmark").font(.system(size: 12)).foregroundColor(Theme.muted) }.buttonStyle(.plain)
+                .accessibilityLabel("Bookmark post")
             }
         }
         .padding(14).background(Theme.surface).cornerRadius(12)

@@ -155,6 +155,7 @@ struct ProjectsView: View {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(Theme.muted)
                     }
+                    .accessibilityLabel("Clear search")
                 }
             }
             .padding(.horizontal, 12)
@@ -453,6 +454,7 @@ private struct ProjectDetailSheet: View {
                             Image(systemName: "ellipsis.circle")
                                 .foregroundColor(Theme.accent)
                         }
+                        .accessibilityLabel("Project actions")
                     }
                 }
             }

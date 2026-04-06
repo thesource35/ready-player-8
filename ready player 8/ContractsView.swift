@@ -151,6 +151,7 @@ struct ContractsView: View {
                     Button { searchText = "" } label: {
                         Image(systemName: "xmark.circle.fill").foregroundColor(Theme.muted)
                     }
+                    .accessibilityLabel("Clear search")
                 }
             }
             .padding(.horizontal, 12)
@@ -391,6 +392,7 @@ private struct ContractDetailSheet: View {
                         } label: {
                             Image(systemName: "ellipsis.circle").foregroundColor(Theme.gold)
                         }
+                        .accessibilityLabel("Contract actions")
                     }
                 }
             }
