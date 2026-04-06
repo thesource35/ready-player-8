@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { streamText } from "ai";
 import { createAnthropic } from "@ai-sdk/anthropic";
-import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
+import { checkRateLimit, getLegacyRateLimitHeaders } from "@/lib/rate-limit";
 import { verifyCsrfOrigin } from "@/lib/csrf";
 
 export async function POST(req: Request) {
@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   if (!checkRateLimit(ip, 20, 60_000)) {
     return NextResponse.json(
       { error: "Rate limit exceeded. Please wait a minute." },
-      { status: 429, headers: getRateLimitHeaders(ip, 20) }
+      { status: 429, headers: getLegacyRateLimitHeaders(ip, 20) }
     );
   }
 

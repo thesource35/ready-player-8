@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
+import { checkRateLimit, getLegacyRateLimitHeaders } from "@/lib/rate-limit";
 import { leadSchema } from "@/lib/validation";
 import { verifyCsrfOrigin } from "@/lib/csrf";
 
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   if (!checkRateLimit(ip, 5, 60_000)) {
     return NextResponse.json(
       { error: "Too many submissions. Please wait a minute before trying again." },
-      { status: 429, headers: getRateLimitHeaders(ip, 5) }
+      { status: 429, headers: getLegacyRateLimitHeaders(ip, 5) }
     );
   }
 
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { success: true, id: data.id },
-      { headers: getRateLimitHeaders(ip, 5) }
+      { headers: getLegacyRateLimitHeaders(ip, 5) }
     );
   } catch (err) {
     console.error("Lead API error:", err);
