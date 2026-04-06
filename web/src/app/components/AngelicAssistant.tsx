@@ -478,6 +478,7 @@ export default function AngelicAssistant() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
+          aria-label="Open AI assistant"
           style={{
             position: "fixed", bottom: 24, right: 24, zIndex: 1000,
             width: 60, height: 60, borderRadius: "50%",
@@ -534,7 +535,7 @@ export default function AngelicAssistant() {
                 </div>
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} style={{ background: "none", border: "none", color: "#9EBDC2", fontSize: 18, cursor: "pointer", padding: 4 }}>✕</button>
+            <button onClick={() => setIsOpen(false)} aria-label="Close AI assistant" style={{ background: "none", border: "none", color: "#9EBDC2", fontSize: 18, cursor: "pointer", padding: 4 }}>✕</button>
           </div>
 
           {/* Messages */}
@@ -574,7 +575,9 @@ export default function AngelicAssistant() {
 
           {/* Input */}
           <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(51,84,94,0.2)", display: "flex", gap: 8, background: "#0A1218" }}>
+            <label htmlFor="angelic-chat-input" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Message</label>
             <input
+              id="angelic-chat-input"
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && send()}
@@ -585,6 +588,7 @@ export default function AngelicAssistant() {
             <button
               onClick={() => send()}
               disabled={isLoading}
+              aria-label="Send message"
               style={{
                 background: isLoading ? "#33545E" : "linear-gradient(90deg, #F29E3D, #FCC757)",
                 border: "none", borderRadius: 10, padding: "0 16px",

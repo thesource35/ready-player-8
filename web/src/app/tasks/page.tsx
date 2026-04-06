@@ -122,7 +122,7 @@ export default function TasksPage() {
       {fetchError && (
         <div style={{ background: "var(--surface)", border: "1px solid var(--red)", borderRadius: 10, padding: "10px 14px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ color: "var(--red)", fontSize: 12 }}>{fetchError}</span>
-          <button onClick={() => setFetchError(null)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 14 }}>✕</button>
+          <button onClick={() => setFetchError(null)} aria-label="Dismiss error" style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 14 }}>✕</button>
         </div>
       )}
       <div style={{ background: "var(--surface)", borderRadius: 14, padding: 20, marginBottom: 16 }}>
@@ -241,7 +241,7 @@ export default function TasksPage() {
                     <span style={{ fontSize: 8, fontWeight: 800, color: "var(--gold)" }}>{r.time}</span>
                   </div>
                 </div>
-                <button onClick={() => setDismissedReminders(prev => new Set(prev).add(i))} style={{ background: "none", border: "none", color: "var(--muted)", fontSize: 14, cursor: "pointer" }}>✕</button>
+                <button onClick={() => setDismissedReminders(prev => new Set(prev).add(i))} aria-label="Dismiss reminder" style={{ background: "none", border: "none", color: "var(--muted)", fontSize: 14, cursor: "pointer" }}>✕</button>
               </div>
             </div>
           ))}

@@ -304,27 +304,32 @@ export default function JobsPage() {
 
             {canPostJobs ? (
               <form onSubmit={handleSubmit} className="space-y-3">
-                <input value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} placeholder="Job title" maxLength={200} />
+                <label htmlFor="job-title" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Job title</label>
+                <input id="job-title" value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} placeholder="Job title" maxLength={200} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <input value={form.company} onChange={(event) => setForm((current) => ({ ...current, company: event.target.value }))} placeholder="Company name" maxLength={200} />
-                  <input value={form.location} onChange={(event) => setForm((current) => ({ ...current, location: event.target.value }))} placeholder="City, State" maxLength={200} />
+                  <div><label htmlFor="job-company" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Company name</label><input id="job-company" value={form.company} onChange={(event) => setForm((current) => ({ ...current, company: event.target.value }))} placeholder="Company name" maxLength={200} /></div>
+                  <div><label htmlFor="job-location" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>City, State</label><input id="job-location" value={form.location} onChange={(event) => setForm((current) => ({ ...current, location: event.target.value }))} placeholder="City, State" maxLength={200} /></div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <input value={form.pay} onChange={(event) => setForm((current) => ({ ...current, pay: event.target.value }))} placeholder="Pay range or salary" maxLength={50} />
-                  <select value={form.trade} onChange={(event) => setForm((current) => ({ ...current, trade: event.target.value }))}>
+                  <div><label htmlFor="job-pay" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Pay range or salary</label><input id="job-pay" value={form.pay} onChange={(event) => setForm((current) => ({ ...current, pay: event.target.value }))} placeholder="Pay range or salary" maxLength={50} /></div>
+                  <div><label htmlFor="job-trade" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Trade</label><select id="job-trade" value={form.trade} onChange={(event) => setForm((current) => ({ ...current, trade: event.target.value }))}>
                     {tradeOptions.map((trade) => <option key={trade} value={trade}>{trade}</option>)}
-                  </select>
+                  </select></div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <select value={form.employmentType} onChange={(event) => setForm((current) => ({ ...current, employmentType: event.target.value }))}>
+                  <div><label htmlFor="job-employment-type" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Employment type</label><select id="job-employment-type" value={form.employmentType} onChange={(event) => setForm((current) => ({ ...current, employmentType: event.target.value }))}>
                     {employmentTypes.map((type) => <option key={type} value={type}>{type}</option>)}
-                  </select>
-                  <input value={form.startLabel} onChange={(event) => setForm((current) => ({ ...current, startLabel: event.target.value }))} placeholder="Start date or label" maxLength={100} />
+                  </select></div>
+                  <div><label htmlFor="job-start" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Start date or label</label><input id="job-start" value={form.startLabel} onChange={(event) => setForm((current) => ({ ...current, startLabel: event.target.value }))} placeholder="Start date or label" maxLength={100} /></div>
                 </div>
-                <input value={form.duration} onChange={(event) => setForm((current) => ({ ...current, duration: event.target.value }))} placeholder="Duration (optional)" maxLength={100} />
-                <textarea value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} placeholder="Role description" rows={5} maxLength={5000} />
-                <input value={form.requirements} onChange={(event) => setForm((current) => ({ ...current, requirements: event.target.value }))} placeholder="Requirements, comma separated" maxLength={2000} />
-                <input value={form.contactEmail} onChange={(event) => setForm((current) => ({ ...current, contactEmail: event.target.value }))} placeholder="Application email (optional)" type="email" maxLength={254} />
+                <label htmlFor="job-duration" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Duration</label>
+                <input id="job-duration" value={form.duration} onChange={(event) => setForm((current) => ({ ...current, duration: event.target.value }))} placeholder="Duration (optional)" maxLength={100} />
+                <label htmlFor="job-description" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Role description</label>
+                <textarea id="job-description" value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} placeholder="Role description" rows={5} maxLength={5000} />
+                <label htmlFor="job-requirements" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Requirements</label>
+                <input id="job-requirements" value={form.requirements} onChange={(event) => setForm((current) => ({ ...current, requirements: event.target.value }))} placeholder="Requirements, comma separated" maxLength={2000} />
+                <label htmlFor="job-contact-email" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Application email</label>
+                <input id="job-contact-email" value={form.contactEmail} onChange={(event) => setForm((current) => ({ ...current, contactEmail: event.target.value }))} placeholder="Application email (optional)" type="email" maxLength={254} />
                 <label className="flex items-center gap-3 text-sm font-bold text-[#9EBDC2]">
                   <input type="checkbox" checked={form.urgent} onChange={(event) => setForm((current) => ({ ...current, urgent: event.target.checked }))} />
                   Mark this opening urgent

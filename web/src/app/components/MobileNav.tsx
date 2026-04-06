@@ -31,7 +31,7 @@ export default function MobileNav() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         style={{ background: "none", border: "none", cursor: "pointer", padding: 8, display: "flex", flexDirection: "column", gap: 5 }}
-        aria-label="Menu"
+        aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
       >
         <span style={{ width: 20, height: 2, background: isOpen ? "#F29E3D" : "#9EBDC2", borderRadius: 1, transition: "0.2s", transform: isOpen ? "rotate(45deg) translate(4px, 4px)" : "none" }} />
         <span style={{ width: 20, height: 2, background: "#9EBDC2", borderRadius: 1, transition: "0.2s", opacity: isOpen ? 0 : 1 }} />

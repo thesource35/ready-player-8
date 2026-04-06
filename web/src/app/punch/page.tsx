@@ -118,7 +118,7 @@ function PunchPageContent() {
       {fetchError && (
         <div style={{ background: "var(--surface)", border: "1px solid var(--red)", borderRadius: 10, padding: "10px 14px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ color: "var(--red)", fontSize: 12 }}>{fetchError}</span>
-          <button onClick={() => setFetchError(null)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 14 }}>✕</button>
+          <button onClick={() => setFetchError(null)} aria-label="Dismiss error" style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 14 }}>✕</button>
         </div>
       )}
       <div style={{ background: "var(--surface)", borderRadius: 14, padding: 20, marginBottom: 16, border: "1px solid rgba(105,210,148,0.08)" }}>
