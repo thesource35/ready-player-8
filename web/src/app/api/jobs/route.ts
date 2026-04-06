@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { getSupabaseServerKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { buildJobTags, getFallbackJobs, parseJobListing } from "@/lib/jobs";
 import { hasFeatureAccess } from "@/lib/subscription/featureAccess";
 import { verifyCsrfOrigin } from "@/lib/csrf";
@@ -131,22 +129,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Expected application/json" }, { status: 415 });
   }
 
-  const { user, profile } = await loadUserProfile();
+  const { serverSupabase, user, profile } = await loadUserProfile();
 
   if (!user) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   }
 
+  if (!serverSupabase) {
+    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+  }
+
   const tier = profile?.subscription_tier || "free";
   if (!hasFeatureAccess(tier, "jobs")) {
     return NextResponse.json({ error: "Paid subscriber access required to post jobs" }, { status: 403 });
-  }
-
-  const url = getSupabaseUrl();
-  const key = getSupabaseServerKey();
-
-  if (!url || !key) {
-    return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   }
 
   let body: Record<string, unknown>;
@@ -174,7 +169,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const supabase = createClient(url, key);
+    // Use auth-aware client instead of service role key (RLS-07)
     const authorName =
       cleanString(profile?.full_name, 120) ||
       cleanString((user.user_metadata?.full_name as string | undefined) ?? "", 120) ||
@@ -185,7 +180,7 @@ export async function POST(request: Request) {
       cleanString((user.user_metadata?.title as string | undefined) ?? "", 120) ||
       "Hiring Manager";
 
-    const { data, error } = await supabase
+    const { data, error } = await serverSupabase
       .from("cs_feed_posts")
       .insert({
         author_name: authorName,
