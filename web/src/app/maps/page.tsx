@@ -77,22 +77,39 @@ export default function MapsPage() {
           const el = document.createElement("div");
           el.style.cssText = `width:16px;height:16px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 0 10px ${color};cursor:pointer;`;
 
-          const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
-            <div style="background:#0F1C24;color:#F0F8F8;padding:10px;border-radius:8px;min-width:160px;font-family:system-ui;">
-              <div style="font-size:12px;font-weight:800;margin-bottom:4px;">${escapeHtml(site.name)}</div>
-              <div style="font-size:9px;color:${escapeHtml(color)};font-weight:900;margin-bottom:6px;">${escapeHtml(site.status)}</div>
-              <div style="font-size:10px;color:#9EBDC2;">
-                ${escapeHtml(String(site.crews))} crews &bull; ${escapeHtml(String(site.deliveries))} deliveries &bull; ${escapeHtml(String(site.alerts))} alerts<br/>
-                ${escapeHtml(site.zone)}
-              </div>
-            </div>
-          `);
-
-          new mapboxgl.Marker({ element: el })
+          const marker = new mapboxgl.Marker({ element: el })
             .setLngLat([site.lng, site.lat])
-            .setPopup(popup)
             .addTo(map);
+
+          // Lazy popup creation — only build DOM on first click (PERF-04)
+          el.addEventListener("click", () => {
+            if (!marker.getPopup()) {
+              const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
+                <div style="background:#0F1C24;color:#F0F8F8;padding:10px;border-radius:8px;min-width:160px;font-family:system-ui;">
+                  <div style="font-size:12px;font-weight:800;margin-bottom:4px;">${escapeHtml(site.name)}</div>
+                  <div style="font-size:9px;color:${escapeHtml(color)};font-weight:900;margin-bottom:6px;">${escapeHtml(site.status)}</div>
+                  <div style="font-size:10px;color:#9EBDC2;">
+                    ${escapeHtml(String(site.crews))} crews &bull; ${escapeHtml(String(site.deliveries))} deliveries &bull; ${escapeHtml(String(site.alerts))} alerts<br/>
+                    ${escapeHtml(site.zone)}
+                  </div>
+                </div>
+              `);
+              marker.setPopup(popup);
+            }
+            marker.togglePopup();
+          });
         });
+
+        // Fly to user location if geolocation is available (DYN-03)
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 12 });
+            },
+            () => { /* keep Houston default */ },
+            { timeout: 3000 }
+          );
+        }
       });
 
       mapRef.current = map;
