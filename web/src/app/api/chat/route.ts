@@ -3,6 +3,7 @@ import { streamText } from "ai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 import { verifyCsrfOrigin } from "@/lib/csrf";
+import { createServerSupabase } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
@@ -37,6 +38,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "messages array is required" }, { status: 400 });
   }
 
+  // Fetch summary counts for context — counts only, not serialized data (PERF-03)
+  let dataSummary = "";
+  try {
+    const supabase = await createServerSupabase();
+    if (supabase) {
+      const [projects, contracts, punchItems] = await Promise.all([
+        supabase.from("cs_projects").select("id", { count: "exact", head: true }),
+        supabase.from("cs_contracts").select("id", { count: "exact", head: true }),
+        supabase.from("cs_punch_pro").select("id", { count: "exact", head: true }),
+      ]);
+      dataSummary = `\n\nUSER DATA SUMMARY:\n- ${projects.count ?? 0} projects\n- ${contracts.count ?? 0} contracts\n- ${punchItems.count ?? 0} punch list items`;
+    }
+  } catch {
+    // Non-critical — proceed without data summary
+  }
+
   const systemPrompt = `You are Angelic, the AI agent built into ConstructionOS — the operating system for the $13 trillion construction industry. You have access to 56 tools and automation capabilities covering every aspect of construction.
 
 CORE CAPABILITIES:
@@ -51,7 +68,7 @@ RESPONSE STYLE:
 - Be concise and construction-focused
 - Use industry terminology (CSI codes, OSHA references, AIA forms)
 - For navigation, include the link in markdown format: [→ Open Feature](/path)
-- You represent ConstructionOS — the most comprehensive construction platform ever built`;
+- You represent ConstructionOS — the most comprehensive construction platform ever built${dataSummary}`;
 
   try {
     const anthropic = createAnthropic({ apiKey });
