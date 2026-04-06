@@ -13,8 +13,8 @@ export const plans = [
 ] as const;
 
 export const paymentMethods = [
-  { id: "card", label: "Card Checkout", icon: "💳", description: "Pay securely on Square checkout." },
-  { id: "apple", label: "Apple Pay", icon: "🍎", description: "Available on Square checkout when your device supports Apple Pay." },
+  { id: "card", label: "Card Checkout", icon: "\u{1F4B3}", description: "Pay securely on Square checkout." },
+  { id: "apple", label: "Apple Pay", icon: "\u{1F34E}", description: "Available on Square checkout when your device supports Apple Pay." },
   { id: "google", label: "Google Pay", icon: "G", description: "Available on Square checkout when your browser supports Google Pay." },
 ] as const;
 
