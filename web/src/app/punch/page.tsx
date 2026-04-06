@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import PremiumFeatureGate from "@/app/components/PremiumFeatureGate";
 
 interface PunchItem {
   id: string;
@@ -25,6 +26,14 @@ const fallbackItems: PunchItem[] = [
 ];
 
 export default function PunchPage() {
+  return (
+    <PremiumFeatureGate feature="punch-list">
+      <PunchPageContent />
+    </PremiumFeatureGate>
+  );
+}
+
+function PunchPageContent() {
   const [items, setItems] = useState<PunchItem[]>(fallbackItems);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
