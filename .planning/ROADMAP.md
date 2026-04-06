@@ -21,7 +21,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 7: Web Error Handling & Consistency** - Structured error JSON, standardize auth/rate-limit/SDK patterns across routes
 - [ ] **Phase 8: Web UX & Loading States** - Error boundaries, loading indicators, SSR safety, feature gating
 - [ ] **Phase 9: Web Performance & Dynamic Content** - Rate limiting, pagination, payment fixes, dynamic content, image config
-- [ ] **Phase 10: Accessibility & SEO** - Screen reader labels, metadata, robots/sitemap, PWA icon
+- [x] **Phase 10: Accessibility & SEO** - Screen reader labels, metadata, robots/sitemap, PWA icon (completed 2026-04-06)
 - [ ] **Phase 11: iOS Tests** - Unit tests for Keychain, auth, persistence, and Supabase service plus CI test execution
 - [ ] **Phase 12: Web Tests** - Unit tests for API routes, E2E tests for critical user flows
 
@@ -188,11 +188,11 @@ Plans:
   2. All form inputs have associated label elements; status indicators convey meaning via text, not color alone
   3. All 16 pages missing metadata exports now have them; key pages have OpenGraph tags with OG image for social sharing
   4. robots.txt and sitemap.xml are generated and accessible; PWA manifest has 192x192 icon for "Add to Home Screen"
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 Plans:
-- [ ] 10-01-PLAN.md — SEO metadata for 25 pages, sitemap.ts, robots.ts, OG image, PWA 192x192 icon
-- [ ] 10-02-PLAN.md — Web accessibility (aria-labels on icon-only buttons, form label associations, status indicator text alternatives)
-- [ ] 10-03-PLAN.md — iOS accessibility labels on 182+ buttons across 38 Swift files
+- [x] 10-01-PLAN.md — SEO metadata for 25 pages, sitemap.ts, robots.ts, OG image, PWA 192x192 icon
+- [x] 10-02-PLAN.md — Web accessibility (aria-labels on icon-only buttons, form label associations, status indicator text alternatives)
+- [x] 10-03-PLAN.md — iOS accessibility labels on 182+ buttons across 38 Swift files
 **UI hint**: yes
 
 ### Phase 11: iOS Tests
@@ -205,7 +205,10 @@ Plans:
   3. Auth flow state transitions (login, logout, token refresh) have unit tests
   4. AppStorageJSON persistence has unit tests covering encode, decode, and size limit behavior
   5. CI pipeline runs `npm run test` (vitest) and `npm audit` in addition to lint/typecheck/build
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 11-01-PLAN.md — iOS unit tests for SupabaseService CRUD, Keychain migration, auth flow, and AppStorageJSON
+- [ ] 11-02-PLAN.md — CI pipeline enhancement (vitest and npm audit steps)
 
 ### Phase 12: Web Tests
 **Goal**: Critical web code paths have automated tests that catch regressions in API routes, auth middleware, and end-to-end flows
@@ -238,6 +241,6 @@ Phases 11, 12 execute last (after the code they test is stable).
 | 7. Web Error Handling & Consistency | 0/3 | Planned | - |
 | 8. Web UX & Loading States | 0/3 | Planned | - |
 | 9. Web Performance & Dynamic Content | 0/5 | Planned | - |
-| 10. Accessibility & SEO | 0/3 | Planned | - |
-| 11. iOS Tests | 0/TBD | Not started | - |
+| 10. Accessibility & SEO | 3/3 | Complete    | 2026-04-06 |
+| 11. iOS Tests | 0/2 | Planned | - |
 | 12. Web Tests | 0/TBD | Not started | - |
