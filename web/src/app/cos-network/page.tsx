@@ -1,6 +1,6 @@
 export default function COSNetworkPage() {
   const networkStats = [
-    { val: "142,891", label: "MEMBERS", color: "var(--accent)" },
+    { val: "Growing", label: "MEMBERS", color: "var(--accent)" },
     { val: "8,420", label: "COMPANIES", color: "var(--cyan)" },
     { val: "25", label: "TRADES", color: "var(--gold)" },
     { val: "48", label: "COUNTRIES", color: "var(--green)" },

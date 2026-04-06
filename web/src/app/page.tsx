@@ -9,7 +9,6 @@ export default function Home() {
     { num: "56", label: "AI Tools" },
     { num: "97", label: "Rental Items" },
     { num: "6", label: "Providers" },
-    { num: "142K+", label: "Professionals" },
     { num: "29K+", label: "Lines of Code" },
   ];
 
@@ -271,7 +270,7 @@ export default function Home() {
           <Image src="/logo.png" alt="ConstructionOS logo" width={64} height={64} className="rounded-xl" style={{ boxShadow: '0 0 40px rgba(242,158,61,0.2)' }} />
         </div>
         <h2 className="text-3xl md:text-4xl font-black mb-4">Ready to Command Your Jobsite?</h2>
-        <p className="text-[#9EBDC2] mb-8 max-w-lg mx-auto">Join 142,891 construction professionals using ConstructionOS to manage projects, crews, finances, and everything in between.</p>
+        <p className="text-[#9EBDC2] mb-8 max-w-lg mx-auto">Join construction professionals using ConstructionOS to manage projects, crews, finances, and everything in between.</p>
         <div className="flex gap-3 justify-center flex-wrap">
           <Link href="/login" className="px-10 py-4 rounded-xl text-lg font-bold text-black" style={{ background: 'linear-gradient(90deg, #F29E3D, #FCC757)' }}>GET STARTED FREE</Link>
           <FeatureAccessLink feature="feed" paidHref="/feed" className="px-10 py-4 rounded-xl text-lg font-bold text-[#4AC4CC] border-2 border-[#4AC4CC]">Join the Network</FeatureAccessLink>

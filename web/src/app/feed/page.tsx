@@ -128,7 +128,7 @@ export default function FeedPage() {
         <Image src="/logo-sm.png" alt="COS" width={40} height={40} className="rounded-xl" />
         <div className="flex-1">
           <div className="text-xs font-black tracking-[0.2em] text-[#F29E3D]">CONSTRUCTIONOS NETWORK</div>
-          <div className="text-xs text-[#9EBDC2]">Instagram for construction — 142,891 professionals</div>
+          <div className="text-xs text-[#9EBDC2]">Instagram for construction — Growing network of professionals</div>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-2 h-2 rounded-full bg-[#69D294]" />

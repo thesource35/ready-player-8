@@ -248,7 +248,7 @@ const proactiveInsights: Record<string, { delay: number; type: string; message: 
   ],
   "/feed": [
     { delay: 10000, type: "💡 MANAGEMENT", message: "**Network Tip:** Darnell Washington's post about the 8,400 SF mat slab got 421 likes. Your network values real project content. Post your Riverside Lofts Level 3 pour results — it builds credibility and attracts talent." },
-    { delay: 30000, type: "💰 WEALTH", message: "**Wealth Insight:** 142K professionals in the network = 142K potential customers. Every post you make is free marketing. The builders with the strongest networks win the best projects. Post 3x per week minimum." },
+    { delay: 30000, type: "💰 WEALTH", message: "**Wealth Insight:** Every professional in the network is a potential customer. Every post you make is free marketing. The builders with the strongest networks win the best projects. Post 3x per week minimum." },
   ],
   "/analytics": [
     { delay: 8000, type: "🔔 ALERT", message: "**Riverside Lofts risk score is 92/100 (HIGH).** Factors: 3 weather delays in 30 days, sub default risk, and pending permit renewal. This project needs daily superintendent attention." },
@@ -273,7 +273,7 @@ const proactiveInsights: Record<string, { delay: number; type: string; message: 
   ],
   "/": [
     { delay: 5000, type: "💡 MANAGEMENT", message: "**Good morning!** Here's your daily brief:\n• 2 critical ops alerts need attention\n• Pay App #07 ($284K) awaiting approval\n• Pine Ridge Ph.2 is behind schedule\n• Houston Medical Complex bid due in 14 days\n\nWant me to generate your full Commander Report?" },
-    { delay: 25000, type: "💰 WEALTH", message: "**Daily Wealth Thought:** \"Don't just build buildings — build the company that builds buildings.\" Your platform serves 142K professionals. Every feature you add increases the value of the network exponentially. That's the real empire.\n\n[→ View Financial Empire](/empire)" },
+    { delay: 25000, type: "💰 WEALTH", message: "**Daily Wealth Thought:** \"Don't just build buildings — build the company that builds buildings.\" Your platform serves a growing network of professionals. Every feature you add increases the value of the network exponentially. That's the real empire.\n\n[→ View Financial Empire](/empire)" },
   ],
   "/market": [
     { delay: 8000, type: "🔔 ALERT", message: "**Phoenix** is leading the nation in permit growth (+15% YoY). Semiconductor and data center construction is booming. Your bid pipeline has 0 projects in AZ — consider expanding." },

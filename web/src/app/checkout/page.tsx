@@ -149,6 +149,9 @@ function CheckoutContent() {
             <span>Due today</span>
             <span className="text-[#69D294]">$0.00</span>
           </div>
+          <div className="text-[11px] text-[#9EBDC2] mt-1" style={{ textAlign: "right" }}>
+            7-day free trial — no charge until trial ends
+          </div>
         </div>
 
         {error && (

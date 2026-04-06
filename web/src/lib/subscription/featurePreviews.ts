@@ -65,7 +65,7 @@ const previewMap: Record<string, FeaturePreview> = {
       "Use the marketplace and job flow from the same feed",
     ],
     examples: [
-      { label: "Professionals", value: "142,891", note: "Network size displayed in the live experience" },
+      { label: "Professionals", value: "Growing", note: "Network size grows with each signup" },
       { label: "Live online", value: "8,420", note: "Sample activity level from the network header" },
       { label: "Feed modes", value: "5", note: "Feed, Jobs, Market, DMs, and Companies" },
     ],

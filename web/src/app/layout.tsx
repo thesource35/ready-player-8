@@ -12,7 +12,7 @@ import { githubRepoUrl } from "@/lib/links/externalLinks";
 
 export const metadata: Metadata = {
   title: "ConstructionOS — The Construction Command Center",
-  description: "32 tabs, 56 AI tools, equipment rentals, social network, and financial infrastructure for 142,000+ construction professionals.",
+  description: "32 tabs, 56 AI tools, equipment rentals, social network, and financial infrastructure for construction professionals.",
   keywords: "construction management, project management, construction software, AI construction, equipment rental, construction network, punch list, daily log, RFI, submittal, change order, AIA pay app, lien waiver, OSHA, safety compliance",
   openGraph: {
     title: "ConstructionOS — The Operating System for Construction",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "ConstructionOS — The Construction Command Center",
-    description: "32 tabs, 56 AI tools, equipment rentals, social network for 142K+ construction professionals.",
+    description: "32 tabs, 56 AI tools, equipment rentals, social network for construction professionals.",
   },
   robots: { index: true, follow: true },
 };
@@ -60,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/privacy" className="text-xs text-[#9EBDC2]">Privacy</Link>
             <ExternalLink href={githubRepoUrl} className="text-xs text-[#9EBDC2]">GitHub</ExternalLink>
           </div>
-          <p className="text-xs" style={{ color: 'rgba(158,189,194,0.4)' }}>ConstructionOS © 2026 Donovan Fagan · Built for the builders</p>
+          <p className="text-xs" style={{ color: 'rgba(158,189,194,0.4)' }}>ConstructionOS © {new Date().getFullYear()} Donovan Fagan · Built for the builders</p>
         </footer>
       </body>
     </html>
