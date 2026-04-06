@@ -419,14 +419,38 @@ create policy "Users manage own punch items"
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+create policy "Anyone can submit rental leads"
+  on cs_rental_leads for insert
+  with check (true);
+
+create policy "Users read own rental leads"
+  on cs_rental_leads for select
+  using (auth.uid() = user_id);
+
 create policy "Users manage own rental leads"
-  on cs_rental_leads for all
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+  on cs_rental_leads for update
+  using (auth.uid() = user_id);
+
+create policy "Users delete own rental leads"
+  on cs_rental_leads for delete
+  using (auth.uid() = user_id);
 
 create policy "Anyone can read market data"
   on cs_market_data for select
   using (true);
+
+create policy "Users manage own market data"
+  on cs_market_data for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users update own market data"
+  on cs_market_data for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+create policy "Users delete own market data"
+  on cs_market_data for delete
+  using (auth.uid() = user_id);
 
 create policy "Users manage own AI messages"
   on cs_ai_messages for all
@@ -481,14 +505,31 @@ create policy "Users manage own wealth tracking"
 -- ============================================================
 -- INDEXES
 -- ============================================================
+create index if not exists idx_user_profiles_user on cs_user_profiles(user_id);
 create index if not exists idx_projects_user on cs_projects(user_id);
 create index if not exists idx_contracts_user on cs_contracts(user_id);
+create index if not exists idx_feed_posts_user on cs_feed_posts(user_id);
 create index if not exists idx_feed_posts_type on cs_feed_posts(post_type);
 create index if not exists idx_feed_posts_created on cs_feed_posts(created_at desc);
 create index if not exists idx_todos_user on cs_todos(user_id);
+create index if not exists idx_schedule_events_user on cs_schedule_events(user_id);
+create index if not exists idx_reminders_user on cs_reminders(user_id);
 create index if not exists idx_ops_alerts_user on cs_ops_alerts(user_id);
+create index if not exists idx_rfis_user on cs_rfis(user_id);
+create index if not exists idx_change_orders_user on cs_change_orders(user_id);
 create index if not exists idx_punch_user on cs_punch_pro(user_id);
-create index if not exists idx_user_profiles_user on cs_user_profiles(user_id);
+create index if not exists idx_rental_leads_user on cs_rental_leads(user_id);
+create index if not exists idx_market_data_user on cs_market_data(user_id);
+create index if not exists idx_ai_messages_user on cs_ai_messages(user_id);
+create index if not exists idx_transactions_user on cs_transactions(user_id);
+create index if not exists idx_tax_expenses_user on cs_tax_expenses(user_id);
+create index if not exists idx_daily_logs_user on cs_daily_logs(user_id);
+create index if not exists idx_timecards_user on cs_timecards(user_id);
+create index if not exists idx_wealth_opps_user on cs_wealth_opportunities(user_id);
+create index if not exists idx_decision_journal_user on cs_decision_journal(user_id);
+create index if not exists idx_psych_sessions_user on cs_psychology_sessions(user_id);
+create index if not exists idx_leverage_snaps_user on cs_leverage_snapshots(user_id);
+create index if not exists idx_wealth_tracking_user on cs_wealth_tracking(user_id);
 
 -- NOTE: updated_at triggers defined in supabase/migrations/001_updated_at_triggers.sql
 -- Run that migration to enable automatic updated_at timestamps on all tables
