@@ -172,11 +172,11 @@ Plans:
   6. Supabase tables have updated_at triggers
 **Plans:** 5 plans
 Plans:
-- [ ] 09-01-PLAN.md — Distributed rate limiting (Upstash Redis + in-memory fallback) and JWT session validation in middleware
-- [ ] 09-02-PLAN.md — Pagination support, export API cap, chat summary prompt, lazy map popups, image config
-- [ ] 09-03-PLAN.md — Dynamic content fixes (settings user, pricing consistency, footer year, fake numbers removal, checkout trial info)
-- [ ] 09-04-PLAN.md — Square payment method passthrough and Supabase updated_at triggers
-- [ ] 09-05-PLAN.md — Wire pagination into API GET routes and add Load More buttons to client pages
+- [x] 09-01-PLAN.md — Distributed rate limiting (Upstash Redis + in-memory fallback) and JWT session validation in middleware
+- [x] 09-02-PLAN.md — Pagination support, export API cap, chat summary prompt, lazy map popups, image config
+- [x] 09-03-PLAN.md — Dynamic content fixes (settings user, pricing consistency, footer year, fake numbers removal, checkout trial info)
+- [x] 09-04-PLAN.md — Square payment method passthrough and Supabase updated_at triggers
+- [x] 09-05-PLAN.md — Wire pagination into API GET routes and add Load More buttons to client pages
 **UI hint**: yes
 
 ### Phase 10: Accessibility & SEO
@@ -188,7 +188,11 @@ Plans:
   2. All form inputs have associated label elements; status indicators convey meaning via text, not color alone
   3. All 16 pages missing metadata exports now have them; key pages have OpenGraph tags with OG image for social sharing
   4. robots.txt and sitemap.xml are generated and accessible; PWA manifest has 192x192 icon for "Add to Home Screen"
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 10-01-PLAN.md — SEO metadata for 25 pages, sitemap.ts, robots.ts, OG image, PWA 192x192 icon
+- [ ] 10-02-PLAN.md — Web accessibility (aria-labels on icon-only buttons, form label associations, status indicator text alternatives)
+- [ ] 10-03-PLAN.md — iOS accessibility labels on 182+ buttons across 38 Swift files
 **UI hint**: yes
 
 ### Phase 11: iOS Tests
@@ -234,6 +238,6 @@ Phases 11, 12 execute last (after the code they test is stable).
 | 7. Web Error Handling & Consistency | 0/3 | Planned | - |
 | 8. Web UX & Loading States | 0/3 | Planned | - |
 | 9. Web Performance & Dynamic Content | 0/5 | Planned | - |
-| 10. Accessibility & SEO | 0/TBD | Not started | - |
+| 10. Accessibility & SEO | 0/3 | Planned | - |
 | 11. iOS Tests | 0/TBD | Not started | - |
 | 12. Web Tests | 0/TBD | Not started | - |
