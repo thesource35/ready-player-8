@@ -399,6 +399,7 @@ struct LimitingBeliefRow: View {
                     Image(systemName: expanded ? "chevron.up" : "chevron.down").font(.system(size: 10)).foregroundColor(Theme.muted)
                 }
             }
+            .accessibilityLabel(expanded ? "Collapse belief details" : "Expand belief details")
             .buttonStyle(.plain)
             if expanded {
                 HStack(alignment: .top, spacing: 6) {
