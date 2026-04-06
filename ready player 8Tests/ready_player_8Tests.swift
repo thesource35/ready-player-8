@@ -656,6 +656,133 @@ struct ConstructionOSTests {
         #expect(svc.pendingWrites.count == initialCount + 1)
     }
 
+    // MARK: - Auth Flow Tests
+
+    @Test @MainActor func restoreSessionFromKeychain() {
+        let testToken = "test-token-\(UUID().uuidString)"
+        let testEmail = "test-\(UUID().uuidString)@example.com"
+        // Setup: save auth values to Keychain
+        KeychainHelper.save(key: "Auth.AccessToken", data: testToken)
+        KeychainHelper.save(key: "Auth.Email", data: testEmail)
+
+        let svc = SupabaseService()
+        svc.restoreSession()
+
+        #expect(svc.accessToken == testToken)
+        #expect(svc.currentUserEmail == testEmail)
+        #expect(svc.isAuthenticated == true)
+
+        // Cleanup
+        svc.signOut()
+        KeychainHelper.delete(key: "Auth.AccessToken")
+        KeychainHelper.delete(key: "Auth.RefreshToken")
+        KeychainHelper.delete(key: "Auth.Email")
+    }
+
+    @Test @MainActor func restoreSessionNoToken() {
+        // Ensure no token in Keychain
+        KeychainHelper.delete(key: "Auth.AccessToken")
+        KeychainHelper.delete(key: "Auth.Email")
+
+        let svc = SupabaseService()
+        svc.restoreSession()
+
+        #expect(svc.isAuthenticated == false)
+        #expect(svc.accessToken == nil)
+    }
+
+    @Test @MainActor func signOutClearsKeychainKeys() {
+        // Setup: populate all auth Keychain keys
+        KeychainHelper.save(key: "Auth.AccessToken", data: "token-\(UUID().uuidString)")
+        KeychainHelper.save(key: "Auth.RefreshToken", data: "refresh-\(UUID().uuidString)")
+        KeychainHelper.save(key: "Auth.Email", data: "email-\(UUID().uuidString)@test.com")
+
+        let svc = SupabaseService()
+        svc.accessToken = "some-token"
+        svc.currentUserEmail = "some@email.com"
+        svc.signOut()
+
+        #expect(KeychainHelper.read(key: "Auth.AccessToken") == nil)
+        #expect(KeychainHelper.read(key: "Auth.RefreshToken") == nil)
+        #expect(KeychainHelper.read(key: "Auth.Email") == nil)
+        #expect(svc.accessToken == nil)
+        #expect(svc.currentUserEmail == nil)
+        #expect(svc.isAuthenticated == false)
+    }
+
+    @Test @MainActor func signUpThrowsWhenNotConfigured() async {
+        let svc = SupabaseService()
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+        do {
+            try await svc.signUp(email: "test@test.com", password: "password123")
+            #expect(Bool(false), "Expected notConfigured error")
+        } catch let error as SupabaseError {
+            if case .notConfigured = error {
+                // Expected
+            } else {
+                #expect(Bool(false), "Expected notConfigured, got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+    }
+
+    @Test @MainActor func signInThrowsWhenNotConfigured() async {
+        let svc = SupabaseService()
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+        do {
+            try await svc.signIn(email: "test@test.com", password: "password123")
+            #expect(Bool(false), "Expected notConfigured error")
+        } catch let error as SupabaseError {
+            if case .notConfigured = error {
+                // Expected
+            } else {
+                #expect(Bool(false), "Expected notConfigured, got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+    }
+
+    // MARK: - AppStorageJSON Edge Case Tests
+
+    @Test func loadJSONCorruptedDataReturnsDefault() {
+        let key = "test.corrupted.\(UUID().uuidString)"
+        UserDefaults.standard.set("not valid json {{{", forKey: key)
+        let result: [String] = loadJSON(key, default: ["fallback"])
+        #expect(result == ["fallback"])
+        UserDefaults.standard.removeObject(forKey: key)
+    }
+
+    @Test func saveJSONLargeDataStillSaves() {
+        let key = "test.large.\(UUID().uuidString)"
+        // Create ~1.1MB of data (1100 strings of 1000 chars each)
+        let largeArray = (0..<1100).map { _ in String(repeating: "x", count: 1000) }
+        saveJSON(key, value: largeArray)
+        let loaded: [String] = loadJSON(key, default: [])
+        #expect(loaded.count == 1100)
+        UserDefaults.standard.removeObject(forKey: key)
+    }
+
+    @Test func saveAndLoadEmptyArray() {
+        let key = "test.empty.\(UUID().uuidString)"
+        let empty: [String] = []
+        saveJSON(key, value: empty)
+        let loaded: [String] = loadJSON(key, default: ["should-not-be-this"])
+        #expect(loaded.isEmpty)
+        UserDefaults.standard.removeObject(forKey: key)
+    }
+
+    @Test func loadJSONWrongTypeReturnsDefault() {
+        let key = "test.typemismatch.\(UUID().uuidString)"
+        saveJSON(key, value: ["hello", "world"])
+        let loaded: [Int] = loadJSON(key, default: [42])
+        #expect(loaded == [42])
+        UserDefaults.standard.removeObject(forKey: key)
+    }
+
     // MARK: - Error Type Tests
 
     @Test func supabaseErrorDescriptions() {
