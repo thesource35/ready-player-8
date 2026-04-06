@@ -182,6 +182,61 @@ export async function deleteOwnedRow(
   return (count ?? 0) > 0;
 }
 
+// ---------- Paginated queries ----------
+
+const MAX_PAGE_SIZE = 100;
+
+export async function fetchTablePaginated<T>(
+  table: string,
+  options?: {
+    select?: string;
+    order?: { column: string; ascending?: boolean };
+    eq?: { column: string; value: string | number | boolean };
+    page?: number;
+    pageSize?: number;
+  }
+): Promise<{ data: T[]; hasMore: boolean; total: number }> {
+  const supabase = await createServerSupabase();
+  if (!supabase) return { data: [], hasMore: false, total: 0 };
+
+  const page = Math.max(0, options?.page ?? 0);
+  const pageSize = Math.min(Math.max(1, options?.pageSize ?? 25), MAX_PAGE_SIZE);
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
+  try {
+    let query = supabase
+      .from(table)
+      .select(options?.select || "*", { count: "exact" });
+
+    if (options?.eq) {
+      query = query.eq(options.eq.column, options.eq.value);
+    }
+    if (options?.order) {
+      query = query.order(options.order.column, {
+        ascending: options.order.ascending ?? false,
+      });
+    }
+
+    query = query.range(from, to);
+
+    const { data, error, count } = await query;
+    if (error) {
+      console.error(`Paginated fetch ${table} error:`, error);
+      return { data: [], hasMore: false, total: 0 };
+    }
+
+    return {
+      data: (data as T[]) || [],
+      hasMore: (count ?? 0) > to + 1,
+      total: count ?? 0,
+    };
+  } catch (err) {
+    console.error(`Paginated fetch ${table} exception:`, err);
+    return { data: [], hasMore: false, total: 0 };
+  }
+}
+
 // Real-time subscription helper (client-side only)
 export function subscribeToTable(
   table: string,
