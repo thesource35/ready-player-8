@@ -790,6 +790,7 @@ struct ConstructionOSNetworkPanel: View {
                         Button(action: { searchText = "" }) {
                             Image(systemName: "xmark.circle.fill").font(.system(size: 11)).foregroundColor(Theme.muted)
                         }.buttonStyle(.plain)
+                        .accessibilityLabel("Clear search")
                     }
                 }
                 .padding(.horizontal, 10).padding(.vertical, 8)

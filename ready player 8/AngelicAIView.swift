@@ -171,6 +171,7 @@ struct AngelicAIView: View {
                             .font(.system(size: 12))
                             .foregroundColor(Theme.muted)
                     }
+                    .accessibilityLabel("API key settings")
                     Button {
                         messages = []
                         sessionID = UUID().uuidString
@@ -180,6 +181,7 @@ struct AngelicAIView: View {
                             .font(.system(size: 12))
                             .foregroundColor(Theme.muted)
                     }
+                    .accessibilityLabel("Clear chat history")
                 }
             }
         }
@@ -363,6 +365,7 @@ struct AngelicAIView: View {
                         .background(inputText.isEmpty || isThinking ? Theme.muted.opacity(0.4) : Theme.purple)
                         .clipShape(Circle())
                 }
+                .accessibilityLabel(isThinking ? "Thinking" : "Send message")
                 .disabled(inputText.isEmpty || isThinking)
             }
             .padding(.horizontal, 16)

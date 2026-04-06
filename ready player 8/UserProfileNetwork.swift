@@ -457,6 +457,7 @@ struct NetworkUserRow: View {
                     Button { store.sendConnectionRequest(to: user) } label: {
                         Image(systemName: "person.badge.plus").font(.system(size: 16)).foregroundColor(Theme.accent)
                     }.buttonStyle(.plain)
+                    .accessibilityLabel("Send connection request")
                 }
             }
 

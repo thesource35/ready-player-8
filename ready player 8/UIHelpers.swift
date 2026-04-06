@@ -38,6 +38,7 @@ struct ErrorBanner: View {
             Button(action: onDismiss) {
                 Image(systemName: "xmark").font(.system(size: 10, weight: .bold)).foregroundColor(Theme.muted)
             }.buttonStyle(.plain)
+            .accessibilityLabel("Dismiss error")
         }
         .padding(12)
         .background(Theme.red.opacity(0.1))
@@ -189,6 +190,7 @@ struct GlobalSearchView: View {
                     Button { query = ""; results = [] } label: {
                         Image(systemName: "xmark.circle.fill").foregroundColor(Theme.muted)
                     }.buttonStyle(.plain)
+                    .accessibilityLabel("Clear search")
                 }
                 Button("Done") { isPresented = false }
                     .font(.system(size: 12, weight: .bold)).foregroundColor(Theme.accent)
@@ -382,6 +384,7 @@ struct PhotoPickerButton: View {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 10)).foregroundColor(Theme.red)
                 }.buttonStyle(.plain)
+                .accessibilityLabel("Remove selected photo")
                 let size = ByteCountFormatter.string(fromByteCount: Int64(selectedData?.count ?? 0), countStyle: .file)
                 Text(size).font(.system(size: 8)).foregroundColor(Theme.muted)
             }

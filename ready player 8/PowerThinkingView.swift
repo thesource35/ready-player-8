@@ -220,6 +220,7 @@ struct PowerThinkingView: View {
                 } label: {
                     Image(systemName: "pencil").font(.system(size: 11)).foregroundColor(Theme.muted)
                 }
+                .accessibilityLabel("Edit journal entry")
             }
         }
         .padding(12).background(Theme.panel.opacity(0.5)).cornerRadius(10)

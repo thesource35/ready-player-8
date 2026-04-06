@@ -268,6 +268,7 @@ struct PsychologyDecoderView: View {
                             .font(.system(size: 16))
                             .foregroundColor(resolvedBeliefs.contains(item.belief) ? Theme.green : Theme.muted)
                     }
+                    .accessibilityLabel(resolvedBeliefs.contains(item.belief) ? "Mark belief as unresolved" : "Mark belief as resolved")
                     LimitingBeliefRow(item: item)
                 }
             }

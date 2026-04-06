@@ -193,6 +193,7 @@ struct OpportunityFilterView: View {
                                     .font(.system(size: 14))
                                     .foregroundColor(selectedForCompare.contains(opp.id) ? Theme.purple : Theme.muted)
                             }
+                            .accessibilityLabel(selectedForCompare.contains(opp.id) ? "Deselect for comparison" : "Select for comparison")
 
                             OpportunityResultCard(opportunity: opp)
                         }
@@ -258,6 +259,7 @@ struct OpportunityFilterView: View {
                             Image(systemName: "arrow.uturn.backward")
                                 .font(.system(size: 12)).foregroundColor(Theme.cyan)
                         }
+                        .accessibilityLabel("Restore opportunity")
                     }
                 }
             }
