@@ -46,6 +46,7 @@ export default function TasksPage() {
   const [todos, setTodos] = useState(initialTodos);
   const [dismissedReminders, setDismissedReminders] = useState<Set<number>>(new Set());
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/tasks")
@@ -68,7 +69,8 @@ export default function TasksPage() {
           })));
         }
       })
-      .catch((err) => { setFetchError(`Failed to load tasks: ${err.message}`); });
+      .catch((err) => { setFetchError(`Failed to load tasks: ${err.message}`); })
+      .finally(() => { setLoading(false); });
   }, []);
   const tabs = ["Tasks", "Schedule", "AI Reminders"];
 
@@ -80,6 +82,16 @@ export default function TasksPage() {
   const toggleTodo = (id: string) => {
     setTodos(prev => prev.map(t => t.id === id ? { ...t, status: t.status === "done" ? "pending" : "done" } : t));
   };
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "40vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.2em", color: "var(--accent)" }}>
+          LOADING...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: 20, maxWidth: 1000, margin: "0 auto" }}>

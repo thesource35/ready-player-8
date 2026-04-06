@@ -12,6 +12,7 @@ export default function AIPage() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const starters = [
@@ -21,6 +22,10 @@ export default function AIPage() {
     "What's our bid win rate this year?",
     "Calculate rental cost for 2 boom lifts for 30 days",
   ];
+
+  useEffect(() => {
+    setPageLoading(false);
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -76,6 +81,16 @@ export default function AIPage() {
     }
 
     setIsLoading(false);
+  }
+
+  if (pageLoading) {
+    return (
+      <div style={{ minHeight: "40vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.2em", color: "var(--accent)" }}>
+          LOADING...
+        </div>
+      </div>
+    );
   }
 
   return (

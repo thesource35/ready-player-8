@@ -27,6 +27,7 @@ const fallbackItems: PunchItem[] = [
 export default function PunchPage() {
   const [items, setItems] = useState<PunchItem[]>(fallbackItems);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/punch")
@@ -49,7 +50,8 @@ export default function PunchPage() {
           })));
         }
       })
-      .catch((err) => { setFetchError(`Failed to load punch items: ${err.message}`); });
+      .catch((err) => { setFetchError(`Failed to load punch items: ${err.message}`); })
+      .finally(() => { setLoading(false); });
   }, []);
 
   const open = items.filter(i => i.status === "OPEN").length;
@@ -59,6 +61,16 @@ export default function PunchPage() {
 
   const prioColor = (p: string) => p === "CRITICAL" ? "var(--red)" : p === "HIGH" ? "var(--gold)" : p === "MEDIUM" ? "var(--cyan)" : "var(--muted)";
   const statusColor = (s: string) => s === "COMPLETE" ? "var(--green)" : s === "IN PROGRESS" ? "var(--cyan)" : "var(--gold)";
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "40vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.2em", color: "var(--accent)" }}>
+          LOADING...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: 20, maxWidth: 1200, margin: "0 auto" }}>

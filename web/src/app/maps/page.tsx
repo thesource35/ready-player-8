@@ -37,6 +37,7 @@ export default function MapsPage() {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapStyle, setMapStyle] = useState("satellite");
   const [activeOverlays, setActiveOverlays] = useState<Set<string>>(new Set(["SATELLITE", "CREWS"]));
+  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
   const toggleOverlay = (name: string) => {
     setActiveOverlays(prev => {
@@ -135,7 +136,15 @@ export default function MapsPage() {
       </div>
 
       {/* Mapbox Map */}
-      <div ref={mapContainer} style={{ width: "100%", height: 400, borderRadius: 14, marginBottom: 16, overflow: "hidden", border: "1px solid rgba(74,196,204,0.1)" }} />
+      {!token ? (
+        <div style={{ borderRadius: 16, padding: 32, textAlign: "center", background: "var(--surface)", border: "1px solid rgba(51,84,94,0.2)", marginBottom: 16 }}>
+          <div style={{ fontSize: 48, marginBottom: 8 }}>&#x1F5FA;</div>
+          <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 8 }}>Maps Unavailable</div>
+          <div style={{ fontSize: 13, color: "var(--muted)" }}>Configure MAPBOX_TOKEN to enable interactive maps.</div>
+        </div>
+      ) : (
+        <div ref={mapContainer} style={{ width: "100%", height: 400, borderRadius: 14, marginBottom: 16, overflow: "hidden", border: "1px solid rgba(74,196,204,0.1)" }} />
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         {/* Site Cards */}
