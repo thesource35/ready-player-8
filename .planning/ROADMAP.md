@@ -170,12 +170,13 @@ Plans:
   4. Settings page shows actual user; checkout shows trial info; prices consistent; footer year dynamic; marketing numbers real or removed; app version reads from Bundle
   5. Square checkout passes selected payment method and billing interval correctly
   6. Supabase tables have updated_at triggers
-**Plans:** 4 plans
+**Plans:** 5 plans
 Plans:
 - [ ] 09-01-PLAN.md — Distributed rate limiting (Upstash Redis + in-memory fallback) and JWT session validation in middleware
 - [ ] 09-02-PLAN.md — Pagination support, export API cap, chat summary prompt, lazy map popups, image config
 - [ ] 09-03-PLAN.md — Dynamic content fixes (settings user, pricing consistency, footer year, fake numbers removal, checkout trial info)
 - [ ] 09-04-PLAN.md — Square payment method passthrough and Supabase updated_at triggers
+- [ ] 09-05-PLAN.md — Wire pagination into API GET routes and add Load More buttons to client pages
 **UI hint**: yes
 
 ### Phase 10: Accessibility & SEO
@@ -232,7 +233,7 @@ Phases 11, 12 execute last (after the code they test is stable).
 | 6. Web Security & Validation | 0/3 | Planned | - |
 | 7. Web Error Handling & Consistency | 0/3 | Planned | - |
 | 8. Web UX & Loading States | 0/3 | Planned | - |
-| 9. Web Performance & Dynamic Content | 0/4 | Planned | - |
+| 9. Web Performance & Dynamic Content | 0/5 | Planned | - |
 | 10. Accessibility & SEO | 0/TBD | Not started | - |
 | 11. iOS Tests | 0/TBD | Not started | - |
 | 12. Web Tests | 0/TBD | Not started | - |
