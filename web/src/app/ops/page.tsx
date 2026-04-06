@@ -64,6 +64,7 @@ export default function OpsPage() {
   const [queue] = useState<QueueItem[]>(fallbackQueue);
   const [panels, setPanels] = useState<Panel[]>(fallbackPanels);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/ops")
@@ -105,7 +106,8 @@ export default function OpsPage() {
           });
         }
       })
-      .catch((err) => { setFetchError(`Failed to load ops data: ${err.message}`); });
+      .catch((err) => { setFetchError(`Failed to load ops data: ${err.message}`); })
+      .finally(() => { setLoading(false); });
   }, []);
 
   const sevColor = (s: number) => s >= 3 ? "var(--red)" : s === 2 ? "var(--gold)" : "var(--cyan)";
@@ -116,6 +118,13 @@ export default function OpsPage() {
 
   return (
     <PremiumFeatureGate feature="ops">
+    {loading ? (
+      <div style={{ minHeight: "40vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.2em", color: "var(--accent)" }}>
+          LOADING...
+        </div>
+      </div>
+    ) : (
     <div style={{ padding: 20, maxWidth: 1200, margin: "0 auto" }}>
       {fetchError && (
         <div style={{ background: "var(--surface)", border: "1px solid var(--red)", borderRadius: 10, padding: "10px 14px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -200,6 +209,7 @@ export default function OpsPage() {
         ))}
       </div>
     </div>
+    )}
     </PremiumFeatureGate>
   );
 }
