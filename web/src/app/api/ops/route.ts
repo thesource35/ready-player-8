@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
 import { fetchTable, fetchTablePaginated } from "@/lib/supabase/fetch";
 import type { OpsAlert, Rfi, ChangeOrder } from "@/lib/supabase/types";
-import { checkRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  const ip = req.headers.get("x-forwarded-for") ?? "unknown";
-  if (!checkRateLimit(ip)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-
   const { searchParams } = new URL(req.url);
   const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10) || 0);
 

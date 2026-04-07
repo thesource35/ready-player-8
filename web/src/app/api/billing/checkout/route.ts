@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { verifyCsrfOrigin } from "@/lib/csrf";
+import { createServerSupabase } from "@/lib/supabase/server";
 import {
   isBillingInterval,
   isPaymentMethodId,
@@ -33,6 +35,19 @@ function validateCheckoutInput(
 }
 
 export async function POST(request: Request) {
+  if (!verifyCsrfOrigin(request)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const supabase = await createServerSupabase();
+  if (!supabase) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
   let body: { planId?: string; billing?: string; payMethod?: string };
 
   try {
