@@ -8,9 +8,12 @@ export interface Project {
   status: string;
   progress: number;
   budget: string;
-  score: string;
+  score: number;
   team: string;
+  start_date?: string;
+  end_date?: string;
   created_at: string;
+  user_id?: string;
 }
 
 export interface Contract {
@@ -28,6 +31,7 @@ export interface Contract {
   score: number;
   watch_count: number;
   created_at: string;
+  user_id?: string;
 }
 
 export interface MarketData {
@@ -121,6 +125,7 @@ export interface PunchItem {
   due_date: string;
   photo_count: number;
   created_at: string;
+  user_id?: string;
 }
 
 export interface FeedPost {
@@ -136,6 +141,7 @@ export interface FeedPost {
   shares: number;
   photo_count: number;
   created_at: string;
+  user_id?: string;
 }
 
 export interface UserProfile {
@@ -150,4 +156,37 @@ export interface UserProfile {
   verification_tier: string;
   subscription_tier: string;
   created_at: string;
+}
+
+export interface OpsAlert {
+  id: string;
+  title: string;
+  message: string;
+  severity: string;
+  acknowledged: boolean;
+  created_at: string;
+  user_id?: string;
+}
+
+export interface Rfi {
+  id: string;
+  number: string;
+  subject: string;
+  status: string;
+  priority: string;
+  assigned_to: string;
+  due_date: string;
+  created_at: string;
+  user_id?: string;
+}
+
+export interface ChangeOrder {
+  id: string;
+  number: string;
+  description: string;
+  amount: number;
+  status: string;
+  requested_by: string;
+  created_at: string;
+  user_id?: string;
 }
