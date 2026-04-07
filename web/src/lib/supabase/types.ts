@@ -211,3 +211,49 @@ export type DocumentAttachment = {
   entity_id: string;
   created_at: string;
 };
+
+// ---------- Phase 14: Notifications & Activity Feed ----------
+// Schema authoritative source: supabase/migrations/20260407_phase14_notifications.sql
+
+export type NotificationCategory =
+  | "bid_deadline"
+  | "safety_alert"
+  | "assigned_task"
+  | "generic"
+  | string;
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  event_id: string;
+  project_id: string | null;
+  category: NotificationCategory;
+  title: string;
+  body: string | null;
+  entity_type: string | null;
+  entity_id: string | null;
+  read_at: string | null;
+  dismissed_at: string | null;
+  created_at: string;
+}
+
+export interface ActivityEvent {
+  id: string;
+  project_id: string | null;
+  entity_type: string;
+  entity_id: string | null;
+  action: string;
+  category: NotificationCategory;
+  actor_id: string | null;
+  payload: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface DeviceToken {
+  user_id: string;
+  device_token: string;
+  platform: string;
+  app_version: string | null;
+  last_seen_at: string;
+  created_at: string;
+}

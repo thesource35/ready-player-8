@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import AngelicAssistant from "./components/AngelicAssistant";
 import MobileNav from "./components/MobileNav";
 import NavAuthLinks from "./components/NavAuthLinks";
+import HeaderBell from "./components/HeaderBell";
 
 export const metadata: Metadata = {
   title: "ConstructionOS — The Construction Command Center",
@@ -90,6 +91,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             ))}
           </div>
           <div className="hidden lg:flex items-center gap-3 shrink-0">
+            <HeaderBell />
             <NavAuthLinks />
           </div>
           <MobileNav />
