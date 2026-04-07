@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { fetchTable, fetchTablePaginated, insertRow, updateOwnedRow, deleteOwnedRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
-import { checkRateLimit } from "@/lib/rate-limit";
 import { verifyCsrfOrigin } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
@@ -13,9 +12,6 @@ function isTasksTable(name: string): name is (typeof TASKS_TABLES)[number] {
 }
 
 export async function GET(req: Request) {
-  const ip = req.headers.get("x-forwarded-for") ?? "unknown";
-  if (!checkRateLimit(ip)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-
   const { searchParams } = new URL(req.url);
   const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10) || 0);
 

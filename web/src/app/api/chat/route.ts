@@ -1,19 +1,10 @@
 import { NextResponse } from "next/server";
 import { streamText } from "ai";
 import { createAnthropic } from "@ai-sdk/anthropic";
-import { checkRateLimit, getLegacyRateLimitHeaders } from "@/lib/rate-limit";
 import { verifyCsrfOrigin } from "@/lib/csrf";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
-  if (!checkRateLimit(ip, 20, 60_000)) {
-    return NextResponse.json(
-      { error: "Rate limit exceeded. Please wait a minute." },
-      { status: 429, headers: getLegacyRateLimitHeaders(ip, 20) }
-    );
-  }
-
   if (!verifyCsrfOrigin(req)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -79,7 +70,7 @@ RESPONSE STYLE:
         role: m.role as "user" | "assistant",
         content: m.content,
       })),
-      maxTokens: 1024,
+      maxOutputTokens: 1024,
     });
 
     return result.toTextStreamResponse();

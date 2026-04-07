@@ -1,11 +1,6 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 
 // Mock modules before importing the route handler
-vi.mock("@/lib/rate-limit", () => ({
-  checkRateLimit: vi.fn().mockReturnValue(true),
-  getLegacyRateLimitHeaders: vi.fn().mockReturnValue({}),
-}));
-
 vi.mock("@/lib/csrf", () => ({
   verifyCsrfOrigin: vi.fn().mockReturnValue(true),
 }));
@@ -25,7 +20,6 @@ vi.mock("@ai-sdk/anthropic", () => ({
 }));
 
 import { POST } from "./route";
-import { checkRateLimit } from "@/lib/rate-limit";
 import { verifyCsrfOrigin } from "@/lib/csrf";
 import { streamText } from "ai";
 
@@ -48,7 +42,6 @@ function makeRequest(
 describe("POST /api/chat", () => {
   beforeEach(() => {
     vi.stubEnv("ANTHROPIC_API_KEY", "test-key");
-    vi.mocked(checkRateLimit).mockReturnValue(true);
     vi.mocked(verifyCsrfOrigin).mockReturnValue(true);
     vi.mocked(streamText).mockReturnValue({
       toTextStreamResponse: () => new Response("streamed", { status: 200 }),
@@ -77,16 +70,6 @@ describe("POST /api/chat", () => {
     expect(res.status).toBe(503);
     const json = await res.json();
     expect(json.error).toContain("not configured");
-  });
-
-  it("returns 429 when rate limited", async () => {
-    vi.mocked(checkRateLimit).mockReturnValueOnce(false);
-    const res = await POST(
-      makeRequest({ messages: [{ role: "user", content: "Hello" }] })
-    );
-    expect(res.status).toBe(429);
-    const json = await res.json();
-    expect(json.error).toContain("Rate limit");
   });
 
   it("returns 403 when CSRF check fails", async () => {

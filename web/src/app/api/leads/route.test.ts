@@ -20,17 +20,33 @@ vi.mock("@supabase/supabase-js", () => ({
   }),
 }));
 
-vi.mock("@/lib/rate-limit", () => ({
-  checkRateLimit: vi.fn().mockReturnValue(true),
-  getLegacyRateLimitHeaders: vi.fn().mockReturnValue({}),
-}));
-
 vi.mock("@/lib/csrf", () => ({
   verifyCsrfOrigin: vi.fn().mockReturnValue(true),
 }));
 
+vi.mock("@/lib/validation", () => {
+  const { z } = require("zod");
+  return {
+    leadSchema: z.object({
+      fullName: z.string().min(1),
+      email: z.string().email(),
+      phone: z.string().optional(),
+      company: z.string().optional(),
+      equipmentType: z.string().min(1),
+      category: z.string().optional(),
+      projectName: z.string().optional(),
+      projectLocation: z.string().optional(),
+      rentalStart: z.string().optional(),
+      rentalDuration: z.string().optional(),
+      budgetRange: z.string().optional(),
+      quantity: z.number().optional(),
+      deliveryNeeded: z.boolean().optional(),
+      notes: z.string().optional(),
+    }),
+  };
+});
+
 import { POST } from "./route";
-import { checkRateLimit } from "@/lib/rate-limit";
 import { verifyCsrfOrigin } from "@/lib/csrf";
 
 const validLead = {
@@ -55,7 +71,6 @@ describe("POST /api/leads", () => {
   beforeEach(() => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://test.supabase.co");
     vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test-key");
-    vi.mocked(checkRateLimit).mockReturnValue(true);
     vi.mocked(verifyCsrfOrigin).mockReturnValue(true);
     mockSingle.mockResolvedValue({
       data: { id: "test-lead-id" },
@@ -93,14 +108,6 @@ describe("POST /api/leads", () => {
     expect(res.status).toBe(400);
     const json = await res.json();
     expect(json.error).toContain("Validation failed");
-  });
-
-  it("returns 429 when rate limited", async () => {
-    vi.mocked(checkRateLimit).mockReturnValueOnce(false);
-    const res = await POST(makeRequest(validLead));
-    expect(res.status).toBe(429);
-    const json = await res.json();
-    expect(json.error).toContain("Too many submissions");
   });
 
   it("returns 403 when CSRF check fails", async () => {

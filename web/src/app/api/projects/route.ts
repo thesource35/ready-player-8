@@ -2,15 +2,11 @@ import { NextResponse } from "next/server";
 import { fetchTable, fetchTablePaginated, insertRow, deleteOwnedRow, getAuthenticatedClient } from "@/lib/supabase/fetch";
 import type { Project } from "@/lib/supabase/types";
 import { MOCK_PROJECTS } from "@/lib/mock-data";
-import { checkRateLimit } from "@/lib/rate-limit";
 import { verifyCsrfOrigin } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  const ip = req.headers.get("x-forwarded-for") ?? "unknown";
-  if (!checkRateLimit(ip)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-
   const { searchParams } = new URL(req.url);
   const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10) || 0);
 
@@ -55,7 +51,7 @@ export async function POST(req: Request) {
     status: typeof body.status === "string" ? body.status.trim() : "On Track",
     progress: typeof body.progress === "number" ? body.progress : 0,
     budget: typeof body.budget === "string" ? body.budget.trim() : "$0",
-    score: typeof body.score === "string" ? body.score.trim() : typeof body.score === "number" ? String(body.score) : "0",
+    score: typeof body.score === "number" ? body.score : 0,
     team: typeof body.team === "string" ? body.team.trim() : "",
   });
 

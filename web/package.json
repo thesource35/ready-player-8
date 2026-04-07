@@ -4,22 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build --webpack",
+    "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "typecheck": "tsc --noEmit",
-    "smoke": "node scripts/smoke.mjs",
-    "linkcheck": "node scripts/link-health.mjs",
-    "test": "vitest run",
-    "test:e2e": "playwright test",
-    "verify": "npm run lint && npm run typecheck && npx next build --webpack"
+    "lint": "eslint"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.64",
     "@supabase/ssr": "^0.10.0",
     "@supabase/supabase-js": "^2.101.1",
-    "@upstash/ratelimit": "^2.0.8",
-    "@upstash/redis": "^1.37.0",
     "@vercel/analytics": "^2.0.1",
     "ai": "^6.0.142",
     "mapbox-gl": "^3.20.0",
@@ -28,15 +20,16 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
-    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.37.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.2"
   }
 }
