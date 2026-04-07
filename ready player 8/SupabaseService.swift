@@ -749,6 +749,8 @@ final class SupabaseService: ObservableObject {
         "cs_electrical_leads", "cs_fuel_log", "cs_punch_pro",
         // System
         "cs_verification_requests",
+        // Phase 13: Document Management
+        "cs_documents", "cs_document_attachments", "cs_document_versions",
     ]
 
     /// Validates table name against allowlist
