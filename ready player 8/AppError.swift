@@ -18,6 +18,9 @@ enum AppError: LocalizedError, Identifiable {
     case offlineQueued
     case biometricFailed
     case permissionDenied(feature: String)
+    case uploadFailed(String)
+    case fileTooLarge(maxMB: Int)
+    case unsupportedFileType(String)
     case unknown(String)
 
     var id: String { localizedDescription }
@@ -44,6 +47,12 @@ enum AppError: LocalizedError, Identifiable {
             return "Biometric authentication failed."
         case .permissionDenied(let feature):
             return "\(feature) requires permission."
+        case .uploadFailed(let msg):
+            return "Upload failed: \(msg)"
+        case .fileTooLarge(let max):
+            return "File exceeds \(max) MB limit"
+        case .unsupportedFileType(let type):
+            return "Unsupported file type: \(type)"
         case .unknown(let msg):
             return msg
         }
@@ -55,6 +64,8 @@ enum AppError: LocalizedError, Identifiable {
             return true
         case .supabaseHTTP(let code, _):
             return code >= 500
+        case .uploadFailed:
+            return true
         default:
             return false
         }
