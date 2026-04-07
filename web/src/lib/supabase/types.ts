@@ -190,3 +190,24 @@ export interface ChangeOrder {
   created_at: string;
   user_id?: string;
 }
+
+export type Document = {
+  id: string;
+  org_id: string;
+  version_chain_id: string;
+  version_number: number;
+  is_current: boolean;
+  filename: string;
+  mime_type: string;
+  size_bytes: number;
+  storage_path: string;
+  uploaded_by: string;
+  created_at: string;
+};
+
+export type DocumentAttachment = {
+  document_id: string;
+  entity_type: "project" | "rfi" | "submittal" | "change_order";
+  entity_id: string;
+  created_at: string;
+};
