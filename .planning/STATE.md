@@ -1,11 +1,10 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: Production Hardening
-status: complete
-stopped_at: Milestone v1.0 complete — all 12 phases shipped
-last_updated: "2026-04-06T23:10:00.000Z"
-last_activity: 2026-04-07
+milestone_name: milestone
+status: Shipped 2026-04-06
+stopped_at: Quick task 260406-rcz complete — all 8 audit gaps fixed, 0 TS errors
+last_updated: "2026-04-07T00:34:27.832Z"
 progress:
   total_phases: 12
   completed_phases: 12

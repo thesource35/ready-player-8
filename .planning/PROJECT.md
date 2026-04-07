@@ -2,11 +2,18 @@
 
 ## What This Is
 
-A comprehensive fix-up of the existing ConstructionOS multi-platform app (iOS/macOS/visionOS SwiftUI + Next.js web). The app is feature-complete but has accumulated technical debt: silent error handling, insecure credential storage, volatile state that resets on launch, no authentication, and zero test coverage. This project makes the codebase production-ready.
+A production-hardened multi-platform construction management app (iOS/macOS/visionOS SwiftUI + Next.js web). Shipped v1.0 hardening milestone: secure credential storage, real authentication with MFA, row-level security on all 23 Supabase tables, crash-safe iOS code, comprehensive error handling, web security hardening, accessibility, SEO, and test coverage across both platforms.
 
 ## Core Value
 
 Every user action must either succeed visibly or fail with a clear, actionable message — no silent data loss, no undetected errors, no security gaps.
+
+## Current State
+
+**Shipped:** v1.0 Production Hardening (2026-04-06)
+**Codebase:** ~31,684 LOC Swift + ~25,105 LOC TypeScript = ~56,789 total
+**Tech stack:** SwiftUI (iOS 18.2+), Next.js 16.2.2, React 19, Supabase, Anthropic Claude API
+**Tests:** 18 iOS unit tests (XCTest), 42 web unit tests (Vitest), 2 Playwright E2E specs
 
 ## Requirements
 
@@ -16,54 +23,48 @@ Every user action must either succeed visibly or fail with a clear, actionable m
 - ✓ Contracts/bid pipeline management — existing
 - ✓ Market intelligence dashboard — existing
 - ✓ Angelic AI chat (Claude API) — existing
-- ✓ Wealth Suite (5 tabs: MoneyLens, Psychology, PowerThinking, Leverage, Opportunity) — existing
+- ✓ Wealth Suite (5 tabs) — existing
 - ✓ Rental search and equipment management — existing
 - ✓ Operations views (commercial, core) — existing
 - ✓ Integration Hub for backend configuration — existing
 - ✓ Web platform with 30+ route pages — existing
 - ✓ Theme system and premium UI — existing
 - ✓ CarPlay support — existing
+- ✓ iOS Keychain credential storage with UserDefaults migration — v1.0
+- ✓ Supabase Auth with email/password, MFA, session management — v1.0
+- ✓ Row-level security on all 23 Supabase tables — v1.0
+- ✓ iOS crash safety (all force unwraps eliminated) — v1.0
+- ✓ iOS error handling with CrashReporter logging — v1.0
+- ✓ iOS state persistence via AppStorageJSON — v1.0
+- ✓ Web Zod validation, CSRF, Paddle webhook HMAC — v1.0
+- ✓ Web error boundaries on all 42 routes — v1.0
+- ✓ Web loading/empty states on data pages — v1.0
+- ✓ Distributed rate limiting (Upstash Redis) — v1.0
+- ✓ Pagination on all data routes — v1.0
+- ✓ Dynamic content (no hardcoded users/prices/dates) — v1.0
+- ✓ Web accessibility (aria-labels, form labels, status text) — v1.0
+- ✓ iOS accessibility (182+ VoiceOver labels) — v1.0
+- ✓ SEO metadata, sitemap, robots.txt, OG image — v1.0
+- ✓ iOS unit tests (SupabaseService, Keychain, auth, AppStorageJSON) — v1.0
+- ✓ Web unit tests (chat, leads, middleware, Paddle, checkout) — v1.0
+- ✓ Playwright E2E tests (auth/project, chat flows) — v1.0
 
 ### Active
 
-- [ ] Move all API keys and credentials from UserDefaults to Keychain (iOS) and env vars (web)
-- [ ] Enable Supabase Row-Level Security on all tables
-- [ ] Implement Supabase Auth with session tokens (iOS + web)
-- [ ] Replace all empty catch blocks with proper error logging and user-facing alerts
-- [ ] Replace silent `try?` calls with `do-catch` blocks that surface failures
-- [ ] Persist all @State arrays using AppStorage/JSON pattern (projects, contracts, messages, wealth data)
-- [ ] Replace in-memory rate limiter with distributed solution (Upstash Redis)
-- [ ] Fix chat API fallback to distinguish "API unavailable" vs "temporary error"
-- [ ] Add email validation on lead capture endpoint
-- [ ] Add CSRF protection on form endpoints
-- [ ] Add pagination to Supabase queries (web)
-- [ ] Reduce chat system prompt payload size
-- [ ] Fix ProjectsView/ContractsView stale data when filtering
-- [ ] Fix AngelicAI session isolation (server-side validation)
-- [ ] Add error boundaries and loading states to web pages
-- [ ] Write unit tests for core services (SupabaseService, chat route, auth flows)
-- [ ] Write integration tests for Supabase CRUD operations
-- [ ] Write E2E tests for chat flow (web)
+(None — planning next milestone)
+
+### Known Gaps
+
+None — all v1.0 audit gaps resolved (quick task 260406-rcz).
 
 ### Out of Scope
 
 - Breaking apart monolithic files (ContentView, RentalSearchView) — separate refactoring initiative
 - Offline queue / local-first architecture — future project
 - Real-time collaboration / conflict resolution — future project
-- Webhook integrations to external systems — future project
 - Load/performance testing — defer until after hardening
-- Mobile app redesign or new features — this is a fix-up only
-
-## Context
-
-- iOS app is a brownfield SwiftUI project targeting iOS 26.2+, macOS 15.6+, visionOS
-- Web app is Next.js 16.2.2 with React 19, TypeScript, Tailwind CSS
-- Both platforms share a Supabase backend (PostgreSQL + REST API)
-- AI features use Anthropic Claude API (claude-haiku-4-5-20251001)
-- The app has been through several feature-building sprints but no hardening pass
-- ContentView.swift is 12,500+ lines (monolithic) — we're fixing bugs inside it, not restructuring
-- CONCERNS.md documents 299 lines of specific issues with file paths and line numbers
-- Codebase map available in `.planning/codebase/` (7 documents)
+- Mobile app redesign or new features — hardening only
+- OAuth login (Google, Apple) — deferred to v2 (SSO buttons hidden)
 
 ## Constraints
 
@@ -77,28 +78,18 @@ Every user action must either succeed visibly or fail with a clear, actionable m
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Fix bugs in place, don't refactor file structure | Avoid scope creep — monolith breakup is separate project | — Pending |
-| Implement Supabase Auth (not custom auth) | Already using Supabase, minimize new dependencies | — Pending |
-| Use Upstash Redis for rate limiting | Distributed, works across serverless instances | — Pending |
-| Add tests alongside fixes | Catch regressions as we change error handling and state management | — Pending |
-| Keychain for iOS credentials | Platform-standard secure storage, pattern already exists in codebase | — Pending |
+| Fix bugs in place, don't refactor file structure | Avoid scope creep — monolith breakup is separate project | ✓ Good — kept scope focused |
+| Implement Supabase Auth (not custom auth) | Already using Supabase, minimize new dependencies | ✓ Good — MFA, session management, middleware all work |
+| Use Upstash Redis for rate limiting | Distributed, works across serverless instances | ✓ Good — dual-mode with in-memory fallback |
+| Add tests alongside fixes | Catch regressions as we change error handling and state management | ✓ Good — 60+ tests across platforms |
+| Keychain for iOS credentials | Platform-standard secure storage, pattern already exists in codebase | ✓ Good — automatic migration from UserDefaults |
+| Sequential security chain (Keychain → Auth → RLS) | RLS without user_id backfill makes data invisible | ✓ Good — clean dependency ordering |
+| AI SDK migration (raw fetch → streamText) | SDK already in package.json, provides streaming + error handling | ✓ Good — maxOutputTokens fixed, streaming works |
+| 3-phase RLS migration (columns → backfill → policies) | Safe rollout with backfill before enabling enforcement | ✓ Good — all 23 tables secured |
 
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/gsd-transition`):
-1. Requirements invalidated? -> Move to Out of Scope with reason
-2. Requirements validated? -> Move to Validated with phase reference
-3. New requirements emerged? -> Add to Active
-4. Decisions to log? -> Add to Key Decisions
-5. "What This Is" still accurate? -> Update if drifted
-
-**After each milestone** (via `/gsd-complete-milestone`):
-1. Full review of all sections
-2. Core Value check — still the right priority?
-3. Audit Out of Scope — reasons still valid?
-4. Update Context with current state
-
 ---
-*Last updated: 2026-04-04 after initialization*
+*Last updated: 2026-04-07 after v1.0 milestone completion*
