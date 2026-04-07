@@ -4,6 +4,22 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
+vi.mock("@/lib/csrf", () => ({
+  verifyCsrfOrigin: vi.fn(() => true),
+}));
+
+vi.mock("@/lib/supabase/server", () => ({
+  createServerSupabase: vi.fn(() =>
+    Promise.resolve({
+      auth: {
+        getUser: vi.fn(() =>
+          Promise.resolve({ data: { user: { id: "test-user-id" } } })
+        ),
+      },
+    })
+  ),
+}));
+
 vi.mock("@/lib/billing/square", () => ({
   getSquarePaymentLink: vi.fn(() => "https://square.link/test-checkout"),
 }));
