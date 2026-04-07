@@ -469,18 +469,29 @@ private struct ProjectDetailSheet: View {
     }
 
     private var detailView: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            detailRow("Client", project.client)
-            detailRow("Type", project.type)
-            detailRow("Status", project.status)
-            detailRow("Progress", "\(project.progress)%")
-            detailRow("Budget", project.budget)
-            detailRow("Team", project.team)
-            if !project.score.isEmpty { detailRow("Score", project.score) }
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 14) {
+                detailRow("Client", project.client)
+                detailRow("Type", project.type)
+                detailRow("Status", project.status)
+                detailRow("Progress", "\(project.progress)%")
+                detailRow("Budget", project.budget)
+                detailRow("Team", project.team)
+                if !project.score.isEmpty { detailRow("Score", project.score) }
+            }
+            .padding(16)
+            .background(Theme.surface)
+            .cornerRadius(14)
+
+            // MARK: - Phase 13 Documents
+            if let pid = project.id {
+                DocumentAttachmentsView(
+                    entityType: .project,
+                    entityId: pid,
+                    orgId: SupabaseService.shared.currentOrgId
+                )
+            }
         }
-        .padding(16)
-        .background(Theme.surface)
-        .cornerRadius(14)
     }
 
     private func detailRow(_ label: String, _ value: String) -> some View {

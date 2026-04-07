@@ -212,6 +212,17 @@ final class SupabaseService: ObservableObject {
 
     var isAuthenticated: Bool { accessToken != nil }
 
+    /// Org identifier used by Phase 13 document uploads. Reads from
+    /// UserDefaults so Integration Hub can configure it later; falls back to a
+    /// stable per-install UUID so single-tenant dev installs still work.
+    var currentOrgId: String {
+        let key = "ConstructOS.Integrations.Backend.OrgId"
+        if let v = UserDefaults.standard.string(forKey: key), !v.isEmpty { return v }
+        let fresh = UUID().uuidString
+        UserDefaults.standard.set(fresh, forKey: key)
+        return fresh
+    }
+
     func signUp(email: String, password: String) async throws {
         guard isConfigured else { throw SupabaseError.notConfigured }
         guard let url = URL(string: "\(baseURL)/auth/v1/signup") else {

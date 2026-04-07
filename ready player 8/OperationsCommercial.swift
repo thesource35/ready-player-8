@@ -56,6 +56,8 @@ struct SubmittalLogPanel: View {
     @State private var newDisc = ""
     @State private var newSub = ""
     @State private var newRet = ""
+    // MARK: - Phase 13 Documents
+    @State private var docsForSubmittal: DocsEntityRef?
 
     private var filtered: [SubmittalItem] {
         submittals.filter { filterStatus == nil || $0.status == filterStatus }
@@ -178,6 +180,10 @@ struct SubmittalLogPanel: View {
                 }
                 .padding(.horizontal, 8).padding(.vertical, 5)
                 .background(Theme.surface.opacity(0.7)).cornerRadius(7)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    docsForSubmittal = DocsEntityRef(id: "submittal-\(item.number)", title: item.number)
+                }
             }
         }
         .padding(14).background(Theme.panel)
@@ -186,6 +192,20 @@ struct SubmittalLogPanel: View {
             submittals = loadJSON("ConstructOS.Ops.Submittals", default: submittals)
         }
         .padding(.horizontal, 16)
+        .sheet(item: $docsForSubmittal) { ref in
+            NavigationStack {
+                ScrollView {
+                    DocumentAttachmentsView(
+                        entityType: .submittal,
+                        entityId: ref.id,
+                        orgId: SupabaseService.shared.currentOrgId
+                    )
+                    .padding()
+                }
+                .background(Theme.bg)
+                .navigationTitle(ref.title)
+            }
+        }
     }
 }
 
@@ -1393,6 +1413,9 @@ struct RFITrackerPanel: View {
     @State private var expanded: Bool = false
     @State private var escalatedIDs: Set<Int> = []
 
+    // MARK: - Phase 13 Documents
+    @State private var docsForRFI: DocsEntityRef?
+
     @State private var items: [RFIItem] = [
         RFIItem(id: 221, subject: "Structural beam spec — Grid C-4", assignedTo: "Thornfield Eng", submittedDaysAgo: 18, priority: .high),
         RFIItem(id: 218, subject: "Fire suppression riser relocation", assignedTo: "MEP Lead", submittedDaysAgo: 11, priority: .high),
@@ -1514,6 +1537,10 @@ struct RFITrackerPanel: View {
                         showEscalate: role == .projectManager && item.submittedDaysAgo > 10,
                         onEscalate: { escalatedIDs.insert(item.id) }
                     )
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        docsForRFI = DocsEntityRef(id: "rfi-\(item.id)", title: "RFI-\(item.id)")
+                    }
                     Divider().background(Theme.border).padding(.leading, 14)
                 }
             }
@@ -1528,7 +1555,28 @@ struct RFITrackerPanel: View {
         .onAppear {
             items = loadJSON("ConstructOS.Ops.RFIs", default: items)
         }
+        .sheet(item: $docsForRFI) { ref in
+            NavigationStack {
+                ScrollView {
+                    DocumentAttachmentsView(
+                        entityType: .rfi,
+                        entityId: ref.id,
+                        orgId: SupabaseService.shared.currentOrgId
+                    )
+                    .padding()
+                }
+                .background(Theme.bg)
+                .navigationTitle(ref.title)
+            }
+        }
     }
+}
+
+/// Lightweight Identifiable wrapper for `.sheet(item:)` flows that need an
+/// entity id + display title together. Phase 13.
+struct DocsEntityRef: Identifiable, Hashable {
+    let id: String
+    let title: String
 }
 
 struct RFIRow: View {
