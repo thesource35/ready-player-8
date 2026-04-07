@@ -1021,3 +1021,209 @@ struct SupabaseTaxExpense: Codable, Identifiable, Sendable {
     var receiptAttached: Bool
     var deductible: Bool
 }
+
+// MARK: - Storage (Phase 13: Document Management)
+//
+// Adds Supabase Storage REST helpers for document upload/download. Errors
+// are surfaced as `AppError` (not `SupabaseError`) so the document layer
+// can flow them through `AlertState` directly.
+
+extension SupabaseService {
+
+    private var storageBaseURL: String { "\(baseURL)/storage/v1" }
+
+    private func authHeader() -> String {
+        if let token = accessToken, !token.isEmpty { return "Bearer \(token)" }
+        return "Bearer \(apiKey)"
+    }
+
+    /// Upload raw bytes to `{bucket}/{path}` via Supabase Storage REST.
+    /// Refuses to overwrite existing objects (`x-upsert: false`).
+    /// - Returns: the storage path on success.
+    func uploadFile(
+        bucket: String,
+        path: String,
+        data: Data,
+        mimeType: String
+    ) async throws -> String {
+        guard isConfigured else { throw AppError.supabaseNotConfigured }
+        guard let url = URL(string: "\(storageBaseURL)/object/\(bucket)/\(path)") else {
+            throw AppError.unknown("Invalid storage URL")
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue(authHeader(), forHTTPHeaderField: "Authorization")
+        req.setValue(apiKey, forHTTPHeaderField: "apikey")
+        req.setValue(mimeType, forHTTPHeaderField: "Content-Type")
+        req.setValue("false", forHTTPHeaderField: "x-upsert")
+        do {
+            let (respData, response) = try await URLSession.shared.upload(for: req, from: data)
+            guard let http = response as? HTTPURLResponse else {
+                throw AppError.network(underlying: URLError(.badServerResponse))
+            }
+            guard (200..<300).contains(http.statusCode) else {
+                throw AppError.supabaseHTTP(
+                    statusCode: http.statusCode,
+                    body: String(data: respData, encoding: .utf8) ?? ""
+                )
+            }
+            return path
+        } catch let e as AppError {
+            throw e
+        } catch {
+            throw AppError.network(underlying: error)
+        }
+    }
+
+    /// Generate a short-lived signed URL for `{bucket}/{path}`.
+    /// Default TTL = 3600s (~1h). Returns a fully-qualified URL.
+    func createSignedURL(bucket: String, path: String, expiresIn: Int = 3600) async throws -> URL {
+        guard isConfigured else { throw AppError.supabaseNotConfigured }
+        guard let url = URL(string: "\(storageBaseURL)/object/sign/\(bucket)/\(path)") else {
+            throw AppError.unknown("Invalid sign URL")
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue(authHeader(), forHTTPHeaderField: "Authorization")
+        req.setValue(apiKey, forHTTPHeaderField: "apikey")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpBody = try JSONSerialization.data(withJSONObject: ["expiresIn": expiresIn])
+        do {
+            let (respData, response) = try await URLSession.shared.data(for: req)
+            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+                let code = (response as? HTTPURLResponse)?.statusCode ?? 0
+                throw AppError.supabaseHTTP(
+                    statusCode: code,
+                    body: String(data: respData, encoding: .utf8) ?? ""
+                )
+            }
+            let decoded = try JSONDecoder().decode(SignedURLResponse.self, from: respData)
+            // signedURL is path-relative — prepend storage base.
+            let full = "\(storageBaseURL)\(decoded.signedURL)"
+            guard let resultURL = URL(string: full) else {
+                throw AppError.unknown("Bad signed URL")
+            }
+            return resultURL
+        } catch let e as AppError {
+            throw e
+        } catch let e as DecodingError {
+            throw AppError.decoding(underlying: e)
+        } catch {
+            throw AppError.network(underlying: error)
+        }
+    }
+
+    /// Download a signed URL to a temporary file. Caller is responsible for moving it.
+    func downloadFile(signedURL: URL) async throws -> URL {
+        do {
+            let (tempURL, response) = try await URLSession.shared.download(from: signedURL)
+            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+                throw AppError.supabaseHTTP(
+                    statusCode: (response as? HTTPURLResponse)?.statusCode ?? 0,
+                    body: ""
+                )
+            }
+            return tempURL
+        } catch let e as AppError {
+            throw e
+        } catch {
+            throw AppError.network(underlying: error)
+        }
+    }
+
+    /// Upload with exponential-backoff retry for retryable AppErrors (5xx, network).
+    func uploadFileWithRetry(
+        bucket: String,
+        path: String,
+        data: Data,
+        mimeType: String,
+        maxAttempts: Int = 3
+    ) async throws -> String {
+        var lastError: Error?
+        for attempt in 1...maxAttempts {
+            do {
+                return try await uploadFile(bucket: bucket, path: path, data: data, mimeType: mimeType)
+            } catch let e as AppError where e.isRetryable && attempt < maxAttempts {
+                lastError = e
+                let backoff = pow(2.0, Double(attempt - 1))
+                try? await Task.sleep(nanoseconds: UInt64(backoff * 1_000_000_000))
+                continue
+            } catch {
+                throw error
+            }
+        }
+        throw lastError ?? AppError.unknown("upload retry exhausted")
+    }
+
+    /// Insert an Encodable row into a Phase-13 document table. Bypasses the
+    /// allowlist used by the generic `insert(_:record:)` (which doesn't yet
+    /// know about cs_documents / cs_document_attachments).
+    func insertDocumentRow<T: Encodable>(table: String, row: T) async throws {
+        guard isConfigured else { throw AppError.supabaseNotConfigured }
+        guard table == "cs_documents" || table == "cs_document_attachments" else {
+            throw AppError.unknown("insertDocumentRow: unsupported table \(table)")
+        }
+        guard let url = URL(string: "\(baseURL)/rest/v1/\(table)") else {
+            throw AppError.unknown("Invalid REST URL")
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue(authHeader(), forHTTPHeaderField: "Authorization")
+        req.setValue(apiKey, forHTTPHeaderField: "apikey")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("return=minimal", forHTTPHeaderField: "Prefer")
+        do {
+            let encoder = JSONEncoder()
+            encoder.keyEncodingStrategy = .convertToSnakeCase
+            encoder.dateEncodingStrategy = .iso8601
+            req.httpBody = try encoder.encode(row)
+        } catch {
+            throw AppError.encoding(underlying: error)
+        }
+        do {
+            let (respData, response) = try await URLSession.shared.data(for: req)
+            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+                throw AppError.supabaseHTTP(
+                    statusCode: (response as? HTTPURLResponse)?.statusCode ?? 0,
+                    body: String(data: respData, encoding: .utf8) ?? ""
+                )
+            }
+        } catch let e as AppError {
+            throw e
+        } catch {
+            throw AppError.network(underlying: error)
+        }
+    }
+
+    /// Call a Supabase RPC (e.g. `create_document_version`).
+    func callRPC<T: Decodable>(name: String, params: [String: String]) async throws -> T {
+        guard isConfigured else { throw AppError.supabaseNotConfigured }
+        guard let url = URL(string: "\(baseURL)/rest/v1/rpc/\(name)") else {
+            throw AppError.unknown("Invalid RPC URL")
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue(authHeader(), forHTTPHeaderField: "Authorization")
+        req.setValue(apiKey, forHTTPHeaderField: "apikey")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpBody = try JSONSerialization.data(withJSONObject: params)
+        do {
+            let (respData, response) = try await URLSession.shared.data(for: req)
+            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+                throw AppError.supabaseHTTP(
+                    statusCode: (response as? HTTPURLResponse)?.statusCode ?? 0,
+                    body: String(data: respData, encoding: .utf8) ?? ""
+                )
+            }
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            return try decoder.decode(T.self, from: respData)
+        } catch let e as AppError {
+            throw e
+        } catch let e as DecodingError {
+            throw AppError.decoding(underlying: e)
+        } catch {
+            throw AppError.network(underlying: error)
+        }
+    }
+}
