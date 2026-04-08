@@ -132,10 +132,22 @@ struct DocumentAttachmentsView: View {
                     .foregroundColor(Theme.accent)
                     .font(.system(size: 18))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(doc.filename)
-                        .foregroundColor(Theme.text)
-                        .font(.system(size: 14, weight: .semibold))
-                        .lineLimit(1)
+                    HStack(spacing: 6) {
+                        Text(doc.filename)
+                            .foregroundColor(Theme.text)
+                            .font(.system(size: 14, weight: .semibold))
+                            .lineLimit(1)
+                        if let badge = FieldPhotoUpload.gpsBadgeLabel(for: doc) {
+                            Text(badge.uppercased())
+                                .font(.system(size: 8, weight: .black))
+                                .tracking(1)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(doc.isStaleGPS ? Theme.gold.opacity(0.18) : Theme.cyan.opacity(0.18))
+                                .foregroundColor(doc.isStaleGPS ? Theme.gold : Theme.cyan)
+                                .cornerRadius(4)
+                        }
+                    }
                     Text("\(doc.mimeType) · \(formatBytes(doc.sizeBytes)) · v\(doc.versionNumber)")
                         .font(.caption)
                         .foregroundColor(Theme.muted)

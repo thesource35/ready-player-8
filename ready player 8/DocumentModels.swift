@@ -3,12 +3,17 @@
 
 import Foundation
 
-/// Entity types a document can attach to.
+/// Entity types a document can attach to. Raw values MUST match the
+/// `cs_document_entity_type` Postgres enum. Phase 16 added `daily_log`,
+/// `safety_incident`, `punch_item` (migration 20260408004).
 enum DocumentEntityType: String, Codable, CaseIterable, Hashable {
     case project
     case rfi
     case submittal
     case changeOrder = "change_order"
+    case dailyLog = "daily_log"
+    case safetyIncident = "safety_incident"
+    case punchItem = "punch_item"
 }
 
 /// Metadata row in `cs_documents`. Property names are camelCase; the
@@ -25,6 +30,20 @@ struct SupabaseDocument: Codable, Identifiable, Hashable {
     var storagePath: String
     var uploadedBy: String
     var createdAt: String
+
+    // Phase 16 FIELD-01: GPS + capture time. Nullable so pre-existing rows
+    // continue to decode untouched (D-02).
+    var gpsLat: Double?
+    var gpsLng: Double?
+    var gpsAccuracyM: Double?
+    var gpsSource: String?          // cs_gps_source enum raw value
+    var capturedAt: String?         // ISO8601; device clock at shutter (D-08)
+
+    /// Convenience: true when this photo was GPS-tagged with a stale fallback.
+    var isStaleGPS: Bool { gpsSource == "stale_last_known" }
+
+    /// Convenience: true when the pin was manually repositioned post-capture.
+    var isManualPin: Bool { gpsSource == "manual_pin" }
 }
 
 /// Junction row in `cs_document_attachments` (many-to-many docs ↔ entities).
