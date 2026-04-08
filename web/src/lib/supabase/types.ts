@@ -257,3 +257,59 @@ export interface DeviceToken {
   last_seen_at: string;
   created_at: string;
 }
+
+// ---------- Phase 15: Team & Crew ----------
+// Schema authoritative source: supabase/migrations/20260408_phase15_team.sql
+
+export type TeamMemberKind = "internal" | "subcontractor" | "vendor";
+
+export type TeamMember = {
+  id: string;
+  kind: TeamMemberKind;
+  user_id: string | null;
+  name: string;
+  role: string | null;
+  trade: string | null;
+  email: string | null;
+  phone: string | null;
+  company: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProjectAssignment = {
+  id: string;
+  project_id: string;
+  member_id: string;
+  role_on_project: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  status: string;
+  created_at: string;
+};
+
+export type Certification = {
+  id: string;
+  member_id: string;
+  name: string;
+  issuer: string | null;
+  number: string | null;
+  issued_date: string | null;
+  expires_at: string | null;
+  document_id: string | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DailyCrew = {
+  id: string;
+  project_id: string;
+  assignment_date: string;
+  member_ids: string[];
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
