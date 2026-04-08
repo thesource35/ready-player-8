@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 <key>NSCameraUsageDescription</key>
-	<string>ConstructionOS needs camera access for site photos, QR code scanning, and condition reports.</string>
+	<string>ConstructionOS uses the camera to capture jobsite photos for punch items, daily logs, and safety incidents.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>ConstructionOS needs photo library access to attach site photos to reports and documents.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>ConstructionOS uses your location for GPS equipment tracking, geofencing, and nearby rental search.</string>
+	<string>ConstructionOS tags every field photo with its location so you can find work in the right spot. Location is only requested while you're capturing a photo.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>ConstructionOS uses background location for automatic crew clock-in/out at jobsite geofences.</string>
 	<key>NSFaceIDUsageDescription</key>
