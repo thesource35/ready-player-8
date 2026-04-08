@@ -1,4 +1,5 @@
 import { AttachmentList } from "@/components/documents/AttachmentList";
+import DailyCrewSection from "./DailyCrewSection";
 
 export default async function ProjectDetailPage({
   params,
@@ -12,6 +13,7 @@ export default async function ProjectDetailPage({
       <div style={{ marginTop: 20 }}>
         <AttachmentList entityType="project" entityId={id} />
       </div>
+      <DailyCrewSection projectId={id} />
     </main>
   );
 }

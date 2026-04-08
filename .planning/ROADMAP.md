@@ -79,7 +79,11 @@
   3. User can record certifications and licenses with expiration dates
   4. User receives an alert when a certification is nearing expiration
   5. User can create a daily crew assignment for a project
-**Plans**: TBD
+**Plans**: 4 plans
+- [ ] 15-01-PLAN.md — Wave 0 schema + RLS + test stubs + db push (BLOCKING)
+- [ ] 15-02-PLAN.md — Wave 1 cert-expiry-scan Edge Function + pg_cron
+- [ ] 15-03-PLAN.md — Wave 2 web /team route + API routes + DailyCrewSection
+- [ ] 15-04-PLAN.md — Wave 2 iOS TeamView + CertificationsView + DailyCrewView
 **UI hint**: yes
 
 ### Phase 16: Field Tools
@@ -149,7 +153,7 @@
 | 1-12 | v1.0 | 36/36 | Complete | 2026-04-06 |
 | 13. Document Management Foundation | v2.0 | 4/5 | In Progress|  |
 | 14. Notifications & Activity Feed | v2.0 | 0/0 | Not started | - |
-| 15. Team & Crew Management | v2.0 | 0/0 | Not started | - |
+| 15. Team & Crew Management | v2.0 | 0/4 | Planned | - |
 | 16. Field Tools | v2.0 | 0/0 | Not started | - |
 | 17. Calendar & Scheduling | v2.0 | 0/0 | Not started | - |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 0/0 | Not started | - |

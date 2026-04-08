@@ -51,20 +51,36 @@ Every user action must either succeed visibly or fail with a clear, actionable m
 
 ### Active
 
-(None — planning next milestone)
-
-### Known Gaps
-
-None — all v1.0 audit gaps resolved (quick task 260406-rcz).
+- [ ] Notifications & Activity Feed
+- [ ] Document Management
+- [ ] Team & Crew Management
+- [ ] Reporting & Dashboards
+- [ ] Enhanced AI (Angelic AI v2)
+- [ ] Field Tools (photos, punch lists, daily logs)
+- [ ] Client Portal / Sharing
+- [ ] Calendar & Scheduling
 
 ### Out of Scope
 
 - Breaking apart monolithic files (ContentView, RentalSearchView) — separate refactoring initiative
 - Offline queue / local-first architecture — future project
 - Real-time collaboration / conflict resolution — future project
-- Load/performance testing — defer until after hardening
-- Mobile app redesign or new features — hardening only
-- OAuth login (Google, Apple) — deferred to v2 (SSO buttons hidden)
+- Load/performance testing — defer until after feature expansion
+- OAuth login (Google, Apple) — deferred to v2.1+
+
+## Current Milestone: v2.0 Feature Expansion
+
+**Goal:** Add 8 major feature areas that transform ConstructionOS from a hardened shell into a full-featured construction management platform.
+
+**Target features:**
+- Notifications & Activity Feed
+- Document Management
+- Team & Crew Management
+- Reporting & Dashboards
+- Enhanced AI (Angelic AI v2)
+- Field Tools (photos, punch lists, daily logs)
+- Client Portal / Sharing
+- Calendar & Scheduling
 
 ## Constraints
 
@@ -91,5 +107,18 @@ None — all v1.0 audit gaps resolved (quick task 260406-rcz).
 
 This document evolves at phase transitions and milestone boundaries.
 
+**After each phase transition** (via `/gsd-transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-04-07 after v1.0 milestone completion*
+*Last updated: 2026-04-06 after v2.0 milestone start*

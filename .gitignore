@@ -39,3 +39,4 @@ Thumbs.db
 
 # APNs auth keys — never commit
 *.p8
+.claude/
