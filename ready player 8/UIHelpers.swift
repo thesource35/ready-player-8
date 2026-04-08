@@ -420,6 +420,12 @@ final class NotificationManager: ObservableObject {
         do {
             let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound])
             isAuthorized = granted
+            // MARK: - Phase 14: register with APNs after permission grant
+            if granted {
+                #if canImport(UIKit)
+                UIApplication.shared.registerForRemoteNotifications()
+                #endif
+            }
         } catch {
             CrashReporter.shared.reportError("Notification authorization failed: \(error.localizedDescription)")
             isAuthorized = false
