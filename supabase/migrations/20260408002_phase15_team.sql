@@ -67,5 +67,7 @@ create unique index cs_daily_crew_one_per_day on cs_daily_crew(project_id, assig
 create index cs_daily_crew_date_idx on cs_daily_crew(assignment_date);
 
 -- Reuse existing updated_at trigger from 001_updated_at_triggers.sql
-create trigger set_cs_team_members_updated_at  before update on cs_team_members  for each row execute function set_updated_at();
-create trigger set_cs_certifications_updated_at before update on cs_certifications for each row execute function set_updated_at();
+drop trigger if exists set_cs_team_members_updated_at on cs_team_members;
+create trigger set_cs_team_members_updated_at  before update on cs_team_members  for each row execute function update_updated_at_column();
+drop trigger if exists set_cs_certifications_updated_at on cs_certifications;
+create trigger set_cs_certifications_updated_at before update on cs_certifications for each row execute function update_updated_at_column();

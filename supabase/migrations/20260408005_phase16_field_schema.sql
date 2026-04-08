@@ -24,8 +24,10 @@ ALTER TABLE cs_documents
     ADD COLUMN IF NOT EXISTS gps_source cs_gps_source,
     ADD COLUMN IF NOT EXISTS captured_at TIMESTAMPTZ;
 
-CREATE INDEX IF NOT EXISTS idx_cs_documents_project_captured_at
-    ON cs_documents (project_id, captured_at);
+-- NOTE: cs_documents has no project_id column (project linkage flows through
+-- cs_document_attachments). Index captured_at alone for time-range queries.
+CREATE INDEX IF NOT EXISTS idx_cs_documents_captured_at
+    ON cs_documents (captured_at);
 
 -- =========================================================================
 -- 3. cs_photo_annotations (D-09, D-13)
@@ -60,9 +62,29 @@ CREATE TABLE IF NOT EXISTS cs_daily_logs (
     created_by               UUID,
     created_at               TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_by               UUID,
-    updated_at               TIMESTAMPTZ NOT NULL DEFAULT now(),
-    CONSTRAINT cs_daily_logs_project_date_unique UNIQUE (project_id, log_date)
+    updated_at               TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Defensive: if a prior phase created cs_daily_logs with a different shape,
+-- add any missing Phase 16 columns so the rest of this migration succeeds.
+ALTER TABLE cs_daily_logs
+    ADD COLUMN IF NOT EXISTS org_id                  UUID,
+    ADD COLUMN IF NOT EXISTS project_id              UUID,
+    ADD COLUMN IF NOT EXISTS log_date                DATE,
+    ADD COLUMN IF NOT EXISTS template_snapshot_jsonb JSONB,
+    ADD COLUMN IF NOT EXISTS content_jsonb           JSONB,
+    ADD COLUMN IF NOT EXISTS weather_jsonb           JSONB,
+    ADD COLUMN IF NOT EXISTS created_by              UUID,
+    ADD COLUMN IF NOT EXISTS created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
+    ADD COLUMN IF NOT EXISTS updated_by              UUID,
+    ADD COLUMN IF NOT EXISTS updated_at              TIMESTAMPTZ NOT NULL DEFAULT now();
+
+DO $$ BEGIN
+    ALTER TABLE cs_daily_logs
+        ADD CONSTRAINT cs_daily_logs_project_date_unique UNIQUE (project_id, log_date);
+EXCEPTION WHEN duplicate_table THEN NULL;
+         WHEN duplicate_object THEN NULL;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_cs_daily_logs_project_date
     ON cs_daily_logs (project_id, log_date);
@@ -76,9 +98,22 @@ CREATE TABLE IF NOT EXISTS cs_project_log_templates (
     project_id      UUID NOT NULL,
     template_jsonb  JSONB,
     updated_by      UUID,
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    CONSTRAINT cs_project_log_templates_project_unique UNIQUE (project_id)
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+ALTER TABLE cs_project_log_templates
+    ADD COLUMN IF NOT EXISTS org_id         UUID,
+    ADD COLUMN IF NOT EXISTS project_id     UUID,
+    ADD COLUMN IF NOT EXISTS template_jsonb JSONB,
+    ADD COLUMN IF NOT EXISTS updated_by     UUID,
+    ADD COLUMN IF NOT EXISTS updated_at     TIMESTAMPTZ NOT NULL DEFAULT now();
+
+DO $$ BEGIN
+    ALTER TABLE cs_project_log_templates
+        ADD CONSTRAINT cs_project_log_templates_project_unique UNIQUE (project_id);
+EXCEPTION WHEN duplicate_table THEN NULL;
+         WHEN duplicate_object THEN NULL;
+END $$;
 
 -- =========================================================================
 -- 6. Enable RLS
@@ -151,7 +186,7 @@ CREATE POLICY cs_photo_annotations_delete ON cs_photo_annotations
 -- ---- cs_daily_logs (D-19) ----
 -- SELECT: any authenticated user assigned to the project (Phase 15
 -- cs_project_assignments) or org admin.
--- INSERT/UPDATE: created_by = auth.uid() OR admin OR PM/superintendent in
+-- INSERT/UPDATE: created_by::text = auth.uid()::text OR admin OR PM/superintendent in
 -- cs_project_assignments. Mitigates T-16-IDOR.
 
 DROP POLICY IF EXISTS cs_daily_logs_select ON cs_daily_logs;
@@ -161,8 +196,9 @@ CREATE POLICY cs_daily_logs_select ON cs_daily_logs
         auth.uid() IS NOT NULL
         AND EXISTS (
             SELECT 1 FROM cs_project_assignments pa
+            JOIN cs_team_members tm ON tm.id = pa.member_id
             WHERE pa.project_id = cs_daily_logs.project_id
-              AND pa.user_id    = auth.uid()
+              AND tm.user_id    = auth.uid()
         )
     );
 
@@ -172,12 +208,13 @@ CREATE POLICY cs_daily_logs_insert ON cs_daily_logs
     WITH CHECK (
         auth.uid() IS NOT NULL
         AND (
-            created_by = auth.uid()
+            created_by::text = auth.uid()::text
             OR EXISTS (
                 SELECT 1 FROM cs_project_assignments pa
+                JOIN cs_team_members tm ON tm.id = pa.member_id
                 WHERE pa.project_id = cs_daily_logs.project_id
-                  AND pa.user_id    = auth.uid()
-                  AND pa.role IN ('admin', 'project_manager', 'superintendent')
+                  AND tm.user_id    = auth.uid()
+                  AND pa.role_on_project IN ('admin', 'project_manager', 'superintendent')
             )
         )
     );
@@ -188,24 +225,26 @@ CREATE POLICY cs_daily_logs_update ON cs_daily_logs
     USING (
         auth.uid() IS NOT NULL
         AND (
-            created_by = auth.uid()
+            created_by::text = auth.uid()::text
             OR EXISTS (
                 SELECT 1 FROM cs_project_assignments pa
+                JOIN cs_team_members tm ON tm.id = pa.member_id
                 WHERE pa.project_id = cs_daily_logs.project_id
-                  AND pa.user_id    = auth.uid()
-                  AND pa.role IN ('admin', 'project_manager', 'superintendent')
+                  AND tm.user_id    = auth.uid()
+                  AND pa.role_on_project IN ('admin', 'project_manager', 'superintendent')
             )
         )
     )
     WITH CHECK (
         auth.uid() IS NOT NULL
         AND (
-            created_by = auth.uid()
+            created_by::text = auth.uid()::text
             OR EXISTS (
                 SELECT 1 FROM cs_project_assignments pa
+                JOIN cs_team_members tm ON tm.id = pa.member_id
                 WHERE pa.project_id = cs_daily_logs.project_id
-                  AND pa.user_id    = auth.uid()
-                  AND pa.role IN ('admin', 'project_manager', 'superintendent')
+                  AND tm.user_id    = auth.uid()
+                  AND pa.role_on_project IN ('admin', 'project_manager', 'superintendent')
             )
         )
     );
@@ -218,8 +257,9 @@ CREATE POLICY cs_project_log_templates_select ON cs_project_log_templates
         auth.uid() IS NOT NULL
         AND EXISTS (
             SELECT 1 FROM cs_project_assignments pa
+            JOIN cs_team_members tm ON tm.id = pa.member_id
             WHERE pa.project_id = cs_project_log_templates.project_id
-              AND pa.user_id    = auth.uid()
+              AND tm.user_id    = auth.uid()
         )
     );
 
@@ -230,9 +270,10 @@ CREATE POLICY cs_project_log_templates_insert ON cs_project_log_templates
         auth.uid() IS NOT NULL
         AND EXISTS (
             SELECT 1 FROM cs_project_assignments pa
+            JOIN cs_team_members tm ON tm.id = pa.member_id
             WHERE pa.project_id = cs_project_log_templates.project_id
-              AND pa.user_id    = auth.uid()
-              AND pa.role IN ('admin', 'project_manager', 'superintendent')
+              AND tm.user_id    = auth.uid()
+              AND pa.role_on_project IN ('admin', 'project_manager', 'superintendent')
         )
     );
 
@@ -243,17 +284,19 @@ CREATE POLICY cs_project_log_templates_update ON cs_project_log_templates
         auth.uid() IS NOT NULL
         AND EXISTS (
             SELECT 1 FROM cs_project_assignments pa
+            JOIN cs_team_members tm ON tm.id = pa.member_id
             WHERE pa.project_id = cs_project_log_templates.project_id
-              AND pa.user_id    = auth.uid()
-              AND pa.role IN ('admin', 'project_manager', 'superintendent')
+              AND tm.user_id    = auth.uid()
+              AND pa.role_on_project IN ('admin', 'project_manager', 'superintendent')
         )
     )
     WITH CHECK (
         auth.uid() IS NOT NULL
         AND EXISTS (
             SELECT 1 FROM cs_project_assignments pa
+            JOIN cs_team_members tm ON tm.id = pa.member_id
             WHERE pa.project_id = cs_project_log_templates.project_id
-              AND pa.user_id    = auth.uid()
-              AND pa.role IN ('admin', 'project_manager', 'superintendent')
+              AND tm.user_id    = auth.uid()
+              AND pa.role_on_project IN ('admin', 'project_manager', 'superintendent')
         )
     );

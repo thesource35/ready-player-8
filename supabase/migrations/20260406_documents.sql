@@ -13,9 +13,11 @@
 -- This migration is idempotent-friendly via guarded type creation but assumes
 -- a clean target. Re-running is not supported without DROPs.
 
-create type cs_document_entity_type as enum ('project','rfi','submittal','change_order');
+do $$ begin
+  create type cs_document_entity_type as enum ('project','rfi','submittal','change_order');
+exception when duplicate_object then null; end $$;
 
-create table cs_documents (
+create table if not exists cs_documents (
   id               uuid primary key default gen_random_uuid(),
   org_id           uuid not null,
   version_chain_id uuid not null,
@@ -31,15 +33,15 @@ create table cs_documents (
   created_at       timestamptz not null default now()
 );
 
-create unique index cs_documents_one_current_per_chain
+create unique index if not exists cs_documents_one_current_per_chain
   on cs_documents (version_chain_id) where is_current;
-create unique index cs_documents_unique_version_in_chain
+create unique index if not exists cs_documents_unique_version_in_chain
   on cs_documents (version_chain_id, version_number);
-create index cs_documents_storage_path_idx on cs_documents (storage_path);
-create index cs_documents_chain_idx on cs_documents (version_chain_id);
-create index cs_documents_org_idx on cs_documents (org_id);
+create index if not exists cs_documents_storage_path_idx on cs_documents (storage_path);
+create index if not exists cs_documents_chain_idx on cs_documents (version_chain_id);
+create index if not exists cs_documents_org_idx on cs_documents (org_id);
 
-create table cs_document_attachments (
+create table if not exists cs_document_attachments (
   document_id  uuid not null references cs_documents(id) on delete cascade,
   entity_type  cs_document_entity_type not null,
   entity_id    uuid not null,
@@ -47,9 +49,9 @@ create table cs_document_attachments (
   primary key (document_id, entity_type, entity_id)
 );
 
-create index cs_document_attachments_entity_idx
+create index if not exists cs_document_attachments_entity_idx
   on cs_document_attachments (entity_type, entity_id);
-create index cs_document_attachments_document_idx
+create index if not exists cs_document_attachments_document_idx
   on cs_document_attachments (document_id);
 
 alter table cs_documents enable row level security;
