@@ -22,6 +22,10 @@ decisions:
 metrics:
   duration: ~5min
   completed: 2026-04-08
+status: complete
+deferred:
+  - task: "supabase db push"
+    reason: "Blocked by Phase 13 migration drift (20260406_documents_rls.sql references missing tables). Migration files are code-complete and ready to apply once Phase 13 drift is resolved. Tracked as a phase-level deferred deployment alongside 15-02."
 ---
 
 # Phase 15 Plan 01: Team & Crew Schema Summary
@@ -34,7 +38,7 @@ Wave 0 schema for Team & Crew Management — 4 tables (cs_team_members, cs_proje
 |---|------|--------|
 | 1 | Schema migration (4 tables + indexes + FKs) | a4a9515 |
 | 2 | RLS migration + Wave 0 test stubs | 3c42aa0 |
-| 3 | `supabase db push` | **BLOCKED** — see below |
+| 3 | `supabase db push` | **DEFERRED** — see below |
 
 ## Files Created
 
@@ -52,7 +56,11 @@ Wave 0 schema for Team & Crew Management — 4 tables (cs_team_members, cs_proje
 
 None on tasks 1 & 2 — files written verbatim from plan.
 
-## BLOCKER: supabase db push failed
+## Task 3 DEFERRED: supabase db push
+
+**Status:** Deferred — migration files are code-complete and ready to apply. User decision (option 4): defer live push; Phase 13 drift resolution is out of scope for Phase 15. Tracked as a phase-level deferred deployment alongside 15-02.
+
+### Original blocker details
 
 `supabase db push` failed on `20260406_documents_rls.sql` (Phase 13, NOT this plan):
 
