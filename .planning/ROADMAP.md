@@ -96,10 +96,10 @@
   3. User can draw annotations/markup on a photo to highlight an issue
   4. User can create a daily log from a pre-filled template based on project context
 **Plans**: 6 plans
-- [ ] 16-00-PLAN.md — Wave 0 test scaffolding (LocationProviding, OpenMeteoClient, fixtures, UAT)
-- [ ] 16-01-PLAN.md — Wave 1 schema (enum extension migration + columns/tables/RLS + Info.plist)
-- [ ] 16-02-PLAN.md — Wave 2 iOS capture pipeline + attach extension (FIELD-01, FIELD-02 iOS)
-- [ ] 16-03-PLAN.md — Wave 2 web /field photo browser + attach Server Actions (FIELD-02 web)
+- [x] 16-00-PLAN.md — Wave 0 test scaffolding (LocationProviding, OpenMeteoClient, fixtures, UAT)
+- [x] 16-01-PLAN.md — Wave 1 schema (enum extension migration + columns/tables/RLS + Info.plist)
+- [x] 16-02-PLAN.md — Wave 2 iOS capture pipeline + attach extension (FIELD-01, FIELD-02 iOS)
+- [x] 16-03-PLAN.md — Wave 2 web /field photo browser + attach Server Actions (FIELD-02 web)
 - [ ] 16-04-PLAN.md — Wave 3 photo annotation, both platforms (FIELD-03)
 - [ ] 16-05-PLAN.md — Wave 3 daily logs with layered templates, both platforms (FIELD-04)
 **UI hint**: yes
@@ -160,7 +160,7 @@
 | 13. Document Management Foundation | v2.0 | 5/5 | Complete | 2026-04-08 |
 | 14. Notifications & Activity Feed | v2.0 | 4/5 | In Progress | - |
 | 15. Team & Crew Management | v2.0 | 4/4 | Complete | 2026-04-08 |
-| 16. Field Tools | v2.0 | 0/0 | Not started | - |
+| 16. Field Tools | v2.0 | 4/6 | In Progress|  |
 | 17. Calendar & Scheduling | v2.0 | 0/0 | Not started | - |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 0/0 | Not started | - |
 | 19. Reporting & Dashboards | v2.0 | 0/0 | Not started | - |
