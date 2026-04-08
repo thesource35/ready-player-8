@@ -542,6 +542,9 @@ struct AuthGateView: View {
 
 struct ContentView: View {
     @StateObject private var actionLog = RiskActionLogStore()
+    // MARK: - Phase 14: Notifications
+    @StateObject private var notificationsStore = NotificationsStore()
+    @State private var showInboxSheet: Bool = false
     @EnvironmentObject private var supabase: SupabaseService
     @State private var activeNav: NavTab = .home
     @State private var pulse = false
@@ -550,7 +553,9 @@ struct ContentView: View {
         case home = "home"; case projects = "projects"; case contracts = "contracts"
         case market = "market"; case maps = "maps"; case network = "network"
         case ops = "ops"; case hub = "hub"; case security = "security"
-        case pricing = "pricing"; case angelic = "angelic"; case wealth = "wealth"
+        case pricing = "pricing"; case angelic = "angelic"
+        case inbox = "inbox" // MARK: Phase 14
+        case wealth = "wealth"
         case cosNetwork = "cos-network"
         case rentals = "rentals"
         case electrical = "electrical"
@@ -579,7 +584,9 @@ struct ContentView: View {
         ("maps","MAPS","\u{1F5FA}","core"),("network","NETWORK","\u{1F4E1}","core"),
         ("ops","OPS","\u{2699}\u{FE0F}","intel"),("hub","HUB","\u{1F50C}","intel"),
         ("security","SECURITY","\u{1F512}","intel"),("pricing","PRICING","\u{1F4B2}","intel"),
-        ("angelic","ANGELIC","\u{1F47C}","intel"),("wealth","WEALTH","\u{1F48E}","wealth"),
+        ("angelic","ANGELIC","\u{1F47C}","intel"),
+        ("inbox","INBOX","\u{1F514}","intel"), // MARK: Phase 14
+        ("wealth","WEALTH","\u{1F48E}","wealth"),
         ("cos-network","COS NET","\u{1F310}","wealth"),
         ("rentals","RENTALS","\u{1F6E0}","wealth"),
         ("electrical","ELECTRIC","\u{26A1}","trade"),
@@ -648,6 +655,13 @@ struct ContentView: View {
         .sheet(isPresented: $showSearch) {
             GlobalSearchView(isPresented: $showSearch)
         }
+        // MARK: - Phase 14: Notifications sheet + lifecycle
+        .sheet(isPresented: $showInboxSheet) {
+            InboxView(store: notificationsStore)
+        }
+        .task {
+            await notificationsStore.start(userId: SupabaseService.shared.currentUserId)
+        }
     }
 
     private var mainAppView: some View {
@@ -656,7 +670,8 @@ struct ContentView: View {
             ZStack {
                 PremiumBackgroundView()
                 VStack(spacing: 0) {
-                    HeaderView()
+                    // MARK: - Phase 14: HeaderView gets the bell tap handler
+                    HeaderView(onBellTap: { showInboxSheet = true })
                     OfflineIndicatorBar(pendingCount: supabase.pendingWrites.count)
                     TickerView()
                     if isWide {
@@ -678,6 +693,8 @@ struct ContentView: View {
         }
         .preferredColorScheme(.dark)
         .environmentObject(actionLog)
+        // MARK: - Phase 14: Notifications store environment
+        .environmentObject(notificationsStore)
         .onReceive(NotificationCenter.default.publisher(for: .init("ConstructOS.NavToProjects"))) { _ in
             activeNav = .projects
         }
@@ -709,6 +726,8 @@ struct ContentView: View {
         case .security: SecurityAccessPanel()
         case .pricing: AIPricingDashboardView()
         case .angelic: AngelicAIView()
+        // MARK: Phase 14
+        case .inbox: InboxView(store: notificationsStore)
         case .wealth:
             VStack(alignment: .leading, spacing: 14) {
                 ScrollView(.horizontal, showsIndicators: false) {

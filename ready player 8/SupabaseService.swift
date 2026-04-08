@@ -1240,3 +1240,257 @@ extension SupabaseService {
         }
     }
 }
+
+// MARK: - Phase 14: Notifications & Activity Feed
+//
+// Schema authoritative source: supabase/migrations/20260407_phase14_notifications.sql
+//
+//   cs_activity_events(id, project_id, entity_type, entity_id, action, category,
+//                      actor_id, payload, created_at)
+//   cs_notifications(id, user_id, event_id, project_id, category, title, body,
+//                    entity_type, entity_id, read_at, dismissed_at, created_at)
+//   cs_device_tokens(user_id, device_token, platform, app_version, last_seen_at,
+//                    created_at)
+//
+// Decoder uses .convertFromSnakeCase, so Swift property names are camelCase.
+
+struct SupabaseNotification: Codable, Identifiable, Equatable {
+    var id: String
+    var userId: String
+    var eventId: String?
+    var projectId: String?
+    var category: String   // 'bid_deadline'|'safety_alert'|'assigned_task'|'generic'
+    var title: String
+    var body: String?
+    var entityType: String?
+    var entityId: String?
+    var readAt: String?
+    var dismissedAt: String?
+    var createdAt: String?
+
+    var isUnread: Bool { readAt == nil && dismissedAt == nil }
+}
+
+struct SupabaseActivityEvent: Codable, Identifiable, Equatable {
+    var id: String
+    var projectId: String?
+    var entityType: String
+    var entityId: String?
+    var action: String
+    var category: String
+    var actorId: String?
+    var createdAt: String?
+    // payload omitted — jsonb decoding is brittle and not needed for the timeline UI
+}
+
+struct SupabaseDeviceToken: Codable, Equatable {
+    var userId: String
+    var deviceToken: String
+    var platform: String
+    var appVersion: String?
+    var lastSeenAt: String?
+}
+
+extension SupabaseService {
+    /// User UUID extracted from the JWT `sub` claim. Returns nil when signed out
+    /// or when the token can't be parsed. Notifications + device-token paths key
+    /// off this rather than email since cs_notifications.user_id is a uuid.
+    var currentUserId: String? {
+        guard let token = accessToken else { return nil }
+        let parts = token.split(separator: ".")
+        guard parts.count == 3,
+              let payloadData = Data(base64URLEncoded: String(parts[1])),
+              let json = try? JSONSerialization.jsonObject(with: payloadData) as? [String: Any],
+              let sub = json["sub"] as? String
+        else { return nil }
+        return sub
+    }
+
+    private func phase14ISO8601Now() -> String {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f.string(from: Date())
+    }
+
+    /// Generic GET on a Phase-14 table that bypasses the strict allowlist used
+    /// by `fetchTable(_:)`. Notifications/activity tables live only here.
+    private func phase14Get<T: Decodable>(path: String) async throws -> [T] {
+        guard isConfigured else { throw AppError.supabaseNotConfigured }
+        guard let url = URL(string: "\(baseURL)/rest/v1/\(path)") else {
+            throw AppError.unknown("Invalid Phase 14 URL: \(path)")
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "GET"
+        req.setValue(authHeader(), forHTTPHeaderField: "Authorization")
+        req.setValue(apiKey, forHTTPHeaderField: "apikey")
+        do {
+            let (data, response) = try await URLSession.shared.data(for: req)
+            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+                throw AppError.supabaseHTTP(
+                    statusCode: (response as? HTTPURLResponse)?.statusCode ?? 0,
+                    body: String(data: data, encoding: .utf8) ?? ""
+                )
+            }
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            return try decoder.decode([T].self, from: data)
+        } catch let e as AppError {
+            throw e
+        } catch let e as DecodingError {
+            throw AppError.decoding(underlying: e)
+        } catch {
+            throw AppError.network(underlying: error)
+        }
+    }
+
+    private func phase14Patch(path: String, jsonBody: [String: Any]) async throws {
+        guard isConfigured else { throw AppError.supabaseNotConfigured }
+        guard let url = URL(string: "\(baseURL)/rest/v1/\(path)") else {
+            throw AppError.unknown("Invalid Phase 14 URL: \(path)")
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "PATCH"
+        req.setValue(authHeader(), forHTTPHeaderField: "Authorization")
+        req.setValue(apiKey, forHTTPHeaderField: "apikey")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("return=minimal", forHTTPHeaderField: "Prefer")
+        req.httpBody = try JSONSerialization.data(withJSONObject: jsonBody)
+        do {
+            let (data, response) = try await URLSession.shared.data(for: req)
+            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+                throw AppError.supabaseHTTP(
+                    statusCode: (response as? HTTPURLResponse)?.statusCode ?? 0,
+                    body: String(data: data, encoding: .utf8) ?? ""
+                )
+            }
+        } catch let e as AppError {
+            throw e
+        } catch {
+            throw AppError.network(underlying: error)
+        }
+    }
+
+    private func phase14Upsert(path: String, jsonBody: [String: Any]) async throws {
+        guard isConfigured else { throw AppError.supabaseNotConfigured }
+        guard let url = URL(string: "\(baseURL)/rest/v1/\(path)") else {
+            throw AppError.unknown("Invalid Phase 14 URL: \(path)")
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue(authHeader(), forHTTPHeaderField: "Authorization")
+        req.setValue(apiKey, forHTTPHeaderField: "apikey")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("resolution=merge-duplicates,return=minimal", forHTTPHeaderField: "Prefer")
+        req.httpBody = try JSONSerialization.data(withJSONObject: jsonBody)
+        do {
+            let (data, response) = try await URLSession.shared.data(for: req)
+            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+                throw AppError.supabaseHTTP(
+                    statusCode: (response as? HTTPURLResponse)?.statusCode ?? 0,
+                    body: String(data: data, encoding: .utf8) ?? ""
+                )
+            }
+        } catch let e as AppError {
+            throw e
+        } catch {
+            throw AppError.network(underlying: error)
+        }
+    }
+
+    func fetchNotifications(
+        userId: String,
+        projectId: String? = nil,
+        limit: Int = 50,
+        includeDismissed: Bool = false
+    ) async throws -> [SupabaseNotification] {
+        var qs = "cs_notifications?user_id=eq.\(userId)"
+        if !includeDismissed { qs += "&dismissed_at=is.null" }
+        if let projectId { qs += "&project_id=eq.\(projectId)" }
+        qs += "&order=created_at.desc&limit=\(limit)"
+        return try await phase14Get(path: qs)
+    }
+
+    /// Returns count of unread notifications using HEAD + Prefer: count=exact
+    /// (cheap server-side count via Content-Range header).
+    func fetchUnreadCount(userId: String, projectId: String? = nil) async throws -> Int {
+        guard isConfigured else { throw AppError.supabaseNotConfigured }
+        var qs = "cs_notifications?select=id&user_id=eq.\(userId)&read_at=is.null&dismissed_at=is.null"
+        if let projectId { qs += "&project_id=eq.\(projectId)" }
+        guard let url = URL(string: "\(baseURL)/rest/v1/\(qs)") else {
+            throw AppError.unknown("Invalid unread-count URL")
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "HEAD"
+        req.setValue(authHeader(), forHTTPHeaderField: "Authorization")
+        req.setValue(apiKey, forHTTPHeaderField: "apikey")
+        req.setValue("count=exact", forHTTPHeaderField: "Prefer")
+        do {
+            let (_, response) = try await URLSession.shared.data(for: req)
+            guard let http = response as? HTTPURLResponse else {
+                throw AppError.supabaseHTTP(statusCode: 0, body: "")
+            }
+            // Content-Range: "0-9/42" — total after the slash
+            if let range = http.value(forHTTPHeaderField: "Content-Range"),
+               let total = range.split(separator: "/").last,
+               let n = Int(total) {
+                return n
+            }
+            return 0
+        } catch let e as AppError {
+            throw e
+        } catch {
+            throw AppError.network(underlying: error)
+        }
+    }
+
+    func markNotificationRead(id: String) async throws {
+        try await phase14Patch(
+            path: "cs_notifications?id=eq.\(id)",
+            jsonBody: ["read_at": phase14ISO8601Now()]
+        )
+    }
+
+    func markNotificationDismissed(id: String) async throws {
+        try await phase14Patch(
+            path: "cs_notifications?id=eq.\(id)",
+            jsonBody: ["dismissed_at": phase14ISO8601Now()]
+        )
+    }
+
+    func markAllNotificationsRead(userId: String, projectId: String? = nil) async throws {
+        var qs = "cs_notifications?user_id=eq.\(userId)&read_at=is.null&dismissed_at=is.null"
+        if let projectId { qs += "&project_id=eq.\(projectId)" }
+        try await phase14Patch(path: qs, jsonBody: ["read_at": phase14ISO8601Now()])
+    }
+
+    func fetchActivityEvents(projectId: String, limit: Int = 100) async throws -> [SupabaseActivityEvent] {
+        let qs = "cs_activity_events?project_id=eq.\(projectId)&order=created_at.desc&limit=\(limit)"
+        return try await phase14Get(path: qs)
+    }
+
+    /// Upsert a device token for the current user. Called from Plan 14-05 after
+    /// APNs registration. No-op when signed out.
+    func upsertDeviceToken(token: String, platform: String = "ios", appVersion: String? = nil) async throws {
+        guard let userId = currentUserId else { return }
+        var body: [String: Any] = [
+            "user_id": userId,
+            "device_token": token,
+            "platform": platform,
+            "last_seen_at": phase14ISO8601Now()
+        ]
+        if let appVersion { body["app_version"] = appVersion }
+        try await phase14Upsert(path: "cs_device_tokens", jsonBody: body)
+    }
+}
+
+// MARK: - Phase 14: base64url helper for JWT decoding
+private extension Data {
+    init?(base64URLEncoded input: String) {
+        var s = input
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        let pad = s.count % 4
+        if pad > 0 { s += String(repeating: "=", count: 4 - pad) }
+        self.init(base64Encoded: s)
+    }
+}
