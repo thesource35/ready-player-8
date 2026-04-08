@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "variants": {
+    "portrait": {
+      "canvas": { "width": 1, "height": 1, "orientation": "portrait" },
+      "strokes": [
+        {
+          "id": "stroke-1",
+          "type": "freehand",
+          "color": "#FF3B30",
+          "width": 0.004,
+          "points": [
+            { "x": 0.12, "y": 0.18, "p": 0.85 },
+            { "x": 0.34, "y": 0.41, "p": 0.92 },
+            { "x": 0.58, "y": 0.63, "p": 0.78 }
+          ]
+        },
+        {
+          "id": "arrow-1",
+          "type": "arrow",
+          "color": "#FFCC00",
+          "width": 0.005,
+          "from": { "x": 0.20, "y": 0.80 },
+          "to": { "x": 0.75, "y": 0.25 }
+        },
+        {
+          "id": "rect-1",
+          "type": "rectangle",
+          "color": "#34C759",
+          "width": 0.004,
+          "origin": { "x": 0.10, "y": 0.10 },
+          "size": { "w": 0.35, "h": 0.20 }
+        },
+        {
+          "id": "text-1",
+          "type": "text",
+          "color": "#FFFFFF",
+          "fontSize": 0.035,
+          "text": "Crack in slab",
+          "anchor": { "x": 0.30, "y": 0.55 }
+        }
+      ]
+    },
+    "landscape": {
+      "canvas": { "width": 1, "height": 1, "orientation": "landscape" },
+      "strokes": [
+        {
+          "id": "stroke-1",
+          "type": "freehand",
+          "color": "#FF3B30",
+          "width": 0.003,
+          "points": [
+            { "x": 0.10, "y": 0.22, "p": 0.80 },
+            { "x": 0.40, "y": 0.38, "p": 0.88 },
+            { "x": 0.72, "y": 0.55, "p": 0.74 }
+          ]
+        },
+        {
+          "id": "arrow-1",
+          "type": "arrow",
+          "color": "#FFCC00",
+          "width": 0.004,
+          "from": { "x": 0.15, "y": 0.70 },
+          "to": { "x": 0.82, "y": 0.30 }
+        },
+        {
+          "id": "rect-1",
+          "type": "rectangle",
+          "color": "#34C759",
+          "width": 0.003,
+          "origin": { "x": 0.08, "y": 0.12 },
+          "size": { "w": 0.40, "h": 0.25 }
+        },
+        {
+          "id": "text-1",
+          "type": "text",
+          "color": "#FFFFFF",
+          "fontSize": 0.030,
+          "text": "Crack in slab",
+          "anchor": { "x": 0.33, "y": 0.60 }
+        }
+      ]
+    }
+  }
+}
