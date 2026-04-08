@@ -1494,3 +1494,56 @@ private extension Data {
         self.init(base64Encoded: s)
     }
 }
+
+// MARK: - ========== Phase 15: Team & Crew DTOs ==========
+
+struct SupabaseTeamMember: Codable, Identifiable {
+    let id: String
+    let kind: String   // "internal" | "subcontractor" | "vendor"
+    let user_id: String?
+    let name: String
+    let role: String?
+    let trade: String?
+    let email: String?
+    let phone: String?
+    let company: String?
+    let notes: String?
+    let created_at: String?
+    let updated_at: String?
+}
+
+struct SupabaseProjectAssignment: Codable, Identifiable {
+    let id: String
+    let project_id: String
+    let member_id: String
+    let role_on_project: String?
+    let start_date: String?
+    let end_date: String?
+    let status: String
+    let created_at: String?
+}
+
+struct SupabaseCertification: Codable, Identifiable {
+    let id: String
+    let member_id: String
+    let name: String
+    let issuer: String?
+    let number: String?
+    let issued_date: String?
+    let expires_at: String?
+    let document_id: String?
+    let status: String
+    let created_at: String?
+    let updated_at: String?
+}
+
+struct SupabaseDailyCrew: Codable, Identifiable {
+    let id: String
+    let project_id: String
+    let assignment_date: String
+    let member_ids: [String]
+    let notes: String?
+    let created_by: String?
+    let created_at: String?
+}
+
