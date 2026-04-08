@@ -27,9 +27,9 @@
 
 ### v2.0 Feature Expansion
 
-- [ ] **Phase 13: Document Management Foundation** — Supabase Storage uploads, downloads, attachments, previews, version history
-- [ ] **Phase 14: Notifications & Activity Feed** — In-app notifications, activity timeline, iOS push
-- [ ] **Phase 15: Team & Crew Management** — Member profiles, project assignments, certification tracking
+- [x] **Phase 13: Document Management Foundation** (5/5 plans) — completed 2026-04-08
+- [~] **Phase 14: Notifications & Activity Feed** (4/5 plans) — 14-02 outstanding
+- [x] **Phase 15: Team & Crew Management** (4/4 plans) — completed 2026-04-08
 - [ ] **Phase 16: Field Tools** — GPS-tagged photos, annotations, daily log templates
 - [ ] **Phase 17: Calendar & Scheduling** — Project timeline, Gantt chart, drag-to-reschedule
 - [ ] **Phase 18: Enhanced AI (Angelic AI v2)** — Context-aware chat, RFI/CO generation, bid analysis
@@ -151,9 +151,9 @@
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|---------------|--------|-----------|
 | 1-12 | v1.0 | 36/36 | Complete | 2026-04-06 |
-| 13. Document Management Foundation | v2.0 | 4/5 | In Progress|  |
-| 14. Notifications & Activity Feed | v2.0 | 0/0 | Not started | - |
-| 15. Team & Crew Management | v2.0 | 0/4 | Planned | - |
+| 13. Document Management Foundation | v2.0 | 5/5 | Complete | 2026-04-08 |
+| 14. Notifications & Activity Feed | v2.0 | 4/5 | In Progress | - |
+| 15. Team & Crew Management | v2.0 | 4/4 | Complete | 2026-04-08 |
 | 16. Field Tools | v2.0 | 0/0 | Not started | - |
 | 17. Calendar & Scheduling | v2.0 | 0/0 | Not started | - |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 0/0 | Not started | - |
