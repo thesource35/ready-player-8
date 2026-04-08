@@ -762,6 +762,8 @@ final class SupabaseService: ObservableObject {
         "cs_verification_requests",
         // Phase 13: Document Management
         "cs_documents", "cs_document_attachments", "cs_document_versions",
+        // Phase 16: Field Tools
+        "cs_photo_annotations",
     ]
 
     /// Validates table name against allowlist
