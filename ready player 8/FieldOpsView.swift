@@ -34,6 +34,7 @@ struct FieldOpsView: View {
     @State private var dailyLogs: [DailyLogEntry] = loadJSON("ConstructOS.FieldOps.DailyLogs", default: [DailyLogEntry]())
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var showingPhotoCapture = false
     private let supabase = SupabaseService.shared
     private let logsStorageKey = "ConstructOS.FieldOps.DailyLogs"
 
@@ -65,6 +66,16 @@ struct FieldOpsView: View {
                         Text("Daily logs, timecards, equipment tracking, and permits").font(.system(size: 11)).foregroundColor(Theme.muted)
                     }
                     Spacer()
+                    Button { showingPhotoCapture = true } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "camera.fill")
+                            Text("CAPTURE").font(.system(size: 10, weight: .heavy)).tracking(1)
+                        }
+                        .padding(.horizontal, 12).padding(.vertical, 8)
+                        .background(Theme.cyan.opacity(0.18))
+                        .foregroundColor(Theme.cyan)
+                        .cornerRadius(8)
+                    }
                 }.padding(16).background(Theme.surface).cornerRadius(14).premiumGlow(cornerRadius: 14, color: Theme.cyan)
 
                 HStack(spacing: 0) {
@@ -84,6 +95,7 @@ struct FieldOpsView: View {
                 else { permitsContent }
             }.padding(16)
         }.background(Theme.bg)
+        .sheet(isPresented: $showingPhotoCapture) { FieldPhotoCaptureView() }
         .task {
             // Load from local cache first (survives launch)
             let cached: [DailyLogEntry] = loadJSON(logsStorageKey, default: [])
