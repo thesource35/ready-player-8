@@ -35,6 +35,12 @@ struct FieldOpsView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var showingPhotoCapture = false
+    @State private var showingDailyLogV2 = false
+    // Phase 16 gap fix: entry point for DailyLogV2View. Reuses the same
+    // AppStorage projectId as FieldPhotoCaptureView so the tester only sets
+    // it once. Role defaults to superintendent (sees all fields).
+    @AppStorage("ConstructOS.Field.LastProjectID") private var fieldProjectId: String = ""
+    @AppStorage("ConstructOS.Field.DailyLogRoleRaw") private var fieldRoleRaw: String = OpsRolePreset.superintendent.rawValue
     private let supabase = SupabaseService.shared
     private let logsStorageKey = "ConstructOS.FieldOps.DailyLogs"
 
@@ -66,15 +72,27 @@ struct FieldOpsView: View {
                         Text("Daily logs, timecards, equipment tracking, and permits").font(.system(size: 11)).foregroundColor(Theme.muted)
                     }
                     Spacer()
-                    Button { showingPhotoCapture = true } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "camera.fill")
-                            Text("CAPTURE").font(.system(size: 10, weight: .heavy)).tracking(1)
+                    HStack(spacing: 8) {
+                        Button { showingPhotoCapture = true } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "camera.fill")
+                                Text("CAPTURE").font(.system(size: 10, weight: .heavy)).tracking(1)
+                            }
+                            .padding(.horizontal, 12).padding(.vertical, 8)
+                            .background(Theme.cyan.opacity(0.18))
+                            .foregroundColor(Theme.cyan)
+                            .cornerRadius(8)
                         }
-                        .padding(.horizontal, 12).padding(.vertical, 8)
-                        .background(Theme.cyan.opacity(0.18))
-                        .foregroundColor(Theme.cyan)
-                        .cornerRadius(8)
+                        Button { showingDailyLogV2 = true } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "doc.text.fill")
+                                Text("LOG V2").font(.system(size: 10, weight: .heavy)).tracking(1)
+                            }
+                            .padding(.horizontal, 12).padding(.vertical, 8)
+                            .background(Theme.accent.opacity(0.18))
+                            .foregroundColor(Theme.accent)
+                            .cornerRadius(8)
+                        }
                     }
                 }.padding(16).background(Theme.surface).cornerRadius(14).premiumGlow(cornerRadius: 14, color: Theme.cyan)
 
@@ -96,6 +114,44 @@ struct FieldOpsView: View {
             }.padding(16)
         }.background(Theme.bg)
         .sheet(isPresented: $showingPhotoCapture) { FieldPhotoCaptureView() }
+        .sheet(isPresented: $showingDailyLogV2) {
+            // Phase 16 gap fix (test 8): wire DailyLogV2View into app nav.
+            // Uses persisted LastProjectID (set by FieldPhotoCaptureView) and
+            // a role persisted under ConstructOS.Field.DailyLogRoleRaw so
+            // executive/PM/superintendent role filtering is exercisable.
+            NavigationStack {
+                if fieldProjectId.isEmpty {
+                    VStack(spacing: 12) {
+                        Text("No project selected")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(Theme.text)
+                        Text("Open CAPTURE first and enter a Project ID — it will persist for LOG V2.")
+                            .font(.system(size: 11))
+                            .foregroundColor(Theme.muted)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Theme.bg)
+                } else {
+                    DailyLogV2View(
+                        projectId: fieldProjectId,
+                        logDate: { let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd"; return f.string(from: Date()) }(),
+                        role: OpsRolePreset(rawValue: fieldRoleRaw) ?? .superintendent
+                    )
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Picker("Role", selection: $fieldRoleRaw) {
+                                Text("SUPER").tag(OpsRolePreset.superintendent.rawValue)
+                                Text("PM").tag(OpsRolePreset.projectManager.rawValue)
+                                Text("EXEC").tag(OpsRolePreset.executive.rawValue)
+                            }
+                            .pickerStyle(.menu)
+                        }
+                    }
+                }
+            }
+        }
         .task {
             // Load from local cache first (survives launch)
             let cached: [DailyLogEntry] = loadJSON(logsStorageKey, default: [])

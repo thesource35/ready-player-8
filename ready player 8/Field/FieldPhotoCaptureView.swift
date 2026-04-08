@@ -180,6 +180,26 @@ struct FieldPhotoCaptureView: View {
                     .font(.system(size: 10))
                     .foregroundColor(Theme.muted)
             }
+            // Phase 16 gap fix (test: iOS annotate): entry point to
+            // PhotoAnnotateView. We already have the UIImage in previewImage
+            // and the document id from the upload result, so the annotator
+            // gets everything it needs inline.
+            if let img = previewImage {
+                NavigationLink {
+                    PhotoAnnotateView(documentId: doc.id, orgId: orgId, photo: img)
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "pencil.tip.crop.circle")
+                        Text("ANNOTATE")
+                            .font(.system(size: 10, weight: .heavy))
+                            .tracking(1)
+                    }
+                    .padding(.horizontal, 10).padding(.vertical, 6)
+                    .background(Theme.accent.opacity(0.18))
+                    .foregroundColor(Theme.accent)
+                    .cornerRadius(6)
+                }
+            }
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
