@@ -50,7 +50,7 @@ Requirements for v2.0 Feature Expansion. Each maps to a roadmap phase.
 - [x] **FIELD-01**: User can capture photos with automatic GPS location and timestamp tagging
 - [x] **FIELD-02**: User can attach photos to punch items, daily logs, and safety incidents
 - [x] **FIELD-03**: User can annotate/markup photos to highlight issues
-- [ ] **FIELD-04**: User can create daily logs from pre-filled templates based on project context
+- [x] **FIELD-04**: User can create daily logs from pre-filled templates based on project context
 
 ### Client Portal / Sharing
 
@@ -144,7 +144,7 @@ Mapping of requirements to phases.
 | FIELD-01 | Phase 16 | Complete |
 | FIELD-02 | Phase 16 | Complete |
 | FIELD-03 | Phase 16 | Complete |
-| FIELD-04 | Phase 16 | Pending |
+| FIELD-04 | Phase 16 | Complete |
 | PORTAL-01 | Phase 20 | Pending |
 | PORTAL-02 | Phase 20 | Pending |
 | PORTAL-03 | Phase 20 | Pending |

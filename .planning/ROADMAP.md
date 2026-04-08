@@ -30,7 +30,7 @@
 - [x] **Phase 13: Document Management Foundation** (5/5 plans) — completed 2026-04-08
 - [~] **Phase 14: Notifications & Activity Feed** (4/5 plans) — 14-02 outstanding
 - [x] **Phase 15: Team & Crew Management** (4/4 plans) — completed 2026-04-08
-- [ ] **Phase 16: Field Tools** — GPS-tagged photos, annotations, daily log templates
+- [x] **Phase 16: Field Tools** — GPS-tagged photos, annotations, daily log templates (completed 2026-04-08)
 - [ ] **Phase 17: Calendar & Scheduling** — Project timeline, Gantt chart, drag-to-reschedule
 - [ ] **Phase 18: Enhanced AI (Angelic AI v2)** — Context-aware chat, RFI/CO generation, bid analysis
 - [ ] **Phase 19: Reporting & Dashboards** — Project reports, cross-project rollups, PDF export, charts
@@ -101,7 +101,7 @@
 - [x] 16-02-PLAN.md — Wave 2 iOS capture pipeline + attach extension (FIELD-01, FIELD-02 iOS)
 - [x] 16-03-PLAN.md — Wave 2 web /field photo browser + attach Server Actions (FIELD-02 web)
 - [x] 16-04-PLAN.md — Wave 3 photo annotation, both platforms (FIELD-03)
-- [ ] 16-05-PLAN.md — Wave 3 daily logs with layered templates, both platforms (FIELD-04)
+- [x] 16-05-PLAN.md — Wave 3 daily logs with layered templates, both platforms (FIELD-04)
 **UI hint**: yes
 
 ### Phase 17: Calendar & Scheduling
@@ -160,7 +160,7 @@
 | 13. Document Management Foundation | v2.0 | 5/5 | Complete | 2026-04-08 |
 | 14. Notifications & Activity Feed | v2.0 | 4/5 | In Progress | - |
 | 15. Team & Crew Management | v2.0 | 4/4 | Complete | 2026-04-08 |
-| 16. Field Tools | v2.0 | 5/6 | In Progress|  |
+| 16. Field Tools | v2.0 | 6/6 | Complete   | 2026-04-08 |
 | 17. Calendar & Scheduling | v2.0 | 0/0 | Not started | - |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 0/0 | Not started | - |
 | 19. Reporting & Dashboards | v2.0 | 0/0 | Not started | - |
