@@ -1,0 +1,164 @@
+# Requirements: ConstructionOS v2.0 Feature Expansion
+
+**Defined:** 2026-04-06
+**Core Value:** Every user action must either succeed visibly or fail with a clear, actionable message — no silent data loss, no undetected errors, no security gaps.
+
+## v2.0 Requirements
+
+Requirements for v2.0 Feature Expansion. Each maps to a roadmap phase.
+
+### Notifications & Activity Feed
+
+- [ ] **NOTIF-01**: User can view in-app notification list with unread count badge
+- [ ] **NOTIF-02**: User can view activity timeline per project (chronological action log)
+- [ ] **NOTIF-03**: User can mark notifications as read (individually or all)
+- [ ] **NOTIF-04**: User can dismiss notifications
+- [ ] **NOTIF-05**: User receives push notifications on iOS for bid deadlines, safety alerts, and assigned tasks
+
+### Document Management
+
+- [x] **DOC-01**: User can upload files (PDF, images, drawings) to Supabase Storage
+- [x] **DOC-02**: User can download attached files
+- [x] **DOC-03**: User can attach files to projects, RFIs, submittals, and change orders
+- [x] **DOC-04**: User can preview PDFs and images in-app without downloading
+- [x] **DOC-05**: User can view version history of revised documents
+
+### Team & Crew Management
+
+- [ ] **TEAM-01**: User can create team member profiles with role, trade, and contact info
+- [ ] **TEAM-02**: User can assign team members to projects with role assignments
+- [ ] **TEAM-03**: User can track certifications and licenses with expiration dates
+- [ ] **TEAM-04**: User receives alerts when certifications are nearing expiration
+- [ ] **TEAM-05**: User can create daily crew assignments per project
+
+### Reporting & Dashboards
+
+- [ ] **REPORT-01**: User can generate single-project summary report (budget, schedule, issues, team)
+- [ ] **REPORT-02**: User can view cross-project financial rollup dashboard
+- [ ] **REPORT-03**: User can export reports to PDF
+- [ ] **REPORT-04**: User can view chart visualizations (bar/line/pie) for budgets, timelines, and safety metrics
+
+### Enhanced AI (Angelic AI v2)
+
+- [ ] **AI-01**: AI chat reads current project and contract data for context-aware responses
+- [ ] **AI-02**: AI can generate RFI documents from conversation
+- [ ] **AI-03**: AI can draft change order entries from natural language description
+- [ ] **AI-04**: AI can analyze bid competitiveness using market data
+
+### Field Tools
+
+- [x] **FIELD-01**: User can capture photos with automatic GPS location and timestamp tagging
+- [x] **FIELD-02**: User can attach photos to punch items, daily logs, and safety incidents
+- [ ] **FIELD-03**: User can annotate/markup photos to highlight issues
+- [ ] **FIELD-04**: User can create daily logs from pre-filled templates based on project context
+
+### Client Portal / Sharing
+
+- [ ] **PORTAL-01**: User can generate a shareable read-only project URL
+- [ ] **PORTAL-02**: User can configure portal visibility per section (budget, schedule, photos)
+- [ ] **PORTAL-03**: Client viewers see a progress photo timeline
+- [ ] **PORTAL-04**: Portal page displays company branding (logo, colors)
+
+### Calendar & Scheduling
+
+- [ ] **CAL-01**: User can view a timeline of all projects with milestones and bid due dates
+- [ ] **CAL-02**: User can view a Gantt chart with task bars and dependencies
+- [ ] **CAL-03**: Timeline highlights milestone markers (bid due, project start/end, inspections)
+- [ ] **CAL-04**: User can drag items on timeline to reschedule them
+
+## Future Requirements
+
+Deferred to v2.1 or later.
+
+### Notifications
+
+- **NOTIF-F1**: Email notification delivery
+- **NOTIF-F2**: Web push notifications (browser)
+- **NOTIF-F3**: Notification preference settings per category
+
+### Documents
+
+- **DOC-F1**: Folder organization
+- **DOC-F2**: PDF annotation/markup
+- **DOC-F3**: Full-text search across documents
+
+### Reporting
+
+- **REPORT-F1**: Custom dashboard builder
+- **REPORT-F2**: Scheduled report delivery via email
+- **REPORT-F3**: Excel/CSV export
+
+### AI
+
+- **AI-F1**: MCP tool integration for external data sources
+- **AI-F2**: Voice-to-text input
+
+### Field
+
+- **FIELD-F1**: Offline photo queue with sync on reconnect
+- **FIELD-F2**: Voice memo capture
+
+## Out of Scope
+
+Explicitly excluded from v2.0.
+
+| Feature | Reason |
+|---------|--------|
+| Real-time collaboration / conflict resolution | Architecture change — future milestone |
+| Offline-first / local data sync queue | Future milestone — requires architectural rework |
+| Breaking apart monolithic ContentView.swift | Separate refactoring initiative |
+| OAuth login (Google, Apple) | Deferred to v2.1+ |
+| Payment processing for client portal | Out of scope — read-only portals only |
+| Mobile-native client portal app | Web portal sufficient for v2.0 |
+| Real-time crew GPS tracking | Privacy concerns — defer until policy defined |
+
+## Traceability
+
+Mapping of requirements to phases.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| NOTIF-01 | Phase 14 | Pending |
+| NOTIF-02 | Phase 14 | Pending |
+| NOTIF-03 | Phase 14 | Pending |
+| NOTIF-04 | Phase 14 | Pending |
+| NOTIF-05 | Phase 14 | Pending |
+| DOC-01 | Phase 13 | Complete |
+| DOC-02 | Phase 13 | Complete |
+| DOC-03 | Phase 13 | Complete |
+| DOC-04 | Phase 13 | Complete |
+| DOC-05 | Phase 13 | Complete |
+| TEAM-01 | Phase 15 | Pending |
+| TEAM-02 | Phase 15 | Pending |
+| TEAM-03 | Phase 15 | Pending |
+| TEAM-04 | Phase 15 | Pending |
+| TEAM-05 | Phase 15 | Pending |
+| REPORT-01 | Phase 19 | Pending |
+| REPORT-02 | Phase 19 | Pending |
+| REPORT-03 | Phase 19 | Pending |
+| REPORT-04 | Phase 19 | Pending |
+| AI-01 | Phase 18 | Pending |
+| AI-02 | Phase 18 | Pending |
+| AI-03 | Phase 18 | Pending |
+| AI-04 | Phase 18 | Pending |
+| FIELD-01 | Phase 16 | Complete |
+| FIELD-02 | Phase 16 | Complete |
+| FIELD-03 | Phase 16 | Pending |
+| FIELD-04 | Phase 16 | Pending |
+| PORTAL-01 | Phase 20 | Pending |
+| PORTAL-02 | Phase 20 | Pending |
+| PORTAL-03 | Phase 20 | Pending |
+| PORTAL-04 | Phase 20 | Pending |
+| CAL-01 | Phase 17 | Pending |
+| CAL-02 | Phase 17 | Pending |
+| CAL-03 | Phase 17 | Pending |
+| CAL-04 | Phase 17 | Pending |
+
+**Coverage:**
+- v2.0 requirements: 35 total
+- Mapped to phases: 35 ✓
+- Unmapped: 0
+
+---
+*Requirements defined: 2026-04-06*
+*Last updated: 2026-04-06 — traceability populated with v2.0 phase mappings (13-20)*
