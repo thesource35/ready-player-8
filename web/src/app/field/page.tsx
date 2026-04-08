@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function FieldPage() {
   const tabs = ["Daily Log", "Timecards", "Equipment", "Permits"];
 
@@ -33,6 +35,11 @@ export default function FieldPage() {
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, color: "var(--cyan)" }}>FIELD OPS</div>
         <h1 style={{ fontSize: 24, fontWeight: 900, margin: "4px 0" }}>Field Operations Center</h1>
         <p style={{ fontSize: 12, color: "var(--muted)" }}>Daily logs, timecards, equipment tracking, and permits</p>
+        <div style={{ marginTop: 10 }}>
+          <Link href="/field/photos" style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, color: "var(--accent)", textDecoration: "none", padding: "6px 12px", border: "1px solid var(--accent)", borderRadius: 6, display: "inline-block" }}>
+            PHOTO BROWSER →
+          </Link>
+        </div>
       </div>
 
       {/* Tab pills */}
