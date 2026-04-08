@@ -1,11 +1,26 @@
 "use client";
-import { useState } from "react";
+import Image from "next/image";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#080E12" }}><p style={{ color: "#9EBDC2" }}>Loading...</p></div>}>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
+  const searchParams = useSearchParams();
   const [isSignup, setIsSignup] = useState(false);
   const [step, setStep] = useState<"auth"|"2fa"|"forgot">("auth");
   const [code, setCode] = useState("");
+  const [mfaFactorId, setMfaFactorId] = useState("");
+  const [mfaChallengeId, setMfaChallengeId] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -14,11 +29,25 @@ export default function LoginPage() {
     fullName: "", company: "", title: "", trade: "", location: "", experience: "", phone: "", bio: "",
   });
 
+  const redirectPath = searchParams.get("redirect");
+  const nextPath = redirectPath && redirectPath.startsWith("/") ? redirectPath : "/feed";
+  const authError = searchParams.get("error");
+  const authErrorMessage = authError === "auth_failed"
+    ? "Sign-in could not be completed. Please try again."
+    : searchParams.get("error_description") || "";
+
   const update = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
 
   async function handleAuth() {
     setError("");
+    setSuccess("");
     setLoading(true);
+
+    if (!EMAIL_REGEX.test(form.email.trim())) {
+      setError("Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
 
     const supabase = createClient();
 
@@ -41,7 +70,7 @@ export default function LoginPage() {
                 trade: form.trade,
                 location: form.location,
               },
-              emailRedirectTo: `${window.location.origin}/auth/callback`,
+              emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
             },
           });
           if (signUpError) { setError(signUpError.message); setLoading(false); return; }
@@ -51,7 +80,24 @@ export default function LoginPage() {
             password: form.password,
           });
           if (signInError) { setError(signInError.message); setLoading(false); return; }
-          window.location.href = "/feed";
+
+          // Check if user has MFA enrolled
+          const { data: factorsData } = await supabase.auth.mfa.listFactors();
+          const totpFactors = factorsData?.totp?.filter(f => f.status === "verified") ?? [];
+
+          if (totpFactors.length > 0) {
+            const factor = totpFactors[0];
+            setMfaFactorId(factor.id);
+            const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: factor.id });
+            if (challengeError) { setError("Could not start 2FA verification. Please try again."); setLoading(false); return; }
+            setMfaChallengeId(challengeData.id);
+            setStep("2fa");
+            setLoading(false);
+            return;
+          }
+
+          // No MFA — proceed to app
+          window.location.assign(nextPath);
           return;
         }
       } catch {
@@ -61,29 +107,42 @@ export default function LoginPage() {
       }
     }
 
-    // Fallback: go to 2FA step (demo mode if Supabase not configured)
-    setStep("2fa");
+    // Demo mode: if Supabase not configured, proceed directly to app
+    window.location.assign(nextPath);
     setLoading(false);
   }
 
   async function handleOAuth(provider: "apple" | "google") {
+    setError("");
+    setLoading(true);
     const supabase = createClient();
     if (supabase) {
-      await supabase.auth.signInWithOAuth({
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
+        options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}` },
       });
+
+      if (oauthError) {
+        setError(oauthError.message);
+        setLoading(false);
+      }
     } else {
       setStep("2fa");
+      setLoading(false);
     }
   }
 
   async function handleForgotPassword() {
     setError(""); setSuccess(""); setLoading(true);
+    if (!EMAIL_REGEX.test(form.email.trim())) {
+      setError("Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
     const supabase = createClient();
     if (supabase && form.email) {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(form.email, {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
       });
       if (resetError) { setError(resetError.message); }
       else { setSuccess("Password reset link sent to " + form.email); }
@@ -98,14 +157,15 @@ export default function LoginPage() {
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#080E12' }}>
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <img src="/logo.png" alt="ConstructionOS" className="w-16 h-16 rounded-xl mx-auto mb-4" style={{ boxShadow: '0 0 40px rgba(242,158,61,0.2)' }} />
+            <Image src="/logo.png" alt="ConstructionOS" width={64} height={64} className="rounded-xl mx-auto mb-4" style={{ boxShadow: '0 0 40px rgba(242,158,61,0.2)' }} />
             <h1 className="text-2xl font-black">Reset Password</h1>
             <p className="text-xs text-[#9EBDC2] mt-2">Enter your email and we&apos;ll send you a reset link</p>
           </div>
           <div className="rounded-2xl p-6" style={{ background: 'rgba(15,28,36,0.6)', border: '1px solid rgba(51,84,94,0.3)' }}>
             {error && <div className="mb-4 p-3 rounded-lg text-xs font-bold text-center" style={{ background: 'rgba(217,77,72,0.1)', color: '#D94D48' }}>{error}</div>}
             {success && <div className="mb-4 p-3 rounded-lg text-xs font-bold text-center" style={{ background: 'rgba(105,210,148,0.1)', color: '#69D294' }}>{success}</div>}
-            <input placeholder="Work email address" type="email" value={form.email} onChange={e => update("email", e.target.value)} className="mb-4" />
+            <label htmlFor="forgot-email" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Work email address</label>
+            <input id="forgot-email" placeholder="Work email address" type="email" value={form.email} onChange={e => update("email", e.target.value)} maxLength={254} className="mb-4" />
             <button onClick={handleForgotPassword} disabled={loading || !form.email} className="w-full py-3 rounded-xl font-bold text-black text-sm cursor-pointer" style={{ background: form.email ? 'linear-gradient(90deg, #F29E3D, #FCC757)' : '#33545E', border: 'none' }}>
               {loading ? "Sending..." : "SEND RESET LINK"}
             </button>
@@ -135,11 +195,34 @@ export default function LoginPage() {
                   </div>
                 ))}
               </div>
-              <input type="text" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\D/g,""))} className="opacity-0 absolute" autoFocus />
-              <button onClick={() => { if(code.length===6) window.location.href="/feed"; }} className="w-full py-3 rounded-xl font-bold text-black cursor-pointer" style={{ background: code.length===6 ? 'linear-gradient(90deg, #F29E3D, #FCC757)' : '#33545E', border: 'none' }}>VERIFY</button>
+              <label htmlFor="mfa-code" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Two-factor authentication code</label>
+              <input id="mfa-code" type="text" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\D/g,""))} className="opacity-0 absolute" autoFocus />
+              <button onClick={async () => {
+                if (code.length !== 6) return;
+                setError("");
+                setLoading(true);
+                const supabase = createClient();
+                if (supabase && mfaFactorId && mfaChallengeId) {
+                  const { error: verifyError } = await supabase.auth.mfa.verify({
+                    factorId: mfaFactorId,
+                    challengeId: mfaChallengeId,
+                    code,
+                  });
+                  if (verifyError) {
+                    setError("Invalid code. Please try again.");
+                    setCode("");
+                    const { data: newChallenge } = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
+                    if (newChallenge) setMfaChallengeId(newChallenge.id);
+                    setLoading(false);
+                    return;
+                  }
+                }
+                window.location.assign(nextPath);
+                setLoading(false);
+              }} className="w-full py-3 rounded-xl font-bold text-black cursor-pointer" style={{ background: code.length===6 ? 'linear-gradient(90deg, #F29E3D, #FCC757)' : '#33545E', border: 'none' }}>{loading ? "Verifying..." : "VERIFY"}</button>
+              {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
             </>
           )}
-          <p className="text-xs text-[#9EBDC2] mt-4 cursor-pointer" onClick={() => window.location.href="/feed"}>Continue to app →</p>
         </div>
       </div>
     );
@@ -149,14 +232,14 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#080E12' }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src="/logo.png" alt="ConstructionOS" className="w-16 h-16 rounded-xl mx-auto mb-4" style={{ boxShadow: '0 0 40px rgba(242,158,61,0.2)' }} />
+          <Image src="/logo.png" alt="ConstructionOS" width={64} height={64} className="rounded-xl mx-auto mb-4" style={{ boxShadow: '0 0 40px rgba(242,158,61,0.2)' }} />
           <h1 className="text-2xl font-black tracking-wide">CONSTRUCT<span className="text-[#F29E3D]">OS</span></h1>
           <p className="text-xs tracking-widest text-[#9EBDC2] mt-1">CONSTRUCTION COMMAND CENTER</p>
         </div>
         <div className="rounded-2xl p-6" style={{ background: 'rgba(15,28,36,0.6)', border: '1px solid rgba(51,84,94,0.3)' }}>
           <h2 className="text-lg font-bold text-center mb-5">{isSignup ? "Create your account" : "Sign in to your account"}</h2>
 
-          {error && <div className="mb-4 p-3 rounded-lg text-xs font-bold text-center" style={{ background: 'rgba(217,77,72,0.1)', color: '#D94D48', border: '1px solid rgba(217,77,72,0.2)' }}>{error}</div>}
+          {(error || authErrorMessage) && <div className="mb-4 p-3 rounded-lg text-xs font-bold text-center" style={{ background: 'rgba(217,77,72,0.1)', color: '#D94D48', border: '1px solid rgba(217,77,72,0.2)' }}>{error || authErrorMessage}</div>}
 
           {/* SSO */}
           <button onClick={() => handleOAuth("apple")} className="w-full py-3 rounded-xl font-semibold text-black bg-white mb-2 text-sm cursor-pointer" style={{ border: 'none' }}>🍎 Continue with Apple</button>
@@ -165,21 +248,28 @@ export default function LoginPage() {
 
           {isSignup && (
             <>
-              <input placeholder="Full name" value={form.fullName} onChange={e => update("fullName", e.target.value)} className="mb-3" />
-              <input placeholder="Company name" value={form.company} onChange={e => update("company", e.target.value)} className="mb-3" />
-              <input placeholder="Job title" value={form.title} onChange={e => update("title", e.target.value)} className="mb-3" />
+              <label htmlFor="signup-fullname" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Full name</label>
+              <input id="signup-fullname" placeholder="Full name" value={form.fullName} onChange={e => update("fullName", e.target.value)} maxLength={200} className="mb-3" />
+              <label htmlFor="signup-company" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Company name</label>
+              <input id="signup-company" placeholder="Company name" value={form.company} onChange={e => update("company", e.target.value)} maxLength={200} className="mb-3" />
+              <label htmlFor="signup-title" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Job title</label>
+              <input id="signup-title" placeholder="Job title" value={form.title} onChange={e => update("title", e.target.value)} maxLength={100} className="mb-3" />
               <div className="flex gap-2 flex-wrap mb-3">
                 {["General","Electrical","Concrete","Steel","Plumbing","HVAC","Roofing","Solar"].map(t => (
                   <span key={t} onClick={() => update("trade", t)} className="text-xs px-3 py-1.5 rounded-md cursor-pointer font-bold" style={{ background: form.trade === t ? '#F29E3D' : '#162832', color: form.trade === t ? '#080E12' : '#9EBDC2' }}>{t}</span>
                 ))}
               </div>
-              <input placeholder="City, State" value={form.location} onChange={e => update("location", e.target.value)} className="mb-3" />
-              <input placeholder="Phone number" value={form.phone} onChange={e => update("phone", e.target.value)} className="mb-3" />
+              <label htmlFor="signup-location" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>City, State</label>
+              <input id="signup-location" placeholder="City, State" value={form.location} onChange={e => update("location", e.target.value)} maxLength={200} className="mb-3" />
+              <label htmlFor="signup-phone" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Phone number</label>
+              <input id="signup-phone" placeholder="Phone number" value={form.phone} onChange={e => update("phone", e.target.value)} maxLength={20} className="mb-3" />
             </>
           )}
-          <input placeholder="Work email address" type="email" value={form.email} onChange={e => update("email", e.target.value)} className="mb-3" />
-          <input placeholder="Password" type="password" value={form.password} onChange={e => update("password", e.target.value)} className="mb-4" />
-          {isSignup && <input placeholder="Confirm password" type="password" value={form.confirmPassword} onChange={e => update("confirmPassword", e.target.value)} className="mb-4" />}
+          <label htmlFor="login-email" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Work email address</label>
+          <input id="login-email" placeholder="Work email address" type="email" value={form.email} onChange={e => update("email", e.target.value)} maxLength={254} className="mb-3" />
+          <label htmlFor="login-password" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Password</label>
+          <input id="login-password" placeholder="Password" type="password" value={form.password} onChange={e => update("password", e.target.value)} maxLength={128} className="mb-4" />
+          {isSignup && <><label htmlFor="login-confirm-password" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Confirm password</label><input id="login-confirm-password" placeholder="Confirm password" type="password" value={form.confirmPassword} onChange={e => update("confirmPassword", e.target.value)} maxLength={128} className="mb-4" /></>}
 
           <button onClick={handleAuth} disabled={loading || !form.email || !form.password} className="w-full py-3 rounded-xl font-bold text-black text-sm cursor-pointer" style={{ background: form.email && form.password ? 'linear-gradient(90deg, #F29E3D, #FCC757)' : '#33545E', border: 'none' }}>
             {loading ? "Please wait..." : isSignup ? "CREATE ACCOUNT" : "SIGN IN"}

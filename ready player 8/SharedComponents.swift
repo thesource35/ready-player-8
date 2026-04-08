@@ -34,6 +34,8 @@ struct StatChip: View {
                 .background(Theme.surface)
                 .cornerRadius(10)
                 .premiumGlow(cornerRadius: 10, color: color)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(label): \(value)")
 
             case .dashboard:
                 VStack(alignment: .leading, spacing: 4) {

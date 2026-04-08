@@ -16,7 +16,7 @@ struct MoneyLensView: View {
     // MARK: - Wealth Tracking
     @AppStorage("ConstructOS.Wealth.TrackingRaw") private var trackingRaw: String = ""
     @AppStorage("ConstructOS.Wealth.CapitalAllocation") private var capitalAllocationRaw: String = ""
-    @State private var trackingEntries: [WealthTrackingEntry] = []
+    @State private var trackingEntries: [WealthTrackingEntry] = loadJSON(StorageKey.trackingRaw, default: [WealthTrackingEntry]())
     @State private var showTrackingSheet = false
 
     // MARK: - Capital Allocation
@@ -396,9 +396,12 @@ struct MoneyLensView: View {
     private func loadRemoteData() async {
         guard supabase.isConfigured else { return }
         do {
-            remoteProjects = try await supabase.fetch("cs_projects")
-            remoteContracts = try await supabase.fetch("cs_contracts")
-        } catch { /* fall back to mock */ }
+            remoteProjects = try await supabase.fetch(SupabaseTable.projects)
+            remoteContracts = try await supabase.fetch(SupabaseTable.contracts)
+        } catch {
+            // Expected: Supabase may not be configured — fall back to mock data
+            CrashReporter.shared.reportError("MoneyLens remote load failed (using mock): \(error.localizedDescription)")
+        }
     }
 
     private func loadPersistedState() {
@@ -429,7 +432,7 @@ struct MoneyLensView: View {
                     margin: entry.margin,
                     notes: entry.notes
                 )
-                try? await supabase.insert("cs_wealth_tracking", record: dto)
+                try? await supabase.insert(SupabaseTable.wealthTracking, record: dto)
             }
         }
     }

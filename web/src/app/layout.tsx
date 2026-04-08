@@ -3,6 +3,8 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import AngelicAssistant from "./components/AngelicAssistant";
 import MobileNav from "./components/MobileNav";
+import NavAuthLinks from "./components/NavAuthLinks";
+import HeaderBell from "./components/HeaderBell";
 
 export const metadata: Metadata = {
   title: "ConstructionOS — The Construction Command Center",
@@ -14,11 +16,13 @@ export const metadata: Metadata = {
     url: "https://constructionos.world",
     siteName: "ConstructionOS",
     type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "ConstructionOS - The Construction Command Center" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "ConstructionOS — The Construction Command Center",
     description: "32 tabs, 56 AI tools, equipment rentals, social network for 142K+ construction professionals.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "ConstructionOS - The Construction Command Center" }],
   },
   robots: { index: true, follow: true },
 };
@@ -87,8 +91,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             ))}
           </div>
           <div className="hidden lg:flex items-center gap-3 shrink-0">
-            <a href="/login" className="text-sm font-bold text-[#F29E3D]">Sign In</a>
-            <a href="/login" className="px-4 py-2 rounded-lg text-sm font-bold text-black" style={{ background: 'linear-gradient(90deg, #F29E3D, #FCC757)' }}>Get Started</a>
+            <HeaderBell />
+            <NavAuthLinks />
           </div>
           <MobileNav />
         </nav>

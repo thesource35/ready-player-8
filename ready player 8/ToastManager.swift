@@ -5,11 +5,12 @@ import SwiftUI
 @Observable
 @MainActor
 final class ToastManager {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = ToastManager()
 
     private(set) var message: String?
 
-    private init() {}
+    init() {}
 
     func show(_ text: String, duration: TimeInterval = 3) {
         message = text

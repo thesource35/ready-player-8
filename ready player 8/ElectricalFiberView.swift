@@ -110,7 +110,7 @@ struct ElectricalFiberView: View {
     @State private var activeSubTab: ElecSubTab = .directory
     @State private var searchQuery = ""
     @State private var selectedTrade: ElectricalTrade? = nil
-    @State private var leads: [ElectricalLead] = []
+    @State private var leads: [ElectricalLead] = loadJSON("ConstructOS.Electrical.Leads", default: [ElectricalLead]())
     @State private var showPostLead = false
 
     enum ElecSubTab: String, CaseIterable {
@@ -334,7 +334,7 @@ struct ElectricalFiberView: View {
                         Text(contractor.responseTime).font(.system(size: 10, weight: .heavy)).foregroundColor(Theme.green)
                         Text(contractor.hourlyRate).font(.system(size: 9)).foregroundColor(Theme.accent)
                     }
-                    Button { } label: {
+                    Button { ToastManager.shared.show("Coming soon") } label: {
                         Text("DISPATCH").font(.system(size: 9, weight: .bold)).foregroundColor(.black)
                             .padding(.horizontal, 10).padding(.vertical, 6).background(Theme.red).cornerRadius(6)
                     }.buttonStyle(.plain)
@@ -419,8 +419,8 @@ struct ContractorCard: View {
                     Text("LICENSE: \(contractor.licenseType) #\(contractor.licenseNumber) (\(contractor.licenseState))").font(.system(size: 9, design: .monospaced)).foregroundColor(Theme.muted)
 
                     HStack(spacing: 6) {
-                        Button { } label: { Text("REQUEST QUOTE").font(.system(size: 9, weight: .bold)).foregroundColor(.black).frame(maxWidth: .infinity).padding(.vertical, 7).background(Theme.accent).cornerRadius(6) }.buttonStyle(.plain)
-                        Button { } label: { Text("VIEW PROFILE").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.cyan).frame(maxWidth: .infinity).padding(.vertical, 7).background(Theme.cyan.opacity(0.12)).cornerRadius(6) }.buttonStyle(.plain)
+                        Button { ToastManager.shared.show("Coming soon") } label: { Text("REQUEST QUOTE").font(.system(size: 9, weight: .bold)).foregroundColor(.black).frame(maxWidth: .infinity).padding(.vertical, 7).background(Theme.accent).cornerRadius(6) }.buttonStyle(.plain)
+                        Button { ToastManager.shared.show("Coming soon") } label: { Text("VIEW PROFILE").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.cyan).frame(maxWidth: .infinity).padding(.vertical, 7).background(Theme.cyan.opacity(0.12)).cornerRadius(6) }.buttonStyle(.plain)
                     }
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))

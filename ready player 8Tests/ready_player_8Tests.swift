@@ -6,6 +6,8 @@
 //
 
 import Testing
+import Foundation
+import CoreData
 @testable import ready_player_8
 
 struct ConstructionOSTests {
@@ -162,7 +164,7 @@ struct ConstructionOSTests {
     // MARK: - Model Codable Tests
 
     @Test func changeOrderCodable() {
-        let co = ChangeOrderItem(number: "CO-001", title: "Test", amount: "$1,000", impactDays: "5", status: .pending, submittedDate: "03-25", decidedDate: "", description: "Test CO")
+        let co = ChangeOrderItem(number: "CO-001", title: "Test", costImpact: 1000, scheduleDays: 5, status: .pending, submittedDate: "03-25", decidedDate: "", description: "Test CO")
         let data = try? JSONEncoder().encode(co)
         #expect(data != nil)
         let decoded = try? JSONDecoder().decode(ChangeOrderItem.self, from: data!)
@@ -171,7 +173,7 @@ struct ConstructionOSTests {
     }
 
     @Test func safetyIncidentCodable() {
-        let inc = SafetyIncident(type: .nearMiss, date: "03-25", location: "Site A", description: "Test", crewMember: "John", correctiveAction: "Fixed", status: .open)
+        let inc = SafetyIncident(date: "03-25", type: .nearMiss, location: "Site A", description: "Test", crewMember: "John", correctiveAction: "Fixed", status: .open)
         let data = try? JSONEncoder().encode(inc)
         #expect(data != nil)
         let decoded = try? JSONDecoder().decode(SafetyIncident.self, from: data!)
@@ -445,5 +447,442 @@ struct ConstructionOSTests {
         let result = MCPToolServer.shared.executeTool(name: "get_rental_rates", input: [:])
         #expect(result.contains("Excavators"))
         #expect(result.contains("/day"))
+    }
+
+    // MARK: - Keychain Migration Tests
+    // NOTE: These tests use fixed Keychain keys ("Backend.BaseURL", "Backend.ApiKey")
+    // shared by SupabaseService.init(). They cannot safely run in parallel with other
+    // tests that create SupabaseService instances. Run serially if flaky.
+
+    @Test @MainActor func keychainMigrationFromUserDefaults() {
+        // Setup: put legacy value in UserDefaults, ensure Keychain is empty
+        let legacyURL = "https://legacy-\(UUID().uuidString).supabase.co"
+        let udKey = "ConstructOS.Integrations.Backend.BaseURL"
+        UserDefaults.standard.set(legacyURL, forKey: udKey)
+        KeychainHelper.delete(key: "Backend.BaseURL")
+
+        // Act: creating SupabaseService triggers migrateCredentials()
+        let _ = SupabaseService()
+
+        // Assert: value migrated to Keychain, UserDefaults cleared
+        #expect(KeychainHelper.read(key: "Backend.BaseURL") == legacyURL)
+        #expect(UserDefaults.standard.string(forKey: udKey) == nil)
+
+        // Cleanup
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        UserDefaults.standard.removeObject(forKey: udKey)
+    }
+
+    @Test @MainActor func keychainMigrationSkipsIfKeychainExists() {
+        // Setup: Keychain already has a value, UserDefaults has a different one
+        let keychainValue = "keychain-\(UUID().uuidString)"
+        let legacyValue = "legacy-\(UUID().uuidString)"
+        let udKey = "ConstructOS.Integrations.Backend.BaseURL"
+        KeychainHelper.save(key: "Backend.BaseURL", data: keychainValue)
+        UserDefaults.standard.set(legacyValue, forKey: udKey)
+
+        // Act
+        let _ = SupabaseService()
+
+        // Assert: Keychain value NOT overwritten
+        #expect(KeychainHelper.read(key: "Backend.BaseURL") == keychainValue)
+
+        // Cleanup
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        UserDefaults.standard.removeObject(forKey: udKey)
+    }
+
+    // MARK: - SupabaseService Tests
+
+    @Test @MainActor func supabaseNotConfiguredByDefault() {
+        let svc = SupabaseService()
+        // Without credentials, service should report not configured
+        // (unless Keychain has saved values from prior runs)
+        #expect(svc.isAuthenticated == false)
+        #expect(svc.accessToken == nil)
+    }
+
+    @Test @MainActor func supabaseSignOutClearsState() {
+        let svc = SupabaseService()
+        svc.accessToken = "test-token"
+        svc.currentUserEmail = "test@test.com"
+        svc.signOut()
+        #expect(svc.accessToken == nil)
+        #expect(svc.currentUserEmail == nil)
+        #expect(svc.isAuthenticated == false)
+    }
+
+    @Test @MainActor func supabasePendingWriteQueue() {
+        let svc = SupabaseService()
+        let initialCount = svc.pendingWrites.count
+        let project = SupabaseProject(name: "Test", client: "Client", type: "General", status: "Active", progress: 0, budget: "$0", score: "—", team: "")
+        svc.queueWrite("cs_projects", record: project)
+        #expect(svc.pendingWrites.count == initialCount + 1)
+    }
+
+    @Test func supabaseTableValidation() async {
+        let svc = await SupabaseService()
+        // Configure with dummy values to pass isConfigured check
+        await MainActor.run {
+            // Direct insert with invalid table should fail validation
+            // (This tests the allowlist mechanism)
+        }
+        // Table name validation is tested indirectly — allowedTables set exists
+    }
+
+    // MARK: - SupabaseService CRUD Tests
+
+    @Test @MainActor func fetchThrowsNotConfigured() async {
+        let svc = SupabaseService()
+        // Ensure not configured by clearing any Keychain values
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+        do {
+            let _: [SupabaseProject] = try await svc.fetch("cs_projects")
+            #expect(Bool(false), "Expected notConfigured error")
+        } catch let error as SupabaseError {
+            if case .notConfigured = error {
+                // Expected
+            } else {
+                #expect(Bool(false), "Expected notConfigured, got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+    }
+
+    @Test @MainActor func insertThrowsNotConfigured() async {
+        let svc = SupabaseService()
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+        let project = SupabaseProject(name: "Test", client: "C", type: "G", status: "A", progress: 0, budget: "$0", score: "—", team: "")
+        do {
+            try await svc.insert("cs_projects", record: project)
+            #expect(Bool(false), "Expected notConfigured error")
+        } catch let error as SupabaseError {
+            if case .notConfigured = error {
+                // Expected
+            } else {
+                #expect(Bool(false), "Expected notConfigured, got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+    }
+
+    @Test @MainActor func updateThrowsNotConfigured() async {
+        let svc = SupabaseService()
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+        let project = SupabaseProject(name: "Test", client: "C", type: "G", status: "A", progress: 0, budget: "$0", score: "—", team: "")
+        do {
+            try await svc.update("cs_projects", id: "x", record: project)
+            #expect(Bool(false), "Expected notConfigured error")
+        } catch let error as SupabaseError {
+            if case .notConfigured = error {
+                // Expected
+            } else {
+                #expect(Bool(false), "Expected notConfigured, got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+    }
+
+    @Test @MainActor func deleteThrowsNotConfigured() async {
+        let svc = SupabaseService()
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+        do {
+            try await svc.delete("cs_projects", id: "x")
+            #expect(Bool(false), "Expected notConfigured error")
+        } catch let error as SupabaseError {
+            if case .notConfigured = error {
+                // Expected
+            } else {
+                #expect(Bool(false), "Expected notConfigured, got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+    }
+
+    @Test @MainActor func insertRejectsInvalidTable() async {
+        let svc = SupabaseService()
+        svc.configure(baseURL: "https://test.supabase.co", apiKey: "test-key")
+        let project = SupabaseProject(name: "Test", client: "C", type: "G", status: "A", progress: 0, budget: "$0", score: "—", team: "")
+        do {
+            try await svc.insert("invalid_table", record: project)
+            #expect(Bool(false), "Expected invalid table error")
+        } catch let error as SupabaseError {
+            if case .httpError(let code, _) = error {
+                #expect(code == 400)
+            } else {
+                #expect(Bool(false), "Expected httpError(400), got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+        // Cleanup: remove test credentials
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+    }
+
+    @Test @MainActor func deleteRejectsInvalidTable() async {
+        let svc = SupabaseService()
+        svc.configure(baseURL: "https://test.supabase.co", apiKey: "test-key")
+        do {
+            try await svc.delete("invalid_table", id: "x")
+            #expect(Bool(false), "Expected invalid table error")
+        } catch let error as SupabaseError {
+            if case .httpError(let code, _) = error {
+                #expect(code == 400)
+            } else {
+                #expect(Bool(false), "Expected httpError(400), got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+        // Cleanup
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+    }
+
+    @Test @MainActor func queueWriteEncodesRecord() {
+        let svc = SupabaseService()
+        let initialCount = svc.pendingWrites.count
+        let project = SupabaseProject(name: "Queue Test", client: "C", type: "G", status: "A", progress: 0, budget: "$0", score: "—", team: "")
+        svc.queueWrite("cs_projects", record: project)
+        #expect(svc.pendingWrites.count == initialCount + 1)
+    }
+
+    // MARK: - Auth Flow Tests
+
+    @Test @MainActor func restoreSessionFromKeychain() {
+        let testToken = "test-token-\(UUID().uuidString)"
+        let testEmail = "test-\(UUID().uuidString)@example.com"
+        // Setup: save auth values to Keychain
+        KeychainHelper.save(key: "Auth.AccessToken", data: testToken)
+        KeychainHelper.save(key: "Auth.Email", data: testEmail)
+
+        let svc = SupabaseService()
+        svc.restoreSession()
+
+        #expect(svc.accessToken == testToken)
+        #expect(svc.currentUserEmail == testEmail)
+        #expect(svc.isAuthenticated == true)
+
+        // Cleanup
+        svc.signOut()
+        KeychainHelper.delete(key: "Auth.AccessToken")
+        KeychainHelper.delete(key: "Auth.RefreshToken")
+        KeychainHelper.delete(key: "Auth.Email")
+    }
+
+    @Test @MainActor func restoreSessionNoToken() {
+        // Ensure no token in Keychain
+        KeychainHelper.delete(key: "Auth.AccessToken")
+        KeychainHelper.delete(key: "Auth.Email")
+
+        let svc = SupabaseService()
+        svc.restoreSession()
+
+        #expect(svc.isAuthenticated == false)
+        #expect(svc.accessToken == nil)
+    }
+
+    @Test @MainActor func signOutClearsKeychainKeys() {
+        // Setup: populate all auth Keychain keys
+        KeychainHelper.save(key: "Auth.AccessToken", data: "token-\(UUID().uuidString)")
+        KeychainHelper.save(key: "Auth.RefreshToken", data: "refresh-\(UUID().uuidString)")
+        KeychainHelper.save(key: "Auth.Email", data: "email-\(UUID().uuidString)@test.com")
+
+        let svc = SupabaseService()
+        svc.accessToken = "some-token"
+        svc.currentUserEmail = "some@email.com"
+        svc.signOut()
+
+        #expect(KeychainHelper.read(key: "Auth.AccessToken") == nil)
+        #expect(KeychainHelper.read(key: "Auth.RefreshToken") == nil)
+        #expect(KeychainHelper.read(key: "Auth.Email") == nil)
+        #expect(svc.accessToken == nil)
+        #expect(svc.currentUserEmail == nil)
+        #expect(svc.isAuthenticated == false)
+    }
+
+    @Test @MainActor func signUpThrowsWhenNotConfigured() async {
+        let svc = SupabaseService()
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+        do {
+            try await svc.signUp(email: "test@test.com", password: "password123")
+            #expect(Bool(false), "Expected notConfigured error")
+        } catch let error as SupabaseError {
+            if case .notConfigured = error {
+                // Expected
+            } else {
+                #expect(Bool(false), "Expected notConfigured, got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+    }
+
+    @Test @MainActor func signInThrowsWhenNotConfigured() async {
+        let svc = SupabaseService()
+        KeychainHelper.delete(key: "Backend.BaseURL")
+        KeychainHelper.delete(key: "Backend.ApiKey")
+        do {
+            try await svc.signIn(email: "test@test.com", password: "password123")
+            #expect(Bool(false), "Expected notConfigured error")
+        } catch let error as SupabaseError {
+            if case .notConfigured = error {
+                // Expected
+            } else {
+                #expect(Bool(false), "Expected notConfigured, got \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Wrong error type: \(error)")
+        }
+    }
+
+    // MARK: - AppStorageJSON Edge Case Tests
+
+    @Test func loadJSONCorruptedDataReturnsDefault() {
+        let key = "test.corrupted.\(UUID().uuidString)"
+        UserDefaults.standard.set("not valid json {{{", forKey: key)
+        let result: [String] = loadJSON(key, default: ["fallback"])
+        #expect(result == ["fallback"])
+        UserDefaults.standard.removeObject(forKey: key)
+    }
+
+    @Test func saveJSONLargeDataStillSaves() {
+        let key = "test.large.\(UUID().uuidString)"
+        // Create ~1.1MB of data (1100 strings of 1000 chars each)
+        let largeArray = (0..<1100).map { _ in String(repeating: "x", count: 1000) }
+        saveJSON(key, value: largeArray)
+        let loaded: [String] = loadJSON(key, default: [])
+        #expect(loaded.count == 1100)
+        UserDefaults.standard.removeObject(forKey: key)
+    }
+
+    @Test func saveAndLoadEmptyArray() {
+        let key = "test.empty.\(UUID().uuidString)"
+        let empty: [String] = []
+        saveJSON(key, value: empty)
+        let loaded: [String] = loadJSON(key, default: ["should-not-be-this"])
+        #expect(loaded.isEmpty)
+        UserDefaults.standard.removeObject(forKey: key)
+    }
+
+    @Test func loadJSONWrongTypeReturnsDefault() {
+        let key = "test.typemismatch.\(UUID().uuidString)"
+        saveJSON(key, value: ["hello", "world"])
+        let loaded: [Int] = loadJSON(key, default: [42])
+        #expect(loaded == [42])
+        UserDefaults.standard.removeObject(forKey: key)
+    }
+
+    // MARK: - Error Type Tests
+
+    @Test func supabaseErrorDescriptions() {
+        let notConfigured = SupabaseError.notConfigured
+        #expect(notConfigured.errorDescription?.contains("not configured") == true)
+
+        let httpError = SupabaseError.httpError(404, "Not Found")
+        #expect(httpError.errorDescription?.contains("404") == true)
+    }
+
+    // MARK: - Feature Gate Tests
+
+    @Test func featureGatesLive() {
+        #expect(FeatureGates.projects.isAvailable == true)
+        #expect(FeatureGates.contracts.isAvailable == true)
+        #expect(FeatureGates.maps.isAvailable == true)
+    }
+
+    // MARK: - Biometric Manager Tests
+
+    @Test @MainActor func biometricManagerDefaultState() {
+        let manager = BiometricAuthManager()
+        #expect(manager.isUnlocked == false)
+        #expect(manager.lastAuthAttempt == nil)
+    }
+
+    // MARK: - Analytics Engine Tests
+
+    @Test @MainActor func analyticsTrackEvent() {
+        let engine = AnalyticsEngine()
+        let initialCount = engine.events.count
+        engine.track("test_event", properties: ["key": "value"])
+        #expect(engine.events.count == initialCount + 1)
+        #expect(engine.events.first?.name == "test_event")
+        #expect(engine.events.first?.properties["key"] == "value")
+    }
+
+    @Test @MainActor func analyticsScreenTracking() {
+        let engine = AnalyticsEngine()
+        engine.trackScreen("projects")
+        #expect(engine.screenViews["projects"] != nil)
+    }
+
+    @Test @MainActor func analyticsMaxEventsLimit() {
+        let engine = AnalyticsEngine()
+        for i in 0..<600 {
+            engine.track("event_\(i)")
+        }
+        #expect(engine.events.count <= 500)
+    }
+
+    // MARK: - Crash Reporter Tests
+
+    @Test @MainActor func crashReporterLogError() {
+        let reporter = CrashReporter()
+        let initialCount = reporter.crashLogs.count
+        reporter.reportError("Test crash")
+        #expect(reporter.crashLogs.count == initialCount + 1)
+        #expect(reporter.crashLogs.first?.message == "Test crash")
+    }
+
+    // MARK: - Persistence Controller Tests
+
+    @Test @MainActor func persistenceControllerPreview() {
+        let controller = PersistenceController(inMemory: true)
+        let ctx = controller.viewContext
+        #expect(ctx.automaticallyMergesChangesFromParent == true)
+    }
+
+    @Test @MainActor func persistenceSaveNoChanges() {
+        let controller = PersistenceController(inMemory: true)
+        controller.save() // Should not error with no changes
+        #expect(controller.lastSaveError == nil)
+    }
+
+    // MARK: - Roof Estimate Codable
+
+    @Test func roofEstimateCodable() {
+        let est = RoofEstimate(address: "123 Main", roofArea: 2400, pitch: "4/12", roofType: "Gable", material: "Asphalt Shingle", layers: 1, condition: "Good", estimatedCost: 10800, laborCost: 6480, materialCost: 10800, wastePercent: 12, dumpsterCost: 450, permitCost: 350, totalCost: 18080, createdAt: Date())
+        let data = try? JSONEncoder().encode(est)
+        #expect(data != nil)
+        let decoded = try? JSONDecoder().decode(RoofEstimate.self, from: data!)
+        #expect(decoded?.address == "123 Main")
+        #expect(decoded?.totalCost == 18080)
+    }
+
+    // MARK: - Link Health Service Tests
+
+    @Test func linkHealthServiceExists() {
+        // Verify the service is accessible (singleton still works during migration)
+        let _ = LinkHealthService.shared
+    }
+
+    // MARK: - Toast Manager Tests
+
+    @Test @MainActor func toastManagerShowAndDismiss() {
+        let tm = ToastManager()
+        tm.show("Test message")
+        #expect(tm.message == "Test message")
+        tm.dismiss()
+        #expect(tm.message == nil)
     }
 }

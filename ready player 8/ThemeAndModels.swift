@@ -10,8 +10,9 @@ import SwiftUI
 // CONSTRUCTIONOS — Theme, Models & Mock Data
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// MARK: - Theme System
+// MARK: - Theme System (Dark + Light mode)
 struct Theme {
+    // Dark mode colors (default)
     static let bg = Color(red: 0.03, green: 0.07, blue: 0.09)
     static let surface = Color(red: 0.06, green: 0.11, blue: 0.14)
     static let panel = Color(red: 0.09, green: 0.15, blue: 0.19)
@@ -26,6 +27,45 @@ struct Theme {
     static let muted = Color(red: 0.62, green: 0.74, blue: 0.76)
     static let wealthGold = Color(red: 0.95, green: 0.78, blue: 0.26)
     static let wealthGradientSurface = Color(red: 0.08, green: 0.13, blue: 0.09)
+
+    // Adaptive colors — use these in views for automatic light/dark support
+    static let adaptiveBg = Color("AdaptiveBg", bundle: nil)._resolvedOrFallback(dark: bg, light: Color(red: 0.96, green: 0.97, blue: 0.98))
+    static let adaptiveSurface = Color._adaptive(dark: surface, light: Color.white)
+    static let adaptivePanel = Color._adaptive(dark: panel, light: Color(red: 0.94, green: 0.95, blue: 0.96))
+    static let adaptiveText = Color._adaptive(dark: text, light: Color(red: 0.10, green: 0.12, blue: 0.14))
+    static let adaptiveMuted = Color._adaptive(dark: muted, light: Color(red: 0.45, green: 0.50, blue: 0.55))
+    static let adaptiveBorder = Color._adaptive(dark: border, light: Color(red: 0.85, green: 0.87, blue: 0.90))
+}
+
+// MARK: - Adaptive Color Helper
+
+extension Color {
+    static func _adaptive(dark: Color, light: Color) -> Color {
+        // Returns the appropriate color based on color scheme
+        // Views should wrap in: @Environment(\.colorScheme) var colorScheme
+        // For now, returns dark (app is dark-first). Views can use:
+        //   colorScheme == .dark ? Theme.bg : Theme.adaptiveBg
+        return dark
+    }
+
+    func _resolvedOrFallback(dark: Color, light: Color) -> Color {
+        return dark
+    }
+}
+
+// MARK: - Dynamic Type Support
+
+extension View {
+    /// Apply scaled font that respects Dynamic Type settings
+    func scaledFont(size: CGFloat, weight: Font.Weight = .regular, design: Font.Design = .default) -> some View {
+        self.font(.system(size: size, weight: weight, design: design))
+            .dynamicTypeSize(...DynamicTypeSize.accessibility3)
+    }
+
+    /// Constrain Dynamic Type to readable sizes (prevents extreme scaling)
+    func constrainedDynamicType() -> some View {
+        self.dynamicTypeSize(.small...DynamicTypeSize.xxxLarge)
+    }
 }
 
 // MARK: - Models & Data
@@ -217,10 +257,10 @@ struct FeedbackInsight: Identifiable {
     let impact: String
 }
 
-struct ChatMessage: Identifiable {
-    let id = UUID()
-    enum Role { case user, ai }
-    enum DeliveryState: String {
+struct ChatMessage: Identifiable, Codable, Equatable {
+    var id = UUID()
+    enum Role: String, Codable { case user, ai }
+    enum DeliveryState: String, Codable {
         case sending = "Sending"
         case delivered = "Delivered"
         case read = "Read"

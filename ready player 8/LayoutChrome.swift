@@ -58,6 +58,12 @@ struct PremiumBackgroundView: View {
 // MARK: - Header View
 
 struct HeaderView: View {
+    // MARK: - Phase 14: Notifications header bell
+    // ContentView injects this store via .environmentObject so the bell badge
+    // updates live without HeaderView needing to be re-instantiated.
+    @EnvironmentObject private var notificationsStore: NotificationsStore
+    var onBellTap: (() -> Void)? = nil
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 10) {
@@ -100,6 +106,28 @@ struct HeaderView: View {
                 Text("142,891")
                     .font(.system(size: 10, weight: .regular))
                     .foregroundColor(Theme.green)
+
+                // MARK: - Phase 14: Header bell with unread badge
+                Button(action: { onBellTap?() }) {
+                    ZStack(alignment: .topTrailing) {
+                        Image(systemName: "bell.fill")
+                            .foregroundColor(Theme.text)
+                            .font(.system(size: 14, weight: .semibold))
+                            .frame(width: 30, height: 30)
+                            .background(Theme.bg.opacity(0.4))
+                            .cornerRadius(8)
+                        if !notificationsStore.displayBadge.isEmpty {
+                            Text(notificationsStore.displayBadge)
+                                .font(.system(size: 9, weight: .heavy))
+                                .foregroundColor(.black)
+                                .padding(.horizontal, 4)
+                                .frame(minWidth: 16, minHeight: 14)
+                                .background(Capsule().fill(Theme.accent))
+                                .offset(x: 4, y: -4)
+                        }
+                    }
+                }
+                .accessibilityLabel("Notifications, \(notificationsStore.unreadCount) unread")
 
                 Button(action: { NotificationCenter.default.post(name: .init("ConstructOS.NavToProjects"), object: nil) }) {
                     Text("NEW PROJECT")

@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 const trades = [
@@ -47,8 +49,8 @@ export default function VerifyPage() {
               <div><span className="text-[#9EBDC2]">Tier:</span> <span style={{ color: tier.color }}>{tier.name}</span></div>
             </div>
           </div>
-          <a href="/feed" className="block w-full py-3 rounded-xl text-sm font-bold text-black mb-3" style={{ background: "linear-gradient(90deg, #F29E3D, #FCC757)" }}>Back to Network</a>
-          <a href="/cos-network" className="text-xs text-[#9EBDC2]">View verification tiers</a>
+          <Link href="/feed" className="block w-full py-3 rounded-xl text-sm font-bold text-black mb-3" style={{ background: "linear-gradient(90deg, #F29E3D, #FCC757)" }}>Back to Network</Link>
+          <Link href="/cos-network" className="text-xs text-[#9EBDC2]">View verification tiers</Link>
         </div>
       </div>
     );
@@ -58,7 +60,7 @@ export default function VerifyPage() {
     <div className="min-h-screen px-4 py-10" style={{ background: "#080E12" }}>
       <div className="max-w-lg mx-auto">
         <div className="text-center mb-8">
-          <img src="/logo.png" alt="ConstructionOS" className="w-14 h-14 rounded-xl mx-auto mb-3" />
+          <Image src="/logo.png" alt="ConstructionOS" width={56} height={56} className="rounded-xl mx-auto mb-3" />
           <h1 className="text-xl font-black">Get Verified</h1>
           <p className="text-xs text-[#9EBDC2] mt-1">License verification against state databases. Stand out on the network.</p>
         </div>
@@ -83,10 +85,14 @@ export default function VerifyPage() {
           <div className="mb-6">
             <div className="text-[10px] font-black tracking-[0.15em] text-[#9EBDC2] mb-3">2. PERSONAL INFORMATION</div>
             <div className="rounded-xl p-4" style={{ background: "#0F1C24" }}>
-              <input placeholder="Full legal name" value={form.fullName} onChange={e => update("fullName", e.target.value)} className="mb-3" />
-              <input placeholder="Email address" type="email" value={form.email} onChange={e => update("email", e.target.value)} className="mb-3" />
-              <input placeholder="Phone number" value={form.phone} onChange={e => update("phone", e.target.value)} className="mb-3" />
-              <select value={form.trade} onChange={e => update("trade", e.target.value)} className="mb-3">
+              <label htmlFor="verify-fullname" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Full legal name</label>
+              <input id="verify-fullname" placeholder="Full legal name" value={form.fullName} onChange={e => update("fullName", e.target.value)} className="mb-3" />
+              <label htmlFor="verify-email" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Email address</label>
+              <input id="verify-email" placeholder="Email address" type="email" value={form.email} onChange={e => update("email", e.target.value)} className="mb-3" />
+              <label htmlFor="verify-phone" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Phone number</label>
+              <input id="verify-phone" placeholder="Phone number" value={form.phone} onChange={e => update("phone", e.target.value)} className="mb-3" />
+              <label htmlFor="verify-trade" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Trade</label>
+              <select id="verify-trade" value={form.trade} onChange={e => update("trade", e.target.value)} className="mb-3">
                 <option value="">Select your trade</option>
                 {trades.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
@@ -102,11 +108,16 @@ export default function VerifyPage() {
           <div className="mb-6">
             <div className="text-[10px] font-black tracking-[0.15em] text-[#9EBDC2] mb-3">3. LICENSE INFORMATION</div>
             <div className="rounded-xl p-4" style={{ background: "#0F1C24" }}>
-              <input placeholder="License type (e.g., Master Electrician)" value={form.licenseType} onChange={e => update("licenseType", e.target.value)} className="mb-3" />
-              <input placeholder="License number" value={form.licenseNumber} onChange={e => update("licenseNumber", e.target.value)} className="mb-3" />
-              <input placeholder="License state (e.g., TX)" value={form.licenseState} onChange={e => update("licenseState", e.target.value)} className="mb-3" />
-              <input placeholder="License expiry date" value={form.licenseExpiry} onChange={e => update("licenseExpiry", e.target.value)} className="mb-3" />
-              <select value={form.oshaLevel} onChange={e => update("oshaLevel", e.target.value)}>
+              <label htmlFor="verify-license-type" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>License type</label>
+              <input id="verify-license-type" placeholder="License type (e.g., Master Electrician)" value={form.licenseType} onChange={e => update("licenseType", e.target.value)} className="mb-3" />
+              <label htmlFor="verify-license-number" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>License number</label>
+              <input id="verify-license-number" placeholder="License number" value={form.licenseNumber} onChange={e => update("licenseNumber", e.target.value)} className="mb-3" />
+              <label htmlFor="verify-license-state" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>License state</label>
+              <input id="verify-license-state" placeholder="License state (e.g., TX)" value={form.licenseState} onChange={e => update("licenseState", e.target.value)} className="mb-3" />
+              <label htmlFor="verify-license-expiry" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>License expiry date</label>
+              <input id="verify-license-expiry" placeholder="License expiry date" value={form.licenseExpiry} onChange={e => update("licenseExpiry", e.target.value)} className="mb-3" />
+              <label htmlFor="verify-osha" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>OSHA Training Level</label>
+              <select id="verify-osha" value={form.oshaLevel} onChange={e => update("oshaLevel", e.target.value)}>
                 <option value="">OSHA Training Level</option>
                 <option value="OSHA 10">OSHA 10-Hour</option>
                 <option value="OSHA 30">OSHA 30-Hour</option>
@@ -124,17 +135,24 @@ export default function VerifyPage() {
           <div className="mb-6">
             <div className="text-[10px] font-black tracking-[0.15em] text-[#9EBDC2] mb-3">4. COMPANY & INSURANCE</div>
             <div className="rounded-xl p-4" style={{ background: "#0F1C24" }}>
-              <input placeholder="Company name" value={form.companyName} onChange={e => update("companyName", e.target.value)} className="mb-3" />
-              <input placeholder="EIN (Federal Tax ID)" value={form.ein} onChange={e => update("ein", e.target.value)} className="mb-3" />
-              <input placeholder="Years in business" value={form.yearsInBusiness} onChange={e => update("yearsInBusiness", e.target.value)} className="mb-3" />
-              <input placeholder="Insurance carrier" value={form.insuranceCarrier} onChange={e => update("insuranceCarrier", e.target.value)} className="mb-3" />
-              <input placeholder="Policy number" value={form.insurancePolicyNumber} onChange={e => update("insurancePolicyNumber", e.target.value)} className="mb-3" />
+              <label htmlFor="verify-company" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Company name</label>
+              <input id="verify-company" placeholder="Company name" value={form.companyName} onChange={e => update("companyName", e.target.value)} className="mb-3" />
+              <label htmlFor="verify-ein" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>EIN (Federal Tax ID)</label>
+              <input id="verify-ein" placeholder="EIN (Federal Tax ID)" value={form.ein} onChange={e => update("ein", e.target.value)} className="mb-3" />
+              <label htmlFor="verify-years" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Years in business</label>
+              <input id="verify-years" placeholder="Years in business" value={form.yearsInBusiness} onChange={e => update("yearsInBusiness", e.target.value)} className="mb-3" />
+              <label htmlFor="verify-insurance" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Insurance carrier</label>
+              <input id="verify-insurance" placeholder="Insurance carrier" value={form.insuranceCarrier} onChange={e => update("insuranceCarrier", e.target.value)} className="mb-3" />
+              <label htmlFor="verify-policy" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Policy number</label>
+              <input id="verify-policy" placeholder="Policy number" value={form.insurancePolicyNumber} onChange={e => update("insurancePolicyNumber", e.target.value)} className="mb-3" />
               <div className="flex gap-3">
-                <input placeholder="GL coverage amount" value={form.glCoverage} onChange={e => update("glCoverage", e.target.value)} className="mb-3" />
-                <input placeholder="WC coverage amount" value={form.wcCoverage} onChange={e => update("wcCoverage", e.target.value)} className="mb-3" />
+                <div><label htmlFor="verify-gl" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>GL coverage amount</label><input id="verify-gl" placeholder="GL coverage amount" value={form.glCoverage} onChange={e => update("glCoverage", e.target.value)} className="mb-3" /></div>
+                <div><label htmlFor="verify-wc" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>WC coverage amount</label><input id="verify-wc" placeholder="WC coverage amount" value={form.wcCoverage} onChange={e => update("wcCoverage", e.target.value)} className="mb-3" /></div>
               </div>
-              <input placeholder="Bonding company" value={form.bondingCompany} onChange={e => update("bondingCompany", e.target.value)} className="mb-3" />
-              <input placeholder="Bonding capacity" value={form.bondingCapacity} onChange={e => update("bondingCapacity", e.target.value)} />
+              <label htmlFor="verify-bonding-company" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Bonding company</label>
+              <input id="verify-bonding-company" placeholder="Bonding company" value={form.bondingCompany} onChange={e => update("bondingCompany", e.target.value)} className="mb-3" />
+              <label htmlFor="verify-bonding-capacity" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Bonding capacity</label>
+              <input id="verify-bonding-capacity" placeholder="Bonding capacity" value={form.bondingCapacity} onChange={e => update("bondingCapacity", e.target.value)} />
               {form.companyName && (
                 <button onClick={() => setStep(4)} className="w-full py-2.5 rounded-xl text-sm font-bold text-black mt-3" style={{ background: tier.color, border: "none", cursor: "pointer" }}>Continue</button>
               )}

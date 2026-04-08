@@ -201,7 +201,8 @@ func securityTwoFactorCode(secret: String, at date: Date = Date()) -> String {
     let key = SymmetricKey(data: secretData)
     let digest = HMAC<Insecure.SHA1>.authenticationCode(for: counterData, using: key)
     let hash = Array(digest)
-    let offset = Int(hash.last! & 0x0F)
+    guard let lastByte = hash.last else { return "000000" }
+    let offset = Int(lastByte & 0x0F)
     let binary = (UInt32(hash[offset] & 0x7F) << 24)
         | (UInt32(hash[offset + 1]) << 16)
         | (UInt32(hash[offset + 2]) << 8)
@@ -340,14 +341,16 @@ func copyTextToClipboard(_ text: String, autoClearAfter seconds: TimeInterval = 
     NSPasteboard.general.clearContents()
     NSPasteboard.general.setString(text, forType: .string)
     let changeCount = NSPasteboard.general.changeCount
-    DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
+    Task { @MainActor in
+        try? await Task.sleep(for: .seconds(seconds))
         if NSPasteboard.general.changeCount == changeCount {
             NSPasteboard.general.clearContents()
         }
     }
 #elseif os(iOS)
     UIPasteboard.general.string = text
-    DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
+    Task { @MainActor in
+        try? await Task.sleep(for: .seconds(seconds))
         if UIPasteboard.general.string == text {
             UIPasteboard.general.string = ""
         }
@@ -404,7 +407,7 @@ struct SecurityAccessPanel: View {
     @State private var storedPasswordHash: String = ""
     @State private var twoFactorSecret: String = ""
     @State private var biometricAvailable: Bool = false
-    @State private var auditEntries: [String] = []
+    @State private var auditEntries: [String] = loadJSON("ConstructOS.Security.AuditLog", default: [String]())
     @State private var showRotateConfirmation: Bool = false
     @State private var showDisablePasswordAlert: Bool = false
     @State private var showDisable2FAAlert: Bool = false

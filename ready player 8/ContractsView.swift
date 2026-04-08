@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - ========== ContractsView.swift ==========
 
 struct ContractsView: View {
-    @State private var contracts: [SupabaseContract] = []
+    @State private var contracts: [SupabaseContract] = loadJSON("ConstructOS.Contracts.DataRaw", default: [SupabaseContract]())
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var searchText = ""
@@ -41,7 +41,7 @@ struct ContractsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
+            LazyVStack(alignment: .leading, spacing: 14) {
                 contractsHeader
                 contractStatsRow
                 contractFilterBar
@@ -65,6 +65,21 @@ struct ContractsView: View {
             }
         }
         .task { await loadContracts() }
+        .onChange(of: contracts) { _, newValue in
+            saveJSON("ConstructOS.Contracts.DataRaw", value: newValue)
+        }
+        .onChange(of: filterStage) { _, newStage in
+            guard supabase.isConfigured, newStage != "All" else { return }
+            Task {
+                do {
+                    let query: [String: String] = ["stage": "eq.\(newStage)"]
+                    let remote: [SupabaseContract] = try await supabase.fetch("cs_contracts", query: query)
+                    await MainActor.run { contracts = remote }
+                } catch {
+                    CrashReporter.shared.reportError("Contracts filter refetch failed: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 
     // MARK: - Sub-views
@@ -136,6 +151,7 @@ struct ContractsView: View {
                     Button { searchText = "" } label: {
                         Image(systemName: "xmark.circle.fill").foregroundColor(Theme.muted)
                     }
+                    .accessibilityLabel("Clear search")
                 }
             }
             .padding(.horizontal, 12)
@@ -216,23 +232,23 @@ struct ContractsView: View {
     private func loadContracts() async {
         guard supabase.isConfigured else { return }
         isLoading = true; errorMessage = nil; defer { isLoading = false }
-        do { contracts = try await supabase.fetch("cs_contracts") }
+        do { contracts = try await supabase.fetch(SupabaseTable.contracts) }
         catch { errorMessage = error.localizedDescription }
     }
 
     private func saveContract(_ contract: SupabaseContract) async {
-        do { try await supabase.insert("cs_contracts", record: contract); await loadContracts() }
+        do { try await supabase.insert(SupabaseTable.contracts, record: contract); await loadContracts() }
         catch { errorMessage = error.localizedDescription }
     }
 
     private func updateContract(_ contract: SupabaseContract) async {
         guard let id = contract.id else { return }
-        do { try await supabase.update("cs_contracts", id: id, record: contract); await loadContracts() }
+        do { try await supabase.update(SupabaseTable.contracts, id: id, record: contract); await loadContracts() }
         catch { errorMessage = error.localizedDescription }
     }
 
     private func deleteContract(id: String) async {
-        do { try await supabase.delete("cs_contracts", id: id); contracts.removeAll { $0.id == id } }
+        do { try await supabase.delete(SupabaseTable.contracts, id: id); contracts.removeAll { $0.id == id } }
         catch { errorMessage = error.localizedDescription }
     }
 }
@@ -376,6 +392,7 @@ private struct ContractDetailSheet: View {
                         } label: {
                             Image(systemName: "ellipsis.circle").foregroundColor(Theme.gold)
                         }
+                        .accessibilityLabel("Contract actions")
                     }
                 }
             }

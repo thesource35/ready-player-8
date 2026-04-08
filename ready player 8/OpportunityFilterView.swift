@@ -11,8 +11,8 @@ struct OpportunityFilterView: View {
     @AppStorage("ConstructOS.Wealth.OpportunitiesRaw") private var opportunitiesRaw: String = ""
     @AppStorage("ConstructOS.Wealth.ArchivedOpportunitiesRaw") private var archivedRaw: String = ""
 
-    @State private var opportunities: [WealthOpportunity] = []
-    @State private var archivedOpportunities: [WealthOpportunity] = []
+    @State private var opportunities: [WealthOpportunity] = loadJSON(StorageKey.opportunitiesRaw, default: [WealthOpportunity]())
+    @State private var archivedOpportunities: [WealthOpportunity] = loadJSON(StorageKey.archivedOpportunitiesRaw, default: [WealthOpportunity]())
     @State private var showOpportunitySheet = false
     @State private var showFromContractSheet = false
     @State private var viewMode: OpportunityViewMode = .active
@@ -193,6 +193,7 @@ struct OpportunityFilterView: View {
                                     .font(.system(size: 14))
                                     .foregroundColor(selectedForCompare.contains(opp.id) ? Theme.purple : Theme.muted)
                             }
+                            .accessibilityLabel(selectedForCompare.contains(opp.id) ? "Deselect for comparison" : "Select for comparison")
 
                             OpportunityResultCard(opportunity: opp)
                         }
@@ -258,6 +259,7 @@ struct OpportunityFilterView: View {
                             Image(systemName: "arrow.uturn.backward")
                                 .font(.system(size: 12)).foregroundColor(Theme.cyan)
                         }
+                        .accessibilityLabel("Restore opportunity")
                     }
                 }
             }
@@ -304,7 +306,12 @@ struct OpportunityFilterView: View {
 
     private func loadContracts() async {
         guard supabase.isConfigured else { return }
-        do { remoteContracts = try await supabase.fetch("cs_contracts") } catch { /* fallback */ }
+        do {
+            remoteContracts = try await supabase.fetch(SupabaseTable.contracts)
+        } catch {
+            // Expected: Supabase may not be configured — fall back to local contracts
+            CrashReporter.shared.reportError("OpportunityFilter contract fetch failed (using local): \(error.localizedDescription)")
+        }
     }
 
     // MARK: - Helpers
@@ -348,7 +355,7 @@ struct OpportunityFilterView: View {
                     contractId: opp.contractId,
                     status: opp.status
                 )
-                try? await supabase.insert("cs_wealth_opportunities", record: dto)
+                try? await supabase.insert(SupabaseTable.wealthOpportunities, record: dto)
             }
         }
     }

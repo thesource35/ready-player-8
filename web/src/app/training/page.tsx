@@ -52,7 +52,7 @@ export default function TrainingPage() {
               <span style={{ fontSize: 12, fontWeight: 800 }}>{c.title}</span>
               {c.required && <span style={{ fontSize: 8, fontWeight: 900, color: "var(--red)", marginLeft: 8 }}>REQUIRED</span>}
             </div>
-            <span style={{ fontSize: 8, fontWeight: 900, color: c.status === "COMPLETED" ? "var(--green)" : c.status === "IN PROGRESS" ? "var(--cyan)" : "var(--muted)" }}>{c.status}</span>
+            <span role="status" aria-label={`Status: ${c.status}`} style={{ fontSize: 8, fontWeight: 900, color: c.status === "COMPLETED" ? "var(--green)" : c.status === "IN PROGRESS" ? "var(--cyan)" : "var(--muted)" }}>{c.status}</span>
           </div>
           {c.progress > 0 && c.progress < 100 && (
             <div style={{ background: "rgba(51,84,94,0.3)", borderRadius: 3, height: 4, marginBottom: 6 }}>
@@ -74,7 +74,7 @@ export default function TrainingPage() {
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {c.expires !== "N/A" && <span style={{ fontSize: 9, color: c.status === "EXPIRING" ? "var(--gold)" : "var(--muted)" }}>Exp: {c.expires}</span>}
-            <span style={{ fontSize: 8, fontWeight: 900, color: c.status === "ACTIVE" ? "var(--green)" : "var(--gold)" }}>{c.status}</span>
+            <span role="status" aria-label={`Status: ${c.status}`} style={{ fontSize: 8, fontWeight: 900, color: c.status === "ACTIVE" ? "var(--green)" : "var(--gold)" }}>{c.status}</span>
           </div>
         </div>
       ))}

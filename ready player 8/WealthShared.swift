@@ -16,7 +16,7 @@ struct WealthArchetype { let name: String; let minScore: Int; let description: S
 struct LimitingBeliefItem { let belief: String; let reframe: String }
 struct ThinkingMode { let name: String; let description: String; let usage: String; let color: Color; let icon: String }
 struct YesFilterGate { let gate: String; let question: String }
-struct SecondOrderItem { let decision: String; let first: String; let second: String }
+struct SecondOrderItem: Codable { let decision: String; let first: String; let second: String }
 struct LeverageCategory: Identifiable { let id: String; let name: String; let description: String; let icon: String; let defaultScore: Double }
 struct LeverageFormula { let icon: String; let formula: String; let description: String }
 struct OpportunityCriterion: Identifiable { let id: String; let label: String; let icon: String; let color: Color }
@@ -399,6 +399,7 @@ struct LimitingBeliefRow: View {
                     Image(systemName: expanded ? "chevron.up" : "chevron.down").font(.system(size: 10)).foregroundColor(Theme.muted)
                 }
             }
+            .accessibilityLabel(expanded ? "Collapse belief details" : "Expand belief details")
             .buttonStyle(.plain)
             if expanded {
                 HStack(alignment: .top, spacing: 6) {

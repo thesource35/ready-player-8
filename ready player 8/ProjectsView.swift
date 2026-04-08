@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - ========== ProjectsView.swift ==========
 
 struct ProjectsView: View {
-    @State private var projects: [SupabaseProject] = []
+    @State private var projects: [SupabaseProject] = loadJSON("ConstructOS.Projects.DataRaw", default: [SupabaseProject]())
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var searchText = ""
@@ -38,7 +38,7 @@ struct ProjectsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
+            LazyVStack(alignment: .leading, spacing: 14) {
                 // Header
                 projectsHeader
                 // Stats row
@@ -66,6 +66,21 @@ struct ProjectsView: View {
             }
         }
         .task { await loadProjects() }
+        .onChange(of: projects) { _, newValue in
+            saveJSON("ConstructOS.Projects.DataRaw", value: newValue)
+        }
+        .onChange(of: filterStatus) { _, newFilter in
+            guard supabase.isConfigured, newFilter != "All" else { return }
+            Task {
+                do {
+                    let query: [String: String] = ["status": "eq.\(newFilter)"]
+                    let remote: [SupabaseProject] = try await supabase.fetch("cs_projects", query: query)
+                    await MainActor.run { projects = remote }
+                } catch {
+                    CrashReporter.shared.reportError("Projects filter refetch failed: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 
     // MARK: - Sub-views
@@ -140,6 +155,7 @@ struct ProjectsView: View {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(Theme.muted)
                     }
+                    .accessibilityLabel("Clear search")
                 }
             }
             .padding(.horizontal, 12)
@@ -245,7 +261,7 @@ struct ProjectsView: View {
         errorMessage = nil
         defer { isLoading = false }
         do {
-            projects = try await supabase.fetch("cs_projects")
+            projects = try await supabase.fetch(SupabaseTable.projects)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -253,7 +269,7 @@ struct ProjectsView: View {
 
     private func saveProject(_ project: SupabaseProject) async {
         do {
-            try await supabase.insert("cs_projects", record: project)
+            try await supabase.insert(SupabaseTable.projects, record: project)
             await loadProjects()
         } catch {
             errorMessage = error.localizedDescription
@@ -263,7 +279,7 @@ struct ProjectsView: View {
     private func updateProject(_ project: SupabaseProject) async {
         guard let id = project.id else { return }
         do {
-            try await supabase.update("cs_projects", id: id, record: project)
+            try await supabase.update(SupabaseTable.projects, id: id, record: project)
             await loadProjects()
         } catch {
             errorMessage = error.localizedDescription
@@ -272,7 +288,7 @@ struct ProjectsView: View {
 
     private func deleteProject(id: String) async {
         do {
-            try await supabase.delete("cs_projects", id: id)
+            try await supabase.delete(SupabaseTable.projects, id: id)
             projects.removeAll { $0.id == id }
         } catch {
             errorMessage = error.localizedDescription
@@ -438,6 +454,7 @@ private struct ProjectDetailSheet: View {
                             Image(systemName: "ellipsis.circle")
                                 .foregroundColor(Theme.accent)
                         }
+                        .accessibilityLabel("Project actions")
                     }
                 }
             }
@@ -452,18 +469,34 @@ private struct ProjectDetailSheet: View {
     }
 
     private var detailView: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            detailRow("Client", project.client)
-            detailRow("Type", project.type)
-            detailRow("Status", project.status)
-            detailRow("Progress", "\(project.progress)%")
-            detailRow("Budget", project.budget)
-            detailRow("Team", project.team)
-            if !project.score.isEmpty { detailRow("Score", project.score) }
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 14) {
+                detailRow("Client", project.client)
+                detailRow("Type", project.type)
+                detailRow("Status", project.status)
+                detailRow("Progress", "\(project.progress)%")
+                detailRow("Budget", project.budget)
+                detailRow("Team", project.team)
+                if !project.score.isEmpty { detailRow("Score", project.score) }
+            }
+            .padding(16)
+            .background(Theme.surface)
+            .cornerRadius(14)
+
+            // MARK: - Phase 13 Documents
+            if let pid = project.id {
+                DocumentAttachmentsView(
+                    entityType: .project,
+                    entityId: pid,
+                    orgId: SupabaseService.shared.currentOrgId
+                )
+            }
+
+            // MARK: - Phase 14: Project Activity Tab
+            if let pid = project.id {
+                ProjectActivityView(projectId: pid)
+            }
         }
-        .padding(16)
-        .background(Theme.surface)
-        .cornerRadius(14)
     }
 
     private func detailRow(_ label: String, _ value: String) -> some View {
@@ -654,4 +687,154 @@ private func formField(_ label: String, text: Binding<String>) -> some View {
 let mockSupabaseProjects: [SupabaseProject] = mockProjects.map {
     SupabaseProject(id: $0.id.uuidString, name: $0.name, client: $0.client, type: $0.type,
                     status: $0.status, progress: $0.progress, budget: $0.budget, score: $0.score, team: $0.team)
+}
+
+// MARK: - Phase 14: Project Activity Tab
+//
+// Inline timeline of cs_activity_events for this project. Mirrors the
+// Phase 13 DocumentAttachmentsView placement pattern (called directly
+// from ProjectDetailSheet.detailView; no separate tab enum needed).
+
+struct ProjectActivityView: View {
+    let projectId: String
+    @State private var events: [SupabaseActivityEvent] = []
+    @State private var loading = true
+    @State private var errorMessage: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Image(systemName: "bolt.fill")
+                    .foregroundColor(Theme.accent)
+                    .font(.system(size: 12, weight: .bold))
+                Text("ACTIVITY")
+                    .font(.system(size: 11, weight: .heavy))
+                    .tracking(2)
+                    .foregroundColor(Theme.text)
+                Spacer()
+                if !loading && !events.isEmpty {
+                    Text("\(events.count)")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(Theme.muted)
+                }
+            }
+            .padding(.horizontal, 4)
+
+            if loading {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(20)
+            } else if let errorMessage {
+                Text(errorMessage)
+                    .font(.system(size: 11))
+                    .foregroundColor(Theme.red)
+                    .padding(10)
+            } else if events.isEmpty {
+                Text("No activity yet")
+                    .font(.system(size: 12))
+                    .foregroundColor(Theme.muted)
+                    .frame(maxWidth: .infinity)
+                    .padding(20)
+            } else {
+                VStack(spacing: 6) {
+                    ForEach(events) { e in
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: ProjectActivityView.iconFor(e.category))
+                                .foregroundColor(Theme.accent)
+                                .frame(width: 20)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(ProjectActivityView.summaryFor(e))
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(Theme.text)
+                                Text(ProjectActivityView.relativeTime(e.createdAt))
+                                    .font(.system(size: 10))
+                                    .foregroundColor(Theme.muted)
+                            }
+                            Spacer(minLength: 0)
+                        }
+                        .padding(10)
+                        .background(Theme.surface.opacity(0.6))
+                        .cornerRadius(8)
+                    }
+                }
+            }
+        }
+        .padding(14)
+        .background(Theme.surface)
+        .cornerRadius(14)
+        .task { await load() }
+    }
+
+    @MainActor
+    private func load() async {
+        loading = true
+        defer { loading = false }
+        guard SupabaseService.shared.isConfigured else {
+            events = ProjectActivityView.mockEvents(projectId: projectId)
+            return
+        }
+        do {
+            events = try await SupabaseService.shared.fetchActivityEvents(projectId: projectId, limit: 100)
+        } catch {
+            errorMessage = (error as? AppError)?.localizedDescription ?? "Failed to load activity"
+        }
+    }
+
+    static func iconFor(_ category: String) -> String {
+        switch category {
+        case "bid_deadline":  return "clock.fill"
+        case "safety_alert":  return "exclamationmark.triangle.fill"
+        case "assigned_task": return "checkmark.circle.fill"
+        case "document":      return "doc.fill"
+        default:              return "bolt.fill"
+        }
+    }
+
+    static func summaryFor(_ e: SupabaseActivityEvent) -> String {
+        let entity = e.entityType.replacingOccurrences(of: "cs_", with: "")
+        return "\(entity) \(e.action)"
+    }
+
+    static func relativeTime(_ iso: String?) -> String {
+        guard let iso, let date = ISO8601DateFormatter().date(from: iso) else { return "" }
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .abbreviated
+        return f.localizedString(for: date, relativeTo: Date())
+    }
+
+    static func mockEvents(projectId: String) -> [SupabaseActivityEvent] {
+        let now = ISO8601DateFormatter()
+        return [
+            SupabaseActivityEvent(
+                id: "mock-act-1",
+                projectId: projectId,
+                entityType: "cs_rfis",
+                entityId: "mock-rfi-1",
+                action: "insert",
+                category: "assigned_task",
+                actorId: "mock-user",
+                createdAt: now.string(from: Date().addingTimeInterval(-2 * 3600))
+            ),
+            SupabaseActivityEvent(
+                id: "mock-act-2",
+                projectId: projectId,
+                entityType: "cs_daily_logs",
+                entityId: "mock-log-1",
+                action: "insert",
+                category: "generic",
+                actorId: "mock-user-other",
+                createdAt: now.string(from: Date().addingTimeInterval(-6 * 3600))
+            ),
+            SupabaseActivityEvent(
+                id: "mock-act-3",
+                projectId: projectId,
+                entityType: "cs_change_orders",
+                entityId: "mock-co-1",
+                action: "update",
+                category: "generic",
+                actorId: "mock-user",
+                createdAt: now.string(from: Date().addingTimeInterval(-26 * 3600))
+            ),
+        ]
+    }
 }

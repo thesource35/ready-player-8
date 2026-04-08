@@ -21,6 +21,7 @@ struct PunchItem: Identifiable, Codable {
 
 @MainActor
 final class PunchListStore: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = PunchListStore()
     @Published var items: [PunchItem] = []
     private let key = "ConstructOS.PunchPro.Items"

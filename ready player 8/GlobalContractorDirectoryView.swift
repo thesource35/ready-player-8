@@ -104,7 +104,7 @@ struct GlobalContractorDirectoryView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
+            LazyVStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(spacing: 6) { Text("\u{1F4D6}").font(.system(size: 18)); Text("GLOBAL DIRECTORY").font(.system(size: 11, weight: .bold)).tracking(3).foregroundColor(Theme.accent) }
@@ -190,8 +190,8 @@ struct ContractorDirectoryCard: View {
                 Text("Certs: \(contractor.certifications.joined(separator: " \u{2022} "))").font(.system(size: 8)).foregroundColor(Theme.muted)
                 Text("Specialties: \(contractor.specialties.joined(separator: ", "))").font(.system(size: 8)).foregroundColor(Theme.cyan)
                 HStack(spacing: 6) {
-                    Button { } label: { Text("CONTACT").font(.system(size: 9, weight: .bold)).foregroundColor(.black).frame(maxWidth: .infinity).padding(.vertical, 6).background(Theme.accent).cornerRadius(6) }.buttonStyle(.plain)
-                    Button { } label: { Text("REQUEST BID").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.cyan).frame(maxWidth: .infinity).padding(.vertical, 6).background(Theme.cyan.opacity(0.12)).cornerRadius(6) }.buttonStyle(.plain)
+                    Button { ToastManager.shared.show("Coming soon") } label: { Text("CONTACT").font(.system(size: 9, weight: .bold)).foregroundColor(.black).frame(maxWidth: .infinity).padding(.vertical, 6).background(Theme.accent).cornerRadius(6) }.buttonStyle(.plain)
+                    Button { ToastManager.shared.show("Coming soon") } label: { Text("REQUEST BID").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.cyan).frame(maxWidth: .infinity).padding(.vertical, 6).background(Theme.cyan.opacity(0.12)).cornerRadius(6) }.buttonStyle(.plain)
                 }
             }
             HStack { Spacer(); Button { withAnimation { expanded.toggle() } } label: { Text(expanded ? "LESS" : "MORE").font(.system(size: 8, weight: .bold)).foregroundColor(Theme.accent) }.buttonStyle(.plain) }

@@ -16,9 +16,11 @@ import LocalAuthentication
 
 @MainActor
 final class BiometricAuthManager: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = BiometricAuthManager()
     @Published var isUnlocked = false
     @Published var biometricType: LABiometryType = .none
+    @Published var lastAuthAttempt: Date?
     @AppStorage("ConstructOS.Security.BiometricEnabled") var biometricEnabled = false
 
     init() {
@@ -38,6 +40,12 @@ final class BiometricAuthManager: ObservableObject {
         }
     }
 
+    var isBiometricAvailable: Bool {
+        let context = LAContext()
+        var error: NSError?
+        return context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
+    }
+
     func authenticate() async -> Bool {
         let context = LAContext()
         context.localizedCancelTitle = "Use Password"
@@ -50,11 +58,21 @@ final class BiometricAuthManager: ObservableObject {
                 .deviceOwnerAuthenticationWithBiometrics,
                 localizedReason: "Unlock ConstructionOS"
             )
-            await MainActor.run { isUnlocked = success }
+            await MainActor.run {
+                isUnlocked = success
+                lastAuthAttempt = Date()
+            }
             return success
         } catch {
+            await MainActor.run { lastAuthAttempt = Date() }
             return false
         }
+    }
+
+    /// Authenticate before accessing sensitive Keychain data
+    func authenticateForKeychain(reason: String = "Access secure credentials") async -> Bool {
+        guard biometricEnabled else { return true } // Skip if user hasn't enabled
+        return await authenticate()
     }
 }
 
@@ -103,6 +121,7 @@ import AVFoundation
 
 @MainActor
 final class VideoCallManager: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = VideoCallManager()
     @Published var isInCall = false
     @Published var isMuted = false
@@ -122,10 +141,11 @@ final class VideoCallManager: ObservableObject {
         callStatus = "connecting"
 
         // Simulate connection
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(1.5))
             self?.callStatus = "connected"
             self?.callTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-                self?.callDuration += 1
+                Task { @MainActor in self?.callDuration += 1 }
             }
         }
     }
@@ -241,6 +261,7 @@ import StoreKit
 
 @MainActor
 final class SubscriptionManager: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = SubscriptionManager()
 
     @Published var subscriptionStatus: SubscriptionTier = .fieldWorker
@@ -613,6 +634,7 @@ enum RevenueVolumeTier: String, CaseIterable {
 
 @MainActor
 final class PricingEngine: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = PricingEngine()
 
     @Published var selectedTier: RevenueVolumeTier = .established

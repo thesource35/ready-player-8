@@ -60,7 +60,7 @@ export default function MarketPage() {
           <div key={m.city} style={{ background: "var(--surface)", borderRadius: 12, padding: 14, border: "1px solid rgba(74,196,204,0.06)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <h3 style={{ fontSize: 14, fontWeight: 800, margin: 0 }}>{m.city}, {m.state}</h3>
-              <span style={{ fontSize: 12, fontWeight: 900, color: m.trend.startsWith("+") ? "var(--green)" : "var(--red)" }}>{m.trend}</span>
+              <span role="status" aria-label={`Trend: ${m.trend}`} style={{ fontSize: 12, fontWeight: 900, color: m.trend.startsWith("+") ? "var(--green)" : "var(--red)" }}>{m.trend}</span>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6, marginBottom: 8 }}>
               <div><div style={{ fontSize: 14, fontWeight: 900, color: "var(--accent)" }}>{m.vacancyRate}%</div><div style={{ fontSize: 7, color: "var(--muted)" }}>VACANCY</div></div>
@@ -100,7 +100,7 @@ export default function MarketPage() {
           <div key={i.title} style={{ background: "var(--surface)", borderRadius: 10, padding: 12, marginBottom: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h4 style={{ fontSize: 12, fontWeight: 800, margin: 0 }}>{i.title}</h4>
-              <span style={{ fontSize: 8, fontWeight: 900, color: i.impact === "HIGH" ? "var(--red)" : i.impact === "MEDIUM" ? "var(--gold)" : "var(--green)" }}>{i.impact}</span>
+              <span role="status" aria-label={`Impact: ${i.impact}`} style={{ fontSize: 8, fontWeight: 900, color: i.impact === "HIGH" ? "var(--red)" : i.impact === "MEDIUM" ? "var(--gold)" : "var(--green)" }}>{i.impact}</span>
             </div>
             <p style={{ fontSize: 10, color: "var(--muted)", margin: "4px 0 0" }}>{i.detail}</p>
           </div>

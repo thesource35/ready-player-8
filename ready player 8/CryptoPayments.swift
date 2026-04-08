@@ -57,6 +57,7 @@ struct CryptoTransaction: Identifiable, Codable {
 
 @MainActor
 final class CryptoPaymentManager: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = CryptoPaymentManager()
 
     @Published var transactions: [CryptoTransaction] = []
@@ -123,7 +124,11 @@ final class CryptoPaymentManager: ObservableObject {
                     UserDefaults.standard.set(now, forKey: ratesTimestampKey)
                 }
             }
-        } catch { }
+        } catch {
+            #if DEBUG
+            print("[CryptoPayments] Rate fetch failed: \(error.localizedDescription)")
+            #endif
+        }
     }
 
     func cryptoAmount(usd: Double, chain: String) -> Double {

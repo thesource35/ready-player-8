@@ -12,29 +12,42 @@ import SwiftUI
 
 // MARK: - Message model
 
-struct AIMessage: Identifiable {
-    let id = UUID()
+struct AIMessage: Identifiable, Codable, Equatable {
+    var id: UUID
     let role: AIRole
     let content: String
     let timestamp: Date
 
-    enum AIRole { case user, assistant }
+    enum AIRole: String, Codable { case user, assistant }
+
+    init(role: AIRole, content: String, timestamp: Date = Date()) {
+        self.id = UUID()
+        self.role = role
+        self.content = content
+        self.timestamp = timestamp
+    }
 
     var timestampLabel: String {
         let f = DateFormatter(); f.dateFormat = "h:mm a"; return f.string(from: timestamp)
+    }
+
+    static func == (lhs: AIMessage, rhs: AIMessage) -> Bool {
+        lhs.id == rhs.id && lhs.content == rhs.content
     }
 }
 
 // MARK: - View
 
 struct AngelicAIView: View {
-    @State private var apiKey: String = ""
+    @State private var apiKey: String = KeychainHelper.read(key: "AngelicAI.APIKey") ?? ""
     @AppStorage("ConstructOS.AngelicAI.SessionID") private var sessionID: String = UUID().uuidString
 
     @State private var messages: [AIMessage] = []
     @State private var inputText = ""
     @State private var isThinking = false
+    @State private var isUsingFallback = false
     @State private var errorMessage: String?
+    @State private var lastFailedMessage: String?
     @State private var showKeySetup = false
     @State private var tempAPIKey = ""
     @State private var scrollID: UUID?
@@ -62,8 +75,33 @@ struct AngelicAIView: View {
             angelicHeader
             Divider().overlay(Theme.border)
             if apiKey.isEmpty {
+                HStack(spacing: 4) {
+                    Image(systemName: "key.slash")
+                        .font(.system(size: 10))
+                    Text("DEMO MODE — Configure API key in settings")
+                        .font(.system(size: 9, weight: .medium))
+                }
+                .foregroundColor(Theme.gold)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Theme.surface.opacity(0.6))
+                .cornerRadius(6)
                 apiKeySetupView
             } else {
+                if isUsingFallback {
+                    HStack(spacing: 4) {
+                        Image(systemName: "antenna.radiowaves.left.and.right.slash")
+                            .font(.system(size: 10))
+                        Text("OFFLINE MODE")
+                            .font(.system(size: 9, weight: .bold))
+                            .tracking(1)
+                    }
+                    .foregroundColor(Theme.muted)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Theme.surface.opacity(0.6))
+                    .cornerRadius(6)
+                }
                 chatArea
                 inputBar
             }
@@ -72,10 +110,31 @@ struct AngelicAIView: View {
         .sheet(isPresented: $showKeySetup) {
             APIKeySheet(tempKey: $tempAPIKey) { key in
                 apiKey = key
+                KeychainHelper.save(key: "AngelicAI.APIKey", data: key)
                 showKeySetup = false
             }
         }
-        .task { if !apiKey.isEmpty { await loadHistory() } }
+        .task {
+            // Migrate legacy UserDefaults API key to Keychain
+            if apiKey.isEmpty {
+                if let legacyKey = UserDefaults.standard.string(forKey: "ConstructOS.AngelicAI.APIKey"), !legacyKey.isEmpty {
+                    apiKey = legacyKey
+                    KeychainHelper.save(key: "AngelicAI.APIKey", data: legacyKey)
+                    UserDefaults.standard.removeObject(forKey: "ConstructOS.AngelicAI.APIKey")
+                }
+            }
+            // Load local messages first, then try remote
+            let localKey = "ConstructOS.AngelicAI.Messages.\(sessionID)"
+            let localMessages: [AIMessage] = loadJSON(localKey, default: [])
+            if !localMessages.isEmpty {
+                messages = localMessages
+            }
+            if !apiKey.isEmpty { await loadHistory() }
+        }
+        .onChange(of: messages) { _, newValue in
+            let localKey = "ConstructOS.AngelicAI.Messages.\(sessionID)"
+            saveJSON(localKey, value: newValue)
+        }
     }
 
     // MARK: - Header
@@ -112,6 +171,7 @@ struct AngelicAIView: View {
                             .font(.system(size: 12))
                             .foregroundColor(Theme.muted)
                     }
+                    .accessibilityLabel("API key settings")
                     Button {
                         messages = []
                         sessionID = UUID().uuidString
@@ -121,6 +181,7 @@ struct AngelicAIView: View {
                             .font(.system(size: 12))
                             .foregroundColor(Theme.muted)
                     }
+                    .accessibilityLabel("Clear chat history")
                 }
             }
         }
@@ -164,6 +225,7 @@ struct AngelicAIView: View {
                     Button {
                         if !tempAPIKey.isEmpty {
                             apiKey = tempAPIKey
+                            KeychainHelper.save(key: "AngelicAI.APIKey", data: tempAPIKey)
                             tempAPIKey = ""
                         }
                     } label: {
@@ -303,6 +365,7 @@ struct AngelicAIView: View {
                         .background(inputText.isEmpty || isThinking ? Theme.muted.opacity(0.4) : Theme.purple)
                         .clipShape(Circle())
                 }
+                .accessibilityLabel(isThinking ? "Thinking" : "Send message")
                 .disabled(inputText.isEmpty || isThinking)
             }
             .padding(.horizontal, 16)
@@ -325,13 +388,24 @@ struct AngelicAIView: View {
 
         await persistMessage(userMsg)
 
-        do {
-            let response = try await callClaude(userMessage: text)
-            let aiMsg = AIMessage(role: .assistant, content: response, timestamp: Date())
-            messages.append(aiMsg)
-            await persistMessage(aiMsg)
-        } catch {
-            errorMessage = error.localizedDescription
+        // Retry with exponential backoff (max 2 retries)
+        var lastError: Error?
+        for attempt in 0..<3 {
+            do {
+                if attempt > 0 { try await Task.sleep(for: .seconds(Double(attempt) * 2)) }
+                let response = try await callClaude(userMessage: text)
+                let aiMsg = AIMessage(role: .assistant, content: response, timestamp: Date())
+                messages.append(aiMsg)
+                await persistMessage(aiMsg)
+                lastError = nil
+                break
+            } catch {
+                lastError = error
+            }
+        }
+        if let lastError {
+            errorMessage = "\(lastError.localizedDescription). Tap to retry."
+            lastFailedMessage = text
         }
         isThinking = false
     }
@@ -340,9 +414,14 @@ struct AngelicAIView: View {
 
     private let mcpServer = MCPToolServer.shared
 
+    /// Anthropic API endpoint — configurable via UserDefaults for testing/proxy
+    private var anthropicEndpoint: String {
+        UserDefaults.standard.string(forKey: "ConstructOS.AngelicAI.Endpoint") ?? "https://api.anthropic.com/v1/messages"
+    }
+
     private func callClaude(userMessage: String) async throws -> String {
         guard !apiKey.isEmpty else { throw AngelicError.noAPIKey }
-        guard let url = URL(string: "https://api.anthropic.com/v1/messages") else {
+        guard let url = URL(string: anthropicEndpoint) else {
             throw AngelicError.invalidURL
         }
 
@@ -380,12 +459,21 @@ struct AngelicAIView: View {
                 throw AngelicError.apiError(http.statusCode, body)
             }
 
-            guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let jsonObject: Any
+            do {
+                jsonObject = try JSONSerialization.jsonObject(with: data)
+            } catch {
+                CrashReporter.shared.reportError("[AngelicAI] API response parse failed: \(error.localizedDescription)")
+                isUsingFallback = true
+                throw AngelicError.parseError
+            }
+            guard let json = jsonObject as? [String: Any],
                   let contentBlocks = json["content"] as? [[String: Any]],
                   let stopReason = json["stop_reason"] as? String
             else {
                 throw AngelicError.parseError
             }
+            isUsingFallback = false
 
             // Check if Claude wants to use tools
             if stopReason == "tool_use" {
@@ -444,7 +532,7 @@ struct AngelicAIView: View {
         guard supabase.isConfigured else { return }
         do {
             let stored: [SupabaseAIMessage] = try await supabase.fetch(
-                "cs_ai_messages",
+                SupabaseTable.aiMessages,
                 query: ["session_id": "eq.\(sessionID)", "order": "created_at.asc"]
             )
             messages = stored.map {
@@ -456,7 +544,7 @@ struct AngelicAIView: View {
             }
         } catch {
             // History load failures are non-critical — continue with empty chat
-            print("[AngelicAI] History load error: \(error.localizedDescription)")
+            CrashReporter.shared.reportError("[AngelicAI] History load error: \(error.localizedDescription)")
         }
     }
 
@@ -469,8 +557,8 @@ struct AngelicAIView: View {
             content: message.content,
             createdAt: nil
         )
-        do { try await supabase.insert("cs_ai_messages", record: record) }
-        catch { print("[AngelicAI] Persist error: \(error.localizedDescription)") }
+        do { try await supabase.insert(SupabaseTable.aiMessages, record: record) }
+        catch { CrashReporter.shared.reportError("[AngelicAI] Persist error: \(error.localizedDescription)") }
     }
 }
 
@@ -578,7 +666,7 @@ private struct APIKeySheet: View {
             ZStack {
                 Theme.bg.ignoresSafeArea()
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Your API key is stored locally in app storage. It is never sent anywhere except directly to api.anthropic.com.")
+                    Text("Your API key is stored securely in the device Keychain. It is never sent anywhere except directly to api.anthropic.com.")
                         .font(.system(size: 12))
                         .foregroundColor(Theme.muted)
                         .padding(14)

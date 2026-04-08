@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreData
 #if canImport(UIKit) && canImport(CarPlay)
 import UIKit
 import CarPlay
@@ -100,8 +101,59 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
         return UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
     }
+
+    // MARK: - Phase 14: APNs registration callbacks
+
+    /// Apple delivers the device token here after a successful
+    /// `registerForRemoteNotifications()`. Convert to hex and upsert into
+    /// `cs_device_tokens` for the current user. (D-15)
+    func application(
+        _ application: UIApplication,
+        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    ) {
+        let tokenString = AppDelegate.hexString(from: deviceToken)
+        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+
+        Task {
+            do {
+                try await SupabaseService.shared.upsertDeviceToken(
+                    token: tokenString,
+                    platform: "ios",
+                    appVersion: appVersion
+                )
+            } catch {
+                CrashReporter.shared.reportError("APNs upsertDeviceToken failed: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func application(
+        _ application: UIApplication,
+        didFailToRegisterForRemoteNotificationsWithError error: Error
+    ) {
+        // Common reasons: simulator without push entitlement, no network,
+        // dev portal capability not enabled. Logged but non-fatal.
+        CrashReporter.shared.reportError("APNs registration failed: \(error.localizedDescription)")
+    }
+
+    /// Hex-encode the APNs device token. Apple gives us raw bytes; the APNs
+    /// HTTP/2 path needs the lowercase hex string for the URL.
+    /// Delegates to the platform-agnostic free function for unit-test access.
+    static func hexString(from data: Data) -> String {
+        APNsHexEncoder.hexString(from: data)
+    }
 }
 #endif
+
+// MARK: - Phase 14: APNs hex encoder (platform-agnostic, test-reachable)
+
+/// Hex-encodes APNs device tokens. Lives outside the UIKit/CarPlay #if so
+/// XCTest targets can reach it on any platform.
+enum APNsHexEncoder {
+    static func hexString(from data: Data) -> String {
+        data.map { String(format: "%02x", $0) }.joined()
+    }
+}
 
 @main
 struct ready_player_8App: App {
@@ -109,9 +161,20 @@ struct ready_player_8App: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 #endif
 
+    @StateObject private var supabase = SupabaseService.shared
+    @StateObject private var analytics = AnalyticsEngine.shared
+    @StateObject private var crashReporter = CrashReporter.shared
+    @StateObject private var persistence = PersistenceController.shared
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(supabase)
+                .environmentObject(analytics)
+                .environmentObject(crashReporter)
+                .environmentObject(persistence)
+                .environment(ToastManager.shared)
+                .environment(\.managedObjectContext, persistence.container.viewContext)
         }
     }
 }

@@ -40,6 +40,7 @@ struct UserProfile: Identifiable, Codable {
 
 @MainActor
 final class UserProfileStore: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = UserProfileStore()
 
     @Published var currentUser: UserProfile?
@@ -211,7 +212,7 @@ struct UserProfileView: View {
                 // Action buttons
                 HStack(spacing: 8) {
                     if isOwnProfile {
-                        Button { } label: {
+                        Button { ToastManager.shared.show("Coming soon") } label: {
                             Text("EDIT PROFILE").font(.system(size: 11, weight: .bold)).foregroundColor(Theme.text)
                                 .frame(maxWidth: .infinity).padding(.vertical, 10)
                                 .background(Theme.surface)
@@ -239,7 +240,7 @@ struct UserProfileView: View {
                                     .cornerRadius(8)
                             }.buttonStyle(.plain)
                         }
-                        Button { } label: {
+                        Button { ToastManager.shared.show("Coming soon") } label: {
                             Label("MESSAGE", systemImage: "bubble.left").font(.system(size: 11, weight: .bold)).foregroundColor(Theme.cyan)
                                 .frame(maxWidth: .infinity).padding(.vertical, 10)
                                 .background(Theme.cyan.opacity(0.1))
@@ -456,6 +457,7 @@ struct NetworkUserRow: View {
                     Button { store.sendConnectionRequest(to: user) } label: {
                         Image(systemName: "person.badge.plus").font(.system(size: 16)).foregroundColor(Theme.accent)
                     }.buttonStyle(.plain)
+                    .accessibilityLabel("Send connection request")
                 }
             }
 

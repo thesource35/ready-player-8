@@ -5,7 +5,7 @@ import SwiftUI
 enum AuthStep { case login, signup, twoFactor, forgotPassword, companySelect }
 
 struct AuthGateView: View {
-    @ObservedObject var supabase = SupabaseService.shared
+    @EnvironmentObject var supabase: SupabaseService
     @ObservedObject var profileStore = UserProfileStore.shared
     @State private var email = ""
     @State private var password = ""
@@ -25,6 +25,9 @@ struct AuthGateView: View {
     @State private var isLoading = false
     @State private var rememberMe = true
     @State private var show2FASetup = false
+    @State private var mfaFactorId: String?
+    @State private var mfaChallengeId: String?
+    @State private var useBackupCode = false
 
     var body: some View {
         ZStack {
@@ -90,10 +93,19 @@ struct AuthGateView: View {
                     VStack(spacing: 6) {
                         Text("Trusted by 142,891 construction professionals").font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.5))
                         HStack(spacing: 16) {
-                            Button("Terms of Service") {}.font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
-                            Button("Privacy Policy") {}.font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
-                            Button("Support") {}.font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
-                        }.buttonStyle(.plain)
+                            if let termsURL = URL(string: "https://constructionos.world/terms") {
+                                Link("Terms of Service", destination: termsURL)
+                                    .font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
+                            }
+                            if let privacyURL = URL(string: "https://constructionos.world/privacy") {
+                                Link("Privacy Policy", destination: privacyURL)
+                                    .font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
+                            }
+                            if let supportURL = URL(string: "https://constructionos.world/support") {
+                                Link("Support", destination: supportURL)
+                                    .font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.4))
+                            }
+                        }
                     }
 
                     Spacer().frame(height: 40)
@@ -109,19 +121,7 @@ struct AuthGateView: View {
             Text("Sign in to your account").font(.system(size: 16, weight: .bold)).foregroundColor(Theme.text)
                 .padding(.top, 24)
 
-            // SSO Buttons
-            VStack(spacing: 10) {
-                ssoButton(icon: "apple.logo", text: "Continue with Apple", bgColor: .white, textColor: .black)
-                ssoButton(icon: "g.circle.fill", text: "Continue with Google", bgColor: Color(red: 0.26, green: 0.52, blue: 0.96), textColor: .white)
-                ssoButton(icon: "building.2.fill", text: "Continue with SSO", bgColor: Theme.surface, textColor: Theme.text)
-            }.padding(.horizontal, 24)
-
-            // Divider
-            HStack {
-                Rectangle().fill(Theme.border.opacity(0.3)).frame(height: 1)
-                Text("or sign in with email").font(.system(size: 10, weight: .semibold)).foregroundColor(Theme.muted).fixedSize()
-                Rectangle().fill(Theme.border.opacity(0.3)).frame(height: 1)
-            }.padding(.horizontal, 24)
+            // SSO buttons hidden — OAuth (Apple, Google) deferred to v2 (AUTH-09)
 
             // Email & Password
             VStack(spacing: 12) {
@@ -136,6 +136,7 @@ struct AuthGateView: View {
                             Text("Remember me").font(.system(size: 11)).foregroundColor(Theme.muted)
                         }
                     }.buttonStyle(.plain)
+                    .accessibilityLabel(rememberMe ? "Remember me, selected" : "Remember me, not selected")
                     Spacer()
                     Button { step = .forgotPassword } label: {
                         Text("Forgot password?").font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.accent)
@@ -158,7 +159,20 @@ struct AuthGateView: View {
                 Task {
                     do {
                         try await supabase.signIn(email: email, password: password)
-                        await MainActor.run { step = .twoFactor }
+                        let hasMFA = await supabase.hasMFAEnabled()
+                        await MainActor.run {
+                            if hasMFA {
+                                step = .twoFactor
+                                Task {
+                                    let factors = (try? await supabase.listMFAFactors()) ?? []
+                                    if let totpFactor = factors.first(where: { $0.factorType == "totp" && $0.status == "verified" }) {
+                                        mfaFactorId = totpFactor.id
+                                        mfaChallengeId = try? await supabase.createMFAChallenge(factorId: totpFactor.id)
+                                    }
+                                }
+                            }
+                            // No MFA — user is already authenticated (accessToken set by signIn)
+                        }
                     } catch {
                         await MainActor.run { self.error = "Invalid email or password. Please try again." }
                     }
@@ -239,7 +253,7 @@ struct AuthGateView: View {
                 guard !company.isEmpty else { error = "Company name is required"; return }
                 guard !jobTitle.isEmpty else { error = "Job title is required"; return }
                 guard !location.isEmpty else { error = "Location is required"; return }
-                guard password.count >= 8 else { error = "Password must be at least 8 characters"; return }
+                guard password.count >= AppConstants.Auth.minPasswordLength else { error = "Password must be at least \(AppConstants.Auth.minPasswordLength) characters"; return }
                 guard password == confirmPassword else { error = "Passwords do not match"; return }
                 isLoading = true; error = nil
 
@@ -263,7 +277,11 @@ struct AuthGateView: View {
                 Task {
                     do {
                         try await supabase.signUp(email: email, password: password)
-                    } catch { /* Supabase optional — local profile is primary */ }
+                    } catch let signUpError {
+                        await MainActor.run {
+                            self.error = "Account created locally but server signup failed: \(signUpError.localizedDescription)"
+                        }
+                    }
                     await MainActor.run {
                         profileStore.emailConfirmationSent = true
                         step = .twoFactor
@@ -355,25 +373,38 @@ struct AuthGateView: View {
                     error = nil
                 }.font(.system(size: 12, weight: .semibold)).foregroundColor(Theme.cyan)
 
-                Button("Use backup code") {}.font(.system(size: 12, weight: .semibold)).foregroundColor(Theme.muted)
+                Button("Use backup code") {
+                    useBackupCode = true
+                    twoFactorCode = ""
+                    error = nil
+                }.font(.system(size: 12, weight: .semibold)).foregroundColor(Theme.muted)
+
+                if useBackupCode {
+                    VStack(spacing: 8) {
+                        Text("Enter your backup recovery code").font(.system(size: 11)).foregroundColor(Theme.muted)
+                        authField(icon: "key.fill", placeholder: "Backup code (e.g. xxxx-xxxx-xxxx)", text: $twoFactorCode, isSecure: false)
+                    }
+                }
             }
 
-            // For App Review — remove before production
+            #if DEBUG
+            // Demo access — DEBUG builds only, stripped from production
             Button {
-                supabase.accessToken = supabase.accessToken ?? "verified"
+                supabase.accessToken = supabase.accessToken ?? UUID().uuidString
                 if profileStore.currentUser == nil {
                     let _ = profileStore.createAccount(profile: UserProfile(
-                        email: "reviewer@apple.com", fullName: "App Reviewer", company: "Apple",
-                        jobTitle: "Reviewer", trade: "General", birthdate: "01/01/2000",
-                        yearsExperience: 1, phone: "", bio: "App Store Review",
-                        location: "Cupertino, CA", certifications: [], skills: [],
+                        email: "demo@constructionos.app", fullName: "Demo User", company: "ConstructionOS",
+                        jobTitle: "Demo", trade: "General", birthdate: "01/01/2000",
+                        yearsExperience: 1, phone: "", bio: "Demo account",
+                        location: "Austin, TX", certifications: [], skills: [],
                         connectionIDs: [], pendingConnectionIDs: [],
-                        joinedDate: Date(), isVerified: true
+                        joinedDate: Date(), isVerified: false
                     ))
                 }
             } label: {
                 Text("Continue to demo").font(.system(size: 10)).foregroundColor(Theme.muted.opacity(0.3))
             }.buttonStyle(.plain)
+            #endif
 
             Spacer().frame(height: 24)
         }
@@ -390,11 +421,23 @@ struct AuthGateView: View {
             authField(icon: "envelope.fill", placeholder: "Work email address", text: $email, isSecure: false)
 
             Button {
-                error = nil
-                // Simulate sending reset email
-                error = "Reset link sent to \(email)"
+                guard !email.isEmpty else { error = "Email is required"; return }
+                isLoading = true; error = nil
+                Task {
+                    do {
+                        try await supabase.resetPassword(email: email)
+                        await MainActor.run {
+                            error = "Password reset link sent to \(email). Check your inbox."
+                        }
+                    } catch {
+                        await MainActor.run {
+                            self.error = "Could not send reset link. Please check your email and try again."
+                        }
+                    }
+                    await MainActor.run { isLoading = false }
+                }
             } label: {
-                Text("SEND RESET LINK").font(.system(size: 13, weight: .bold)).tracking(1)
+                Text(isLoading ? "Sending..." : "SEND RESET LINK").font(.system(size: 13, weight: .bold)).tracking(1)
                     .foregroundColor(.black).frame(maxWidth: .infinity).frame(height: 48)
                     .background(LinearGradient(colors: [Theme.accent, Theme.gold], startPoint: .leading, endPoint: .trailing))
                     .cornerRadius(10)
@@ -454,7 +497,7 @@ struct AuthGateView: View {
                 TextField(placeholder, text: text)
                     .font(.system(size: 14)).foregroundColor(Theme.text)
                     #if os(iOS)
-                    .autocapitalization(.none)
+                    .textInputAutocapitalization(.never)
                     #endif
             }
         }
@@ -464,21 +507,7 @@ struct AuthGateView: View {
         .padding(.horizontal, 24)
     }
 
-    private func ssoButton(icon: String, text: String, bgColor: Color, textColor: Color) -> some View {
-        Button {
-            supabase.accessToken = "sso"
-            supabase.currentUserEmail = "sso@constructionos.app"
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: icon).font(.system(size: 16)).foregroundColor(textColor)
-                Text(text).font(.system(size: 13, weight: .semibold)).foregroundColor(textColor)
-            }
-            .frame(maxWidth: .infinity).frame(height: 44)
-            .background(bgColor.opacity(icon == "building.2.fill" ? 1 : 0.95))
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.border.opacity(0.2), lineWidth: icon == "building.2.fill" ? 1 : 0))
-            .cornerRadius(10)
-        }.buttonStyle(.plain)
-    }
+    // ssoButton removed — OAuth (Apple, Google) deferred to v2 (AUTH-09)
 
     private func trustBadge(icon: String, text: String) -> some View {
         VStack(spacing: 4) {
@@ -489,25 +518,34 @@ struct AuthGateView: View {
 
     private func verify2FA() {
         guard twoFactorCode.count == 6 else { return }
+        guard let factorId = mfaFactorId, let challengeId = mfaChallengeId else {
+            error = "MFA not configured. Contact support."
+            return
+        }
         isLoading = true
-        // Simulate 2FA verification
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            if twoFactorCode == "000000" {
-                error = "Invalid code. Please try again."
-                twoFactorCode = ""
-            } else {
-                // 2FA verified — proceed to app
-                if supabase.accessToken == nil { supabase.accessToken = "verified" }
-                if supabase.currentUserEmail == nil { supabase.currentUserEmail = email }
+        Task {
+            do {
+                try await supabase.verifyMFA(factorId: factorId, challengeId: challengeId, code: twoFactorCode)
+            } catch {
+                await MainActor.run {
+                    self.error = "Invalid verification code. Please try again."
+                    twoFactorCode = ""
+                    Task {
+                        mfaChallengeId = try? await supabase.createMFAChallenge(factorId: factorId)
+                    }
+                }
             }
-            isLoading = false
+            await MainActor.run { isLoading = false }
         }
     }
 }
 
 struct ContentView: View {
     @StateObject private var actionLog = RiskActionLogStore()
-    @ObservedObject private var supabase = SupabaseService.shared
+    // MARK: - Phase 14: Notifications
+    @StateObject private var notificationsStore = NotificationsStore()
+    @State private var showInboxSheet: Bool = false
+    @EnvironmentObject private var supabase: SupabaseService
     @State private var activeNav: NavTab = .home
     @State private var pulse = false
 
@@ -515,7 +553,9 @@ struct ContentView: View {
         case home = "home"; case projects = "projects"; case contracts = "contracts"
         case market = "market"; case maps = "maps"; case network = "network"
         case ops = "ops"; case hub = "hub"; case security = "security"
-        case pricing = "pricing"; case angelic = "angelic"; case wealth = "wealth"
+        case pricing = "pricing"; case angelic = "angelic"
+        case inbox = "inbox" // MARK: Phase 14
+        case wealth = "wealth"
         case cosNetwork = "cos-network"
         case rentals = "rentals"
         case electrical = "electrical"
@@ -544,7 +584,9 @@ struct ContentView: View {
         ("maps","MAPS","\u{1F5FA}","core"),("network","NETWORK","\u{1F4E1}","core"),
         ("ops","OPS","\u{2699}\u{FE0F}","intel"),("hub","HUB","\u{1F50C}","intel"),
         ("security","SECURITY","\u{1F512}","intel"),("pricing","PRICING","\u{1F4B2}","intel"),
-        ("angelic","ANGELIC","\u{1F47C}","intel"),("wealth","WEALTH","\u{1F48E}","wealth"),
+        ("angelic","ANGELIC","\u{1F47C}","intel"),
+        ("inbox","INBOX","\u{1F514}","intel"), // MARK: Phase 14
+        ("wealth","WEALTH","\u{1F48E}","wealth"),
         ("cos-network","COS NET","\u{1F310}","wealth"),
         ("rentals","RENTALS","\u{1F6E0}","wealth"),
         ("electrical","ELECTRIC","\u{26A1}","trade"),
@@ -582,7 +624,7 @@ struct ContentView: View {
         Group {
             if profileStore.currentUser == nil {
                 // Login/Signup is ALWAYS the first screen — must have account to access app
-                AuthGateView(supabase: supabase)
+                AuthGateView()
             } else if !onboardingComplete {
                 OnboardingView(isComplete: $onboardingComplete)
             } else if BiometricAuthManager.shared.biometricEnabled && !biometricUnlocked {
@@ -613,6 +655,13 @@ struct ContentView: View {
         .sheet(isPresented: $showSearch) {
             GlobalSearchView(isPresented: $showSearch)
         }
+        // MARK: - Phase 14: Notifications sheet + lifecycle
+        .sheet(isPresented: $showInboxSheet) {
+            InboxView(store: notificationsStore)
+        }
+        .task {
+            await notificationsStore.start(userId: SupabaseService.shared.currentUserId)
+        }
     }
 
     private var mainAppView: some View {
@@ -621,7 +670,8 @@ struct ContentView: View {
             ZStack {
                 PremiumBackgroundView()
                 VStack(spacing: 0) {
-                    HeaderView()
+                    // MARK: - Phase 14: HeaderView gets the bell tap handler
+                    HeaderView(onBellTap: { showInboxSheet = true })
                     OfflineIndicatorBar(pendingCount: supabase.pendingWrites.count)
                     TickerView()
                     if isWide {
@@ -643,6 +693,8 @@ struct ContentView: View {
         }
         .preferredColorScheme(.dark)
         .environmentObject(actionLog)
+        // MARK: - Phase 14: Notifications store environment
+        .environmentObject(notificationsStore)
         .onReceive(NotificationCenter.default.publisher(for: .init("ConstructOS.NavToProjects"))) { _ in
             activeNav = .projects
         }
@@ -674,6 +726,8 @@ struct ContentView: View {
         case .security: SecurityAccessPanel()
         case .pricing: AIPricingDashboardView()
         case .angelic: AngelicAIView()
+        // MARK: Phase 14
+        case .inbox: InboxView(store: notificationsStore)
         case .wealth:
             VStack(alignment: .leading, spacing: 14) {
                 ScrollView(.horizontal, showsIndicators: false) {

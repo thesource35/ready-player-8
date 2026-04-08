@@ -1,6 +1,15 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 const sites = [
   { name: "Riverside Lofts", lat: 29.7604, lng: -95.3698, status: "ACTIVE", crews: 24, deliveries: 3, alerts: 1, zone: "Zone A — North" },
   { name: "Harbor Crossing", lat: 29.7480, lng: -95.3580, status: "ACTIVE", crews: 18, deliveries: 1, alerts: 0, zone: "Zone B — East" },
@@ -28,6 +37,7 @@ export default function MapsPage() {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapStyle, setMapStyle] = useState("satellite");
   const [activeOverlays, setActiveOverlays] = useState<Set<string>>(new Set(["SATELLITE", "CREWS"]));
+  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
   const toggleOverlay = (name: string) => {
     setActiveOverlays(prev => {
@@ -67,22 +77,39 @@ export default function MapsPage() {
           const el = document.createElement("div");
           el.style.cssText = `width:16px;height:16px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 0 10px ${color};cursor:pointer;`;
 
-          const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
-            <div style="background:#0F1C24;color:#F0F8F8;padding:10px;border-radius:8px;min-width:160px;font-family:system-ui;">
-              <div style="font-size:12px;font-weight:800;margin-bottom:4px;">${site.name}</div>
-              <div style="font-size:9px;color:${color};font-weight:900;margin-bottom:6px;">${site.status}</div>
-              <div style="font-size:10px;color:#9EBDC2;">
-                ${site.crews} crews &bull; ${site.deliveries} deliveries &bull; ${site.alerts} alerts<br/>
-                ${site.zone}
-              </div>
-            </div>
-          `);
-
-          new mapboxgl.Marker({ element: el })
+          const marker = new mapboxgl.Marker({ element: el })
             .setLngLat([site.lng, site.lat])
-            .setPopup(popup)
             .addTo(map);
+
+          // Lazy popup creation — only build DOM on first click (PERF-04)
+          el.addEventListener("click", () => {
+            if (!marker.getPopup()) {
+              const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
+                <div style="background:#0F1C24;color:#F0F8F8;padding:10px;border-radius:8px;min-width:160px;font-family:system-ui;">
+                  <div style="font-size:12px;font-weight:800;margin-bottom:4px;">${escapeHtml(site.name)}</div>
+                  <div style="font-size:9px;color:${escapeHtml(color)};font-weight:900;margin-bottom:6px;">${escapeHtml(site.status)}</div>
+                  <div style="font-size:10px;color:#9EBDC2;">
+                    ${escapeHtml(String(site.crews))} crews &bull; ${escapeHtml(String(site.deliveries))} deliveries &bull; ${escapeHtml(String(site.alerts))} alerts<br/>
+                    ${escapeHtml(site.zone)}
+                  </div>
+                </div>
+              `);
+              marker.setPopup(popup);
+            }
+            marker.togglePopup();
+          });
         });
+
+        // Fly to user location if geolocation is available (DYN-03)
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 12 });
+            },
+            () => { /* keep Houston default */ },
+            { timeout: 3000 }
+          );
+        }
       });
 
       mapRef.current = map;
@@ -121,12 +148,20 @@ export default function MapsPage() {
       {/* Overlay Toggles */}
       <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
         {overlays.map(o => (
-          <button key={o} onClick={() => toggleOverlay(o)} style={{ fontSize: 9, fontWeight: 800, padding: "5px 10px", borderRadius: 6, background: activeOverlays.has(o) ? "var(--cyan)" : "var(--surface)", color: activeOverlays.has(o) ? "var(--bg)" : "var(--muted)", cursor: "pointer", border: "none" }}>{o}</button>
+          <button key={o} onClick={() => toggleOverlay(o)} aria-label={`Toggle ${o.toLowerCase()} overlay`} aria-pressed={activeOverlays.has(o)} style={{ fontSize: 9, fontWeight: 800, padding: "5px 10px", borderRadius: 6, background: activeOverlays.has(o) ? "var(--cyan)" : "var(--surface)", color: activeOverlays.has(o) ? "var(--bg)" : "var(--muted)", cursor: "pointer", border: "none" }}>{o}</button>
         ))}
       </div>
 
       {/* Mapbox Map */}
-      <div ref={mapContainer} style={{ width: "100%", height: 400, borderRadius: 14, marginBottom: 16, overflow: "hidden", border: "1px solid rgba(74,196,204,0.1)" }} />
+      {!token ? (
+        <div style={{ borderRadius: 16, padding: 32, textAlign: "center", background: "var(--surface)", border: "1px solid rgba(51,84,94,0.2)", marginBottom: 16 }}>
+          <div style={{ fontSize: 48, marginBottom: 8 }}>&#x1F5FA;</div>
+          <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 8 }}>Maps Unavailable</div>
+          <div style={{ fontSize: 13, color: "var(--muted)" }}>Configure MAPBOX_TOKEN to enable interactive maps.</div>
+        </div>
+      ) : (
+        <div ref={mapContainer} style={{ width: "100%", height: 400, borderRadius: 14, marginBottom: 16, overflow: "hidden", border: "1px solid rgba(74,196,204,0.1)" }} />
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         {/* Site Cards */}
@@ -136,7 +171,7 @@ export default function MapsPage() {
             <div key={s.name} style={{ background: "var(--surface)", borderRadius: 10, padding: 12, marginBottom: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                 <span style={{ fontSize: 12, fontWeight: 800 }}>{s.name}</span>
-                <span style={{ fontSize: 8, fontWeight: 900, color: s.status === "ACTIVE" ? "var(--green)" : s.status === "DELAYED" ? "var(--red)" : "var(--gold)" }}>{s.status}</span>
+                <span role="status" aria-label={`Status: ${s.status}`} style={{ fontSize: 8, fontWeight: 900, color: s.status === "ACTIVE" ? "var(--green)" : s.status === "DELAYED" ? "var(--red)" : "var(--gold)" }}>{s.status}</span>
               </div>
               <div style={{ display: "flex", gap: 12, fontSize: 10, color: "var(--muted)" }}>
                 <span>{s.crews} crews</span>

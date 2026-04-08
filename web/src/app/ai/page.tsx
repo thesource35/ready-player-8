@@ -12,6 +12,7 @@ export default function AIPage() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const starters = [
@@ -21,6 +22,10 @@ export default function AIPage() {
     "What's our bid win rate this year?",
     "Calculate rental cost for 2 boom lifts for 30 days",
   ];
+
+  useEffect(() => {
+    setPageLoading(false);
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -71,11 +76,21 @@ export default function AIPage() {
       // Fallback: demo response when API key is not set
       setMessages(prev => [...prev, {
         role: "assistant",
-        content: `Great question about "${text}". In the full ConstructionOS platform, I connect to 56 MCP tools with real-time access to all your project data, crew deployment, equipment tracking, financial records, and more.\n\nTo enable live AI responses, add your Anthropic API key in the Integration Hub (/hub) or set the ANTHROPIC_API_KEY environment variable.\n\nHere's what I can help with:\n• Project status & risk scoring\n• Equipment rental recommendations\n• RFI and submittal drafting\n• Budget analysis & forecasting\n• Safety compliance checks\n• Bid preparation assistance`
+        content: `Great question about "${text}". In the full ConstructionOS platform, I connect to 56 MCP tools with real-time access to all your project data, crew deployment, equipment tracking, financial records, and more.\n\nTo enable live AI responses, configure AI in the Integration Hub (/hub).\n\nHere's what I can help with:\n• Project status & risk scoring\n• Equipment rental recommendations\n• RFI and submittal drafting\n• Budget analysis & forecasting\n• Safety compliance checks\n• Bid preparation assistance`
       }]);
     }
 
     setIsLoading(false);
+  }
+
+  if (pageLoading) {
+    return (
+      <div style={{ minHeight: "40vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.2em", color: "var(--accent)" }}>
+          LOADING...
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -110,7 +125,9 @@ export default function AIPage() {
 
       {/* Input */}
       <div className="flex gap-2">
+        <label htmlFor="chat-input" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Message</label>
         <input
+          id="chat-input"
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && send()}

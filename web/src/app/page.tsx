@@ -1,17 +1,21 @@
+import Image from "next/image";
+import Link from "next/link";
+import AngelicFlowStrip from "./components/AngelicFlowStrip";
+import FeatureAccessLink from "./components/FeatureAccessLink";
+
 export default function Home() {
   const stats = [
     { num: "32", label: "Tabs" },
     { num: "56", label: "AI Tools" },
     { num: "97", label: "Rental Items" },
     { num: "6", label: "Providers" },
-    { num: "142K+", label: "Professionals" },
     { num: "29K+", label: "Lines of Code" },
   ];
 
   const platformSections = [
     { group: "CORE", color: "#F29E3D", items: [
       { icon: "⌘", title: "Command Center", desc: "Real-time site risk scores, weather overlays, crew deployment, daily standup reports, inspection tracker.", href: "/" },
-      { icon: "🏗", title: "Projects", desc: "Full project lifecycle management with Supabase sync, scoring, status tracking, and add/edit/delete.", href: "/projects" },
+      { icon: "🏗", title: "Projects", desc: "Full project lifecycle management with real-time sync, scoring, status tracking, and CRUD operations.", href: "/projects" },
       { icon: "📋", title: "Contracts", desc: "Bid pipeline with 7-stage workflow, scoring algorithm, watcher counts, and deadline tracking.", href: "/contracts" },
       { icon: "📊", title: "Market Intelligence", desc: "8 metro markets with vacancy rates, permits, PSF data, bid opportunities, and trend insights.", href: "/market" },
       { icon: "🗺", title: "Live Maps", desc: "Satellite-backed site awareness with thermal/crew/weather overlays, delivery routes, and camera presets.", href: "/maps" },
@@ -22,7 +26,7 @@ export default function Home() {
       { icon: "🔌", title: "Integration Hub", desc: "Supabase, Firebase, Outlook, QuickBooks, Microsoft 365, Procore, PlanGrid, DocuSign, webhooks.", href: "/hub" },
       { icon: "🔐", title: "Security & Access", desc: "Face ID, Touch ID, 2FA (authenticator/SMS/email), Keychain, AES-256, session management, audit log.", href: "/security" },
       { icon: "💲", title: "AI Pricing Engine", desc: "3 subscription tiers, competition comparison, ROI calculator.", href: "/pricing" },
-      { icon: "👼", title: "Angelic AI (56 Tools)", desc: "Claude-powered AI with 56 MCP tools, live data access, construction-specific knowledge.", href: "/ai" },
+      { icon: "🏗", title: "Angelic AI (56 Tools)", desc: "Claude-powered AI with 56 MCP tools, live data access, construction-specific knowledge.", href: "/ai" },
     ]},
     { group: "FIELD & FINANCE", color: "#69D294", items: [
       { icon: "📱", title: "Field Operations", desc: "Daily logs with weather, timecards with OT calc, equipment tracker, permit management.", href: "/field" },
@@ -49,7 +53,7 @@ export default function Home() {
     ]},
     { group: "WEALTH & EMPIRE", color: "#FCC757", items: [
       { icon: "💎", title: "Wealth Intelligence", desc: "Money Lens, Psychology Decoder, Power Thinking, Leverage System, Opportunity Filter.", href: "/wealth" },
-      { icon: "🌐", title: "COS Network", desc: "3-tier verification (Identity/Licensed/Company), license verification by trade, network features.", href: "/cos-network" },
+      { icon: "⭐", title: "Trust & Reputation", desc: "Credentials, peer endorsements, client reviews, photo proof — combined into a trust score.", href: "/trust" },
       { icon: "🛠", title: "Equipment Rentals", desc: "97 items, 20 categories, 6 providers (United Rentals, DOZR, etc.), AI recommender, bundles.", href: "/rentals" },
       { icon: "🏦", title: "Financial Empire", desc: "Pay (1.5% processing), Capital (invoice factoring), Insurance, Workforce, Supply Chain, Bonds, Intelligence.", href: "/empire" },
       { icon: "⚙️", title: "Settings & Profile", desc: "Role presets (Superintendent/PM/Executive), security toggles, subscription management, data export.", href: "/settings" },
@@ -70,7 +74,7 @@ export default function Home() {
           <div className="inline-block px-4 py-1.5 rounded-full text-xs font-bold tracking-wide mb-3" style={{ background: 'rgba(242,158,61,0.1)', border: '1px solid rgba(242,158,61,0.2)', color: '#F29E3D' }}>🚀 NOW ON THE APP STORE &amp; WEB</div>
           <div className="text-sm font-bold tracking-wide mb-5" style={{ color: '#4AC4CC' }}>Build this network</div>
           <div className="flex justify-center mb-5">
-            <img src="/logo.png" alt="ConstructionOS" className="w-24 h-24 rounded-2xl shadow-2xl" style={{ boxShadow: '0 0 60px rgba(242,158,61,0.3)' }} />
+            <Image src="/logo.png" alt="ConstructionOS logo" width={96} height={96} className="rounded-2xl shadow-2xl" style={{ boxShadow: '0 0 60px rgba(242,158,61,0.3)' }} priority />
           </div>
           <h1 className="text-5xl md:text-7xl font-black tracking-wider mb-3">CONSTRUCT<span className="text-[#F29E3D]">OS</span></h1>
           <p className="text-lg md:text-xl text-[#9EBDC2] mb-2 max-w-2xl mx-auto">The operating system for the $13 trillion construction industry. Every tool a construction professional needs — from bid to closeout.</p>
@@ -84,11 +88,21 @@ export default function Home() {
             ))}
           </div>
           <div className="flex gap-3 justify-center flex-wrap">
-            <a href="/login" className="px-8 py-4 rounded-xl text-base font-bold text-black" style={{ background: 'linear-gradient(90deg, #F29E3D, #FCC757)' }}>GET STARTED FREE</a>
-            <a href="/feed" className="px-8 py-4 rounded-xl text-base font-bold text-[#4AC4CC] border-2 border-[#4AC4CC]">Join the Network</a>
+            <Link href="/login" className="px-8 py-4 rounded-xl text-base font-bold text-black" style={{ background: 'linear-gradient(90deg, #F29E3D, #FCC757)' }}>GET STARTED FREE</Link>
+            <FeatureAccessLink feature="feed" paidHref="/feed" className="px-8 py-4 rounded-xl text-base font-bold text-[#4AC4CC] border-2 border-[#4AC4CC]">Join the Network</FeatureAccessLink>
             <a href="#features" className="px-8 py-4 rounded-xl text-base font-bold text-[#9EBDC2] border border-[#33545E]">See All Features</a>
           </div>
         </div>
+      </section>
+
+      <section className="max-w-6xl mx-auto px-5 py-8">
+        <AngelicFlowStrip
+          prompts={[
+            "What plan fits a growing GC?",
+            "Show me project risk examples",
+            "How can Angelic help with rental quotes?",
+          ]}
+        />
       </section>
 
       {/* Network Preview */}
@@ -101,20 +115,20 @@ export default function Home() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           {[
             { icon: "📱", label: "Social Feed", desc: "Project updates & industry news", color: "#F29E3D" },
-            { icon: "💼", label: "Job Board", desc: "Post & find construction jobs", color: "#69D294" },
+            { icon: "💼", label: "Job Board", desc: "Post & find construction jobs", color: "#69D294", href: "/jobs", feature: "jobs" },
             { icon: "🏗", label: "Equipment Market", desc: "Buy, sell & rent equipment", color: "#FCC757" },
             { icon: "💬", label: "Direct Messages", desc: "Encrypted professional messaging", color: "#4AC4CC" },
             { icon: "🏢", label: "Company Pages", desc: "Verified profiles + portfolios", color: "#8A8FCC" },
           ].map(f => (
-            <a key={f.label} href="/feed" className="rounded-xl p-4 text-center block hover:-translate-y-1 transition-transform" style={{ background: '#0F1C24', border: `1px solid ${f.color}20` }}>
+            <FeatureAccessLink key={f.label} feature={f.feature ?? "feed"} paidHref={f.href ?? "/feed"} previewHref={f.feature === "jobs" ? "/jobs" : undefined} className="rounded-xl p-4 text-center block hover:-translate-y-1 transition-transform" style={{ background: '#0F1C24', border: `1px solid ${f.color}20` }}>
               <div className="text-2xl mb-2">{f.icon}</div>
               <div className="text-xs font-bold" style={{ color: f.color }}>{f.label}</div>
               <div className="text-[10px] text-[#9EBDC2] mt-1">{f.desc}</div>
-            </a>
+            </FeatureAccessLink>
           ))}
         </div>
         <div className="text-center">
-          <a href="/feed" className="px-6 py-3 rounded-xl text-sm font-bold text-black inline-block" style={{ background: 'linear-gradient(90deg, #4AC4CC, #69D294)' }}>Explore the Network →</a>
+          <FeatureAccessLink feature="feed" paidHref="/feed" className="px-6 py-3 rounded-xl text-sm font-bold text-black inline-block" style={{ background: 'linear-gradient(90deg, #4AC4CC, #69D294)' }}>Explore the Network →</FeatureAccessLink>
         </div>
       </section>
 
@@ -142,7 +156,7 @@ export default function Home() {
       </section>
 
       {/* All Features by Group */}
-      <section id="features" className="max-w-6xl mx-auto px-5 py-16">
+      <section id="features" className="max-w-6xl mx-auto px-5 py-16" style={{ scrollMarginTop: 80 }}>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-black mb-3">Every Feature. <span className="text-[#4AC4CC]">One Platform.</span></h2>
           <p className="text-[#9EBDC2]">32 tabs, 56 AI tools — from bid to closeout. Click any feature to explore.</p>
@@ -156,11 +170,19 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {section.items.map(f => (
-                <a key={f.title} href={f.href} className="rounded-xl p-5 block transition-all hover:-translate-y-0.5 hover:shadow-lg" style={{ background: '#0F1C24', border: '1px solid rgba(74,196,204,0.06)' }}>
-                  <div className="text-2xl mb-2">{f.icon}</div>
-                  <h4 className="text-sm font-bold text-[#F29E3D] mb-1.5">{f.title}</h4>
-                  <p className="text-xs text-[#9EBDC2] leading-relaxed">{f.desc}</p>
-                </a>
+                f.href === "/" ? (
+                  <Link key={f.title} href={f.href} className="rounded-xl p-5 block transition-all hover:-translate-y-0.5 hover:shadow-lg" style={{ background: '#0F1C24', border: '1px solid rgba(74,196,204,0.06)' }}>
+                    <div className="text-2xl mb-2">{f.icon}</div>
+                    <h4 className="text-sm font-bold text-[#F29E3D] mb-1.5">{f.title}</h4>
+                    <p className="text-xs text-[#9EBDC2] leading-relaxed">{f.desc}</p>
+                  </Link>
+                ) : (
+                  <FeatureAccessLink key={f.title} feature={f.href.slice(1)} paidHref={f.href} className="rounded-xl p-5 block transition-all hover:-translate-y-0.5 hover:shadow-lg" style={{ background: '#0F1C24', border: '1px solid rgba(74,196,204,0.06)' }}>
+                    <div className="text-2xl mb-2">{f.icon}</div>
+                    <h4 className="text-sm font-bold text-[#F29E3D] mb-1.5">{f.title}</h4>
+                    <p className="text-xs text-[#9EBDC2] leading-relaxed">{f.desc}</p>
+                  </FeatureAccessLink>
+                )
               ))}
             </div>
           </div>
@@ -184,15 +206,15 @@ export default function Home() {
             { icon: "📜", name: "Bonds", desc: "Bid, performance, payment", color: "#D94D48" },
             { icon: "📊", name: "Intelligence", desc: "Market data & analytics", color: "#4AC4CC" },
           ].map(p => (
-            <a key={p.name} href="/empire" className="rounded-xl p-4 text-center block hover:-translate-y-1 transition-transform" style={{ background: '#0F1C24', border: `1px solid ${p.color}20` }}>
+            <FeatureAccessLink key={p.name} feature="empire" paidHref="/empire" className="rounded-xl p-4 text-center block hover:-translate-y-1 transition-transform" style={{ background: '#0F1C24', border: `1px solid ${p.color}20` }}>
               <div className="text-2xl mb-1">{p.icon}</div>
               <div className="text-xs font-bold" style={{ color: p.color }}>{p.name}</div>
               <div className="text-[9px] text-[#9EBDC2] mt-1">{p.desc}</div>
-            </a>
+            </FeatureAccessLink>
           ))}
         </div>
         <div className="text-center">
-          <a href="/empire" className="px-6 py-3 rounded-xl text-sm font-bold text-black inline-block" style={{ background: 'linear-gradient(90deg, #F29E3D, #FCC757)' }}>Explore the Empire →</a>
+          <FeatureAccessLink feature="empire" paidHref="/empire" className="px-6 py-3 rounded-xl text-sm font-bold text-black inline-block" style={{ background: 'linear-gradient(90deg, #F29E3D, #FCC757)' }}>Explore the Empire →</FeatureAccessLink>
         </div>
       </section>
 
@@ -213,13 +235,13 @@ export default function Home() {
                 <h3 className="text-lg font-black mb-1">{p.name}</h3>
                 <div className="text-3xl font-black mb-1" style={{ color: p.color }}>{p.price}<span className="text-sm text-[#9EBDC2]">/mo</span></div>
                 <p className="text-xs text-[#9EBDC2] mb-4">{p.desc}</p>
-                <a href={p.featured ? "/checkout" : "/pricing"} className="block py-2.5 rounded-lg text-sm font-bold" style={{ background: p.featured ? 'linear-gradient(90deg, #F29E3D, #FCC757)' : '#162832', color: p.featured ? '#000' : '#9EBDC2' }}>
-                  {p.featured ? 'Start Free Trial' : 'View Plan'}
-                </a>
+                <Link href={p.featured ? "/checkout?plan=pm" : "/pricing"} className="block py-2.5 rounded-lg text-sm font-bold" style={{ background: p.featured ? 'linear-gradient(90deg, #F29E3D, #FCC757)' : '#162832', color: p.featured ? '#000' : '#9EBDC2' }}>
+                  {p.featured ? 'Get Started' : 'View Plan'}
+                </Link>
               </div>
             ))}
           </div>
-          <p className="text-center text-xs text-[#9EBDC2]">Cancel anytime • 7-day free trial • <a href="/pricing" className="text-[#F29E3D]">Full comparison →</a></p>
+          <p className="text-center text-xs text-[#9EBDC2]">Cancel anytime • No long-term contracts • <Link href="/pricing" className="text-[#F29E3D]">Full comparison →</Link></p>
         </div>
       </section>
 
@@ -238,20 +260,20 @@ export default function Home() {
           ))}
         </div>
         <div className="text-center">
-          <a href="/rentals" className="px-6 py-3 rounded-xl text-sm font-bold text-black inline-block" style={{ background: 'linear-gradient(90deg, #4AC4CC, #69D294)' }}>Browse Equipment →</a>
+          <FeatureAccessLink feature="rentals" paidHref="/rentals" className="px-6 py-3 rounded-xl text-sm font-bold text-black inline-block" style={{ background: 'linear-gradient(90deg, #4AC4CC, #69D294)' }}>Browse Equipment →</FeatureAccessLink>
         </div>
       </section>
 
       {/* CTA */}
       <section className="text-center py-20 px-5" style={{ background: 'linear-gradient(180deg, #080E12, #0F1C24)' }}>
         <div className="flex justify-center mb-6">
-          <img src="/logo.png" alt="ConstructionOS" className="w-16 h-16 rounded-xl" style={{ boxShadow: '0 0 40px rgba(242,158,61,0.2)' }} />
+          <Image src="/logo.png" alt="ConstructionOS logo" width={64} height={64} className="rounded-xl" style={{ boxShadow: '0 0 40px rgba(242,158,61,0.2)' }} />
         </div>
         <h2 className="text-3xl md:text-4xl font-black mb-4">Ready to Command Your Jobsite?</h2>
-        <p className="text-[#9EBDC2] mb-8 max-w-lg mx-auto">Join 142,891 construction professionals using ConstructionOS to manage projects, crews, finances, and everything in between.</p>
+        <p className="text-[#9EBDC2] mb-8 max-w-lg mx-auto">Join construction professionals using ConstructionOS to manage projects, crews, finances, and everything in between.</p>
         <div className="flex gap-3 justify-center flex-wrap">
-          <a href="/login" className="px-10 py-4 rounded-xl text-lg font-bold text-black" style={{ background: 'linear-gradient(90deg, #F29E3D, #FCC757)' }}>GET STARTED FREE</a>
-          <a href="/feed" className="px-10 py-4 rounded-xl text-lg font-bold text-[#4AC4CC] border-2 border-[#4AC4CC]">Join the Network</a>
+          <Link href="/login" className="px-10 py-4 rounded-xl text-lg font-bold text-black" style={{ background: 'linear-gradient(90deg, #F29E3D, #FCC757)' }}>GET STARTED FREE</Link>
+          <FeatureAccessLink feature="feed" paidHref="/feed" className="px-10 py-4 rounded-xl text-lg font-bold text-[#4AC4CC] border-2 border-[#4AC4CC]">Join the Network</FeatureAccessLink>
         </div>
         <div className="flex justify-center gap-8 mt-10">
           {[

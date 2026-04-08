@@ -1,19 +1,95 @@
 "use client";
-import { useState } from "react";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import PremiumFeatureGate from "@/app/components/PremiumFeatureGate";
+
+const fallbackContracts = [
+  { title: "Houston Medical Complex", client: "Texas Health Partners", sector: "Healthcare", stage: "Open For Bid", value: "$18.2M", score: 94, watchCount: 23, location: "Houston, TX", deadline: "Apr 15, 2026" },
+  { title: "DFW Airport Terminal C", client: "DFW Airport Authority", sector: "Aviation", stage: "Prequalifying Teams", value: "$45.0M", score: 88, watchCount: 41, location: "Dallas, TX", deadline: "May 1, 2026" },
+  { title: "Baytown Refinery Expansion", client: "ExxonMobil", sector: "Industrial", stage: "Open For Bid", value: "$12.5M", score: 82, watchCount: 15, location: "Baytown, TX", deadline: "Apr 22, 2026" },
+  { title: "Memorial Park Pavilion", client: "City of Houston", sector: "Municipal", stage: "Awarded", value: "$3.8M", score: 91, watchCount: 8, location: "Houston, TX", deadline: "N/A" },
+  { title: "Galleria Office Tower", client: "Hines REIT", sector: "Commercial", stage: "Negotiation", value: "$28.5M", score: 79, watchCount: 19, location: "Houston, TX", deadline: "Apr 30, 2026" },
+  { title: "Port of Houston Warehouse", client: "Port Authority", sector: "Industrial", stage: "Pursuit", value: "$9.2M", score: 71, watchCount: 12, location: "Houston, TX", deadline: "Jun 1, 2026" },
+  { title: "River Oaks Residences", client: "Toll Brothers", sector: "Residential", stage: "Lost", value: "$6.4M", score: 65, watchCount: 5, location: "Houston, TX", deadline: "N/A" },
+];
+
+interface Contract {
+  title: string;
+  client: string;
+  sector: string;
+  stage: string;
+  value: string;
+  score: number;
+  watchCount: number;
+  location: string;
+  deadline: string;
+}
 
 export default function ContractsPage() {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
+  const [allContracts, setAllContracts] = useState<Contract[]>(fallbackContracts);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const stageFilters = ["All", "Pursuit", "Prequalifying Teams", "Open For Bid", "Negotiation", "Awarded", "Lost"];
-  const allContracts = [
-    { title: "Houston Medical Complex", client: "Texas Health Partners", sector: "Healthcare", stage: "Open For Bid", value: "$18.2M", score: 94, watchCount: 23, location: "Houston, TX", deadline: "Apr 15, 2026" },
-    { title: "DFW Airport Terminal C", client: "DFW Airport Authority", sector: "Aviation", stage: "Prequalifying Teams", value: "$45.0M", score: 88, watchCount: 41, location: "Dallas, TX", deadline: "May 1, 2026" },
-    { title: "Baytown Refinery Expansion", client: "ExxonMobil", sector: "Industrial", stage: "Open For Bid", value: "$12.5M", score: 82, watchCount: 15, location: "Baytown, TX", deadline: "Apr 22, 2026" },
-    { title: "Memorial Park Pavilion", client: "City of Houston", sector: "Municipal", stage: "Awarded", value: "$3.8M", score: 91, watchCount: 8, location: "Houston, TX", deadline: "N/A" },
-    { title: "Galleria Office Tower", client: "Hines REIT", sector: "Commercial", stage: "Negotiation", value: "$28.5M", score: 79, watchCount: 19, location: "Houston, TX", deadline: "Apr 30, 2026" },
-    { title: "Port of Houston Warehouse", client: "Port Authority", sector: "Industrial", stage: "Pursuit", value: "$9.2M", score: 71, watchCount: 12, location: "Houston, TX", deadline: "Jun 1, 2026" },
-    { title: "River Oaks Residences", client: "Toll Brothers", sector: "Residential", stage: "Lost", value: "$6.4M", score: 65, watchCount: 5, location: "Houston, TX", deadline: "N/A" },
-  ];
+
+  const mapContract = (c: Record<string, unknown>): Contract => ({
+    title: (c.title as string) || "",
+    client: (c.client as string) || "",
+    sector: (c.sector as string) || "",
+    stage: (c.stage as string) || "",
+    value: (c.value as string) || (c.budget as string) || "",
+    score: (c.score as number) || 0,
+    watchCount: (c.watchCount as number) || (c.watch_count as number) || 0,
+    location: (c.location as string) || "",
+    deadline: (c.deadline as string) || (c.bid_due as string) || "N/A",
+  });
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetch("/api/contracts?page=0")
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((result: Record<string, unknown> | Record<string, unknown>[]) => {
+        if (Array.isArray(result)) {
+          if (result.length > 0) setAllContracts(result.map(mapContract));
+          setHasMore(false);
+        } else {
+          const items = result.data as Record<string, unknown>[] | undefined;
+          if (Array.isArray(items) && items.length > 0) setAllContracts(items.map(mapContract));
+          setHasMore((result.hasMore as boolean) || false);
+        }
+        setIsLoading(false);
+      })
+      .catch(() => { setError("Failed to load contracts"); setIsLoading(false); });
+  }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const res = await fetch(`/api/contracts?page=${nextPage}`);
+      const result = await res.json();
+      if (Array.isArray(result)) {
+        setAllContracts(prev => [...prev, ...result.map(mapContract)]);
+        setHasMore(false);
+      } else {
+        const items = result.data as Record<string, unknown>[] | undefined;
+        setAllContracts(prev => [...prev, ...(items || []).map(mapContract)]);
+        setHasMore(result.hasMore || false);
+      }
+      setPage(nextPage);
+    } catch {
+      // Silently fail — user can retry
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const contracts = allContracts.filter(c => {
     const matchesSearch = !search || c.title.toLowerCase().includes(search.toLowerCase()) || c.client.toLowerCase().includes(search.toLowerCase()) || c.sector.toLowerCase().includes(search.toLowerCase());
@@ -34,6 +110,7 @@ export default function ContractsPage() {
   };
 
   return (
+    <PremiumFeatureGate feature="contracts">
     <div style={{ padding: 20, maxWidth: 1200, margin: "0 auto" }}>
       <div style={{ background: "var(--surface)", borderRadius: 14, padding: 20, marginBottom: 16, border: "1px solid rgba(252,199,87,0.08)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -42,7 +119,7 @@ export default function ContractsPage() {
             <h1 style={{ fontSize: 24, fontWeight: 900, margin: "4px 0" }}>Bid Pipeline</h1>
             <p style={{ fontSize: 12, color: "var(--muted)" }}>Track, score, and manage all bid opportunities</p>
           </div>
-          <a href="/login" style={{ background: "var(--gold)", color: "var(--bg)", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 700, fontSize: 12, cursor: "pointer", textDecoration: "none", display: "inline-block" }}>+ Add Contract</a>
+          <Link href="/login?redirect=%2Fcontracts" style={{ background: "var(--gold)", color: "var(--bg)", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 700, fontSize: 12, cursor: "pointer", textDecoration: "none", display: "inline-block" }}>+ Add Contract</Link>
         </div>
       </div>
 
@@ -61,7 +138,10 @@ export default function ContractsPage() {
       </div>
 
       {/* Search */}
-      <input placeholder="Search contracts, clients, sectors..." value={search} onChange={e => setSearch(e.target.value)} style={{ width: "100%", marginBottom: 12 }} />
+      <input aria-label="Search contracts" placeholder="Search contracts, clients, sectors..." value={search} onChange={e => setSearch(e.target.value)} style={{ width: "100%", marginBottom: 12 }} />
+
+      {isLoading && <div style={{ textAlign: "center", padding: 40, color: "var(--muted)" }}>Loading contracts...</div>}
+      {error && <div role="alert" style={{ textAlign: "center", padding: 16, color: "var(--red)", background: "rgba(217,77,72,0.1)", borderRadius: 10, marginBottom: 12 }}>{error}</div>}
 
       {/* Stage Filter Pills */}
       <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
@@ -91,6 +171,29 @@ export default function ContractsPage() {
           </div>
         ))}
       </div>
+
+      {hasMore && (
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            style={{
+              background: "var(--accent, #FCC757)",
+              color: "#0A1A2A",
+              border: "none",
+              borderRadius: 8,
+              padding: "10px 28px",
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: loadingMore ? "wait" : "pointer",
+              opacity: loadingMore ? 0.6 : 1,
+            }}
+          >
+            {loadingMore ? "Loading..." : "Load More"}
+          </button>
+        </div>
+      )}
     </div>
+    </PremiumFeatureGate>
   );
 }

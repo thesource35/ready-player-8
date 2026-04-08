@@ -365,10 +365,16 @@ final class ConstructionOSNetworkService: ObservableObject {
     }
 
     private func loadState() {
-        guard
-            let data = UserDefaults.standard.data(forKey: storageKey),
-            let snapshot = try? JSONDecoder().decode(ConstructionOSNetworkSnapshot.self, from: data)
-        else {
+        guard let data = UserDefaults.standard.data(forKey: storageKey) else {
+            posts = mockConstructionOSNetworkPosts
+            return
+        }
+
+        let snapshot: ConstructionOSNetworkSnapshot
+        do {
+            snapshot = try JSONDecoder().decode(ConstructionOSNetworkSnapshot.self, from: data)
+        } catch {
+            CrashReporter.shared.reportError("Network snapshot decode failed: \(error.localizedDescription)")
             posts = mockConstructionOSNetworkPosts
             return
         }
@@ -440,8 +446,12 @@ final class ConstructionOSNetworkService: ObservableObject {
             persistedPosts: persistedPosts
         )
 
-        guard let data = try? JSONEncoder().encode(snapshot) else { return }
-        UserDefaults.standard.set(data, forKey: storageKey)
+        do {
+            let data = try JSONEncoder().encode(snapshot)
+            UserDefaults.standard.set(data, forKey: storageKey)
+        } catch {
+            CrashReporter.shared.reportError("Network snapshot encode failed: \(error.localizedDescription)")
+        }
     }
 
     private func extractTags(from text: String) -> [String] {
@@ -780,6 +790,7 @@ struct ConstructionOSNetworkPanel: View {
                         Button(action: { searchText = "" }) {
                             Image(systemName: "xmark.circle.fill").font(.system(size: 11)).foregroundColor(Theme.muted)
                         }.buttonStyle(.plain)
+                        .accessibilityLabel("Clear search")
                     }
                 }
                 .padding(.horizontal, 10).padding(.vertical, 8)
@@ -926,6 +937,7 @@ struct ConstructionOSNetworkPanel: View {
 
         Task {
             guard let data = try? await item.loadTransferable(type: Data.self) else {
+                CrashReporter.shared.reportError("Photo load failed for network post comment")
                 await MainActor.run {
                     commentPhotoDrafts[postID] = nil
                     commentPhotoSelections[postID] = nil
@@ -1084,14 +1096,14 @@ struct ConstructionOSPostCard: View {
                     }.frame(maxWidth: .infinity)
                 }.buttonStyle(.plain)
 
-                Button(action: {}) {
+                Button(action: { ToastManager.shared.show("Coming soon") }) {
                     HStack(spacing: 4) {
                         Image(systemName: "bubble.left").font(.system(size: 11)).foregroundColor(Theme.muted)
                         Text("\(commentCount)").font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.muted)
                     }.frame(maxWidth: .infinity)
                 }.buttonStyle(.plain)
 
-                Button(action: {}) {
+                Button(action: { ToastManager.shared.show("Coming soon") }) {
                     HStack(spacing: 4) {
                         Image(systemName: "arrowshape.turn.up.forward").font(.system(size: 11)).foregroundColor(Theme.muted)
                         Text("Share").font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.muted)
@@ -1324,7 +1336,7 @@ struct BNCrewCard: View {
                         .overlay(RoundedRectangle(cornerRadius: 7).stroke(Theme.accent.opacity(0.5), lineWidth: 1))
                         .cornerRadius(7)
                 }.buttonStyle(.plain)
-                Button(action: {}) {
+                Button(action: { ToastManager.shared.show("Coming soon") }) {
                     Text("Message")
                         .font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.cyan)
                         .frame(maxWidth: .infinity).frame(height: 30)
@@ -1400,7 +1412,7 @@ struct BNJobCard: View {
                         .background(hasApplied ? Theme.muted : (job.urgent ? Theme.red : Theme.accent))
                         .cornerRadius(7)
                 }.buttonStyle(.plain)
-                Button(action: {}) {
+                Button(action: { ToastManager.shared.show("Coming soon") }) {
                     Text("SAVE JOB").font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.gold)
                         .frame(width: 80).frame(height: 30)
                         .background(Theme.gold.opacity(0.12))

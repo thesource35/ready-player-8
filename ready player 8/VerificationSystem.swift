@@ -114,6 +114,7 @@ let tradeVerificationRequirements: [TradeRequirement] = [
 
 @MainActor
 final class VerificationManager: ObservableObject {
+    /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = VerificationManager()
 
     @Published var currentTier: VerificationTier = .none
@@ -144,10 +145,26 @@ final class VerificationManager: ObservableObject {
         isProcessing = true
         saveJSON(requestKey, value: req)
 
-        // Simulate 24-48hr review
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
-            self?.currentRequest?.status = "reviewing"
+        // Submit to Supabase backend if configured, then update status
+        Task { @MainActor [weak self] in
+            let svc = SupabaseService.shared
+            if svc.isConfigured {
+                do {
+                    // Submit verification request to backend
+                    try await svc.insert(SupabaseTable.verificationRequests, record: req)
+                    self?.currentRequest?.status = "submitted"
+                } catch {
+                    // Expected: Backend unavailable — fall back to local-only review
+                    CrashReporter.shared.reportError("Verification backend unavailable (local fallback): \(error.localizedDescription)")
+                    self?.currentRequest?.status = "reviewing"
+                }
+            } else {
+                // No backend — simulate review locally
+                try? await Task.sleep(for: .seconds(3))
+                self?.currentRequest?.status = "reviewing"
+            }
             if let r = self?.currentRequest { saveJSON(self?.requestKey ?? "", value: r) }
+            self?.isProcessing = false
         }
     }
 

@@ -257,6 +257,8 @@ struct ChangeOrderTrackerPanel: View {
     @State private var newDesc = ""
     @State private var selectedStatus: ChangeOrderStatus = .pending
     @State private var exportStatus: String? = nil
+    // MARK: - Phase 13 Documents
+    @State private var docsForCO: DocsEntityRef?
 
     private var filtered: [ChangeOrderItem] {
         guard let f = filterStatus else { return items }
@@ -430,6 +432,10 @@ struct ChangeOrderTrackerPanel: View {
                 .padding(.horizontal, 8).padding(.vertical, 6)
                 .background(Theme.surface.opacity(0.7))
                 .cornerRadius(8)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    docsForCO = DocsEntityRef(id: "co-\(item.number)", title: item.number)
+                }
             }
 
             if let exportStatus {
@@ -443,6 +449,20 @@ struct ChangeOrderTrackerPanel: View {
             items = loadJSON("ConstructOS.Ops.ChangeOrders", default: items)
         }
         .padding(.horizontal, 16)
+        .sheet(item: $docsForCO) { ref in
+            NavigationStack {
+                ScrollView {
+                    DocumentAttachmentsView(
+                        entityType: .changeOrder,
+                        entityId: ref.id,
+                        orgId: SupabaseService.shared.currentOrgId
+                    )
+                    .padding()
+                }
+                .background(Theme.bg)
+                .navigationTitle(ref.title)
+            }
+        }
     }
 }
 
@@ -498,9 +518,9 @@ struct SafetyIncidentPanel: View {
     @State private var newStatus: IncidentStatus = .open
 
     private var filtered: [SafetyIncident] {
-        incidents.filter {
-            (filterType == nil || $0.type == filterType!) &&
-            (filterStatus == nil || $0.status == filterStatus!)
+        incidents.filter { incident in
+            (filterType.map { incident.type == $0 } ?? true) &&
+            (filterStatus.map { incident.status == $0 } ?? true)
         }
     }
 

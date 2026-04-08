@@ -248,7 +248,7 @@ const proactiveInsights: Record<string, { delay: number; type: string; message: 
   ],
   "/feed": [
     { delay: 10000, type: "💡 MANAGEMENT", message: "**Network Tip:** Darnell Washington's post about the 8,400 SF mat slab got 421 likes. Your network values real project content. Post your Riverside Lofts Level 3 pour results — it builds credibility and attracts talent." },
-    { delay: 30000, type: "💰 WEALTH", message: "**Wealth Insight:** 142K professionals in the network = 142K potential customers. Every post you make is free marketing. The builders with the strongest networks win the best projects. Post 3x per week minimum." },
+    { delay: 30000, type: "💰 WEALTH", message: "**Wealth Insight:** Every professional in the network is a potential customer. Every post you make is free marketing. The builders with the strongest networks win the best projects. Post 3x per week minimum." },
   ],
   "/analytics": [
     { delay: 8000, type: "🔔 ALERT", message: "**Riverside Lofts risk score is 92/100 (HIGH).** Factors: 3 weather delays in 30 days, sub default risk, and pending permit renewal. This project needs daily superintendent attention." },
@@ -273,7 +273,7 @@ const proactiveInsights: Record<string, { delay: number; type: string; message: 
   ],
   "/": [
     { delay: 5000, type: "💡 MANAGEMENT", message: "**Good morning!** Here's your daily brief:\n• 2 critical ops alerts need attention\n• Pay App #07 ($284K) awaiting approval\n• Pine Ridge Ph.2 is behind schedule\n• Houston Medical Complex bid due in 14 days\n\nWant me to generate your full Commander Report?" },
-    { delay: 25000, type: "💰 WEALTH", message: "**Daily Wealth Thought:** \"Don't just build buildings — build the company that builds buildings.\" Your platform serves 142K professionals. Every feature you add increases the value of the network exponentially. That's the real empire.\n\n[→ View Financial Empire](/empire)" },
+    { delay: 25000, type: "💰 WEALTH", message: "**Daily Wealth Thought:** \"Don't just build buildings — build the company that builds buildings.\" Your platform serves a growing network of professionals. Every feature you add increases the value of the network exponentially. That's the real empire.\n\n[→ View Financial Empire](/empire)" },
   ],
   "/market": [
     { delay: 8000, type: "🔔 ALERT", message: "**Phoenix** is leading the nation in permit growth (+15% YoY). Semiconductor and data center construction is booming. Your bid pipeline has 0 projects in AZ — consider expanding." },
@@ -478,6 +478,7 @@ export default function AngelicAssistant() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
+          aria-label="Open AI assistant"
           style={{
             position: "fixed", bottom: 24, right: 24, zIndex: 1000,
             width: 60, height: 60, borderRadius: "50%",
@@ -534,7 +535,7 @@ export default function AngelicAssistant() {
                 </div>
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} style={{ background: "none", border: "none", color: "#9EBDC2", fontSize: 18, cursor: "pointer", padding: 4 }}>✕</button>
+            <button onClick={() => setIsOpen(false)} aria-label="Close AI assistant" style={{ background: "none", border: "none", color: "#9EBDC2", fontSize: 18, cursor: "pointer", padding: 4 }}>✕</button>
           </div>
 
           {/* Messages */}
@@ -574,7 +575,9 @@ export default function AngelicAssistant() {
 
           {/* Input */}
           <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(51,84,94,0.2)", display: "flex", gap: 8, background: "#0A1218" }}>
+            <label htmlFor="angelic-chat-input" style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", borderWidth: 0 }}>Message</label>
             <input
+              id="angelic-chat-input"
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && send()}
@@ -585,6 +588,7 @@ export default function AngelicAssistant() {
             <button
               onClick={() => send()}
               disabled={isLoading}
+              aria-label="Send message"
               style={{
                 background: isLoading ? "#33545E" : "linear-gradient(90deg, #F29E3D, #FCC757)",
                 border: "none", borderRadius: 10, padding: "0 16px",

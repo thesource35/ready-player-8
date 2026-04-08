@@ -365,7 +365,7 @@ struct LeverageSystemView: View {
         if supabase.isConfigured {
             Task {
                 let dto = SupabaseLeverageSnapshot(totalScore: snapshot.totalScore)
-                try? await supabase.insert("cs_leverage_snapshots", record: dto)
+                try? await supabase.insert(SupabaseTable.leverageSnapshots, record: dto)
             }
         }
     }

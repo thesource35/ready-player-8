@@ -12,8 +12,8 @@ struct PowerThinkingView: View {
     @AppStorage("ConstructOS.Wealth.CustomScenariosRaw") private var customScenariosRaw: String = ""
     @AppStorage("ConstructOS.Wealth.QuestionResponsesRaw") private var questionResponsesRaw: String = ""
 
-    @State private var journalEntries: [DecisionJournalEntry] = []
-    @State private var customScenarios: [SecondOrderItem] = []
+    @State private var journalEntries: [DecisionJournalEntry] = loadJSON(StorageKey.decisionJournalRaw, default: [DecisionJournalEntry]())
+    @State private var customScenarios: [SecondOrderItem] = loadJSON(StorageKey.customScenariosRaw, default: [SecondOrderItem]())
     @State private var questionResponses: [String: String] = [:]
     @State private var showJournalSheet = false
     @State private var showScenarioSheet = false
@@ -220,6 +220,7 @@ struct PowerThinkingView: View {
                 } label: {
                     Image(systemName: "pencil").font(.system(size: 11)).foregroundColor(Theme.muted)
                 }
+                .accessibilityLabel("Edit journal entry")
             }
         }
         .padding(12).background(Theme.panel.opacity(0.5)).cornerRadius(10)
@@ -346,7 +347,7 @@ struct PowerThinkingView: View {
                     gatesPassed: entry.gatesPassed,
                     outcomeStatus: entry.outcomeStatus
                 )
-                try? await supabase.insert("cs_decision_journal", record: dto)
+                try? await supabase.insert(SupabaseTable.decisionJournal, record: dto)
             }
         }
     }
