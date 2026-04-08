@@ -95,7 +95,13 @@
   2. User can attach photos to punch items, daily logs, and safety incidents
   3. User can draw annotations/markup on a photo to highlight an issue
   4. User can create a daily log from a pre-filled template based on project context
-**Plans**: TBD
+**Plans**: 6 plans
+- [ ] 16-00-PLAN.md — Wave 0 test scaffolding (LocationProviding, OpenMeteoClient, fixtures, UAT)
+- [ ] 16-01-PLAN.md — Wave 1 schema (enum extension migration + columns/tables/RLS + Info.plist)
+- [ ] 16-02-PLAN.md — Wave 2 iOS capture pipeline + attach extension (FIELD-01, FIELD-02 iOS)
+- [ ] 16-03-PLAN.md — Wave 2 web /field photo browser + attach Server Actions (FIELD-02 web)
+- [ ] 16-04-PLAN.md — Wave 3 photo annotation, both platforms (FIELD-03)
+- [ ] 16-05-PLAN.md — Wave 3 daily logs with layered templates, both platforms (FIELD-04)
 **UI hint**: yes
 
 ### Phase 17: Calendar & Scheduling

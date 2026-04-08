@@ -7,6 +7,7 @@ import Testing
 import Foundation
 @testable import ready_player_8
 
+@MainActor
 struct NotificationsStoreTests {
 
     // MARK: - displayBadge cap (D-13)
