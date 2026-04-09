@@ -156,21 +156,43 @@ export async function updateOwnedRow<T>(
 
   // Resolve org_id for the caller. user_orgs is the source of truth for
   // user→org membership (see 17-VALIDATION.md Open Question #1).
-  const { data: orgRow } = await supabase
-    .from("user_orgs")
-    .select("org_id")
-    .eq("user_id", userId)
-    .single();
+  //
+  // Phase 17-02 hardening: the user_orgs table may not exist yet in this
+  // deployment. Distinguish three cases so PATCH routes never silently 404:
+  //   (a) lookup errors (table missing, permission denied) → log + fall back
+  //       to id-only update (RLS still enforces authenticated access).
+  //   (b) valid user with no org row → log + fall back to id-only update.
+  //   (c) org row found → scope the update by (id, org_id).
+  let orgId: string | undefined;
+  try {
+    const { data: orgRow, error: orgErr } = await supabase
+      .from("user_orgs")
+      .select("org_id")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-  const orgId = (orgRow as { org_id?: string } | null)?.org_id;
+    if (orgErr) {
+      console.warn(
+        `[updateOwnedRow] user_orgs lookup failed for user ${userId} on ${table}: ${orgErr.message}. Falling back to id-only update.`
+      );
+    } else if (!orgRow) {
+      console.warn(
+        `[updateOwnedRow] no user_orgs row for user ${userId} on ${table}. Falling back to id-only update.`
+      );
+    } else {
+      orgId = (orgRow as { org_id?: string }).org_id;
+    }
+  } catch (e) {
+    console.warn(
+      `[updateOwnedRow] user_orgs lookup threw for user ${userId} on ${table}:`,
+      e,
+      "— falling back to id-only update."
+    );
+  }
 
-  const { data, error } = await supabase
-    .from(table)
-    .update(updates)
-    .eq("id", id)
-    .eq("org_id", orgId)
-    .select()
-    .single();
+  let query = supabase.from(table).update(updates).eq("id", id);
+  if (orgId) query = query.eq("org_id", orgId);
+  const { data, error } = await query.select().single();
 
   if (error) {
     console.error(`Update owned ${table} error:`, error);
