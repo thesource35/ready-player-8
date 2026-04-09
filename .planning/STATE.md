@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
 status: executing
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-04-09T01:36:22.379Z"
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-04-09T02:05:03.162Z"
 last_activity: 2026-04-09
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 25
-  completed_plans: 21
-  percent: 84
+  completed_plans: 22
+  percent: 88
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 17 (calendar-scheduling) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-04-09
 
@@ -43,6 +43,7 @@ v2.0 roadmap decisions:
 - Reporting placed late (Phase 19) to aggregate data from preceding feature areas
 - Client Portal last (Phase 20) — requires content from documents, field photos, and reports
 - [Phase 17]: Mirror cs_projects RLS expression on cs_project_tasks/cs_task_dependencies; duration_days as generated stored column; updateOwnedRow scoped by org_id (T-17-02)
+- [Phase 17-calendar-scheduling]: updateOwnedRow falls back to id-only update when user_orgs lookup fails/empty — prevents silent 404 until a proper user_orgs migration lands
 
 ### Pending Todos
 
@@ -60,6 +61,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-09T01:36:10.878Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-04-09T02:05:03.159Z
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None
