@@ -113,7 +113,12 @@
   2. User can view a Gantt chart with task bars and dependencies
   3. Timeline highlights milestone markers (bid due, project start/end, inspections)
   4. User can drag a timeline item to reschedule it and the change persists
-**Plans**: TBD
+**Plans**: 5 plans
+- [x] 17-00-PLAN.md — Wave 0 test scaffolding (vitest stubs + iOS XCTest stubs + updateOwnedRow scoping check)
+- [ ] 17-01-PLAN.md — Wave 1 schema (cs_project_tasks + cs_task_dependencies + RLS + updateOwnedRow org_id scoping, BLOCKING db push)
+- [ ] 17-02-PLAN.md — Wave 2 Next.js API routes (/api/calendar/tasks, dependencies with cycle detection, timeline rollup with derived milestones)
+- [ ] 17-03-PLAN.md — Wave 3 web /schedule rebuild (RollupTimeline + GanttChart with Pointer Events drag + AgendaView)
+- [ ] 17-04-PLAN.md — Wave 4 iOS agenda + tap-to-reschedule sheet in ScheduleTools.swift
 **UI hint**: yes
 
 ### Phase 18: Enhanced AI (Angelic AI v2)
@@ -161,7 +166,7 @@
 | 14. Notifications & Activity Feed | v2.0 | 4/5 | In Progress | - |
 | 15. Team & Crew Management | v2.0 | 4/4 | Complete | 2026-04-08 |
 | 16. Field Tools | v2.0 | 6/6 | Complete   | 2026-04-08 |
-| 17. Calendar & Scheduling | v2.0 | 0/0 | Not started | - |
+| 17. Calendar & Scheduling | v2.0 | 1/5 | In Progress|  |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 0/0 | Not started | - |
 | 19. Reporting & Dashboards | v2.0 | 0/0 | Not started | - |
 | 20. Client Portal & Sharing | v2.0 | 0/0 | Not started | - |

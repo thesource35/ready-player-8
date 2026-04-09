@@ -61,10 +61,10 @@ Requirements for v2.0 Feature Expansion. Each maps to a roadmap phase.
 
 ### Calendar & Scheduling
 
-- [ ] **CAL-01**: User can view a timeline of all projects with milestones and bid due dates
-- [ ] **CAL-02**: User can view a Gantt chart with task bars and dependencies
-- [ ] **CAL-03**: Timeline highlights milestone markers (bid due, project start/end, inspections)
-- [ ] **CAL-04**: User can drag items on timeline to reschedule them
+- [x] **CAL-01**: User can view a timeline of all projects with milestones and bid due dates
+- [x] **CAL-02**: User can view a Gantt chart with task bars and dependencies
+- [x] **CAL-03**: Timeline highlights milestone markers (bid due, project start/end, inspections)
+- [x] **CAL-04**: User can drag items on timeline to reschedule them
 
 ## Future Requirements
 
@@ -149,10 +149,10 @@ Mapping of requirements to phases.
 | PORTAL-02 | Phase 20 | Pending |
 | PORTAL-03 | Phase 20 | Pending |
 | PORTAL-04 | Phase 20 | Pending |
-| CAL-01 | Phase 17 | Pending |
-| CAL-02 | Phase 17 | Pending |
-| CAL-03 | Phase 17 | Pending |
-| CAL-04 | Phase 17 | Pending |
+| CAL-01 | Phase 17 | Complete |
+| CAL-02 | Phase 17 | Complete |
+| CAL-03 | Phase 17 | Complete |
+| CAL-04 | Phase 17 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 35 total
