@@ -135,7 +135,16 @@ export async function deleteRow(table: string, id: string): Promise<boolean> {
   return true;
 }
 
-/** Update a row only if it belongs to the given user. Returns null if not found or not owned. (RLS-06) */
+/**
+ * Update a row only if it belongs to the authenticated user's org. Returns null if
+ * not found or not owned. (RLS-06)
+ *
+ * Phase 17: scoped by org_id to prevent cross-org rewrites (T-17-02). The helper
+ * resolves the caller's org via user_orgs(user_id → org_id) and threads it into
+ * the update as an additional `.eq('org_id', ...)` guard on top of the existing
+ * id filter. Missing user / missing org mapping / RLS denial all return null
+ * (no throw) so API routes can 404 cleanly.
+ */
 export async function updateOwnedRow<T>(
   table: string,
   id: string,
@@ -145,11 +154,21 @@ export async function updateOwnedRow<T>(
   const supabase = await createServerSupabase();
   if (!supabase) return null;
 
+  // Resolve org_id for the caller. user_orgs is the source of truth for
+  // user→org membership (see 17-VALIDATION.md Open Question #1).
+  const { data: orgRow } = await supabase
+    .from("user_orgs")
+    .select("org_id")
+    .eq("user_id", userId)
+    .single();
+
+  const orgId = (orgRow as { org_id?: string } | null)?.org_id;
+
   const { data, error } = await supabase
     .from(table)
     .update(updates)
     .eq("id", id)
-    .eq("user_id", userId)
+    .eq("org_id", orgId)
     .select()
     .single();
 
