@@ -579,6 +579,85 @@ private enum AngelicError: LocalizedError {
     }
 }
 
+// MARK: - Draft Detection
+
+/// Detects JSON document drafts in AI responses and formats them as readable text
+private func formatDraftIfPresent(_ text: String) -> (isDraft: Bool, type: String, formatted: String) {
+    // Look for JSON blocks containing draft markers
+    guard let jsonStart = text.range(of: "{\"type\":\"rfi_draft\"")
+               ?? text.range(of: "{\"type\":\"change_order_draft\"")
+               ?? text.range(of: "{\"type\": \"rfi_draft\"")
+               ?? text.range(of: "{\"type\": \"change_order_draft\"") else {
+        return (false, "", text)
+    }
+
+    // Extract the JSON substring — find matching closing brace
+    let jsonSubstring = text[jsonStart.lowerBound...]
+    var braceDepth = 0
+    var jsonEndIndex = jsonSubstring.endIndex
+    for idx in jsonSubstring.indices {
+        if jsonSubstring[idx] == "{" { braceDepth += 1 }
+        else if jsonSubstring[idx] == "}" {
+            braceDepth -= 1
+            if braceDepth == 0 {
+                jsonEndIndex = text.index(after: idx)
+                break
+            }
+        }
+    }
+    let jsonStr = String(jsonSubstring[jsonStart.lowerBound..<jsonEndIndex])
+
+    guard let data = jsonStr.data(using: .utf8),
+          let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+          let draftType = json["type"] as? String else {
+        return (false, "", text)
+    }
+
+    let prefix = String(text[text.startIndex..<jsonStart.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+    let prefixLine = prefix.isEmpty ? "" : "\(prefix)\n\n"
+
+    switch draftType {
+    case "rfi_draft":
+        let subject = json["subject"] as? String ?? "N/A"
+        let details = json["details"] as? String ?? "N/A"
+        let priority = json["priority"] as? String ?? "MED"
+        let number = json["number"] as? String ?? "DRAFT"
+        let formatted = """
+        \(prefixLine)\
+        --- RFI DRAFT ---
+        Number: \(number)
+        Subject: \(subject)
+        Priority: \(priority)
+        Details: \(details)
+        Status: DRAFT (not saved)
+        ------------------
+        Review the details above. To save this RFI, confirm in the chat.
+        """
+        return (true, "rfi_draft", formatted)
+
+    case "change_order_draft":
+        let desc = json["description"] as? String ?? "N/A"
+        let amount = json["amount"] as? Double ?? 0
+        let requestedBy = json["requested_by"] as? String ?? "N/A"
+        let number = json["number"] as? String ?? "DRAFT"
+        let formatted = """
+        \(prefixLine)\
+        --- CHANGE ORDER DRAFT ---
+        Number: \(number)
+        Description: \(desc)
+        Amount: $\(String(format: "%.0f", amount))
+        Requested By: \(requestedBy)
+        Status: DRAFT (not saved)
+        --------------------------
+        Review the details above. To save this change order, confirm in the chat.
+        """
+        return (true, "change_order_draft", formatted)
+
+    default:
+        return (false, "", text)
+    }
+}
+
 // MARK: - Message Bubble
 
 private struct MessageBubble: View {
@@ -596,13 +675,50 @@ private struct MessageBubble: View {
             }
 
             VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 3) {
-                Text(message.content)
-                    .font(.system(size: 13))
-                    .foregroundColor(message.role == .user ? Theme.bg : Theme.text)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(message.role == .user ? Theme.accent : Theme.surface)
-                    .cornerRadius(16)
+                if message.role == .assistant {
+                    let draftInfo = formatDraftIfPresent(message.content)
+                    if draftInfo.isDraft {
+                        VStack(alignment: .leading, spacing: 8) {
+                            // Draft type badge
+                            HStack(spacing: 4) {
+                                Image(systemName: draftInfo.type == "rfi_draft" ? "doc.text" : "dollarsign.circle")
+                                    .font(.system(size: 10))
+                                Text(draftInfo.type == "rfi_draft" ? "RFI DRAFT" : "CHANGE ORDER DRAFT")
+                                    .font(.system(size: 9, weight: .bold))
+                                    .tracking(1)
+                            }
+                            .foregroundColor(Theme.gold)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Theme.gold.opacity(0.15))
+                            .cornerRadius(4)
+
+                            Text(draftInfo.formatted)
+                                .font(.system(size: 13))
+                                .foregroundColor(Theme.text)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(Theme.surface)
+                        .cornerRadius(16)
+                    } else {
+                        Text(message.content)
+                            .font(.system(size: 13))
+                            .foregroundColor(Theme.text)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(Theme.surface)
+                            .cornerRadius(16)
+                    }
+                } else {
+                    Text(message.content)
+                        .font(.system(size: 13))
+                        .foregroundColor(Theme.bg)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(Theme.accent)
+                        .cornerRadius(16)
+                }
 
                 Text(message.timestampLabel)
                     .font(.system(size: 9))
