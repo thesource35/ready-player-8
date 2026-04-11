@@ -28,7 +28,7 @@
 ### v2.0 Feature Expansion
 
 - [x] **Phase 13: Document Management Foundation** (5/5 plans) — completed 2026-04-08
-- [~] **Phase 14: Notifications & Activity Feed** (4/5 plans) — 14-02 outstanding
+- [x] **Phase 14: Notifications & Activity Feed** (5/5 plans) — completed 2026-04-11
 - [x] **Phase 15: Team & Crew Management** (4/4 plans) — completed 2026-04-08
 - [x] **Phase 16: Field Tools** — GPS-tagged photos, annotations, daily log templates (completed 2026-04-08)
 - [x] **Phase 17: Calendar & Scheduling** — Project timeline, Gantt chart, drag-to-reschedule (completed 2026-04-11)
@@ -167,7 +167,7 @@
 |-------|-----------|---------------|--------|-----------|
 | 1-12 | v1.0 | 36/36 | Complete | 2026-04-06 |
 | 13. Document Management Foundation | v2.0 | 5/5 | Complete | 2026-04-08 |
-| 14. Notifications & Activity Feed | v2.0 | 4/5 | In Progress | - |
+| 14. Notifications & Activity Feed | v2.0 | 5/5 | Complete | 2026-04-11 |
 | 15. Team & Crew Management | v2.0 | 4/4 | Complete | 2026-04-08 |
 | 16. Field Tools | v2.0 | 6/6 | Complete   | 2026-04-08 |
 | 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
