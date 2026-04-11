@@ -32,7 +32,7 @@
 - [x] **Phase 15: Team & Crew Management** (4/4 plans) — completed 2026-04-08
 - [x] **Phase 16: Field Tools** — GPS-tagged photos, annotations, daily log templates (completed 2026-04-08)
 - [x] **Phase 17: Calendar & Scheduling** — Project timeline, Gantt chart, drag-to-reschedule (completed 2026-04-11)
-- [ ] **Phase 18: Enhanced AI (Angelic AI v2)** — Context-aware chat, RFI/CO generation, bid analysis
+- [x] **Phase 18: Enhanced AI (Angelic AI v2)** — Context-aware chat, RFI/CO generation, bid analysis (completed 2026-04-11)
 - [ ] **Phase 19: Reporting & Dashboards** — Project reports, cross-project rollups, PDF export, charts
 - [ ] **Phase 20: Client Portal & Sharing** — Shareable read-only project URLs with branding
 
@@ -134,7 +134,7 @@
 - [x] 18-00-PLAN.md — Wave 0 test scaffolding (vitest stubs for tool definitions)
 - [x] 18-01-PLAN.md — Wave 1 web tools module + chat route upgrade (AI SDK tool calling with Supabase)
 - [x] 18-02-PLAN.md — Wave 1 iOS MCPToolServer async upgrade (live Supabase data + new tools)
-- [ ] 18-03-PLAN.md — Wave 2 iOS draft rendering + end-to-end verification checkpoint
+- [x] 18-03-PLAN.md — Wave 2 iOS draft rendering + end-to-end verification checkpoint
 **UI hint**: yes
 
 ### Phase 19: Reporting & Dashboards
@@ -171,6 +171,6 @@
 | 15. Team & Crew Management | v2.0 | 4/4 | Complete | 2026-04-08 |
 | 16. Field Tools | v2.0 | 6/6 | Complete   | 2026-04-08 |
 | 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
-| 18. Enhanced AI (Angelic AI v2) | v2.0 | 3/4 | In Progress|  |
+| 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete   | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.0 | 0/0 | Not started | - |
 | 20. Client Portal & Sharing | v2.0 | 0/0 | Not started | - |
