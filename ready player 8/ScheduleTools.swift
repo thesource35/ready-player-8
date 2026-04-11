@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import SwiftUI
 #if os(macOS)
@@ -914,5 +915,491 @@ struct ReferenceLibraryView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - ========== Phase 17: Agenda List & Reschedule ==========
+
+// MARK: AgendaItem
+
+/// Unified item type for the agenda list — tasks, milestones, events, crew.
+enum AgendaItem: Identifiable {
+    case task(SupabaseProjectTask)
+    case milestone(id: String, projectId: String?, date: String, label: String, kind: String)
+    case event(id: String, projectId: String?, date: String, title: String)
+    case crew(id: String, projectId: String?, date: String)
+
+    var id: String {
+        switch self {
+        case .task(let t): return "task-\(t.id)"
+        case .milestone(let id, _, _, _, _): return "ms-\(id)"
+        case .event(let id, _, _, _): return "ev-\(id)"
+        case .crew(let id, _, _): return "cr-\(id)"
+        }
+    }
+
+    /// The date string used for grouping (YYYY-MM-DD).
+    var dateString: String {
+        switch self {
+        case .task(let t): return t.start_date
+        case .milestone(_, _, let d, _, _): return d
+        case .event(_, _, let d, _): return d
+        case .crew(_, _, let d): return d
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .task(let t): return t.name
+        case .milestone(_, _, _, let label, _): return label
+        case .event(_, _, _, let title): return title
+        case .crew(_, _, let date): return "Crew assignment \(date)"
+        }
+    }
+}
+
+// MARK: AgendaGroupingHelper
+
+/// Pure-function helper for grouping agenda items by day.
+/// Extracted from AgendaViewModel so unit tests can call it without @MainActor.
+enum AgendaGroupingHelper {
+    static func groupByDay(_ items: [AgendaItem]) -> [(day: String, items: [AgendaItem])] {
+        let dict = Dictionary(grouping: items) { $0.dateString }
+        return dict.sorted { $0.key < $1.key }.map { (day: $0.key, items: $0.value) }
+    }
+}
+
+// MARK: AgendaViewModel
+
+@MainActor
+class AgendaViewModel: ObservableObject {
+    @Published var groupedByDay: [(day: String, items: [AgendaItem])] = []
+    @Published var error: AppError?
+    @Published var isLoading = false
+
+    /// Load the full timeline from the Next.js API and group all items by day.
+    func load() async {
+        isLoading = true
+        error = nil
+        do {
+            let payload = try await SupabaseService.shared.fetchTimeline(from: thirtyDaysAgo(), to: sixMonthsAhead())
+            let items = buildAgendaItems(from: payload)
+            groupedByDay = groupByDay(items)
+        } catch let err as AppError {
+            error = err
+        } catch {
+            self.error = AppError.network(underlying: error)
+        }
+        isLoading = false
+    }
+
+    /// Load from an array of tasks directly (used by tests and offline fallback).
+    func loadFromTasks(_ tasks: [SupabaseProjectTask]) {
+        let items = tasks.map { AgendaItem.task($0) }
+        groupedByDay = groupByDay(items)
+    }
+
+    /// Reschedule a task by PATCHing new dates. On success, update local state;
+    /// on failure, revert and surface the error.
+    func reschedule(taskId: String, newStart: String, newEnd: String) async {
+        // Save snapshot for rollback
+        let snapshot = groupedByDay
+
+        // Optimistic update
+        updateTaskLocally(taskId: taskId, newStart: newStart, newEnd: newEnd)
+
+        do {
+            try await SupabaseService.shared.patchProjectTask(id: taskId, startDate: newStart, endDate: newEnd)
+        } catch let err as AppError {
+            // Revert on failure
+            groupedByDay = snapshot
+            error = err
+        } catch {
+            groupedByDay = snapshot
+            self.error = AppError.network(underlying: error)
+        }
+    }
+
+    // MARK: Private helpers
+
+    private func buildAgendaItems(from payload: TimelinePayload) -> [AgendaItem] {
+        var items: [AgendaItem] = []
+        items += payload.tasks.map { .task($0) }
+        items += payload.milestones.map { .milestone(id: $0.id, projectId: $0.project_id, date: $0.date, label: $0.label, kind: $0.kind) }
+        items += payload.events.compactMap { ev in
+            guard let date = ev.date, let title = ev.title else { return nil }
+            return .event(id: ev.id, projectId: ev.project_id, date: date, title: title)
+        }
+        items += payload.crewAssignments.compactMap { ca in
+            guard let date = ca.date else { return nil }
+            return .crew(id: ca.id, projectId: ca.project_id, date: date)
+        }
+        return items
+    }
+
+    func groupByDay(_ items: [AgendaItem]) -> [(day: String, items: [AgendaItem])] {
+        AgendaGroupingHelper.groupByDay(items)
+    }
+
+    private func updateTaskLocally(taskId: String, newStart: String, newEnd: String) {
+        var allItems: [AgendaItem] = groupedByDay.flatMap { $0.items }
+        allItems = allItems.map { item in
+            if case .task(let t) = item, t.id == taskId {
+                let updated = SupabaseProjectTask(
+                    id: t.id, org_id: t.org_id, project_id: t.project_id,
+                    name: t.name, trade: t.trade,
+                    start_date: newStart, end_date: newEnd,
+                    duration_days: t.duration_days,
+                    percent_complete: t.percent_complete,
+                    is_critical: t.is_critical,
+                    created_by: t.created_by, created_at: t.created_at,
+                    updated_by: t.updated_by, updated_at: t.updated_at
+                )
+                return .task(updated)
+            }
+            return item
+        }
+        groupedByDay = groupByDay(allItems)
+    }
+
+    private func thirtyDaysAgo() -> String {
+        let cal = Calendar.current
+        let date = cal.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+        return isoDateString(date)
+    }
+
+    private func sixMonthsAhead() -> String {
+        let cal = Calendar.current
+        let date = cal.date(byAdding: .day, value: 180, to: Date()) ?? Date()
+        return isoDateString(date)
+    }
+
+    private func isoDateString(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.timeZone = TimeZone(identifier: "UTC")
+        return f.string(from: date)
+    }
+}
+
+// MARK: AgendaListView
+
+struct AgendaListView: View {
+    @StateObject private var viewModel = AgendaViewModel()
+    @State private var selectedTask: SupabaseProjectTask?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("SCHEDULE AGENDA").font(.system(size: 11, weight: .bold)).tracking(3).foregroundColor(Theme.accent)
+                    Text("Tasks & milestones by day").font(.system(size: 13, weight: .semibold)).foregroundColor(Theme.text)
+                }
+                Spacer()
+                if viewModel.isLoading {
+                    ProgressView().tint(Theme.accent)
+                }
+            }
+            .padding(16)
+            .background(Theme.surface)
+            .cornerRadius(14)
+            .premiumGlow(cornerRadius: 14, color: Theme.accent)
+            .padding(.bottom, 8)
+
+            if viewModel.groupedByDay.isEmpty && !viewModel.isLoading {
+                VStack(spacing: 8) {
+                    Image(systemName: "calendar.badge.clock")
+                        .font(.system(size: 32))
+                        .foregroundColor(Theme.muted)
+                    Text("No scheduled items")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(Theme.muted)
+                    Text("Tasks will appear here when added to your projects")
+                        .font(.system(size: 11))
+                        .foregroundColor(Theme.muted)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(32)
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(viewModel.groupedByDay, id: \.day) { section in
+                            agendaDaySection(day: section.day, items: section.items)
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                }
+            }
+        }
+        .task { await viewModel.load() }
+        .sheet(item: $selectedTask) { task in
+            TaskDetailSheet(task: task) { newStart, newEnd in
+                Task { await viewModel.reschedule(taskId: task.id, newStart: newStart, newEnd: newEnd) }
+                selectedTask = nil
+            }
+        }
+        .alert(item: $viewModel.error) { err in
+            Alert(
+                title: Text("Schedule Error"),
+                message: Text(err.errorDescription ?? "Unknown error"),
+                dismissButton: .default(Text("OK"))
+            )
+        }
+    }
+
+    // MARK: Day section
+
+    private func agendaDaySection(day: String, items: [AgendaItem]) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(formatDayHeader(day))
+                .font(.system(size: 10, weight: .bold))
+                .tracking(2)
+                .foregroundColor(Theme.gold)
+                .padding(.leading, 4)
+
+            ForEach(items) { item in
+                agendaRow(item)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func agendaRow(_ item: AgendaItem) -> some View {
+        switch item {
+        case .task(let task):
+            taskRow(task)
+                .onTapGesture { selectedTask = task }
+        case .milestone(_, _, _, let label, let kind):
+            milestoneRow(label: label, kind: kind)
+        case .event(_, _, _, let title):
+            eventRow(title: title)
+        case .crew(_, _, let date):
+            crewRow(date: date)
+        }
+    }
+
+    private func taskRow(_ task: SupabaseProjectTask) -> some View {
+        HStack(spacing: 10) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(task.is_critical ? Theme.red : Theme.cyan)
+                .frame(width: 4, height: 36)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(task.name)
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(Theme.text)
+                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    if let trade = task.trade, !trade.isEmpty {
+                        Text(trade)
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundColor(Theme.muted)
+                    }
+                    Text("\(task.start_date) → \(task.end_date)")
+                        .font(.system(size: 8))
+                        .foregroundColor(Theme.muted)
+                }
+            }
+
+            Spacer()
+
+            // Progress badge
+            Text("\(task.percent_complete)%")
+                .font(.system(size: 10, weight: .heavy))
+                .foregroundColor(task.percent_complete == 100 ? Theme.green : Theme.accent)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background((task.percent_complete == 100 ? Theme.green : Theme.accent).opacity(0.1))
+                .cornerRadius(4)
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 9))
+                .foregroundColor(Theme.muted)
+        }
+        .padding(10)
+        .background(Theme.surface)
+        .cornerRadius(10)
+        .premiumGlow(cornerRadius: 10, color: task.is_critical ? Theme.red : Theme.accent)
+    }
+
+    private func milestoneRow(label: String, kind: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "diamond.fill")
+                .font(.system(size: 10))
+                .foregroundColor(Theme.gold)
+
+            Text(label)
+                .font(.system(size: 10, weight: .bold))
+                .foregroundColor(Theme.gold)
+
+            Spacer()
+
+            Text(kind.uppercased())
+                .font(.system(size: 7, weight: .bold))
+                .foregroundColor(Theme.muted)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Theme.gold.opacity(0.1))
+                .cornerRadius(3)
+        }
+        .padding(8)
+        .background(Theme.surface)
+        .cornerRadius(8)
+    }
+
+    private func eventRow(title: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "calendar")
+                .font(.system(size: 10))
+                .foregroundColor(Theme.purple)
+            Text(title)
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundColor(Theme.text)
+            Spacer()
+        }
+        .padding(8)
+        .background(Theme.surface)
+        .cornerRadius(8)
+    }
+
+    private func crewRow(date: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "person.2.fill")
+                .font(.system(size: 10))
+                .foregroundColor(Theme.cyan)
+            Text("Crew assignment")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundColor(Theme.text)
+            Spacer()
+        }
+        .padding(8)
+        .background(Theme.surface)
+        .cornerRadius(8)
+    }
+
+    private func formatDayHeader(_ iso: String) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        guard let date = f.date(from: iso) else { return iso }
+        let display = DateFormatter()
+        display.dateFormat = "EEEE, MMM d"
+        return display.string(from: date).uppercased()
+    }
+}
+
+// MARK: TaskDetailSheet
+
+struct TaskDetailSheet: View {
+    let task: SupabaseProjectTask
+    let onSave: (String, String) -> Void
+
+    @State private var startDate: Date
+    @State private var endDate: Date
+    @Environment(\.dismiss) private var dismiss
+
+    init(task: SupabaseProjectTask, onSave: @escaping (String, String) -> Void) {
+        self.task = task
+        self.onSave = onSave
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        _startDate = State(initialValue: f.date(from: task.start_date) ?? Date())
+        _endDate = State(initialValue: f.date(from: task.end_date) ?? Date())
+    }
+
+    private var isValid: Bool { endDate >= startDate }
+
+    private func isoString(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.timeZone = TimeZone(identifier: "UTC")
+        return f.string(from: date)
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                // Task info header
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(task.name)
+                        .font(.system(size: 18, weight: .heavy))
+                        .foregroundColor(Theme.text)
+                    if let trade = task.trade, !trade.isEmpty {
+                        Text(trade.uppercased())
+                            .font(.system(size: 9, weight: .bold))
+                            .tracking(2)
+                            .foregroundColor(Theme.muted)
+                    }
+                    HStack(spacing: 8) {
+                        Text("\(task.percent_complete)% complete")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(Theme.accent)
+                        if task.is_critical {
+                            Text("CRITICAL")
+                                .font(.system(size: 8, weight: .black))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Theme.red)
+                                .cornerRadius(3)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                .background(Theme.surface)
+                .cornerRadius(12)
+
+                // Date pickers
+                VStack(spacing: 16) {
+                    DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
+                        .font(.system(size: 14, weight: .semibold))
+                        .tint(Theme.accent)
+
+                    DatePicker("End Date", selection: $endDate, displayedComponents: .date)
+                        .font(.system(size: 14, weight: .semibold))
+                        .tint(Theme.accent)
+
+                    if !isValid {
+                        Text("End date must be on or after start date")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(Theme.red)
+                    }
+                }
+                .padding(16)
+                .background(Theme.surface)
+                .cornerRadius(12)
+
+                Spacer()
+            }
+            .padding(16)
+            .background(Theme.bg)
+            .navigationTitle("Reschedule Task")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        onSave(isoString(startDate), isoString(endDate))
+                        dismiss()
+                    }
+                    .disabled(!isValid)
+                    .font(.system(size: 14, weight: .bold))
+                }
+            }
+        }
+    }
+}
+
+// Make SupabaseProjectTask conform to Identifiable for .sheet(item:)
+// (it already conforms via the DTO declaration, but we need the compiler
+// to know it here for the sheet binding)
+extension SupabaseProjectTask {
+    /// Helper to check if dates have changed from original values.
+    func datesChanged(newStart: String, newEnd: String) -> Bool {
+        return start_date != newStart || end_date != newEnd
     }
 }
