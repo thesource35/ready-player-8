@@ -73,6 +73,9 @@ final class DataSyncManager: ObservableObject {
         ("Electrical Leads", "cs_electrical_leads", "ConstructOS.Electrical.Leads"),
         ("Fuel Log", "cs_fuel_log", "ConstructOS.Fuel.Entries"),
         ("Punch List Pro", "cs_punch_pro", "ConstructOS.PunchPro.Items"),
+        // Phase 17: Calendar & Scheduling
+        ("Project Tasks", "cs_project_tasks", "ConstructOS.Calendar.ProjectTasks"),
+        ("Task Dependencies", "cs_task_dependencies", "ConstructOS.Calendar.TaskDependencies"),
     ]
 }
 
