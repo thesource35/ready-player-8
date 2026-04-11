@@ -132,7 +132,7 @@
   4. User can ask AI to analyze a bid's competitiveness against market data
 **Plans**: 4 plans
 - [x] 18-00-PLAN.md — Wave 0 test scaffolding (vitest stubs for tool definitions)
-- [ ] 18-01-PLAN.md — Wave 1 web tools module + chat route upgrade (AI SDK tool calling with Supabase)
+- [x] 18-01-PLAN.md — Wave 1 web tools module + chat route upgrade (AI SDK tool calling with Supabase)
 - [ ] 18-02-PLAN.md — Wave 1 iOS MCPToolServer async upgrade (live Supabase data + new tools)
 - [ ] 18-03-PLAN.md — Wave 2 iOS draft rendering + end-to-end verification checkpoint
 **UI hint**: yes
@@ -171,6 +171,6 @@
 | 15. Team & Crew Management | v2.0 | 4/4 | Complete | 2026-04-08 |
 | 16. Field Tools | v2.0 | 6/6 | Complete   | 2026-04-08 |
 | 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
-| 18. Enhanced AI (Angelic AI v2) | v2.0 | 1/4 | In Progress|  |
+| 18. Enhanced AI (Angelic AI v2) | v2.0 | 2/4 | In Progress|  |
 | 19. Reporting & Dashboards | v2.0 | 0/0 | Not started | - |
 | 20. Client Portal & Sharing | v2.0 | 0/0 | Not started | - |
