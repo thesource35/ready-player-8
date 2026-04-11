@@ -31,7 +31,7 @@
 - [~] **Phase 14: Notifications & Activity Feed** (4/5 plans) — 14-02 outstanding
 - [x] **Phase 15: Team & Crew Management** (4/4 plans) — completed 2026-04-08
 - [x] **Phase 16: Field Tools** — GPS-tagged photos, annotations, daily log templates (completed 2026-04-08)
-- [ ] **Phase 17: Calendar & Scheduling** — Project timeline, Gantt chart, drag-to-reschedule
+- [x] **Phase 17: Calendar & Scheduling** — Project timeline, Gantt chart, drag-to-reschedule (completed 2026-04-11)
 - [ ] **Phase 18: Enhanced AI (Angelic AI v2)** — Context-aware chat, RFI/CO generation, bid analysis
 - [ ] **Phase 19: Reporting & Dashboards** — Project reports, cross-project rollups, PDF export, charts
 - [ ] **Phase 20: Client Portal & Sharing** — Shareable read-only project URLs with branding
@@ -118,7 +118,7 @@
 - [x] 17-01-PLAN.md — Wave 1 schema (cs_project_tasks + cs_task_dependencies + RLS + updateOwnedRow org_id scoping, BLOCKING db push)
 - [x] 17-02-PLAN.md — Wave 2 Next.js API routes (/api/calendar/tasks, dependencies with cycle detection, timeline rollup with derived milestones)
 - [x] 17-03-PLAN.md — Wave 3 web /schedule rebuild (RollupTimeline + GanttChart with Pointer Events drag + AgendaView)
-- [ ] 17-04-PLAN.md — Wave 4 iOS agenda + tap-to-reschedule sheet in ScheduleTools.swift
+- [x] 17-04-PLAN.md — Wave 4 iOS agenda + tap-to-reschedule sheet in ScheduleTools.swift
 **UI hint**: yes
 
 ### Phase 18: Enhanced AI (Angelic AI v2)
@@ -166,7 +166,7 @@
 | 14. Notifications & Activity Feed | v2.0 | 4/5 | In Progress | - |
 | 15. Team & Crew Management | v2.0 | 4/4 | Complete | 2026-04-08 |
 | 16. Field Tools | v2.0 | 6/6 | Complete   | 2026-04-08 |
-| 17. Calendar & Scheduling | v2.0 | 4/5 | In Progress|  |
+| 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 0/0 | Not started | - |
 | 19. Reporting & Dashboards | v2.0 | 0/0 | Not started | - |
 | 20. Client Portal & Sharing | v2.0 | 0/0 | Not started | - |
