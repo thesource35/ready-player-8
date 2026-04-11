@@ -78,8 +78,8 @@ function makeSupabaseStub(opts: {
         calls[table].push({ op: 'delete', args: [] })
         return builder
       }
-      builder.eq = (col: string, val: unknown) => {
-        state.match[col] = val
+      builder.eq = (col: unknown, val: unknown) => {
+        state.match[col as string] = val
         // For delete chain, record on final .eq in promise resolution below
         const p: Promise<{ error: null }> & Record<string, unknown> = Promise.resolve({
           error: null,
@@ -104,8 +104,8 @@ function makeSupabaseStub(opts: {
           },
         })
       }
-      builder.in = (col: string, vals: unknown[]) => {
-        state.match[col] = vals
+      builder.in = (col: unknown, vals: unknown) => {
+        state.match[col as string] = vals
         return builder
       }
       return builder

@@ -55,7 +55,7 @@ async function importP8Key(p8Pem: string): Promise<CryptoKey> {
 
   return await crypto.subtle.importKey(
     'pkcs8',
-    der,
+    der.buffer as ArrayBuffer,
     { name: 'ECDSA', namedCurve: 'P-256' },
     false,
     ['sign'],
