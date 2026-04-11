@@ -12,6 +12,8 @@ final class MCPToolServer: ObservableObject {
     /// Backward-compat singleton — prefer @EnvironmentObject injection in views
     static let shared = MCPToolServer()
 
+    private let supabase = SupabaseService.shared
+
     // MARK: - Tool Definitions (sent to Claude in API call)
 
     var toolDefinitions: [[String: Any]] {
@@ -91,6 +93,21 @@ final class MCPToolServer: ObservableObject {
             toolDef("get_rental_favorites", "Get user's saved favorite rental equipment items", [:]),
             toolDef("get_price_alerts", "Get active price alert watchlist for rental equipment", [:]),
             toolDef("get_provider_accounts", "Get linked rental provider account status and spend data", [:]),
+            toolDef("generate_rfi", "Generate a draft RFI document from conversation context. Returns a draft for review -- does NOT save.", [
+                "subject": ["type": "string", "description": "RFI subject line"],
+                "details": ["type": "string", "description": "Detailed description of the information requested"],
+                "priority": ["type": "string", "description": "Priority: HIGH, MED, or LOW"],
+                "project_id": ["type": "string", "description": "Associated project ID (optional)"]
+            ]),
+            toolDef("draft_change_order", "Draft a change order from natural language. Returns a draft for review -- does NOT save.", [
+                "description": ["type": "string", "description": "Change order description"],
+                "amount": ["type": "number", "description": "Dollar amount of the change"],
+                "requested_by": ["type": "string", "description": "Who requested the change"],
+                "project_id": ["type": "string", "description": "Associated project ID (optional)"]
+            ]),
+            toolDef("analyze_bid", "Analyze a contract bid's competitiveness using market data", [
+                "contract_id": ["type": "string", "description": "Contract ID to analyze"]
+            ]),
         ]
     }
 
@@ -108,12 +125,40 @@ final class MCPToolServer: ObservableObject {
 
     // MARK: - Tool Execution
 
-    func executeTool(name: String, input: [String: Any]) -> String {
+    func executeTool(name: String, input: [String: Any]) async -> String {
         switch name {
         case "get_projects":
+            if supabase.isConfigured {
+                do {
+                    let projects: [SupabaseProject] = try await supabase.fetch(
+                        "cs_projects", query: ["order": "created_at.desc", "limit": "20"]
+                    )
+                    if !projects.isEmpty {
+                        return projects.map {
+                            "\($0.name) | Client: \($0.client) | Status: \($0.status) | Progress: \($0.progress)% | Budget: \($0.budget)"
+                        }.joined(separator: "\n")
+                    }
+                } catch {
+                    CrashReporter.shared.reportError("[MCP] get_projects: \(error.localizedDescription)")
+                }
+            }
             return mockProjects.map { "\($0.name) | Client: \($0.client) | Status: \($0.status) | Progress: \($0.progress)% | Budget: \($0.budget) | Score: \($0.score)" }.joined(separator: "\n")
 
         case "get_contracts":
+            if supabase.isConfigured {
+                do {
+                    let contracts: [SupabaseContract] = try await supabase.fetch(
+                        "cs_contracts", query: ["order": "created_at.desc", "limit": "20"]
+                    )
+                    if !contracts.isEmpty {
+                        return contracts.map {
+                            "\($0.title) | Client: \($0.client) | Stage: \($0.stage) | Budget: \($0.budget) | Bid Due: \($0.bidDue) | Score: \($0.score) | Bidders: \($0.bidders)"
+                        }.joined(separator: "\n")
+                    }
+                } catch {
+                    CrashReporter.shared.reportError("[MCP] get_contracts: \(error.localizedDescription)")
+                }
+            }
             return mockContracts.map { "\($0.title) | Client: \($0.client) | Stage: \($0.stage) | Budget: \($0.budget) | Bid Due: \($0.bidDue) | Score: \($0.score) | Bidders: \($0.bidders)" }.joined(separator: "\n")
 
         case "get_site_status":
@@ -152,12 +197,32 @@ final class MCPToolServer: ObservableObject {
             """
 
         case "get_change_orders":
+            if supabase.isConfigured {
+                do {
+                    let cos: [SupabaseMCPChangeOrder] = try await supabase.fetch("cs_change_orders", query: ["limit": "20"])
+                    if !cos.isEmpty {
+                        return cos.map { "CO-\($0.id.prefix(8)) | \($0.description ?? "No description") | $\($0.amount ?? 0) | \($0.status ?? "PENDING")" }.joined(separator: "\n")
+                    }
+                } catch {
+                    CrashReporter.shared.reportError("[MCP] get_change_orders: \(error.localizedDescription)")
+                }
+            }
             return "CO-001 | Foundation depth increase | $42,000 | PENDING owner approval\nCO-002 | Added fire stops | $18,500 | APPROVED\nCO-003 | Revised MEP routing | $27,300 | PENDING"
 
         case "get_safety_incidents":
             return "INC-03-14 | Near Miss | Scaffold harness | Grid B-7 | Corrective action OPEN\nINC-03-10 | First Aid | Minor laceration | Site Gamma | CLOSED"
 
         case "get_rfis":
+            if supabase.isConfigured {
+                do {
+                    let rfis: [SupabaseMCPRFI] = try await supabase.fetch("cs_rfis", query: ["limit": "20"])
+                    if !rfis.isEmpty {
+                        return rfis.map { "RFI-\($0.id.prefix(8)) | \($0.subject ?? "No subject") | \($0.priority ?? "MED") | Status: \($0.status ?? "OPEN")" }.joined(separator: "\n")
+                    }
+                } catch {
+                    CrashReporter.shared.reportError("[MCP] get_rfis: \(error.localizedDescription)")
+                }
+            }
             return "RFI-001 | Structural steel connection detail | HIGH | 12 days open | Assigned: Engineering\nRFI-002 | MEP coordination conflict at grid C-4 | MED | 8 days open | PENDING\nRFI-003 | Exterior cladding attachment spec | LOW | 3 days open | OPEN"
 
         case "get_rental_inventory":
@@ -204,6 +269,16 @@ final class MCPToolServer: ObservableObject {
             """
 
         case "get_punch_list":
+            if supabase.isConfigured {
+                do {
+                    let items: [SupabaseMCPPunchItem] = try await supabase.fetch("cs_punch_pro", query: ["limit": "20"])
+                    if !items.isEmpty {
+                        return items.map { "\($0.title ?? "Untitled") | \($0.priority ?? "MED") | \($0.status ?? "OPEN") | \($0.location ?? "")" }.joined(separator: "\n")
+                    }
+                } catch {
+                    CrashReporter.shared.reportError("[MCP] get_punch_list: \(error.localizedDescription)")
+                }
+            }
             return "Fire-stopping gaps at grid B-7 | HIGH | OPEN | Riverside Lofts\nDrywall finish touch-up L3 corridor | LOW | OPEN | Harbor Crossing\nMEP label missing at panel 2A | MED | IN PROGRESS | Pine Ridge"
 
         case "calculate_rental_cost":
@@ -361,8 +436,79 @@ final class MCPToolServer: ObservableObject {
             if mgr.accounts.isEmpty { return "No provider accounts linked. Connect in Rentals > Providers." }
             return "LINKED ACCOUNTS (\(mgr.accounts.count)):\n" + mgr.accounts.values.map { "\($0.provider) | \($0.accountNumber) | \($0.tier) | Active: \($0.activeRentals) | Spent: \($0.totalSpent) | \($0.isVerified ? "VERIFIED" : "UNVERIFIED")" }.joined(separator: "\n")
 
+        case "generate_rfi":
+            let subject = input["subject"] as? String ?? ""
+            let details = input["details"] as? String ?? ""
+            let priority = input["priority"] as? String ?? "MED"
+            let projectId = input["project_id"] as? String ?? ""
+            let iso = ISO8601DateFormatter().string(from: Date())
+            return """
+            {"type":"rfi_draft","number":"RFI-DRAFT-\(Int(Date().timeIntervalSince1970))","subject":"\(subject)","details":"\(details)","priority":"\(priority)","project_id":"\(projectId)","status":"DRAFT","created_at":"\(iso)","_action":"review_before_saving"}
+            """
+
+        case "draft_change_order":
+            let desc = input["description"] as? String ?? ""
+            let amount = input["amount"] as? Double ?? 0
+            let requestedBy = input["requested_by"] as? String ?? ""
+            let projectId = input["project_id"] as? String ?? ""
+            let iso = ISO8601DateFormatter().string(from: Date())
+            return """
+            {"type":"change_order_draft","number":"CO-DRAFT-\(Int(Date().timeIntervalSince1970))","description":"\(desc)","amount":\(amount),"requested_by":"\(requestedBy)","project_id":"\(projectId)","status":"DRAFT","created_at":"\(iso)","_action":"review_before_saving"}
+            """
+
+        case "analyze_bid":
+            let contractId = input["contract_id"] as? String ?? ""
+            if supabase.isConfigured && !contractId.isEmpty {
+                do {
+                    let contracts: [SupabaseContract] = try await supabase.fetch(
+                        "cs_contracts", query: ["id": "eq.\(contractId)"]
+                    )
+                    guard let contract = contracts.first else {
+                        return "{\"error\":\"Contract not found\"}"
+                    }
+                    let market: [SupabaseMarketData] = try await supabase.fetch("cs_market_data")
+                    let marketSummary = market.map { "\($0.city): vacancy \($0.vacancy)%, new biz \($0.newBiz), trend \($0.trend)" }.joined(separator: "; ")
+                    return """
+                    BID ANALYSIS: \(contract.title)
+                    Budget: \(contract.budget) | Sector: \(contract.sector) | Location: \(contract.location)
+                    Bidders: \(contract.bidders) | Score: \(contract.score)
+                    Market Context: \(marketSummary.isEmpty ? "No market data available" : marketSummary)
+                    """
+                } catch {
+                    CrashReporter.shared.reportError("[MCP] analyze_bid: \(error.localizedDescription)")
+                    return "{\"error\":\"Failed to fetch bid data: \(error.localizedDescription)\"}"
+                }
+            }
+            return "{\"error\":\"Supabase not configured or contract_id missing\"}"
+
         default:
             return "Unknown tool: \(name)"
         }
     }
+}
+
+// MARK: - MCP-only Codable DTOs (not in SupabaseService)
+
+private struct SupabaseMCPRFI: Codable {
+    let id: String
+    let subject: String?
+    let priority: String?
+    let status: String?
+    let project_id: String?
+}
+
+private struct SupabaseMCPChangeOrder: Codable {
+    let id: String
+    let description: String?
+    let amount: Double?
+    let status: String?
+    let project_id: String?
+}
+
+private struct SupabaseMCPPunchItem: Codable {
+    let id: String
+    let title: String?
+    let priority: String?
+    let status: String?
+    let location: String?
 }
