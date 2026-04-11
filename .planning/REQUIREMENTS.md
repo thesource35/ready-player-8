@@ -40,10 +40,10 @@ Requirements for v2.0 Feature Expansion. Each maps to a roadmap phase.
 
 ### Enhanced AI (Angelic AI v2)
 
-- [ ] **AI-01**: AI chat reads current project and contract data for context-aware responses
-- [ ] **AI-02**: AI can generate RFI documents from conversation
-- [ ] **AI-03**: AI can draft change order entries from natural language description
-- [ ] **AI-04**: AI can analyze bid competitiveness using market data
+- [x] **AI-01**: AI chat reads current project and contract data for context-aware responses
+- [x] **AI-02**: AI can generate RFI documents from conversation
+- [x] **AI-03**: AI can draft change order entries from natural language description
+- [x] **AI-04**: AI can analyze bid competitiveness using market data
 
 ### Field Tools
 
@@ -137,10 +137,10 @@ Mapping of requirements to phases.
 | REPORT-02 | Phase 19 | Pending |
 | REPORT-03 | Phase 19 | Pending |
 | REPORT-04 | Phase 19 | Pending |
-| AI-01 | Phase 18 | Pending |
-| AI-02 | Phase 18 | Pending |
-| AI-03 | Phase 18 | Pending |
-| AI-04 | Phase 18 | Pending |
+| AI-01 | Phase 18 | Complete |
+| AI-02 | Phase 18 | Complete |
+| AI-03 | Phase 18 | Complete |
+| AI-04 | Phase 18 | Complete |
 | FIELD-01 | Phase 16 | Complete |
 | FIELD-02 | Phase 16 | Complete |
 | FIELD-03 | Phase 16 | Complete |
