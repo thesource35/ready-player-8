@@ -9,6 +9,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const eqSpy = vi.fn();
 const selectSpy = vi.fn();
 const singleSpy = vi.fn();
+const maybeSingleSpy = vi.fn();
 const updateSpy = vi.fn();
 const fromSpy = vi.fn();
 
@@ -17,6 +18,7 @@ type Chain = {
   eq: typeof eqSpy;
   select: typeof selectSpy;
   single: typeof singleSpy;
+  maybeSingle: typeof maybeSingleSpy;
 };
 
 const chain: Chain = {
@@ -24,6 +26,7 @@ const chain: Chain = {
   eq: eqSpy,
   select: selectSpy,
   single: singleSpy,
+  maybeSingle: maybeSingleSpy,
 };
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -34,10 +37,16 @@ vi.mock("@/lib/supabase/server", () => ({
 
 describe("updateOwnedRow org_id scoping", () => {
   beforeEach(() => {
+    vi.resetModules();
     eqSpy.mockReturnValue(chain);
     updateSpy.mockReturnValue(chain);
     selectSpy.mockReturnValue(chain);
     singleSpy.mockResolvedValue({ data: { id: "row-1" }, error: null });
+    // user_orgs lookup returns a valid org for this user
+    maybeSingleSpy.mockResolvedValue({
+      data: { org_id: "org-123" },
+      error: null,
+    });
     fromSpy.mockReturnValue(chain);
   });
 
@@ -49,7 +58,5 @@ describe("updateOwnedRow org_id scoping", () => {
       ([column]) => column === "org_id"
     );
     expect(calledWithOrgId).toBe(true);
-    // RED — current implementation scopes by user_id, not org_id.
-    // Plan 17-02 must thread org_id through updateOwnedRow.
   });
 });
