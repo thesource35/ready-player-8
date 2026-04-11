@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { streamText } from "ai";
+import { streamText, stepCountIs } from "ai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { verifyCsrfOrigin } from "@/lib/csrf";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { createConstructionTools } from "./tools";
 
 export async function POST(req: Request) {
   if (!verifyCsrfOrigin(req)) {
@@ -29,37 +30,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "messages array is required" }, { status: 400 });
   }
 
-  // Fetch summary counts for context — counts only, not serialized data (PERF-03)
-  let dataSummary = "";
-  try {
-    const supabase = await createServerSupabase();
-    if (supabase) {
-      const [projects, contracts, punchItems] = await Promise.all([
-        supabase.from("cs_projects").select("id", { count: "exact", head: true }),
-        supabase.from("cs_contracts").select("id", { count: "exact", head: true }),
-        supabase.from("cs_punch_pro").select("id", { count: "exact", head: true }),
-      ]);
-      dataSummary = `\n\nUSER DATA SUMMARY:\n- ${projects.count ?? 0} projects\n- ${contracts.count ?? 0} contracts\n- ${punchItems.count ?? 0} punch list items`;
-    }
-  } catch {
-    // Non-critical — proceed without data summary
-  }
+  // Create Supabase client and construction tools for AI tool calling
+  const supabase = await createServerSupabase();
+  const tools = createConstructionTools(supabase);
 
-  const systemPrompt = `You are Angelic, the AI agent built into ConstructionOS — the operating system for the $13 trillion construction industry. You have access to 56 tools and automation capabilities covering every aspect of construction.
+  const systemPrompt = `You are Angelic, the AI agent built into ConstructionOS — the operating system for the $13 trillion construction industry.
 
-CORE CAPABILITIES:
-- Construction project management (scheduling, budgets, change orders, RFIs, submittals)
-- Safety & compliance (OSHA, toolbox talks, incident reports, environmental)
-- Financial operations (AIA pay apps, lien waivers, cash flow, tax deductions, 1099s)
-- Equipment & materials (rental recommendations, material takeoffs, vendor management)
-- Estimating & bidding (bid preparation, cost analysis, markup strategies)
-- Field operations (daily logs, timecards, equipment tracking, permits)
+CAPABILITIES:
+- Query live project, contract, RFI, change order, punch list, and daily log data
+- Generate draft RFI documents for user review
+- Draft change orders from natural language descriptions
+- Analyze bid competitiveness against market data
 
-RESPONSE STYLE:
-- Be concise and construction-focused
-- Use industry terminology (CSI codes, OSHA references, AIA forms)
-- For navigation, include the link in markdown format: [→ Open Feature](/path)
-- You represent ConstructionOS — the most comprehensive construction platform ever built${dataSummary}`;
+RULES:
+- Always use tools to fetch current data before answering questions about projects, contracts, or bids
+- When generating documents (RFI, Change Order), present the draft clearly and ask the user to confirm before any action
+- For bid analysis, explain the comparison methodology and data sources
+- Be concise and use construction industry terminology (CSI codes, OSHA, AIA forms)
+- For navigation, use markdown links: [Open Feature](/path)`;
 
   try {
     const anthropic = createAnthropic({ apiKey });
@@ -70,7 +58,9 @@ RESPONSE STYLE:
         role: m.role as "user" | "assistant",
         content: m.content,
       })),
-      maxOutputTokens: 1024,
+      tools,
+      stopWhen: stepCountIs(5),
+      maxOutputTokens: 2048,
     });
 
     return result.toTextStreamResponse();

@@ -13,6 +13,8 @@ vi.mock("ai", () => ({
   streamText: vi.fn().mockReturnValue({
     toTextStreamResponse: () => new Response("streamed", { status: 200 }),
   }),
+  tool: vi.fn().mockImplementation((def: Record<string, unknown>) => def),
+  stepCountIs: vi.fn().mockReturnValue({ type: "step-count", count: 5 }),
 }));
 
 vi.mock("@ai-sdk/anthropic", () => ({

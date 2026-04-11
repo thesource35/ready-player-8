@@ -1,6 +1,13 @@
 import { describe, test, expect } from "vitest";
 import { createConstructionTools } from "../tools";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/** Helper: call tool.execute with a stub options arg (AI SDK v6 requires 2 params at type level) */
+function runTool(toolDef: { execute?: (...args: any[]) => any }, args: any) {
+  return toolDef.execute!(args, { toolCallId: "test", messages: [] } as any);
+}
+
 /**
  * Mock Supabase client factory for testing AI tools.
  * Returns a minimal client that resolves with provided override data per table.
@@ -52,7 +59,7 @@ describe("AI-01: Data Query Tools", () => {
       })
     );
 
-    const result = await tools.get_projects.execute({});
+    const result = await runTool(tools.get_projects, {});
     expect(result).toHaveProperty("projects");
     expect(Array.isArray(result.projects)).toBe(true);
     expect(result.projects).toHaveLength(1);
@@ -76,7 +83,7 @@ describe("AI-01: Data Query Tools", () => {
       })
     );
 
-    const result = await tools.get_contracts.execute({});
+    const result = await runTool(tools.get_contracts, {});
     expect(result).toHaveProperty("contracts");
     expect(Array.isArray(result.contracts)).toBe(true);
     expect(result.contracts).toHaveLength(1);
@@ -85,7 +92,7 @@ describe("AI-01: Data Query Tools", () => {
   test("get_projects returns error when not authenticated", async () => {
     const tools = createConstructionTools(null);
 
-    const result = await tools.get_projects.execute({});
+    const result = await runTool(tools.get_projects, {});
     expect(result).toHaveProperty("error");
     expect(result.error).toBe("Not authenticated");
   });
@@ -98,7 +105,7 @@ describe("AI-02: Document Generation - generate_rfi", () => {
   test("generate_rfi returns structured RFI draft", async () => {
     const tools = createConstructionTools(mockSupabase());
 
-    const result = await tools.generate_rfi.execute({
+    const result = await runTool(tools.generate_rfi, {
       subject: "Concrete spec",
       details: "Need clarification on mix design",
       priority: "HIGH",
@@ -117,7 +124,7 @@ describe("AI-02: Document Generation - generate_rfi", () => {
   test("generate_rfi requires subject field", async () => {
     const tools = createConstructionTools(mockSupabase());
 
-    const result = await tools.generate_rfi.execute({
+    const result = await runTool(tools.generate_rfi, {
       subject: "",
       details: "Some details",
       priority: "LOW",
@@ -134,7 +141,7 @@ describe("AI-03: Change Order Draft - draft_change_order", () => {
   test("draft_change_order returns structured CO draft", async () => {
     const tools = createConstructionTools(mockSupabase());
 
-    const result = await tools.draft_change_order.execute({
+    const result = await runTool(tools.draft_change_order, {
       description: "Added fire stops",
       amount: 18500,
       requested_by: "Owner",
@@ -153,7 +160,7 @@ describe("AI-03: Change Order Draft - draft_change_order", () => {
   test("draft_change_order requires description", async () => {
     const tools = createConstructionTools(mockSupabase());
 
-    const result = await tools.draft_change_order.execute({
+    const result = await runTool(tools.draft_change_order, {
       description: "",
       amount: 0,
       requested_by: "",
@@ -186,7 +193,7 @@ describe("AI-04: Bid Analysis - analyze_bid", () => {
       })
     );
 
-    const result = await tools.analyze_bid.execute({ contract_id: "c1" });
+    const result = await runTool(tools.analyze_bid, { contract_id: "c1" });
     expect(result).toHaveProperty("contract");
     expect(result.contract).toMatchObject({ id: "c1", title: "Bridge Contract" });
     expect(result).toHaveProperty("market_context");
@@ -196,7 +203,7 @@ describe("AI-04: Bid Analysis - analyze_bid", () => {
   test("analyze_bid returns error for missing contract", async () => {
     const tools = createConstructionTools(mockSupabase());
 
-    const result = await tools.analyze_bid.execute({ contract_id: "nonexistent" });
+    const result = await runTool(tools.analyze_bid, { contract_id: "nonexistent" });
     expect(result).toHaveProperty("error");
     expect(result.error).toBe("Contract not found");
   });
