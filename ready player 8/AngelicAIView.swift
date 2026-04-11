@@ -435,7 +435,7 @@ struct AngelicAIView: View {
         var payload: [String: Any] = [
             "model": "claude-haiku-4-5-20251001",
             "max_tokens": 2048,
-            "system": systemPrompt + "\n\nYou have access to live ConstructionOS data through tools. Use them to answer questions about projects, sites, crews, equipment, budgets, and more. Always check live data before answering factual questions about the jobsite.",
+            "system": systemPrompt + "\n\nYou have access to live ConstructionOS data through tools. Use them to answer questions about projects, sites, crews, equipment, budgets, and more. Always check live data before answering factual questions.\n\nYou can also generate draft RFI documents (generate_rfi), draft change orders (draft_change_order), and analyze bid competitiveness (analyze_bid). When generating documents, present the draft and ask the user to confirm.",
             "messages": messageList,
             "tools": mcpServer.toolDefinitions
         ]
@@ -494,7 +494,7 @@ struct AngelicAIView: View {
                         assistantContent.append(block)
 
                         // Execute the tool via MCP server
-                        let result = await MainActor.run { mcpServer.executeTool(name: toolName, input: toolInput) }
+                        let result = await mcpServer.executeTool(name: toolName, input: toolInput)
 
                         toolResults.append([
                             "type": "tool_result",
