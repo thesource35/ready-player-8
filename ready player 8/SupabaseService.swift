@@ -764,6 +764,8 @@ final class SupabaseService: ObservableObject {
         "cs_documents", "cs_document_attachments", "cs_document_versions",
         // Phase 16: Field Tools
         "cs_photo_annotations",
+        // Phase 17: Calendar & Scheduling
+        "cs_project_tasks", "cs_task_dependencies",
     ]
 
     /// Validates table name against allowlist
@@ -802,6 +804,142 @@ final class SupabaseService: ObservableObject {
         if http.statusCode >= 400 {
             let body = String(data: data, encoding: .utf8) ?? "No response body"
             throw SupabaseError.httpError(http.statusCode, body)
+        }
+    }
+
+    // MARK: - Phase 17 Calendar API (Next.js routes)
+
+    /// Base URL for the Next.js web app API. Reads from UserDefaults key
+    /// `ConstructOS.Integrations.WebApp.BaseURL`. When the iOS app and web app
+    /// share the same Supabase backend, this points to the deployed Next.js
+    /// instance (e.g., "https://constructionos.vercel.app") so that iOS routes
+    /// through the same validation, CSRF, and RLS logic that web uses.
+    var webAppBaseURL: String {
+        (UserDefaults.standard.string(forKey: "ConstructOS.Integrations.WebApp.BaseURL") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+    }
+
+    var isWebAppConfigured: Bool {
+        let url = webAppBaseURL
+        return !url.isEmpty && URL(string: url) != nil
+    }
+
+    /// Build a URLRequest for a Next.js API route, attaching the auth token
+    /// as a Bearer header and setting Content-Type when needed.
+    private func makeWebAPIRequest(path: String, method: String = "GET", body: Data? = nil) throws -> URLRequest {
+        guard isWebAppConfigured else {
+            throw AppError.supabaseNotConfigured
+        }
+        guard let url = URL(string: "\(webAppBaseURL)\(path)") else {
+            throw AppError.validationFailed(field: "URL", reason: "Invalid API path: \(path)")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        // Auth: forward the Supabase access token so the Next.js API can
+        // create an authenticated Supabase client server-side.
+        if let token = accessToken, !token.isEmpty {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        if body != nil {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = body
+        }
+        // CSRF: the Next.js server checks Origin header via verifyCsrfOrigin.
+        // URLSession on iOS does not set Origin automatically, so we set it to
+        // the web app's own origin so the server's same-origin check passes.
+        request.setValue(webAppBaseURL, forHTTPHeaderField: "Origin")
+        request.setValue("1", forHTTPHeaderField: "X-CSRF-Token")
+        return request
+    }
+
+    /// Fetch project tasks for a given project from the Next.js calendar API.
+    func fetchProjectTasks(projectId: String) async throws -> [SupabaseProjectTask] {
+        await throttle()
+        let safeId = sanitizeID(projectId)
+        let request = try makeWebAPIRequest(path: "/api/calendar/tasks?project_id=\(safeId)")
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+        switch statusCode {
+        case 200...299:
+            break
+        case 401:
+            throw AppError.authFailed(reason: "Sign in required")
+        case 403:
+            throw AppError.permissionDenied(feature: "Calendar")
+        default:
+            let body = String(data: data, encoding: .utf8) ?? ""
+            throw AppError.network(underlying: SupabaseError.httpError(statusCode, body))
+        }
+        do {
+            return try decoder.decode([SupabaseProjectTask].self, from: data)
+        } catch {
+            throw AppError.decoding(underlying: error)
+        }
+    }
+
+    /// Fetch the full timeline payload (projects, tasks, milestones, crew, events, deps).
+    func fetchTimeline(from: String, to: String) async throws -> TimelinePayload {
+        await throttle()
+        let request = try makeWebAPIRequest(
+            path: "/api/calendar/timeline?from=\(from)&to=\(to)"
+        )
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+        switch statusCode {
+        case 200...299:
+            break
+        case 401:
+            throw AppError.authFailed(reason: "Sign in required")
+        case 403:
+            throw AppError.permissionDenied(feature: "Calendar")
+        default:
+            let body = String(data: data, encoding: .utf8) ?? ""
+            throw AppError.network(underlying: SupabaseError.httpError(statusCode, body))
+        }
+        do {
+            // Timeline response uses camelCase for crewAssignments key
+            let camelDecoder = JSONDecoder()
+            return try camelDecoder.decode(TimelinePayload.self, from: data)
+        } catch {
+            throw AppError.decoding(underlying: error)
+        }
+    }
+
+    /// PATCH a project task's dates via the Next.js calendar API.
+    /// Returns the updated task row on success.
+    @discardableResult
+    func patchProjectTask(id: String, startDate: String, endDate: String) async throws -> SupabaseProjectTask {
+        await throttle()
+        let safeId = sanitizeID(id)
+        let bodyDict: [String: String] = ["start_date": startDate, "end_date": endDate]
+        let bodyData = try JSONEncoder().encode(bodyDict)
+        let request = try makeWebAPIRequest(
+            path: "/api/calendar/tasks/\(safeId)",
+            method: "PATCH",
+            body: bodyData
+        )
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+        switch statusCode {
+        case 200...299:
+            break
+        case 400:
+            let body = String(data: data, encoding: .utf8) ?? "Validation error"
+            throw AppError.validationFailed(field: "dates", reason: body)
+        case 401:
+            throw AppError.authFailed(reason: "Sign in required")
+        case 403, 404:
+            throw AppError.permissionDenied(feature: "Task reschedule")
+        default:
+            let body = String(data: data, encoding: .utf8) ?? ""
+            throw AppError.network(underlying: SupabaseError.httpError(statusCode, body))
+        }
+        do {
+            return try decoder.decode(SupabaseProjectTask.self, from: data)
+        } catch {
+            throw AppError.decoding(underlying: error)
         }
     }
 }
@@ -1547,5 +1685,75 @@ struct SupabaseDailyCrew: Codable, Identifiable {
     let notes: String?
     let created_by: String?
     let created_at: String?
+}
+
+// MARK: - ========== Phase 17: Calendar & Scheduling DTOs ==========
+
+struct SupabaseProjectTask: Codable, Identifiable, Sendable, Equatable {
+    let id: String
+    let org_id: String?
+    let project_id: String
+    let name: String
+    let trade: String?
+    let start_date: String
+    let end_date: String
+    let duration_days: Int?
+    let percent_complete: Int
+    let is_critical: Bool
+    let created_by: String?
+    let created_at: String?
+    let updated_by: String?
+    let updated_at: String?
+}
+
+struct SupabaseTaskDependency: Codable, Identifiable, Sendable, Equatable {
+    let id: String
+    let org_id: String?
+    let predecessor_task_id: String
+    let successor_task_id: String
+    let dep_type: String
+    let lag_days: Int
+    let created_at: String?
+}
+
+/// Payload returned by GET /api/calendar/timeline
+struct TimelinePayload: Codable {
+    struct TimelineProject: Codable, Identifiable {
+        let id: String
+        let name: String?
+        let start_date: String?
+        let end_date: String?
+    }
+    struct TimelineMilestone: Codable, Identifiable {
+        let id: String
+        let project_id: String?
+        let date: String
+        let label: String
+        let kind: String
+    }
+    struct TimelineCrewAssignment: Codable, Identifiable {
+        let id: String
+        let project_id: String?
+        let date: String?
+    }
+    struct TimelineEvent: Codable, Identifiable {
+        let id: String
+        let project_id: String?
+        let event_type: String?
+        let date: String?
+        let title: String?
+    }
+    struct TimelineWindow: Codable {
+        let from: String
+        let to: String
+    }
+
+    let window: TimelineWindow
+    let projects: [TimelineProject]
+    let tasks: [SupabaseProjectTask]
+    let milestones: [TimelineMilestone]
+    let crewAssignments: [TimelineCrewAssignment]
+    let events: [TimelineEvent]
+    let dependencies: [SupabaseTaskDependency]
 }
 
