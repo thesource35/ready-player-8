@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
 status: executing
-stopped_at: Completed 20-01-PLAN.md
-last_updated: "2026-04-12T21:52:08.865Z"
+stopped_at: Completed 20-02-PLAN.md
+last_updated: "2026-04-12T22:13:30.816Z"
 last_activity: 2026-04-12
 progress:
   total_phases: 9
   completed_phases: 7
   total_plans: 57
-  completed_plans: 48
-  percent: 84
+  completed_plans: 49
+  percent: 86
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 20 (client-portal-sharing) — EXECUTING
-Plan: 2 of 10
+Plan: 3 of 10
 Status: Ready to execute
 Last activity: 2026-04-12
 
@@ -79,6 +79,9 @@ v2.0 roadmap decisions:
 - [Phase 19]: E2E test in web/e2e/ (matching playwright.config.ts); Resend class-based mock; webhook metadata-only per T-19-46
 - [Phase 20-client-portal-sharing]: Design tokens as flat single-file export (web/src/lib/design-tokens.ts) as source of truth for portal and app styling
 - [Phase 20-client-portal-sharing]: 56 test stubs across 8 files covering PORTAL-01 through PORTAL-04 plus CSS sanitization, image processing, rate limiting security
+- [Phase 20]: Service-role client for public portal viewing bypasses RLS after token/slug validation
+- [Phase 20]: INSERT-only RLS on cs_portal_audit_log for immutable audit trail (D-114)
+- [Phase 20]: Soft-delete via is_deleted/is_revoked flags instead of hard delete (D-116)
 
 ### Pending Todos
 
@@ -96,6 +99,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-12T21:52:08.861Z
-Stopped at: Completed 20-01-PLAN.md
+Last session: 2026-04-12T22:13:30.811Z
+Stopped at: Completed 20-02-PLAN.md
 Resume file: None

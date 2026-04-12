@@ -181,7 +181,7 @@ Plans:
 **Plans**: 10 plans
 Plans:
 - [x] 20-01-PLAN.md — Wave 0: npm deps, portal types, design tokens, test stubs
-- [ ] 20-02-PLAN.md — Wave 1: Database schema (4 tables + shared_links extension), query modules, BLOCKING db push
+- [x] 20-02-PLAN.md — Wave 1: Database schema (4 tables + shared_links extension), query modules, BLOCKING db push
 - [ ] 20-03-PLAN.md — Wave 2: Portal API routes (7 endpoints) + CSS sanitizer + image processor + slug generator
 - [ ] 20-04-PLAN.md — Wave 3: Public portal page (SSR) + portal shell/header/footer + section components
 - [ ] 20-05-PLAN.md — Wave 3: Photo timeline + lightbox + ZIP download + portal PDF export
@@ -216,5 +216,5 @@ Plans:
 | 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete    | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.0 | 18/18 | Complete    | 2026-04-12 |
-| 20. Client Portal & Sharing | v2.0 | 1/10 | In Progress|  |
+| 20. Client Portal & Sharing | v2.0 | 2/10 | In Progress|  |
 | 21. Live Satellite & Traffic Maps | v2.0 | 0/0 | Not started | - |
