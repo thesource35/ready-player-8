@@ -41,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     ]},
     { label: "FIELD", links: [
       { href: "/field", label: "Field Ops" }, { href: "/finance", label: "Finance" },
+      { href: "/reports", label: "Reports" },
       { href: "/compliance", label: "Compliance" }, { href: "/clients", label: "Clients" },
       { href: "/analytics", label: "Analytics" },
     ]},
