@@ -1,0 +1,92 @@
+{
+  "project": {
+    "id": "proj-001",
+    "name": "Downtown Office Tower",
+    "client": "Apex Development Corp",
+    "type": "Commercial",
+    "status": "Active",
+    "progress": 65,
+    "budget": "$450,000",
+    "score": "85",
+    "team": "Alpha Team"
+  },
+  "contracts": [
+    {
+      "id": "con-001",
+      "title": "Foundation Work",
+      "client": "Apex Development Corp",
+      "budget": "$120,000",
+      "stage": "Active",
+      "billed": 85000,
+      "change_order_amount": 5000,
+      "retainage": 8500
+    },
+    {
+      "id": "con-002",
+      "title": "Steel Framing",
+      "client": "Apex Development Corp",
+      "budget": "$200,000",
+      "stage": "Active",
+      "billed": 140000,
+      "change_order_amount": -3000,
+      "retainage": 14000
+    },
+    {
+      "id": "con-003",
+      "title": "Electrical Rough-In",
+      "client": "Apex Development Corp",
+      "budget": "$130,000",
+      "stage": "Pending",
+      "billed": 0,
+      "change_order_amount": 0,
+      "retainage": 0
+    }
+  ],
+  "tasks": [
+    { "id": "task-001", "name": "Excavation", "percent_complete": 100, "is_critical": false, "start_date": "2025-01-15", "end_date": "2025-02-15" },
+    { "id": "task-002", "name": "Foundation Pour", "percent_complete": 100, "is_critical": true, "start_date": "2025-02-16", "end_date": "2025-03-30" },
+    { "id": "task-003", "name": "Steel Erection", "percent_complete": 75, "is_critical": true, "start_date": "2025-04-01", "end_date": "2025-06-30" },
+    { "id": "task-004", "name": "Concrete Decking", "percent_complete": 30, "is_critical": false, "start_date": "2025-05-15", "end_date": "2025-08-15" },
+    { "id": "task-005", "name": "MEP Rough-In", "percent_complete": 0, "is_critical": false, "start_date": "2025-07-01", "end_date": "2025-10-01" }
+  ],
+  "team_assignments": [
+    { "id": "ta-001", "member_id": "m-001", "role_on_project": "Project Manager", "status": "active" },
+    { "id": "ta-002", "member_id": "m-002", "role_on_project": "Superintendent", "status": "active" },
+    { "id": "ta-003", "member_id": "m-003", "role_on_project": "Foreman", "status": "active" },
+    { "id": "ta-004", "member_id": "m-004", "role_on_project": "Foreman", "status": "active" },
+    { "id": "ta-005", "member_id": "m-005", "role_on_project": "Safety Officer", "status": "inactive" }
+  ],
+  "activity_feed": [
+    { "user": "Jane Smith", "action": "Updated Steel Erection to 75%", "timestamp": "2025-06-10T14:30:00Z" },
+    { "user": "Bob Jones", "action": "Submitted RFI-003", "timestamp": "2025-06-09T10:15:00Z" },
+    { "user": "Jane Smith", "action": "Approved CO-001", "timestamp": "2025-06-08T16:00:00Z" },
+    { "user": "Alice Brown", "action": "Uploaded safety report", "timestamp": "2025-06-07T09:00:00Z" },
+    { "user": "Bob Jones", "action": "Created punch list item", "timestamp": "2025-06-06T11:45:00Z" },
+    { "user": "Charlie Davis", "action": "Logged daily report", "timestamp": "2025-06-05T17:00:00Z" }
+  ],
+  "rfis": [
+    { "id": "rfi-001", "subject": "Foundation footing depth clarification", "status": "Closed", "created_at": "2025-02-20T10:00:00Z" },
+    { "id": "rfi-002", "subject": "Steel beam connection detail", "status": "Open", "created_at": "2025-05-15T08:30:00Z" },
+    { "id": "rfi-003", "subject": "Electrical conduit routing", "status": "Open", "created_at": "2025-06-09T10:15:00Z" }
+  ],
+  "change_orders": [
+    { "id": "co-001", "description": "Add foundation waterproofing", "amount": 5000, "status": "Approved" },
+    { "id": "co-002", "description": "Reduce steel beam count", "amount": -3000, "status": "Approved" },
+    { "id": "co-003", "description": "Add fire suppression to floor 3", "amount": 12000, "status": "Pending" }
+  ],
+  "safety_incidents": [
+    { "id": "si-001", "description": "Minor cut during rebar tying", "severity": "minor", "date": "2025-03-12" },
+    { "id": "si-002", "description": "Scaffold near-miss", "severity": "moderate", "date": "2025-04-20" },
+    { "id": "si-003", "description": "Heat exhaustion", "severity": "minor", "date": "2025-05-28" }
+  ],
+  "document_count": 47,
+  "photo_count": 213,
+  "table_counts": {
+    "cs_projects": 1,
+    "cs_contracts": 3,
+    "cs_project_tasks": 5,
+    "cs_team_assignments": 5,
+    "cs_field_reports": 12,
+    "cs_documents": 47
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "projects": [
+    {
+      "project": {
+        "id": "proj-001",
+        "name": "Downtown Office Tower",
+        "client": "Apex Development Corp",
+        "status": "Active",
+        "progress": 65,
+        "budget": "$450,000"
+      },
+      "contracts": [
+        { "id": "c1", "budget": "$120,000", "billed": 85000, "change_order_amount": 5000, "retainage": 8500 },
+        { "id": "c2", "budget": "$200,000", "billed": 140000, "change_order_amount": -3000, "retainage": 14000 }
+      ],
+      "tasks": [
+        { "id": "t1", "name": "Foundation", "percent_complete": 100, "is_critical": false, "start_date": "2025-01-01", "end_date": "2025-03-01" },
+        { "id": "t2", "name": "Framing", "percent_complete": 80, "is_critical": true, "start_date": "2025-03-01", "end_date": "2025-06-01" }
+      ],
+      "rfis": [
+        { "id": "r1", "subject": "Detail A", "status": "Closed", "created_at": "2025-02-01T00:00:00Z" }
+      ],
+      "change_orders": [
+        { "id": "co1", "description": "Add waterproofing", "amount": 5000, "status": "Approved" }
+      ],
+      "safety_incidents": [
+        { "id": "s1", "description": "Minor cut", "severity": "minor", "date": "2025-03-12" }
+      ],
+      "table_counts": {
+        "cs_projects": 1,
+        "cs_contracts": 2,
+        "cs_project_tasks": 2,
+        "cs_team_assignments": 3,
+        "cs_field_reports": 5,
+        "cs_documents": 10
+      }
+    },
+    {
+      "project": {
+        "id": "proj-002",
+        "name": "Riverside Condos",
+        "client": "Metro Living LLC",
+        "status": "Active",
+        "progress": 30,
+        "budget": "$800,000"
+      },
+      "contracts": [
+        { "id": "c3", "budget": "$500,000", "billed": 400000, "change_order_amount": 50000, "retainage": 40000 },
+        { "id": "c4", "budget": "$300,000", "billed": 250000, "change_order_amount": 10000, "retainage": 25000 }
+      ],
+      "tasks": [
+        { "id": "t3", "name": "Site Prep", "percent_complete": 100, "is_critical": false, "start_date": "2025-01-01", "end_date": "2025-02-01" },
+        { "id": "t4", "name": "Foundation", "percent_complete": 50, "is_critical": true, "start_date": "2025-02-01", "end_date": "2025-04-01" },
+        { "id": "t5", "name": "Framing", "percent_complete": 10, "is_critical": true, "start_date": "2025-04-01", "end_date": "2025-08-01" }
+      ],
+      "rfis": [
+        { "id": "r2", "subject": "Soil test", "status": "Open", "created_at": "2025-03-01T00:00:00Z" },
+        { "id": "r3", "subject": "Permit delay", "status": "Open", "created_at": "2025-03-15T00:00:00Z" }
+      ],
+      "change_orders": [
+        { "id": "co2", "description": "Extra excavation", "amount": 50000, "status": "Approved" },
+        { "id": "co3", "description": "Design revision", "amount": 10000, "status": "Pending" }
+      ],
+      "safety_incidents": [
+        { "id": "s2", "description": "Fall from scaffold", "severity": "serious", "date": "2025-02-15" },
+        { "id": "s3", "description": "Equipment malfunction", "severity": "moderate", "date": "2025-03-20" },
+        { "id": "s4", "description": "Minor laceration", "severity": "minor", "date": "2025-04-10" }
+      ],
+      "table_counts": {
+        "cs_projects": 1,
+        "cs_contracts": 2,
+        "cs_project_tasks": 3,
+        "cs_team_assignments": 0,
+        "cs_field_reports": 0,
+        "cs_documents": 0
+      }
+    },
+    {
+      "project": {
+        "id": "proj-003",
+        "name": "Highway Bridge Repair",
+        "client": "State DOT",
+        "status": "Delayed",
+        "progress": 15,
+        "budget": "$1,200,000"
+      },
+      "contracts": [
+        { "id": "c5", "budget": "$1,200,000", "billed": 1100000, "change_order_amount": 200000, "retainage": 110000 }
+      ],
+      "tasks": [
+        { "id": "t6", "name": "Demo", "percent_complete": 100, "is_critical": true, "start_date": "2025-01-01", "end_date": "2025-02-01" },
+        { "id": "t7", "name": "Structural Repair", "percent_complete": 20, "is_critical": true, "start_date": "2025-02-01", "end_date": "2025-06-01" },
+        { "id": "t8", "name": "Resurfacing", "percent_complete": 0, "is_critical": true, "start_date": "2025-06-01", "end_date": "2025-09-01" }
+      ],
+      "rfis": [
+        { "id": "r4", "subject": "Load bearing spec", "status": "Open", "created_at": "2025-02-10T00:00:00Z" },
+        { "id": "r5", "subject": "Material substitution", "status": "Open", "created_at": "2025-03-05T00:00:00Z" },
+        { "id": "r6", "subject": "Environmental compliance", "status": "Open", "created_at": "2025-03-20T00:00:00Z" },
+        { "id": "r7", "subject": "Permit renewal", "status": "Open", "created_at": "2025-04-01T00:00:00Z" }
+      ],
+      "change_orders": [
+        { "id": "co4", "description": "Additional steel", "amount": 150000, "status": "Approved" },
+        { "id": "co5", "description": "Emergency repair", "amount": 50000, "status": "Approved" }
+      ],
+      "safety_incidents": [
+        { "id": "s5", "description": "Near miss with crane", "severity": "serious", "date": "2025-01-20" },
+        { "id": "s6", "description": "Worker slip", "severity": "moderate", "date": "2025-02-28" },
+        { "id": "s7", "description": "Material falling", "severity": "serious", "date": "2025-03-15" },
+        { "id": "s8", "description": "Chemical spill", "severity": "moderate", "date": "2025-04-05" }
+      ],
+      "table_counts": {
+        "cs_projects": 1,
+        "cs_contracts": 1,
+        "cs_project_tasks": 3,
+        "cs_team_assignments": 4,
+        "cs_field_reports": 8,
+        "cs_documents": 20
+      }
+    }
+  ]
+}
