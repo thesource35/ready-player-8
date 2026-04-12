@@ -146,7 +146,12 @@
   2. User can view a cross-project financial rollup dashboard
   3. User can export a report to PDF
   4. User can view bar/line/pie chart visualizations for budgets, timelines, and safety metrics
-**Plans**: TBD
+**Plans**: 5 plans
+- [ ] 19-01-PLAN.md — Wave 0 TDD: npm deps, report types, aggregation functions with tests
+- [ ] 19-02-PLAN.md — Wave 1 API routes: /api/reports/project/[id], /api/reports/rollup, /api/reports/health
+- [ ] 19-03-PLAN.md — Wave 2 web UI: Recharts components, report pages, portfolio rollup, nav integration
+- [ ] 19-04-PLAN.md — Wave 3 PDF export: jsPDF + html2canvas generator, export button on both report pages
+- [ ] 19-05-PLAN.md — Wave 3 iOS: ReportsView + SwiftUI Charts + UIGraphicsPDFRenderer + NavTab integration
 **UI hint**: yes
 
 ### Phase 20: Client Portal & Sharing
@@ -172,5 +177,5 @@
 | 16. Field Tools | v2.0 | 6/6 | Complete   | 2026-04-08 |
 | 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete    | 2026-04-11 |
-| 19. Reporting & Dashboards | v2.0 | 0/0 | Not started | - |
+| 19. Reporting & Dashboards | v2.0 | 0/5 | In Progress | - |
 | 20. Client Portal & Sharing | v2.0 | 0/0 | Not started | - |
