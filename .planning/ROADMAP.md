@@ -148,7 +148,7 @@
   4. User can view bar/line/pie chart visualizations for budgets, timelines, and safety metrics
 **Plans**: 18 plans
 Plans:
-- [ ] 19-01-PLAN.md — Wave 1 TDD: npm deps, report types, aggregation functions with 100% coverage
+- [x] 19-01-PLAN.md — Wave 1 TDD: npm deps, report types, aggregation functions with 100% coverage
 - [ ] 19-02-PLAN.md — Wave 1 Recharts chart components + StatCard/HealthBadge/Skeleton UI atoms
 - [ ] 19-03-PLAN.md — Wave 1 Database schema (8 cs_report_* tables, RLS, indexes, views)
 - [ ] 19-04-PLAN.md — Wave 2 API routes: /api/reports/project/[id], /api/reports/rollup, /api/reports/health
@@ -191,5 +191,5 @@ Plans:
 | 16. Field Tools | v2.0 | 6/6 | Complete   | 2026-04-08 |
 | 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete    | 2026-04-11 |
-| 19. Reporting & Dashboards | v2.0 | 0/18 | In Progress | - |
+| 19. Reporting & Dashboards | v2.0 | 1/18 | In Progress|  |
 | 20. Client Portal & Sharing | v2.0 | 0/0 | Not started | - |

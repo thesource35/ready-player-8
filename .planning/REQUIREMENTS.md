@@ -33,10 +33,10 @@ Requirements for v2.0 Feature Expansion. Each maps to a roadmap phase.
 
 ### Reporting & Dashboards
 
-- [ ] **REPORT-01**: User can generate single-project summary report (budget, schedule, issues, team)
-- [ ] **REPORT-02**: User can view cross-project financial rollup dashboard
+- [x] **REPORT-01**: User can generate single-project summary report (budget, schedule, issues, team)
+- [x] **REPORT-02**: User can view cross-project financial rollup dashboard
 - [ ] **REPORT-03**: User can export reports to PDF
-- [ ] **REPORT-04**: User can view chart visualizations (bar/line/pie) for budgets, timelines, and safety metrics
+- [x] **REPORT-04**: User can view chart visualizations (bar/line/pie) for budgets, timelines, and safety metrics
 
 ### Enhanced AI (Angelic AI v2)
 
@@ -133,10 +133,10 @@ Mapping of requirements to phases.
 | TEAM-03 | Phase 15 | Pending |
 | TEAM-04 | Phase 15 | Pending |
 | TEAM-05 | Phase 15 | Pending |
-| REPORT-01 | Phase 19 | Pending |
-| REPORT-02 | Phase 19 | Pending |
+| REPORT-01 | Phase 19 | Complete |
+| REPORT-02 | Phase 19 | Complete |
 | REPORT-03 | Phase 19 | Pending |
-| REPORT-04 | Phase 19 | Pending |
+| REPORT-04 | Phase 19 | Complete |
 | AI-01 | Phase 18 | Complete |
 | AI-02 | Phase 18 | Complete |
 | AI-03 | Phase 18 | Complete |
