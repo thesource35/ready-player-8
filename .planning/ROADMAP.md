@@ -33,7 +33,7 @@
 - [x] **Phase 16: Field Tools** — GPS-tagged photos, annotations, daily log templates (completed 2026-04-08)
 - [x] **Phase 17: Calendar & Scheduling** — Project timeline, Gantt chart, drag-to-reschedule (completed 2026-04-11)
 - [x] **Phase 18: Enhanced AI (Angelic AI v2)** — Context-aware chat, RFI/CO generation, bid analysis (completed 2026-04-11)
-- [ ] **Phase 19: Reporting & Dashboards** — Project reports, cross-project rollups, PDF export, charts
+- [x] **Phase 19: Reporting & Dashboards** — Project reports, cross-project rollups, PDF export, charts (completed 2026-04-12)
 - [ ] **Phase 20: Client Portal & Sharing** — Shareable read-only project URLs with branding
 
 ## Phase Details
@@ -165,7 +165,7 @@ Plans:
 - [x] 19-15-PLAN.md — Wave 5 Feature discovery + demo report + templates + audit dashboard + CSV import
 - [x] 19-16-PLAN.md — Wave 5 Caching + feature flags + data retention + PWA offline + data backup
 - [x] 19-17-PLAN.md — Wave 5 iOS: WidgetKit + Siri Shortcuts + accessibility + high contrast + String Catalogs
-- [ ] 19-18-PLAN.md — Wave 6 Testing: integration + E2E Playwright + iOS XCTests + conditional formatting + print CSS
+- [x] 19-18-PLAN.md — Wave 6 Testing: integration + E2E Playwright + iOS XCTests + conditional formatting + print CSS
 **UI hint**: yes
 
 ### Phase 20: Client Portal & Sharing
@@ -191,5 +191,5 @@ Plans:
 | 16. Field Tools | v2.0 | 6/6 | Complete   | 2026-04-08 |
 | 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete    | 2026-04-11 |
-| 19. Reporting & Dashboards | v2.0 | 17/18 | In Progress|  |
+| 19. Reporting & Dashboards | v2.0 | 18/18 | Complete   | 2026-04-12 |
 | 20. Client Portal & Sharing | v2.0 | 0/0 | Not started | - |
