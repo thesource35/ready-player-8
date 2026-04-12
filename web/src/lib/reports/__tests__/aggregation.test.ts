@@ -230,8 +230,8 @@ describe("computeIssuesSection", () => {
     );
     expect(result.rfis).toHaveLength(3);
     expect(result.changeOrders).toHaveLength(3);
-    // Open RFIs: rfi-002, rfi-003 = 2
-    expect(result.totalOpen).toBe(2);
+    // Open RFIs: rfi-002, rfi-003 = 2; Pending COs: co-003 = 1; total = 3
+    expect(result.totalOpen).toBe(3);
     // criticalOpen = open RFIs (simplified — all open are treated as needing attention)
     expect(result.criticalOpen).toBeGreaterThanOrEqual(0);
   });
@@ -288,6 +288,19 @@ describe("computeSafetySection", () => {
     expect(result.incidents).toHaveLength(3);
     // Monthly data should group by month
     expect(result.monthlyData.length).toBeGreaterThan(0);
+  });
+
+  it("counts all severity levels including serious", () => {
+    const incidents = [
+      { id: "s1", description: "Fall", severity: "serious", date: "2025-06-01" },
+      { id: "s2", description: "Cut", severity: "minor", date: "2025-06-05" },
+      { id: "s3", description: "Burn", severity: "serious", date: "2025-06-10" },
+    ];
+    const result = computeSafetySection(incidents, new Date("2025-06-15"));
+    expect(result.severityBreakdown.serious).toBe(2);
+    expect(result.severityBreakdown.minor).toBe(1);
+    expect(result.severityBreakdown.moderate).toBe(0);
+    expect(result.totalIncidents).toBe(3);
   });
 
   it("handles no incidents", () => {
