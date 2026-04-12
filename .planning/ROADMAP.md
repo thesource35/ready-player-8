@@ -177,7 +177,18 @@ Plans:
   2. User can configure portal section visibility (budget, schedule, photos)
   3. Client viewers see a chronological progress photo timeline
   4. Portal page displays the company's logo and brand colors
-**Plans**: TBD
+**Plans**: 10 plans
+Plans:
+- [ ] 20-01-PLAN.md — Wave 0: npm deps, portal types, design tokens, test stubs
+- [ ] 20-02-PLAN.md — Wave 1: Database schema (4 tables + shared_links extension), query modules, BLOCKING db push
+- [ ] 20-03-PLAN.md — Wave 2: Portal API routes (7 endpoints) + CSS sanitizer + image processor + slug generator
+- [ ] 20-04-PLAN.md — Wave 3: Public portal page (SSR) + portal shell/header/footer + section components
+- [ ] 20-05-PLAN.md — Wave 3: Photo timeline + lightbox + ZIP download + portal PDF export
+- [ ] 20-06-PLAN.md — Wave 4: Web portal management UI (dashboard, create dialog, section editor, analytics)
+- [ ] 20-07-PLAN.md — Wave 4: Branding theme editor + preset picker + logo upload + branded emails
+- [ ] 20-08-PLAN.md — Wave 5: iOS portal views + SupabaseService portal extensions
+- [ ] 20-09-PLAN.md — Wave 5: Security hardening + all test implementations + audit log API + IP blocker
+- [ ] 20-10-PLAN.md — Wave 6: Final integration (PDF button, mobile nav, webhooks, E2E tests, human verification)
 **UI hint**: yes
 
 ## Progress
@@ -191,5 +202,5 @@ Plans:
 | 16. Field Tools | v2.0 | 6/6 | Complete   | 2026-04-08 |
 | 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete    | 2026-04-11 |
-| 19. Reporting & Dashboards | v2.0 | 18/18 | Complete   | 2026-04-12 |
-| 20. Client Portal & Sharing | v2.0 | 0/0 | Not started | - |
+| 19. Reporting & Dashboards | v2.0 | 18/18 | Complete    | 2026-04-12 |
+| 20. Client Portal & Sharing | v2.0 | 0/10 | Planning complete | - |
