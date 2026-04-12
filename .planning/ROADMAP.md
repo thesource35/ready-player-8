@@ -158,7 +158,7 @@ Plans:
 - [x] 19-08-PLAN.md — Wave 4 Email scheduling: CRUD API, Vercel Cron, Resend template, schedule management UI
 - [x] 19-09-PLAN.md — Wave 4 Shareable links + multi-format export generators (CSV/Excel/PPTX) + access control
 - [x] 19-10-PLAN.md — Wave 4 iOS: ReportsView + ProjectReportView + PortfolioRollupView + SwiftUI Charts
-- [ ] 19-11-PLAN.md — Wave 4 iOS: PDF generation + schedule management + Siri/Spotlight/CarPlay stubs
+- [x] 19-11-PLAN.md — Wave 4 iOS: PDF generation + schedule management + Siri/Spotlight/CarPlay stubs
 - [ ] 19-12-PLAN.md — Wave 5 Collaboration: comments, annotations (Fabric.js), version history with diffs
 - [ ] 19-13-PLAN.md — Wave 5 i18n (next-intl) + report themes + keyboard shortcuts + bookmarks + bulk ops
 - [ ] 19-14-PLAN.md — Wave 5 Notifications + automation rules + embed codes + analytics (PostHog)
@@ -191,5 +191,5 @@ Plans:
 | 16. Field Tools | v2.0 | 6/6 | Complete   | 2026-04-08 |
 | 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete    | 2026-04-11 |
-| 19. Reporting & Dashboards | v2.0 | 10/18 | In Progress|  |
+| 19. Reporting & Dashboards | v2.0 | 11/18 | In Progress|  |
 | 20. Client Portal & Sharing | v2.0 | 0/0 | Not started | - |
