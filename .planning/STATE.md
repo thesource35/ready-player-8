@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
 status: executing
-stopped_at: Completed 19-12-PLAN.md
-last_updated: "2026-04-12T08:52:52.673Z"
+stopped_at: Completed 19-13-PLAN.md
+last_updated: "2026-04-12T09:04:57.514Z"
 last_activity: 2026-04-12
 progress:
   total_phases: 8
   completed_phases: 6
   total_plans: 47
-  completed_plans: 41
-  percent: 87
+  completed_plans: 42
+  percent: 89
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 19 (reporting-dashboards) — EXECUTING
-Plan: 13 of 18
+Plan: 14 of 18
 Status: Ready to execute
 Last activity: 2026-04-12
 
@@ -68,6 +68,7 @@ v2.0 roadmap decisions:
 - [Phase 19]: Reports tab in field nav group; SupabaseService extended with public makeReportRequest; demo data embedded inline for offline-first
 - [Phase 19]: UIGraphicsPDFRenderer for iOS PDF; Locale.current.region for paper size; ImageRenderer at 2x for chart embedding; AppIntents for Siri shortcuts
 - [Phase 19]: FabricCanvasInner separated for clean dynamic import; comment HTML stripped + 2000 char limit; Fabric.js JSON validated for objects array + 500KB limit; version diff uses inverted-metric awareness for color coding
+- [Phase 19-reporting-dashboards]: i18n uses next-intl getRequestConfig English-only; report themes via CSS custom properties on container; bulk ops limited to 50 items (T-19-34)
 
 ### Pending Todos
 
@@ -85,6 +86,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-12T08:52:52.670Z
-Stopped at: Completed 19-12-PLAN.md
+Last session: 2026-04-12T09:04:57.510Z
+Stopped at: Completed 19-13-PLAN.md
 Resume file: None
