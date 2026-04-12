@@ -1,0 +1,174 @@
+{
+  "reports": {
+    "tabs": {
+      "projectReport": "Project Report",
+      "portfolioRollup": "Portfolio Rollup",
+      "schedules": "Schedules"
+    },
+    "sections": {
+      "budget": "Budget & Financials",
+      "schedule": "Schedule & Milestones",
+      "safety": "Safety",
+      "team": "Team & Activity",
+      "aiInsights": "AI Insights",
+      "documents": "Documents",
+      "photos": "Photos",
+      "issues": "Issues & Risks",
+      "health": "Health Score",
+      "executive": "Executive Summary",
+      "activity": "Activity Trend"
+    },
+    "labels": {
+      "totalProjects": "Total Projects",
+      "avgHealth": "Avg Health",
+      "totalValue": "Total Value",
+      "contractValue": "Contract Value",
+      "totalBilled": "Total Billed",
+      "remaining": "Remaining",
+      "changeOrders": "Change Orders",
+      "retainage": "Retainage",
+      "percentComplete": "% Complete",
+      "milestones": "Milestones",
+      "openIssues": "Open Issues",
+      "criticalIssues": "Critical Issues",
+      "teamMembers": "Team Members",
+      "safetyIncidents": "Safety Incidents",
+      "daysSinceLastIncident": "Days Since Last Incident",
+      "dataFreshness": "Data Freshness",
+      "featureCoverage": "Feature Coverage",
+      "onTrack": "On Track",
+      "atRisk": "At Risk",
+      "critical": "Critical",
+      "active": "Active",
+      "completed": "Completed",
+      "delayed": "Delayed",
+      "projectName": "Project Name",
+      "client": "Client",
+      "status": "Status",
+      "generatedAt": "Generated {date, date, medium} at {date, time, short}",
+      "reportPeriod": "Report Period: All Time"
+    },
+    "export": {
+      "exportPdf": "Export PDF",
+      "exportCsv": "Export CSV",
+      "exportExcel": "Export Excel",
+      "exportJson": "Export JSON",
+      "exportPptx": "Export PowerPoint",
+      "exportPng": "Export PNG",
+      "exportSvg": "Export SVG",
+      "generateReport": "Generate Report",
+      "shareReport": "Share Report",
+      "downloadAll": "Export All Reports",
+      "printing": "Preparing for print...",
+      "exportInProgress": "Export in progress..."
+    },
+    "errors": {
+      "loadFailed": "Failed to load report data. Please try again.",
+      "exportFailed": "Export failed. Please try again.",
+      "noProjects": "No projects found.",
+      "networkError": "Network error. Check your connection.",
+      "timeout": "Request timed out. Please retry.",
+      "unauthorized": "You are not authorized to view this report.",
+      "notFound": "Report not found."
+    },
+    "empty": {
+      "noProjectsYet": "No Projects Yet",
+      "noProjectsDesc": "Create a project to see your reports here.",
+      "noneRecorded": "None recorded",
+      "noData": "No data available for this section.",
+      "noIncidents": "No safety incidents recorded",
+      "noMilestones": "No milestones set",
+      "noTeamMembers": "No team members assigned",
+      "noDocuments": "No documents uploaded",
+      "noPhotos": "No photos uploaded",
+      "noInsights": "No AI insights available",
+      "noChangeOrders": "No change orders",
+      "noIssues": "No issues recorded"
+    },
+    "health": {
+      "green": "Healthy",
+      "gold": "At Risk",
+      "red": "Critical",
+      "scoreLabel": "{score}% Health",
+      "weightBudget": "Budget (40%)",
+      "weightSchedule": "Schedule (35%)",
+      "weightIssues": "Issues (25%)"
+    },
+    "schedule": {
+      "onTime": "On Time",
+      "behind": "Behind Schedule",
+      "ahead": "Ahead of Schedule",
+      "daysRemaining": "{count, plural, one {# day remaining} other {# days remaining}}",
+      "percentComplete": "{percent}% Complete"
+    },
+    "filters": {
+      "searchProjects": "Search projects...",
+      "allStatus": "All Status",
+      "sortName": "Sort: Name",
+      "sortBudget": "Sort: Budget",
+      "sortHealth": "Sort: Health",
+      "showCompleted": "Show completed",
+      "clearFilters": "Clear Filters"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "print": "Print",
+      "share": "Share",
+      "bookmark": "Bookmark",
+      "remove": "Remove",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "delete": "Delete",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "retry": "Retry"
+    },
+    "bulk": {
+      "selectedCount": "{count, plural, one {# item selected} other {# items selected}}",
+      "deleteSelected": "Delete Selected",
+      "exportSelected": "Export Selected",
+      "revokeSelected": "Revoke Selected Links",
+      "pauseSchedules": "Pause Schedules",
+      "resumeSchedules": "Resume Schedules",
+      "confirmDelete": "Are you sure you want to delete {count, plural, one {# item} other {# items}}? This cannot be undone.",
+      "confirmRevoke": "Are you sure you want to revoke {count, plural, one {# link} other {# links}}?"
+    },
+    "themes": {
+      "professional": "Professional",
+      "construction": "Construction",
+      "corporate": "Corporate",
+      "minimal": "Minimal",
+      "executive": "Executive",
+      "custom": "Custom",
+      "selectTheme": "Select Theme",
+      "preview": "Preview"
+    },
+    "keyboard": {
+      "title": "Keyboard Shortcuts",
+      "print": "Print report",
+      "export": "Export report",
+      "share": "Share report",
+      "refresh": "Refresh data",
+      "help": "Show shortcuts",
+      "close": "Close",
+      "navigation": "Navigation",
+      "actions": "Actions"
+    },
+    "currency": {
+      "usd": "${amount}",
+      "compact": "{amount, number, ::compact-short currency/USD}",
+      "full": "{amount, number, ::currency/USD}"
+    },
+    "dates": {
+      "relative": "{date, date, medium}",
+      "full": "{date, date, full}",
+      "shortTime": "{date, time, short}"
+    },
+    "whiteLabelEnterprise": {
+      "customDomain": "Custom Domain",
+      "emailDomain": "Email Domain",
+      "enterpriseFeature": "Enterprise Feature",
+      "contactSales": "Contact sales to enable white-labeling"
+    }
+  }
+}

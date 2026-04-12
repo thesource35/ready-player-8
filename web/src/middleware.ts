@@ -3,6 +3,10 @@ import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { rateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 
+// next-intl i18n configured in src/i18n.ts (D-86).
+// Locale detection is handled by next-intl's getRequestConfig.
+// No route rewriting needed — English-only to start.
+
 // ---------------------------------------------------------------------------
 // Public routes that skip auth entirely
 // ---------------------------------------------------------------------------
