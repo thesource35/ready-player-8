@@ -725,7 +725,7 @@ struct ProjectReportView: View {
 extension SupabaseService {
     /// Build a URLRequest for a report API endpoint.
     /// Uses the same web app base URL and auth token as calendar API.
-    func makeReportRequest(path: String) throws -> URLRequest {
+    func makeReportRequest(path: String, method: String = "GET", body: Data? = nil) throws -> URLRequest {
         guard isWebAppConfigured else {
             throw AppError.supabaseNotConfigured
         }
@@ -733,14 +733,18 @@ extension SupabaseService {
             throw AppError.validationFailed(field: "URL", reason: "Invalid report API path: \(path)")
         }
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
+        request.httpMethod = method
         if let token = accessToken, !token.isEmpty {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        if let webURL = URL(string: webAppBaseURL) {
-            request.setValue(webURL.absoluteString, forHTTPHeaderField: "Origin")
+        if body != nil {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = body
         }
+        // CSRF: match the pattern from makeWebAPIRequest
+        request.setValue(webAppBaseURL, forHTTPHeaderField: "Origin")
+        request.setValue("1", forHTTPHeaderField: "X-CSRF-Token")
         return request
     }
 }
