@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 Production Hardening** — Phases 1-12 (shipped 2026-04-06) — [archive](milestones/v1.0-ROADMAP.md)
-- 🚧 **v2.0 Feature Expansion** — Phases 13-21 (in progress)
+- 🚧 **v2.0 Feature Expansion** — Phases 13-22 (in progress)
 
 ## Phases
 
@@ -35,6 +35,7 @@
 - [x] **Phase 18: Enhanced AI (Angelic AI v2)** — Context-aware chat, RFI/CO generation, bid analysis (completed 2026-04-11)
 - [x] **Phase 19: Reporting & Dashboards** — Project reports, cross-project rollups, PDF export, charts (completed 2026-04-12)
 - [ ] **Phase 20: Client Portal & Sharing** — Shareable read-only project URLs with branding
+- [ ] **Phase 21: Live Satellite & Traffic Maps** — Satellite imagery, real-time traffic overlays, equipment tracking across all map features
 
 ## Phase Details
 
@@ -179,7 +180,7 @@ Plans:
   4. Portal page displays the company's logo and brand colors
 **Plans**: 10 plans
 Plans:
-- [ ] 20-01-PLAN.md — Wave 0: npm deps, portal types, design tokens, test stubs
+- [x] 20-01-PLAN.md — Wave 0: npm deps, portal types, design tokens, test stubs
 - [ ] 20-02-PLAN.md — Wave 1: Database schema (4 tables + shared_links extension), query modules, BLOCKING db push
 - [ ] 20-03-PLAN.md — Wave 2: Portal API routes (7 endpoints) + CSS sanitizer + image processor + slug generator
 - [ ] 20-04-PLAN.md — Wave 3: Public portal page (SSR) + portal shell/header/footer + section components
@@ -189,6 +190,18 @@ Plans:
 - [ ] 20-08-PLAN.md — Wave 5: iOS portal views + SupabaseService portal extensions
 - [ ] 20-09-PLAN.md — Wave 5: Security hardening + all test implementations + audit log API + IP blocker
 - [ ] 20-10-PLAN.md — Wave 6: Final integration (PDF button, mobile nav, webhooks, E2E tests, human verification)
+**UI hint**: yes
+
+### Phase 21: Live Satellite & Traffic Maps
+**Goal**: All map features show satellite imagery with real-time traffic overlays and construction site activity
+**Depends on**: Phase 16 (GPS-tagged photos on maps), Phase 20 (portal may embed maps)
+**Requirements**: MAP-01, MAP-02, MAP-03, MAP-04
+**Success Criteria** (what must be TRUE):
+  1. User can toggle between standard, satellite, and hybrid map layers on all map views
+  2. User can see real-time traffic flow overlays on project area maps
+  3. User can view construction equipment/vehicle locations on a project site map
+  4. All map features (MapsView iOS, /maps web, field photos, project locations) use the enhanced map system
+**Plans**: TBD
 **UI hint**: yes
 
 ## Progress
@@ -203,4 +216,5 @@ Plans:
 | 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete    | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.0 | 18/18 | Complete    | 2026-04-12 |
-| 20. Client Portal & Sharing | v2.0 | 0/10 | Planning complete | - |
+| 20. Client Portal & Sharing | v2.0 | 1/10 | In Progress|  |
+| 21. Live Satellite & Traffic Maps | v2.0 | 0/0 | Not started | - |

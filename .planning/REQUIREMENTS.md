@@ -54,10 +54,10 @@ Requirements for v2.0 Feature Expansion. Each maps to a roadmap phase.
 
 ### Client Portal / Sharing
 
-- [ ] **PORTAL-01**: User can generate a shareable read-only project URL
-- [ ] **PORTAL-02**: User can configure portal visibility per section (budget, schedule, photos)
-- [ ] **PORTAL-03**: Client viewers see a progress photo timeline
-- [ ] **PORTAL-04**: Portal page displays company branding (logo, colors)
+- [x] **PORTAL-01**: User can generate a shareable read-only project URL
+- [x] **PORTAL-02**: User can configure portal visibility per section (budget, schedule, photos)
+- [x] **PORTAL-03**: Client viewers see a progress photo timeline
+- [x] **PORTAL-04**: Portal page displays company branding (logo, colors)
 
 ### Calendar & Scheduling
 
@@ -145,10 +145,10 @@ Mapping of requirements to phases.
 | FIELD-02 | Phase 16 | Complete |
 | FIELD-03 | Phase 16 | Complete |
 | FIELD-04 | Phase 16 | Complete |
-| PORTAL-01 | Phase 20 | Pending |
-| PORTAL-02 | Phase 20 | Pending |
-| PORTAL-03 | Phase 20 | Pending |
-| PORTAL-04 | Phase 20 | Pending |
+| PORTAL-01 | Phase 20 | Complete |
+| PORTAL-02 | Phase 20 | Complete |
+| PORTAL-03 | Phase 20 | Complete |
+| PORTAL-04 | Phase 20 | Complete |
 | CAL-01 | Phase 17 | Complete |
 | CAL-02 | Phase 17 | Complete |
 | CAL-03 | Phase 17 | Complete |
