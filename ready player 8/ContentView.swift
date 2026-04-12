@@ -573,6 +573,7 @@ struct ContentView: View {
         case roofEstimate = "roof-estimate"
         case smartBuild = "smart-build"
         case contractors = "contractors"
+        case reports = "reports"
         case empire = "empire"
         case crypto = "crypto"
         case settings = "settings"
@@ -596,6 +597,7 @@ struct ContentView: View {
         ("compliance","COMPLY","\u{1F6E1}","field"),
         ("client-portal","CLIENTS","\u{1F465}","field"),
         ("analytics","ANALYTICS","\u{1F4C8}","field"),
+        ("reports","REPORTS","\u{1F4CA}","field"),
         ("schedule","SCHEDULE","\u{1F4C5}","plan"),
         ("training","TRAINING","\u{1F393}","plan"),
         ("scanner","SCANNER","\u{1F4F7}","plan"),
@@ -761,6 +763,7 @@ struct ContentView: View {
         case .compliance: ComplianceView()
         case .clientPortal: ClientPortalView()
         case .analytics: AnalyticsDashboardView()
+        case .reports: ReportsView()
         case .schedule: ScheduleHubView()
         case .training: TrainingCertView()
         case .scanner: ScannerToolsView()
