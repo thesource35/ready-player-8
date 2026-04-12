@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
 status: executing
-stopped_at: Completed 19-13-PLAN.md
-last_updated: "2026-04-12T09:04:57.514Z"
+stopped_at: Completed 19-14-PLAN.md
+last_updated: "2026-04-12T09:25:22.629Z"
 last_activity: 2026-04-12
 progress:
   total_phases: 8
   completed_phases: 6
   total_plans: 47
-  completed_plans: 42
-  percent: 89
+  completed_plans: 43
+  percent: 91
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 19 (reporting-dashboards) — EXECUTING
-Plan: 14 of 18
+Plan: 15 of 18
 Status: Ready to execute
 Last activity: 2026-04-12
 
@@ -69,6 +69,10 @@ v2.0 roadmap decisions:
 - [Phase 19]: UIGraphicsPDFRenderer for iOS PDF; Locale.current.region for paper size; ImageRenderer at 2x for chart embedding; AppIntents for Siri shortcuts
 - [Phase 19]: FabricCanvasInner separated for clean dynamic import; comment HTML stripped + 2000 char limit; Fabric.js JSON validated for objects array + 500KB limit; version diff uses inverted-metric awareness for color coding
 - [Phase 19-reporting-dashboards]: i18n uses next-intl getRequestConfig English-only; report themes via CSS custom properties on container; bulk ops limited to 50 items (T-19-34)
+- [Phase 19-reporting-dashboards]: Health notifications only emit on color transitions, not score changes within same band (D-100)
+- [Phase 19-reporting-dashboards]: Automation rules restricted to predefined action whitelist (T-19-37)
+- [Phase 19-reporting-dashboards]: Embed route uses X-Frame-Options: ALLOWALL for iframe support (D-104)
+- [Phase 19-reporting-dashboards]: Metrics endpoint bounded to 100 entries per endpoint in-memory (T-19-38)
 
 ### Pending Todos
 
@@ -86,6 +90,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-12T09:04:57.510Z
-Stopped at: Completed 19-13-PLAN.md
+Last session: 2026-04-12T09:25:22.625Z
+Stopped at: Completed 19-14-PLAN.md
 Resume file: None
