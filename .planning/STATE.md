@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
 status: executing
-stopped_at: Completed 19-02-PLAN.md
-last_updated: "2026-04-12T04:35:49.490Z"
+stopped_at: Completed 19-03-PLAN.md
+last_updated: "2026-04-12T04:41:46.228Z"
 last_activity: 2026-04-12
 progress:
   total_phases: 8
   completed_phases: 6
   total_plans: 47
-  completed_plans: 31
-  percent: 66
+  completed_plans: 32
+  percent: 68
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 19 (reporting-dashboards) — EXECUTING
-Plan: 3 of 18
+Plan: 4 of 18
 Status: Ready to execute
 Last activity: 2026-04-12
 
@@ -52,6 +52,8 @@ v2.0 roadmap decisions:
 - [Phase 19]: parseBudgetString strips non-numeric chars, returns 0 for unparseable (T-19-01)
 - [Phase 19]: Pure aggregation functions: no side effects, no Supabase calls, accept raw data arrays
 - [Phase 19]: Recharts Tooltip formatter uses any type for Recharts 3.x ValueType/NameType intersection compatibility
+- [Phase 19-reporting-dashboards]: Immutable audit log: no UPDATE/DELETE RLS policies on cs_report_audit_log (T-19-06)
+- [Phase 19-reporting-dashboards]: Budget text parsed via regex in SQL views since cs_projects stores budget as text
 
 ### Pending Todos
 
@@ -69,6 +71,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-12T04:35:49.487Z
-Stopped at: Completed 19-02-PLAN.md
+Last session: 2026-04-12T04:41:46.225Z
+Stopped at: Completed 19-03-PLAN.md
 Resume file: None
