@@ -182,7 +182,7 @@ Plans:
 Plans:
 - [x] 20-01-PLAN.md — Wave 0: npm deps, portal types, design tokens, test stubs
 - [x] 20-02-PLAN.md — Wave 1: Database schema (4 tables + shared_links extension), query modules, BLOCKING db push
-- [ ] 20-03-PLAN.md — Wave 2: Portal API routes (7 endpoints) + CSS sanitizer + image processor + slug generator
+- [x] 20-03-PLAN.md — Wave 2: Portal API routes (7 endpoints) + CSS sanitizer + image processor + slug generator
 - [ ] 20-04-PLAN.md — Wave 3: Public portal page (SSR) + portal shell/header/footer + section components
 - [ ] 20-05-PLAN.md — Wave 3: Photo timeline + lightbox + ZIP download + portal PDF export
 - [ ] 20-06-PLAN.md — Wave 4: Web portal management UI (dashboard, create dialog, section editor, analytics)
@@ -201,7 +201,14 @@ Plans:
   2. User can see real-time traffic flow overlays on project area maps
   3. User can view construction equipment/vehicle locations on a project site map
   4. All map features (MapsView iOS, /maps web, field photos, project locations) use the enhanced map system
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 21-01-PLAN.md — Foundation: types, test stubs, Supabase schema + RLS
+- [ ] 21-02-PLAN.md — iOS Swift foundation: EquipmentModels + SupabaseService equipment methods
+- [ ] 21-03-PLAN.md — Web maps enhancement: traffic, equipment, photos, API routes
+- [ ] 21-04-PLAN.md — iOS MapsView: traffic toggle, equipment markers, camera persistence
+- [ ] 21-05-PLAN.md — iOS equipment check-in flow + delivery routes
+- [ ] 21-06-PLAN.md — Portal map overlay configuration (D-13)
 **UI hint**: yes
 
 ## Progress
@@ -216,5 +223,5 @@ Plans:
 | 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete    | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.0 | 18/18 | Complete    | 2026-04-12 |
-| 20. Client Portal & Sharing | v2.0 | 2/10 | In Progress|  |
+| 20. Client Portal & Sharing | v2.0 | 3/10 | In Progress|  |
 | 21. Live Satellite & Traffic Maps | v2.0 | 0/0 | Not started | - |
