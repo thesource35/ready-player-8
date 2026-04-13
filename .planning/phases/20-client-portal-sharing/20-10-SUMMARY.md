@@ -111,9 +111,19 @@ None - no external service configuration required.
 - Portal system ready for production use: database schema, API routes, public portal page, branding, management UI, iOS views, PDF export, webhooks, and comprehensive test coverage
 - All PORTAL-01 through PORTAL-04 requirements satisfied
 
+## Human Verification
+
+Task 3 checkpoint (human-verify) was approved. The complete portal system was verified end-to-end including:
+- Portal management page at /portals
+- Public portal rendering with branded sections
+- Theme editor and branding customization
+- Mobile viewport with bottom navigation
+- Invalid/expired URL error handling
+- All vitest portal tests passing
+
 ## Self-Check: PASSED
 
-All 5 created files verified on disk. Both task commits (7de343d, 18c6a72) found in git log.
+All 5 created files verified on disk. Both task commits (7de343d, 18c6a72) found in git log. Human verification approved.
 
 ---
 *Phase: 20-client-portal-sharing*
