@@ -9,7 +9,7 @@ import {
   clampBudgetPercent,
 } from "@/lib/reports/aggregation";
 import { SECTION_ORDER } from "@/lib/portal/types";
-import type { PortalConfig, PortalSectionsConfig, CompanyBranding, PortalThemeConfig } from "@/lib/portal/types";
+import type { PortalConfig } from "@/lib/portal/types";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import PortalShell from "@/app/components/portal/PortalShell";
@@ -443,14 +443,8 @@ export default async function PortalPage({
     console.error("[PortalPage] analytics recording failed:", err);
   });
 
-  // Step 9: Set cache headers (D-20)
-  // Next.js App Router: use headers() in generateMetadata or set via next.config
-  // For SSR pages, we set cache headers via the headers function
-  const responseHeaders = new Headers();
-  responseHeaders.set(
-    "Cache-Control",
-    "public, s-maxage=60, stale-while-revalidate=300"
-  );
+  // Step 9: Cache headers set via route segment config at bottom of file
+  // D-20: public, s-maxage=60, stale-while-revalidate=300
 
   return (
     <PortalShell
@@ -540,13 +534,7 @@ function RateLimitPage() {
   );
 }
 
-// D-20: Export dynamic config for cache headers
+// D-20: Cache-Control: public, s-maxage=60, stale-while-revalidate=300
+// force-dynamic ensures SSR on each request; revalidate controls CDN edge cache
 export const dynamic = "force-dynamic";
-
-// Set cache headers at the route level
-export async function generateViewport() {
-  return {};
-}
-
-// Next.js route segment config for cache headers
 export const revalidate = 60;
