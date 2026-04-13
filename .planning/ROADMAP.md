@@ -187,7 +187,7 @@ Plans:
 - [x] 20-05-PLAN.md — Wave 3: Photo timeline + lightbox + ZIP download + portal PDF export
 - [x] 20-06-PLAN.md — Wave 4: Web portal management UI (dashboard, create dialog, section editor, analytics)
 - [x] 20-07-PLAN.md — Wave 4: Branding theme editor + preset picker + logo upload + branded emails
-- [ ] 20-08-PLAN.md — Wave 5: iOS portal views + SupabaseService portal extensions
+- [x] 20-08-PLAN.md — Wave 5: iOS portal views + SupabaseService portal extensions
 - [ ] 20-09-PLAN.md — Wave 5: Security hardening + all test implementations + audit log API + IP blocker
 - [ ] 20-10-PLAN.md — Wave 6: Final integration (PDF button, mobile nav, webhooks, E2E tests, human verification)
 **UI hint**: yes
@@ -223,5 +223,5 @@ Plans:
 | 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete    | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.0 | 18/18 | Complete    | 2026-04-12 |
-| 20. Client Portal & Sharing | v2.0 | 7/10 | In Progress|  |
+| 20. Client Portal & Sharing | v2.0 | 8/10 | In Progress|  |
 | 21. Live Satellite & Traffic Maps | v2.0 | 0/0 | Not started | - |
