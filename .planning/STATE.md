@@ -4,7 +4,7 @@ milestone: v2.0
 milestone_name: Feature Expansion
 status: executing
 stopped_at: Completed 20-05-PLAN.md
-last_updated: "2026-04-13T13:03:26.439Z"
+last_updated: "2026-04-13T13:21:43.700Z"
 last_activity: 2026-04-13
 progress:
   total_phases: 9
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 20 (client-portal-sharing) — EXECUTING
-Plan: 6 of 10
+Plan: 7 of 10
 Status: Ready to execute
 Last activity: 2026-04-13
 
@@ -89,6 +89,7 @@ v2.0 roadmap decisions:
 - [Phase 20]: Budget masking checks both section enabled AND show_exact_amounts flag (D-30, D-38)
 - [Phase 20]: CSS custom properties applied via inline style on PortalShell wrapper div for branding
 - [Phase 20]: PhotoTimeline integrates existing PhotoCard/PhotoLightbox/DateFilter from plan 20-04; sequential ZIP processing bounds memory (T-20-20)
+- [Phase 20-client-portal-sharing]: PortalPhoto type in photoHelpers.ts with signedUrl, location, has_annotation; photos grouped by YYYY-MM-DD newest-first; JSZip for bulk ZIP; portal PDF client-side via jsPDF + html2canvas
 
 ### Pending Todos
 
@@ -106,6 +107,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-13T13:03:26.436Z
+Last session: 2026-04-13T13:21:43.695Z
 Stopped at: Completed 20-05-PLAN.md
 Resume file: None

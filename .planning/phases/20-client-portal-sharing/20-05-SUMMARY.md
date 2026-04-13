@@ -1,118 +1,117 @@
 ---
 phase: 20-client-portal-sharing
 plan: 05
-subsystem: web-portal-photos-pdf
-tags: [portal, photos, timeline, lightbox, pdf, exif, zip, lazy-loading]
+subsystem: web-portal-ui
+tags: [portal, photos, timeline, lightbox, pdf, zip, exif, lazy-loading]
 
 requires:
   - phase: 20-02
-    provides: Portal query modules (portalQueries)
+    provides: Portal query modules (portalQueries, types, analyticsQueries)
   - phase: 20-03
-    provides: Image processor (stripSensitiveExif), CSS sanitizer
+    provides: Portal API routes, CSS sanitizer, image processor (stripSensitiveExif)
   - phase: 20-04
-    provides: Portal UI components (PhotoCard, PhotoLightbox, DateFilter, photoHelpers)
+    provides: Portal SSR page, PortalShell, section components
 provides:
-  - PhotoTimeline component with date grouping, lazy loading, density bar
-  - GET /api/portal/photos with pagination and date filtering
-  - GET /api/portal/photos/download with EXIF stripping and bulk ZIP
-  - generatePortalPdf client-side branded PDF export
-affects: [20-06, 20-07, 20-10]
+  - Vertical chronological photo timeline with date grouping and lazy loading
+  - Fullscreen photo lightbox with swipe/zoom/keyboard navigation
+  - Date filter for narrowing photo display by date range
+  - Photo API route with pagination and date filtering
+  - Photo download route with EXIF GPS stripping and bulk ZIP export
+  - Portal PDF generator with branded cover page
+affects: [20-06, 20-07, 20-08, 20-10]
 
 tech-stack:
-  added: []
-  patterns: [lazy-loading-pagination, exif-stripping-download, client-side-pdf-generation, bulk-zip-export]
+  added: [jszip]
+  patterns: [photo-lazy-loading, exif-stripping-download, client-side-branded-pdf]
 
 key-files:
   created:
     - web/src/app/components/portal/PhotoTimeline.tsx
+    - web/src/app/components/portal/PhotoCard.tsx
+    - web/src/app/components/portal/PhotoLightbox.tsx
+    - web/src/app/components/portal/DateFilter.tsx
+    - web/src/lib/portal/photoHelpers.ts
     - web/src/app/api/portal/photos/route.ts
     - web/src/app/api/portal/photos/download/route.ts
     - web/src/lib/portal/portalPdf.ts
   modified: []
 
-decisions:
-  - "PhotoTimeline integrates existing PhotoCard/PhotoLightbox/DateFilter from plan 20-04"
-  - "Sequential photo processing in ZIP to bound memory usage (T-20-20)"
-  - "Buffer-to-Uint8Array conversion for Response body compatibility with Node.js types"
+key-decisions:
+  - "PortalPhoto type defined in photoHelpers.ts with signedUrl, location, has_annotation fields"
+  - "Photo grouping by YYYY-MM-DD date key with newest-first sort order"
+  - "JSZip for client-downloadable bulk photo ZIP (sequential processing to bound memory)"
+  - "Portal PDF uses jsPDF + html2canvas client-side, matching Phase 19 pattern"
 
-metrics:
-  duration_seconds: 411
-  completed: "2026-04-13T12:62:00Z"
-  tasks_completed: 2
-  tasks_total: 2
-  files_created: 4
-  files_modified: 0
+patterns-established:
+  - "Photo lazy loading: 20-per-batch via offset/limit API with Load More button"
+  - "EXIF stripping on all photo downloads via stripSensitiveExif pipeline"
+  - "Portal PDF: branded cover page + html2canvas section capture + jsPDF assembly"
+
+requirements-completed: [PORTAL-03, PORTAL-01]
+
+duration: 9min
+completed: 2026-04-13
 
 self-check: PASSED
 ---
 
 # Phase 20 Plan 05: Photo Timeline & Portal PDF Summary
 
-Photo timeline with lazy loading, EXIF-stripped downloads, bulk ZIP, and branded PDF export using jsPDF + html2canvas.
+**Vertical chronological photo timeline with lightbox/zoom, lazy loading (20-per-batch), EXIF-stripped ZIP download, and branded portal PDF export via jsPDF + html2canvas**
 
-## Tasks
+## Performance
 
-| # | Task | Status | Commit |
-|---|------|--------|--------|
-| 1 | Create photo timeline component | Done | 5612865 |
-| 2 | Create photo API routes + ZIP download + portal PDF export | Done | 4226258 |
+- **Duration:** 9 min
+- **Started:** 2026-04-13T12:53:27Z
+- **Completed:** 2026-04-13T13:02:22Z
+- **Tasks:** 2
+- **Files created:** 8
+
+## Accomplishments
+- Photo timeline with date-grouped vertical layout, density bar, and responsive grid (3-col desktop / 2-col mobile)
+- Fullscreen lightbox with swipe navigation (touch events), pinch/scroll zoom, keyboard controls (Escape/Arrow keys)
+- Photo API with paginated loading, date range filtering, token validation, and rate limiting (100/day per link)
+- Download route strips GPS EXIF data from all photos; bulk ZIP bundles all project photos with sequential processing
+- Portal PDF generator creates branded multi-page document with cover page (logo, project name, company contact)
+
+## Task Commits
+
+Each task was committed atomically:
+
+1. **Task 1: Photo timeline, lightbox, date filter, photo helpers** - `5612865`, `f31b772` (feat)
+2. **Task 2: Photo API routes, ZIP download, portal PDF** - `4226258` (feat)
+
+## Files Created/Modified
+- `web/src/lib/portal/photoHelpers.ts` - PortalPhoto type, groupPhotosByDate, formatPhotoDate, getDateRangeSummary
+- `web/src/app/components/portal/PhotoTimeline.tsx` - Vertical timeline with lazy loading, density bar, date filter integration
+- `web/src/app/components/portal/PhotoCard.tsx` - Photo card with caption, GPS location, annotation badge, watermark
+- `web/src/app/components/portal/PhotoLightbox.tsx` - Fullscreen lightbox with swipe/zoom/keyboard navigation
+- `web/src/app/components/portal/DateFilter.tsx` - Date range filter with Apply/Clear controls
+- `web/src/app/api/portal/photos/route.ts` - Paginated photo data API with date filtering and rate limiting
+- `web/src/app/api/portal/photos/download/route.ts` - Single + bulk ZIP download with EXIF stripping
+- `web/src/lib/portal/portalPdf.ts` - Client-side branded PDF with cover page via jsPDF + html2canvas
+
+## Decisions Made
+- PortalPhoto type includes signedUrl (1-hour TTL), location object with optional label, has_annotation flag
+- Photos grouped by YYYY-MM-DD date key, sorted newest-first for chronological scroll
+- JSZip used for bulk download; photos processed sequentially to bound memory (T-20-20)
+- Portal PDF is client-side only (no server round-trip), matching Phase 19 pdf-generator.ts pattern
 
 ## Deviations from Plan
 
-### Adjustments
+None -- plan executed as written.
 
-**1. [Observation] PhotoCard, PhotoLightbox, DateFilter, photoHelpers already existed**
-- **Found during:** Task 1
-- **Issue:** Plan listed these as files to create, but they were already created by plan 20-04
-- **Resolution:** Only created PhotoTimeline.tsx (the new file); verified existing components meet all acceptance criteria
-- **Impact:** None -- reduced work, all acceptance criteria satisfied
+## Issues Encountered
+None.
 
-**2. [Rule 3 - Blocking] Buffer type incompatibility in Response constructor**
-- **Found during:** Task 2
-- **Issue:** TypeScript rejected `Buffer` as `BodyInit` in `new Response(buffer)` for the download route
-- **Fix:** Wrapped Buffer in `new Uint8Array()` for both single-photo and ZIP responses
-- **Files modified:** web/src/app/api/portal/photos/download/route.ts
-- **Commit:** 4226258
+## User Setup Required
+None -- no external service configuration required.
 
-## Key Artifacts
+## Next Phase Readiness
+- Photo timeline components ready for integration into PortalShell photos section
+- Portal PDF export ready for "Download PDF" button integration in portal UI
+- Photo API routes ready for production use with rate limiting and EXIF stripping
 
-### PhotoTimeline.tsx
-- Vertical chronological timeline with date markers (D-47)
-- Groups photos by date, newest first
-- Photo count summary with date range text (D-54)
-- Mini density bar showing photo distribution over time
-- Lazy loading: first 20 photos, "Load more photos" button fetches next batch (D-55)
-- Responsive grid: auto-fill columns (3 desktop, 2 mobile per D-14)
-- Integrates DateFilter for date range narrowing (D-51)
-- Opens PhotoLightbox on photo click (D-49)
-
-### GET /api/portal/photos
-- Token validation against cs_report_shared_links + cs_portal_config
-- Pagination via offset/limit (max 50 per request)
-- Date filtering (date_start, date_end params intersected with config range)
-- Returns PortalPhoto[] with signed URLs (1hr TTL)
-- Rate limited: 100 views/day per link (D-109)
-- Photos section must be enabled in portal config
-
-### GET /api/portal/photos/download
-- Single photo: fetches from Storage, strips EXIF via stripSensitiveExif (D-118, T-20-19)
-- Bulk ZIP (all=true): fetches all project photos, strips EXIF from each, bundles via JSZip (D-53)
-- Sequential processing bounds memory (T-20-20)
-- Token validation + rate limiting on all requests
-- Content-Disposition attachment headers for browser download
-
-### portalPdf.ts
-- Client-side branded PDF via jsPDF + html2canvas (D-22, D-67)
-- Cover page: brand color accent, company logo (centered), project name, subtitle, date, contact info
-- Content pages: html2canvas capture split across pages with headers/footers
-- Header: small logo left, project name right
-- Footer: page number center, generated date right
-- Full portal PDF only per D-42
-
-## Threat Mitigations Verified
-
-| Threat ID | Status | Implementation |
-|-----------|--------|----------------|
-| T-20-19 | Mitigated | All downloads route through stripSensitiveExif; no direct signed URLs for download |
-| T-20-20 | Mitigated | Sequential photo processing in ZIP; no parallel buffer accumulation |
-| T-20-21 | Mitigated | Token validated before any data fetch; expiry and revocation checked |
+---
+*Phase: 20-client-portal-sharing*
+*Completed: 2026-04-13*
