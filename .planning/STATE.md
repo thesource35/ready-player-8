@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
 status: executing
-stopped_at: Completed 20-05-PLAN.md
-last_updated: "2026-04-13T13:21:43.700Z"
+stopped_at: Completed 20-06-PLAN.md
+last_updated: "2026-04-13T13:36:20.850Z"
 last_activity: 2026-04-13
 progress:
   total_phases: 9
   completed_phases: 7
   total_plans: 62
-  completed_plans: 52
-  percent: 84
+  completed_plans: 53
+  percent: 85
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 20 (client-portal-sharing) — EXECUTING
-Plan: 7 of 10
+Plan: 8 of 10
 Status: Ready to execute
 Last activity: 2026-04-13
 
@@ -90,6 +90,7 @@ v2.0 roadmap decisions:
 - [Phase 20]: CSS custom properties applied via inline style on PortalShell wrapper div for branding
 - [Phase 20]: PhotoTimeline integrates existing PhotoCard/PhotoLightbox/DateFilter from plan 20-04; sequential ZIP processing bounds memory (T-20-20)
 - [Phase 20-client-portal-sharing]: PortalPhoto type in photoHelpers.ts with signedUrl, location, has_annotation; photos grouped by YYYY-MM-DD newest-first; JSZip for bulk ZIP; portal PDF client-side via jsPDF + html2canvas
+- [Phase 20]: All portal management components use 'use client' with inline styles from design tokens; portal list API at /api/portal/list wraps existing portalQueries
 
 ### Pending Todos
 
@@ -107,6 +108,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-13T13:21:43.695Z
-Stopped at: Completed 20-05-PLAN.md
+Last session: 2026-04-13T13:36:20.839Z
+Stopped at: Completed 20-06-PLAN.md
 Resume file: None
