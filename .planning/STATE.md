@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
 status: verifying
-stopped_at: Completed 20-09-PLAN.md
-last_updated: "2026-04-13T17:38:00.989Z"
+stopped_at: Completed 20-10-PLAN.md
+last_updated: "2026-04-13T17:52:06.955Z"
 last_activity: 2026-04-13
 progress:
   total_phases: 9
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 62
-  completed_plans: 56
-  percent: 90
+  completed_plans: 57
+  percent: 92
 ---
 
 # Project State
@@ -97,6 +97,7 @@ v2.0 roadmap decisions:
 - [Phase 20]: Portal DTOs use camelCase Swift properties with JSONEncoder snake_case conversion; createPortalLink sequential insert pattern; Color hex extension for branding serialization
 - [Phase 20]: Data masking tests verify pure decision logic rather than mocking Supabase; IP blocking uses metadata JSONB on cs_portal_config
 - [Phase 20]: All test stubs replaced with real assertions using pure helper functions and type-level validation (no Supabase mocking needed)
+- [Phase 20]: Webhook payloads contain only IDs and event type, no financial or PII data (T-20-31); 5s timeout fire-and-forget for webhook delivery (T-20-32)
 
 ### Pending Todos
 
@@ -114,6 +115,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-13T17:38:00.984Z
-Stopped at: Completed 20-09-PLAN.md
+Last session: 2026-04-13T17:52:06.951Z
+Stopped at: Completed 20-10-PLAN.md
 Resume file: None

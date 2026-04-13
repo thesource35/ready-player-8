@@ -34,7 +34,7 @@
 - [x] **Phase 17: Calendar & Scheduling** — Project timeline, Gantt chart, drag-to-reschedule (completed 2026-04-11)
 - [x] **Phase 18: Enhanced AI (Angelic AI v2)** — Context-aware chat, RFI/CO generation, bid analysis (completed 2026-04-11)
 - [x] **Phase 19: Reporting & Dashboards** — Project reports, cross-project rollups, PDF export, charts (completed 2026-04-12)
-- [ ] **Phase 20: Client Portal & Sharing** — Shareable read-only project URLs with branding
+- [x] **Phase 20: Client Portal & Sharing** — Shareable read-only project URLs with branding (completed 2026-04-13)
 - [ ] **Phase 21: Live Satellite & Traffic Maps** — Satellite imagery, real-time traffic overlays, equipment tracking across all map features
 
 ## Phase Details
@@ -189,7 +189,7 @@ Plans:
 - [x] 20-07-PLAN.md — Wave 4: Branding theme editor + preset picker + logo upload + branded emails
 - [x] 20-08-PLAN.md — Wave 5: iOS portal views + SupabaseService portal extensions
 - [x] 20-09-PLAN.md — Wave 5: Security hardening + all test implementations + audit log API + IP blocker
-- [ ] 20-10-PLAN.md — Wave 6: Final integration (PDF button, mobile nav, webhooks, E2E tests, human verification)
+- [x] 20-10-PLAN.md — Wave 6: Final integration (PDF button, mobile nav, webhooks, E2E tests, human verification)
 **UI hint**: yes
 
 ### Phase 21: Live Satellite & Traffic Maps
@@ -223,5 +223,5 @@ Plans:
 | 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete    | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.0 | 18/18 | Complete    | 2026-04-12 |
-| 20. Client Portal & Sharing | v2.0 | 9/10 | In Progress|  |
+| 20. Client Portal & Sharing | v2.0 | 10/10 | Complete   | 2026-04-13 |
 | 21. Live Satellite & Traffic Maps | v2.0 | 0/0 | Not started | - |
