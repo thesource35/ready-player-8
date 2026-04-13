@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
 status: executing
-stopped_at: Completed 20-03-PLAN.md
-last_updated: "2026-04-13T04:13:06.404Z"
-last_activity: 2026-04-13 -- Phase 21 planning complete
+stopped_at: Completed 20-04-PLAN.md
+last_updated: "2026-04-13T12:53:03.707Z"
+last_activity: 2026-04-13
 progress:
   total_phases: 9
   completed_phases: 7
-  total_plans: 63
-  completed_plans: 50
-  percent: 79
+  total_plans: 62
+  completed_plans: 51
+  percent: 82
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 20 (client-portal-sharing) — EXECUTING
-Plan: 4 of 10
+Plan: 5 of 10
 Status: Ready to execute
-Last activity: 2026-04-13 -- Phase 21 planning complete
+Last activity: 2026-04-13
 
 ## Accumulated Context
 
@@ -85,6 +85,9 @@ v2.0 roadmap decisions:
 - [Phase 20]: Portal API routes follow reports/share/route.ts pattern for auth, rate limiting, error handling
 - [Phase 20]: CSS sanitizer uses 9 forbidden regex patterns + 30 allowed property whitelist (T-20-10)
 - [Phase 20]: SVG validation rejects 5 attack vectors: script, event handlers, javascript:, external URLs, data: URIs (T-20-11)
+- [Phase 20]: Portal SSR page uses service-role Supabase client for data access (same pattern as shared reports)
+- [Phase 20]: Budget masking checks both section enabled AND show_exact_amounts flag (D-30, D-38)
+- [Phase 20]: CSS custom properties applied via inline style on PortalShell wrapper div for branding
 
 ### Pending Todos
 
@@ -102,6 +105,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-12T22:41:54.705Z
-Stopped at: Completed 20-03-PLAN.md
+Last session: 2026-04-13T12:52:49.457Z
+Stopped at: Completed 20-04-PLAN.md
 Resume file: None
