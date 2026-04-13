@@ -4,7 +4,7 @@ milestone: v2.0
 milestone_name: Feature Expansion
 status: executing
 stopped_at: Completed 20-07-PLAN.md
-last_updated: "2026-04-13T13:47:49.622Z"
+last_updated: "2026-04-13T13:51:30.611Z"
 last_activity: 2026-04-13
 progress:
   total_phases: 9
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 20 (client-portal-sharing) — EXECUTING
-Plan: 9 of 10
+Plan: 10 of 10
 Status: Ready to execute
 Last activity: 2026-04-13
 
@@ -92,6 +92,7 @@ v2.0 roadmap decisions:
 - [Phase 20-client-portal-sharing]: PortalPhoto type in photoHelpers.ts with signedUrl, location, has_annotation; photos grouped by YYYY-MM-DD newest-first; JSZip for bulk ZIP; portal PDF client-side via jsPDF + html2canvas
 - [Phase 20]: All portal management components use 'use client' with inline styles from design tokens; portal list API at /api/portal/list wraps existing portalQueries
 - [Phase 20]: portalEmail uses .tsx extension for JSX email templates; contrast validator uses WCAG 2.1 sRGB gamma; email sends are non-blocking
+- [Phase 20]: portalEmail uses .tsx extension for JSX email template support; Resend client lazily initialized; email sends non-blocking
 
 ### Pending Todos
 
@@ -109,6 +110,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-13T13:47:49.613Z
+Last session: 2026-04-13T13:51:30.605Z
 Stopped at: Completed 20-07-PLAN.md
 Resume file: None

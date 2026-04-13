@@ -766,6 +766,9 @@ final class SupabaseService: ObservableObject {
         "cs_photo_annotations",
         // Phase 17: Calendar & Scheduling
         "cs_project_tasks", "cs_task_dependencies",
+        // Phase 20: Client Portal & Sharing
+        "cs_portal_config", "cs_company_branding", "cs_report_shared_links",
+        "cs_portal_analytics", "cs_portal_audit_log",
     ]
 
     /// Validates table name against allowlist
@@ -940,6 +943,156 @@ final class SupabaseService: ObservableObject {
             return try decoder.decode(SupabaseProjectTask.self, from: data)
         } catch {
             throw AppError.decoding(underlying: error)
+        }
+    }
+
+    // MARK: - Phase 20: Portal Methods
+
+    /// Create a portal link with shared link + portal config in one flow.
+    /// Returns both the shared link and portal config for immediate use.
+    func createPortalLink(
+        projectId: String,
+        slug: String,
+        companySlug: String,
+        template: String,
+        expiryDays: Int?,
+        clientEmail: String?
+    ) async throws -> (link: SupabaseSharedLink, config: SupabasePortalConfig) {
+        guard isConfigured else { throw SupabaseError.notConfigured }
+
+        // 1. Calculate expiry
+        let expiresAt: String
+        if let days = expiryDays {
+            let date = Calendar.current.date(byAdding: .day, value: days, to: Date())!
+            expiresAt = ISO8601DateFormatter().string(from: date)
+        } else {
+            expiresAt = "9999-12-31T23:59:59Z" // never expires
+        }
+
+        // 2. Create shared link with link_type = "portal"
+        let token = UUID().uuidString
+        let link = SupabaseSharedLink(
+            token: token,
+            projectId: projectId,
+            reportType: "portal",
+            linkType: "portal",
+            expiresAt: expiresAt,
+            viewCount: 0,
+            maxViewsPerDay: 100,
+            isRevoked: false
+        )
+        try await insert("cs_report_shared_links", record: link)
+
+        // 3. Fetch the inserted link to get server-assigned id
+        let insertedLinks: [SupabaseSharedLink] = try await fetch(
+            "cs_report_shared_links",
+            query: ["token": "eq.\(token)"],
+            limit: 1
+        )
+        guard let insertedLink = insertedLinks.first, let linkId = insertedLink.id else {
+            throw SupabaseError.httpError(500, "Failed to retrieve inserted shared link")
+        }
+
+        // 4. Build default sections config based on template (D-18, D-33)
+        let sectionsConfig: String
+        switch template {
+        case "executive_summary":
+            sectionsConfig = """
+            {"schedule":{"enabled":true},"budget":{"enabled":false},"photos":{"enabled":false},"change_orders":{"enabled":true},"documents":{"enabled":false}}
+            """
+        case "photo_update":
+            sectionsConfig = """
+            {"schedule":{"enabled":false},"budget":{"enabled":false},"photos":{"enabled":true},"change_orders":{"enabled":false},"documents":{"enabled":false}}
+            """
+        default: // full_progress
+            sectionsConfig = """
+            {"schedule":{"enabled":true},"budget":{"enabled":false},"photos":{"enabled":true},"change_orders":{"enabled":true},"documents":{"enabled":true}}
+            """
+        }
+
+        // 5. Create portal config
+        let userId = currentUserEmail ?? "unknown"
+        let config = SupabasePortalConfig(
+            linkId: linkId,
+            projectId: projectId,
+            userId: userId,
+            orgId: currentOrgId,
+            slug: slug,
+            companySlug: companySlug,
+            template: template,
+            sectionsConfig: sectionsConfig,
+            showExactAmounts: false, // D-30: budget masked by default
+            welcomeMessage: nil,
+            sectionNotes: nil,
+            pinnedItems: nil,
+            dateRanges: nil,
+            watermarkEnabled: false,
+            poweredByEnabled: false,
+            clientEmail: clientEmail,
+            isDeleted: false
+        )
+        try await insert("cs_portal_config", record: config)
+
+        // 6. Fetch inserted config to get server-assigned id
+        let insertedConfigs: [SupabasePortalConfig] = try await fetch(
+            "cs_portal_config",
+            query: ["link_id": "eq.\(linkId)"],
+            limit: 1
+        )
+
+        print("[SupabaseService] Portal: created link \(token) for project \(projectId)")
+        return (link: insertedLink, config: insertedConfigs.first ?? config)
+    }
+
+    /// Fetch portal links, optionally filtered by project
+    func fetchPortalLinks(projectId: String? = nil) async throws -> [SupabasePortalConfig] {
+        var query: [String: String] = ["is_deleted": "neq.true"]
+        if let projectId {
+            query["project_id"] = "eq.\(projectId)"
+        }
+        let configs: [SupabasePortalConfig] = try await fetch(
+            "cs_portal_config",
+            query: query,
+            orderBy: "created_at"
+        )
+        print("[SupabaseService] Portal: fetched \(configs.count) portal links")
+        return configs
+    }
+
+    /// Revoke a portal link by marking the shared link as revoked (D-116: soft delete)
+    func revokePortalLink(linkId: String) async throws {
+        guard isConfigured else { throw SupabaseError.notConfigured }
+        let safeID = sanitizeID(linkId)
+        guard let url = URL(string: "\(baseURL)/rest/v1/cs_report_shared_links?id=eq.\(safeID)") else {
+            throw SupabaseError.httpError(400, "Invalid URL")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        try applyHeaders(&request, contentType: true)
+        request.httpBody = try encoder.encode(["is_revoked": true])
+        let (data, response) = try await URLSession.shared.data(for: request)
+        try checkHTTPStatus(data: data, response: response)
+        print("[SupabaseService] Portal: revoked link \(linkId)")
+    }
+
+    /// Fetch company branding for an organization
+    func fetchCompanyBranding(orgId: String) async throws -> SupabaseCompanyBranding? {
+        let results: [SupabaseCompanyBranding] = try await fetch(
+            "cs_company_branding",
+            query: ["org_id": "eq.\(orgId)"],
+            limit: 1
+        )
+        return results.first
+    }
+
+    /// Save (upsert) company branding — inserts if no id, updates if id present
+    func saveCompanyBranding(_ branding: SupabaseCompanyBranding) async throws {
+        if let existingId = branding.id, !existingId.isEmpty {
+            try await update("cs_company_branding", id: existingId, record: branding)
+            print("[SupabaseService] Portal: updated branding for org \(branding.orgId)")
+        } else {
+            try await insert("cs_company_branding", record: branding)
+            print("[SupabaseService] Portal: created branding for org \(branding.orgId)")
         }
     }
 }
@@ -1755,5 +1908,60 @@ struct TimelinePayload: Codable {
     let crewAssignments: [TimelineCrewAssignment]
     let events: [TimelineEvent]
     let dependencies: [SupabaseTaskDependency]
+}
+
+// MARK: - ========== Phase 20: Portal DTOs ==========
+
+struct SupabasePortalConfig: Codable, Identifiable, Sendable {
+    var id: String?
+    let linkId: String
+    let projectId: String
+    let userId: String
+    var orgId: String?
+    var slug: String
+    var companySlug: String
+    var template: String  // "executive_summary" | "full_progress" | "photo_update"
+    var sectionsConfig: String  // JSON string of PortalSectionsConfig
+    var showExactAmounts: Bool
+    var welcomeMessage: String?
+    var sectionNotes: String?  // JSON string
+    var pinnedItems: String?   // JSON string
+    var dateRanges: String?    // JSON string
+    var watermarkEnabled: Bool
+    var poweredByEnabled: Bool
+    var clientEmail: String?
+    var isDeleted: Bool?
+    var createdAt: String?
+    var updatedAt: String?
+}
+
+struct SupabaseCompanyBranding: Codable, Identifiable, Sendable {
+    var id: String?
+    let orgId: String
+    let userId: String
+    var companyName: String
+    var logoLightPath: String?
+    var logoDarkPath: String?
+    var faviconPath: String?
+    var coverImagePath: String?
+    var themeConfig: String  // JSON string of PortalThemeConfig
+    var fontFamily: String
+    var customCss: String?
+    var contactInfo: String? // JSON string
+    var createdAt: String?
+    var updatedAt: String?
+}
+
+struct SupabaseSharedLink: Codable, Identifiable, Sendable {
+    var id: String?
+    var token: String
+    var projectId: String?
+    var reportType: String
+    var linkType: String  // "report" | "portal"
+    var expiresAt: String
+    var viewCount: Int
+    var maxViewsPerDay: Int
+    var isRevoked: Bool
+    var createdAt: String?
 }
 
