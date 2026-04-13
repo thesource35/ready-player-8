@@ -4,6 +4,14 @@ import { useState, useEffect, useCallback } from "react";
 import { tokens } from "@/lib/design-tokens";
 import { SECTION_ORDER } from "@/lib/portal/types";
 import type { PortalSectionKey, PortalAnalyticsEvent } from "@/lib/portal/types";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 // D-21, D-43: Portal analytics dashboard
 // Total views, unique viewers, avg time, per-section metrics, bar chart
@@ -489,78 +497,42 @@ export function PortalAnalyticsDashboard({
   );
 }
 
-// Simple inline bar chart using recharts BarChart
+// Bar chart for daily view counts using recharts (Phase 19 pattern)
 function DailyViewsChart({
   data,
-  maxCount,
 }: {
   data: { date: string; count: number }[];
   maxCount: number;
 }) {
-  // Use recharts if available, otherwise fallback to CSS bars
-  try {
-    // Dynamic import check — if recharts is installed, use BarChart
-    const RechartsBarChart = require("recharts").BarChart;
-    const Bar = require("recharts").Bar;
-    const XAxis = require("recharts").XAxis;
-    const YAxis = require("recharts").YAxis;
-    const Tooltip = require("recharts").Tooltip;
-    const ResponsiveContainer = require("recharts").ResponsiveContainer;
-
-    return (
-      <ResponsiveContainer width="100%" height={200}>
-        <RechartsBarChart data={data}>
-          <XAxis
-            dataKey="date"
-            tick={{ fontSize: 10, fill: tokens.colors.gray[400] }}
-            tickFormatter={(v: string) => v.slice(5)} // MM-DD
-          />
-          <YAxis
-            tick={{ fontSize: 10, fill: tokens.colors.gray[400] }}
-            allowDecimals={false}
-          />
-          <Tooltip
-            formatter={(value: number) => [value, "Views"]}
-            labelFormatter={(label: string) =>
-              new Date(label).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-              })
-            }
-          />
-          <Bar
-            dataKey="count"
-            fill={tokens.colors.primary[500]}
-            radius={[4, 4, 0, 0]}
-          />
-        </RechartsBarChart>
-      </ResponsiveContainer>
-    );
-  } catch {
-    // Fallback: CSS-based bars
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-end",
-          gap: 2,
-          height: 120,
-        }}
-      >
-        {data.map((d) => (
-          <div
-            key={d.date}
-            style={{
-              flex: 1,
-              height: `${(d.count / maxCount) * 100}%`,
-              minHeight: 4,
-              background: tokens.colors.primary[500],
-              borderRadius: "4px 4px 0 0",
-            }}
-            title={`${d.date}: ${d.count} views`}
-          />
-        ))}
-      </div>
-    );
-  }
+  return (
+    <ResponsiveContainer width="100%" height={200}>
+      <BarChart data={data}>
+        <XAxis
+          dataKey="date"
+          tick={{ fontSize: 10, fill: tokens.colors.gray[400] }}
+          tickFormatter={(v: string) => v.slice(5)} // MM-DD
+        />
+        <YAxis
+          tick={{ fontSize: 10, fill: tokens.colors.gray[400] }}
+          allowDecimals={false}
+        />
+        <Tooltip
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          formatter={(value: any) => [value, "Views"]}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          labelFormatter={(label: any) =>
+            new Date(String(label)).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })
+          }
+        />
+        <Bar
+          dataKey="count"
+          fill={tokens.colors.primary[500]}
+          radius={[4, 4, 0, 0]}
+        />
+      </BarChart>
+    </ResponsiveContainer>
+  );
 }
