@@ -4,7 +4,7 @@ milestone: v2.0
 milestone_name: Feature Expansion
 status: verifying
 stopped_at: Completed 20-08-PLAN.md
-last_updated: "2026-04-13T14:02:06.036Z"
+last_updated: "2026-04-13T14:05:56.147Z"
 last_activity: 2026-04-13
 progress:
   total_phases: 9
@@ -94,6 +94,7 @@ v2.0 roadmap decisions:
 - [Phase 20]: portalEmail uses .tsx extension for JSX email templates; contrast validator uses WCAG 2.1 sRGB gamma; email sends are non-blocking
 - [Phase 20]: portalEmail uses .tsx extension for JSX email template support; Resend client lazily initialized; email sends non-blocking
 - [Phase 20]: Portal DTOs use camelCase Swift properties with JSONEncoder snake_case conversion; createPortalLink two-step insert with server ID fetch; Color hex extension for branding serialization
+- [Phase 20]: Portal DTOs use camelCase Swift properties with JSONEncoder snake_case conversion; createPortalLink sequential insert pattern; Color hex extension for branding serialization
 
 ### Pending Todos
 
@@ -111,6 +112,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-13T14:02:06.022Z
+Last session: 2026-04-13T14:05:56.140Z
 Stopped at: Completed 20-08-PLAN.md
 Resume file: None
