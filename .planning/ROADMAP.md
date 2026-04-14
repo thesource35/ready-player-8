@@ -207,7 +207,7 @@ Plans:
 - [x] 21-02-PLAN.md — iOS Swift foundation: EquipmentModels + SupabaseService equipment methods
 - [x] 21-03-PLAN.md — Web maps enhancement: traffic, equipment, photos, API routes
 - [x] 21-04-PLAN.md — iOS MapsView: traffic toggle, equipment markers, camera persistence
-- [ ] 21-05-PLAN.md — iOS equipment check-in flow + delivery routes
+- [x] 21-05-PLAN.md — iOS equipment check-in flow + delivery routes
 - [ ] 21-06-PLAN.md — Portal map overlay configuration (D-13)
 **UI hint**: yes
 
@@ -224,4 +224,4 @@ Plans:
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete    | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.0 | 18/18 | Complete    | 2026-04-12 |
 | 20. Client Portal & Sharing | v2.0 | 10/10 | Complete    | 2026-04-13 |
-| 21. Live Satellite & Traffic Maps | v2.0 | 4/6 | In Progress|  |
+| 21. Live Satellite & Traffic Maps | v2.0 | 5/6 | In Progress|  |
