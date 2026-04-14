@@ -36,6 +36,12 @@
 - [x] **Phase 19: Reporting & Dashboards** — Project reports, cross-project rollups, PDF export, charts (completed 2026-04-12)
 - [x] **Phase 20: Client Portal & Sharing** — Shareable read-only project URLs with branding (completed 2026-04-13)
 - [x] **Phase 21: Live Satellite & Traffic Maps** — Satellite imagery, real-time traffic overlays, equipment tracking across all map features (completed 2026-04-14)
+- [ ] **Phase 23: iOS Navigation & Assignment Wiring** — Gap closure: wire orphaned iOS views (Team/Crew/Certifications/Agenda) into NavTab; fix DailyCrewView upsert
+- [ ] **Phase 24: Document → Activity Event Emission** — Gap closure: document routes emit `cs_activity_events` so activity feed is populated
+- [ ] **Phase 25: Certification Expiry Notifications** — Gap closure: cert-expiry cron + notification emission to satisfy TEAM-04, NOTIF-04
+- [ ] **Phase 26: Documents RLS Table Reconciliation** — Gap closure: resolve RLS references to non-existent cs_rfis/cs_submittals/cs_change_orders
+- [ ] **Phase 27: Portal → Map Navigation Link** — Gap closure: portal home links to /map sub-route when enabled
+- [ ] **Phase 28: Retroactive Verification Sweep (Phases 13–19)** — Gap closure: create missing VERIFICATION.md files to close partial requirements
 
 ## Phase Details
 
@@ -211,6 +217,67 @@ Plans:
 - [x] 21-06-PLAN.md — Portal map overlay configuration (D-13)
 **UI hint**: yes
 
+### Phase 23: iOS Navigation & Assignment Wiring
+**Goal:** Existing iOS views (TeamView, CertificationsView, DailyCrewView, AgendaListView) are reachable from user navigation; daily crew edits do not 409
+**Depends on:** Phase 15, Phase 17
+**Requirements:** TEAM-01, TEAM-02, TEAM-03, TEAM-05, CAL-03
+**Gap Closure:** Closes INT-03, INT-04, INT-05 · FLOW-03, FLOW-04, FLOW-05
+**Success Criteria:**
+  1. NavTab enum in ContentView.swift includes team/crew/certifications cases
+  2. Tapping each new tab opens the corresponding existing view
+  3. AgendaListView renders inside ScheduleHubView (not just defined in ScheduleTools.swift)
+  4. DailyCrewView.swift:145 upsert succeeds on edit of an existing row (no 409)
+
+### Phase 24: Document → Activity Event Emission
+**Goal:** Every document mutation emits a row into `cs_activity_events` so the activity feed populates for document ops
+**Depends on:** Phase 13, Phase 14
+**Requirements:** DOC-02, NOTIF-02
+**Gap Closure:** Closes INT-02 · FLOW-01
+**Success Criteria:**
+  1. Upload, delete, attach, and new-version routes write to `cs_activity_events`
+  2. Event shape includes action, entity_type, entity_id, actor, metadata
+  3. Project activity page displays a document event end-to-end
+
+### Phase 25: Certification Expiry Notifications
+**Goal:** Users receive notifications when certifications approach expiration
+**Depends on:** Phase 14, Phase 15
+**Requirements:** TEAM-04, NOTIF-04
+**Gap Closure:** Closes INT-06 · FLOW-02
+**Success Criteria:**
+  1. Daily cron scans `cs_certifications.expires_at`
+  2. Certs ≤30 days out emit `cs_notifications` rows (once per threshold crossing)
+  3. Manual expiration changes in `/api/team/certifications/route.ts` also emit
+  4. iOS push path delivers an alert in a manual end-to-end test
+
+### Phase 26: Documents RLS Table Reconciliation
+**Goal:** RLS predicates for document attachments cover all referenced entity types without silent skip
+**Depends on:** Phase 13
+**Requirements:** DOC-03, DOC-04
+**Gap Closure:** Closes INT-01
+**Success Criteria:**
+  1. Either the `cs_rfis`, `cs_submittals`, `cs_change_orders` tables exist with owner columns, OR the RLS migration no longer references them
+  2. `to_regclass` guarded-skip is removed (no silently-skipped RLS predicates)
+  3. Forward migration applies cleanly and RLS enforces on all entity types
+
+### Phase 27: Portal → Map Navigation Link
+**Goal:** Portal viewers can reach the /map sub-route when the admin enabled it
+**Depends on:** Phase 20, Phase 21
+**Requirements:** (integration-only — supports PORTAL-03, MAP-04)
+**Gap Closure:** Closes INT-07
+**Success Criteria:**
+  1. When `show_map` flag is true, `portal/[slug]/[project]/page.tsx` renders a visible link/button to the map sub-route
+  2. When the flag is false, no link appears
+
+### Phase 28: Retroactive Verification Sweep (Phases 13–19)
+**Goal:** Every v2.0 phase marked complete has a VERIFICATION.md proving goal-backward coverage, and REQUIREMENTS.md reflects the true state
+**Depends on:** Phases 23, 24, 25, 26 (must run after code gaps are closed)
+**Requirements:** DOC-01, DOC-02, DOC-03, DOC-04, DOC-05, NOTIF-01, NOTIF-02, NOTIF-03, NOTIF-05, FIELD-01, FIELD-02, FIELD-03, FIELD-04, CAL-01, CAL-02, CAL-04, REPORT-01, REPORT-02, REPORT-03, REPORT-04
+**Gap Closure:** Closes all "partial — no VERIFICATION.md" audit gaps; reconciles REQUIREMENTS.md traceability
+**Success Criteria:**
+  1. Phases 13, 14, 16, 17, 19 have a VERIFICATION.md (Phase 15 covered by Phase 23, Phase 18 already verified)
+  2. Each requirement traced to its phase has verification evidence
+  3. REQUIREMENTS.md checkboxes reflect verified state; coverage count matches
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -225,3 +292,19 @@ Plans:
 | 19. Reporting & Dashboards | v2.0 | 18/18 | Complete    | 2026-04-12 |
 | 20. Client Portal & Sharing | v2.0 | 10/10 | Complete    | 2026-04-13 |
 | 21. Live Satellite & Traffic Maps | v2.0 | 6/6 | Complete    | 2026-04-14 |
+| 23. iOS Navigation & Assignment Wiring | v2.0 | 0/? | Planned | — |
+| 24. Document → Activity Event Emission | v2.0 | 0/? | Planned | — |
+| 25. Certification Expiry Notifications | v2.0 | 0/? | Planned | — |
+| 26. Documents RLS Table Reconciliation | v2.0 | 0/? | Planned | — |
+| 27. Portal → Map Navigation Link | v2.0 | 0/? | Planned | — |
+| 28. Retroactive Verification Sweep (Phases 13–19) | v2.0 | 0/? | Planned | — |
+
+### Phase 22: Live Site Video — per-project HLS camera feeds tied to project sites, tap marker on Maps tab to open floating video tile; iOS AVPlayer + web hls.js; portal viewers see feeds only if admin enabled per portal (lockable like map_overlays pattern from 21-06). Sources: HLS .m3u8 URLs (IP cameras, drones, YouTube Live, DOT traffic cams).
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 21
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 22 to break down)

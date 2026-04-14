@@ -17,11 +17,11 @@ Requirements for v2.0 Feature Expansion. Each maps to a roadmap phase.
 
 ### Document Management
 
-- [x] **DOC-01**: User can upload files (PDF, images, drawings) to Supabase Storage
-- [x] **DOC-02**: User can download attached files
-- [x] **DOC-03**: User can attach files to projects, RFIs, submittals, and change orders
-- [x] **DOC-04**: User can preview PDFs and images in-app without downloading
-- [x] **DOC-05**: User can view version history of revised documents
+- [ ] **DOC-01**: User can upload files (PDF, images, drawings) to Supabase Storage
+- [ ] **DOC-02**: User can download attached files
+- [ ] **DOC-03**: User can attach files to projects, RFIs, submittals, and change orders
+- [ ] **DOC-04**: User can preview PDFs and images in-app without downloading
+- [ ] **DOC-05**: User can view version history of revised documents
 
 ### Team & Crew Management
 
@@ -33,10 +33,10 @@ Requirements for v2.0 Feature Expansion. Each maps to a roadmap phase.
 
 ### Reporting & Dashboards
 
-- [x] **REPORT-01**: User can generate single-project summary report (budget, schedule, issues, team)
-- [x] **REPORT-02**: User can view cross-project financial rollup dashboard
-- [x] **REPORT-03**: User can export reports to PDF
-- [x] **REPORT-04**: User can view chart visualizations (bar/line/pie) for budgets, timelines, and safety metrics
+- [ ] **REPORT-01**: User can generate single-project summary report (budget, schedule, issues, team)
+- [ ] **REPORT-02**: User can view cross-project financial rollup dashboard
+- [ ] **REPORT-03**: User can export reports to PDF
+- [ ] **REPORT-04**: User can view chart visualizations (bar/line/pie) for budgets, timelines, and safety metrics
 
 ### Enhanced AI (Angelic AI v2)
 
@@ -47,10 +47,10 @@ Requirements for v2.0 Feature Expansion. Each maps to a roadmap phase.
 
 ### Field Tools
 
-- [x] **FIELD-01**: User can capture photos with automatic GPS location and timestamp tagging
-- [x] **FIELD-02**: User can attach photos to punch items, daily logs, and safety incidents
-- [x] **FIELD-03**: User can annotate/markup photos to highlight issues
-- [x] **FIELD-04**: User can create daily logs from pre-filled templates based on project context
+- [ ] **FIELD-01**: User can capture photos with automatic GPS location and timestamp tagging
+- [ ] **FIELD-02**: User can attach photos to punch items, daily logs, and safety incidents
+- [ ] **FIELD-03**: User can annotate/markup photos to highlight issues
+- [ ] **FIELD-04**: User can create daily logs from pre-filled templates based on project context
 
 ### Client Portal / Sharing
 
@@ -61,10 +61,17 @@ Requirements for v2.0 Feature Expansion. Each maps to a roadmap phase.
 
 ### Calendar & Scheduling
 
-- [x] **CAL-01**: User can view a timeline of all projects with milestones and bid due dates
-- [x] **CAL-02**: User can view a Gantt chart with task bars and dependencies
-- [x] **CAL-03**: Timeline highlights milestone markers (bid due, project start/end, inspections)
-- [x] **CAL-04**: User can drag items on timeline to reschedule them
+- [ ] **CAL-01**: User can view a timeline of all projects with milestones and bid due dates
+- [ ] **CAL-02**: User can view a Gantt chart with task bars and dependencies
+- [ ] **CAL-03**: Timeline highlights milestone markers (bid due, project start/end, inspections)
+- [ ] **CAL-04**: User can drag items on timeline to reschedule them
+
+### Live Satellite & Traffic Maps
+
+- [x] **MAP-01**: User can toggle between standard, satellite, and hybrid map layers on all map views
+- [x] **MAP-02**: User can see real-time traffic flow overlays on project area maps
+- [x] **MAP-03**: User can view construction equipment/vehicle locations on a project site map
+- [x] **MAP-04**: All map features (MapsView iOS, /maps web, field photos, project locations) use the enhanced map system
 
 ## Future Requirements
 
@@ -118,47 +125,53 @@ Mapping of requirements to phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NOTIF-01 | Phase 14 | Pending |
-| NOTIF-02 | Phase 14 | Pending |
-| NOTIF-03 | Phase 14 | Pending |
-| NOTIF-04 | Phase 14 | Pending |
-| NOTIF-05 | Phase 14 | Pending |
-| DOC-01 | Phase 13 | Complete |
-| DOC-02 | Phase 13 | Complete |
-| DOC-03 | Phase 13 | Complete |
-| DOC-04 | Phase 13 | Complete |
-| DOC-05 | Phase 13 | Complete |
-| TEAM-01 | Phase 15 | Pending |
-| TEAM-02 | Phase 15 | Pending |
-| TEAM-03 | Phase 15 | Pending |
-| TEAM-04 | Phase 15 | Pending |
-| TEAM-05 | Phase 15 | Pending |
-| REPORT-01 | Phase 19 | Complete |
-| REPORT-02 | Phase 19 | Complete |
-| REPORT-03 | Phase 19 | Complete |
-| REPORT-04 | Phase 19 | Complete |
+| NOTIF-01 | Phase 14 → Phase 28 (verification) | Pending |
+| NOTIF-02 | Phase 14 → Phase 24 (gap closure) | Pending |
+| NOTIF-03 | Phase 14 → Phase 28 (verification) | Pending |
+| NOTIF-04 | Phase 14 → Phase 25 (gap closure) | Pending |
+| NOTIF-05 | Phase 14 → Phase 28 (verification) | Pending |
+| DOC-01 | Phase 13 → Phase 28 (verification) | Pending |
+| DOC-02 | Phase 13 → Phase 24 (gap closure) | Pending |
+| DOC-03 | Phase 13 → Phase 26 (gap closure) | Pending |
+| DOC-04 | Phase 13 → Phase 26 (gap closure) | Pending |
+| DOC-05 | Phase 13 → Phase 28 (verification) | Pending |
+| TEAM-01 | Phase 15 → Phase 23 (gap closure) | Pending |
+| TEAM-02 | Phase 15 → Phase 23 (gap closure) | Pending |
+| TEAM-03 | Phase 15 → Phase 23 (gap closure) | Pending |
+| TEAM-04 | Phase 15 → Phase 25 (gap closure) | Pending |
+| TEAM-05 | Phase 15 → Phase 23 (gap closure) | Pending |
+| REPORT-01 | Phase 19 → Phase 28 (verification) | Pending |
+| REPORT-02 | Phase 19 → Phase 28 (verification) | Pending |
+| REPORT-03 | Phase 19 → Phase 28 (verification) | Pending |
+| REPORT-04 | Phase 19 → Phase 28 (verification) | Pending |
 | AI-01 | Phase 18 | Complete |
 | AI-02 | Phase 18 | Complete |
 | AI-03 | Phase 18 | Complete |
 | AI-04 | Phase 18 | Complete |
-| FIELD-01 | Phase 16 | Complete |
-| FIELD-02 | Phase 16 | Complete |
-| FIELD-03 | Phase 16 | Complete |
-| FIELD-04 | Phase 16 | Complete |
+| FIELD-01 | Phase 16 → Phase 28 (verification) | Pending |
+| FIELD-02 | Phase 16 → Phase 28 (verification) | Pending |
+| FIELD-03 | Phase 16 → Phase 28 (verification) | Pending |
+| FIELD-04 | Phase 16 → Phase 28 (verification) | Pending |
 | PORTAL-01 | Phase 20 | Complete |
 | PORTAL-02 | Phase 20 | Complete |
 | PORTAL-03 | Phase 20 | Complete |
 | PORTAL-04 | Phase 20 | Complete |
-| CAL-01 | Phase 17 | Complete |
-| CAL-02 | Phase 17 | Complete |
-| CAL-03 | Phase 17 | Complete |
-| CAL-04 | Phase 17 | Complete |
+| CAL-01 | Phase 17 → Phase 28 (verification) | Pending |
+| CAL-02 | Phase 17 → Phase 28 (verification) | Pending |
+| CAL-03 | Phase 17 → Phase 23 (gap closure) | Pending |
+| CAL-04 | Phase 17 → Phase 28 (verification) | Pending |
+| MAP-01 | Phase 21 | Complete |
+| MAP-02 | Phase 21 | Complete |
+| MAP-03 | Phase 21 | Complete |
+| MAP-04 | Phase 21 | Complete |
 
 **Coverage:**
-- v2.0 requirements: 35 total
-- Mapped to phases: 35 ✓
+- v2.0 requirements: 39 total
+- Mapped to phases: 39 ✓
 - Unmapped: 0
+- Satisfied: 12 (AI-01..04, PORTAL-01..04, MAP-01..04)
+- Pending gap closure: 27 (reopened 2026-04-14 after milestone audit — see v2.0-MILESTONE-AUDIT.md)
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-06 — traceability populated with v2.0 phase mappings (13-20)*
+*Last updated: 2026-04-14 — reopened 27 requirements after milestone audit; reassigned to gap closure phases 23–28*
