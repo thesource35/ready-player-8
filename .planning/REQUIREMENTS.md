@@ -1,11 +1,11 @@
-# Requirements: ConstructionOS v2.0 Feature Expansion
+# Requirements: ConstructionOS v2.1 Gap Closure & Feature Completion
 
-**Defined:** 2026-04-06
+**Defined:** 2026-04-14 (carried from v2.0 after milestone scope reduction)
 **Core Value:** Every user action must either succeed visibly or fail with a clear, actionable message — no silent data loss, no undetected errors, no security gaps.
 
-## v2.0 Requirements
+## v2.1 Requirements
 
-Requirements for v2.0 Feature Expansion. Each maps to a roadmap phase.
+27 requirements carried from v2.0. Phase code exists on `main`; verification, wiring, and cross-phase integration are the remaining work.
 
 ### Notifications & Activity Feed
 
@@ -38,26 +38,12 @@ Requirements for v2.0 Feature Expansion. Each maps to a roadmap phase.
 - [ ] **REPORT-03**: User can export reports to PDF
 - [ ] **REPORT-04**: User can view chart visualizations (bar/line/pie) for budgets, timelines, and safety metrics
 
-### Enhanced AI (Angelic AI v2)
-
-- [x] **AI-01**: AI chat reads current project and contract data for context-aware responses
-- [x] **AI-02**: AI can generate RFI documents from conversation
-- [x] **AI-03**: AI can draft change order entries from natural language description
-- [x] **AI-04**: AI can analyze bid competitiveness using market data
-
 ### Field Tools
 
 - [ ] **FIELD-01**: User can capture photos with automatic GPS location and timestamp tagging
 - [ ] **FIELD-02**: User can attach photos to punch items, daily logs, and safety incidents
 - [ ] **FIELD-03**: User can annotate/markup photos to highlight issues
 - [ ] **FIELD-04**: User can create daily logs from pre-filled templates based on project context
-
-### Client Portal / Sharing
-
-- [x] **PORTAL-01**: User can generate a shareable read-only project URL
-- [x] **PORTAL-02**: User can configure portal visibility per section (budget, schedule, photos)
-- [x] **PORTAL-03**: Client viewers see a progress photo timeline
-- [x] **PORTAL-04**: Portal page displays company branding (logo, colors)
 
 ### Calendar & Scheduling
 
@@ -66,16 +52,29 @@ Requirements for v2.0 Feature Expansion. Each maps to a roadmap phase.
 - [ ] **CAL-03**: Timeline highlights milestone markers (bid due, project start/end, inspections)
 - [ ] **CAL-04**: User can drag items on timeline to reschedule them
 
-### Live Satellite & Traffic Maps
+### Live Site Video (Phase 22 — not yet planned)
 
-- [x] **MAP-01**: User can toggle between standard, satellite, and hybrid map layers on all map views
-- [x] **MAP-02**: User can see real-time traffic flow overlays on project area maps
-- [x] **MAP-03**: User can view construction equipment/vehicle locations on a project site map
-- [x] **MAP-04**: All map features (MapsView iOS, /maps web, field photos, project locations) use the enhanced map system
+- [ ] **VIDEO-01**: Per-project HLS camera feeds tied to project sites (TBD — planning required)
+
+## Carried Integration Blockers
+
+These gaps were identified in the v2.0 milestone audit and remain open at v2.1 start.
+
+| ID | Severity | Description | Affects | Owning v2.1 phase |
+|----|----------|-------------|---------|-------------------|
+| INT-01 | high | RLS references non-existent `cs_rfis`/`cs_submittals`/`cs_change_orders` | DOC-03, DOC-04 | Phase 26 |
+| INT-02 | high | Document routes do not emit `cs_activity_events` | DOC-02, NOTIF-02 | Phase 24 |
+| INT-06 | critical | Cert expiration does not trigger notifications | NOTIF-04, TEAM-04 | Phase 25 |
+| INT-07 | medium | Portal home has no navigation to `/map` sub-route | (supports PORTAL-03, MAP-04) | Phase 27 |
+
+**Closed by quick task 260414-n4w (2026-04-14):**
+- ~~INT-03~~: iOS Team/Crew/Certs views not wired to NavTab
+- ~~INT-04~~: DailyCrewView uses insert not upsert
+- ~~INT-05~~: AgendaListView not wired into ScheduleHubView
 
 ## Future Requirements
 
-Deferred to v2.1 or later.
+Deferred to v2.2 or later.
 
 ### Notifications
 
@@ -105,73 +104,56 @@ Deferred to v2.1 or later.
 - **FIELD-F1**: Offline photo queue with sync on reconnect
 - **FIELD-F2**: Voice memo capture
 
-## Out of Scope
-
-Explicitly excluded from v2.0.
+## Out of Scope (carried from v2.0)
 
 | Feature | Reason |
 |---------|--------|
 | Real-time collaboration / conflict resolution | Architecture change — future milestone |
 | Offline-first / local data sync queue | Future milestone — requires architectural rework |
 | Breaking apart monolithic ContentView.swift | Separate refactoring initiative |
-| OAuth login (Google, Apple) | Deferred to v2.1+ |
-| Payment processing for client portal | Out of scope — read-only portals only |
-| Mobile-native client portal app | Web portal sufficient for v2.0 |
+| OAuth login (Google, Apple) | Deferred beyond v2.1 |
+| Payment processing for client portal | Read-only portals only |
+| Mobile-native client portal app | Web portal sufficient |
 | Real-time crew GPS tracking | Privacy concerns — defer until policy defined |
 
 ## Traceability
 
-Mapping of requirements to phases.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NOTIF-01 | Phase 14 → Phase 28 (verification) | Pending |
-| NOTIF-02 | Phase 14 → Phase 24 (gap closure) | Pending |
-| NOTIF-03 | Phase 14 → Phase 28 (verification) | Pending |
-| NOTIF-04 | Phase 14 → Phase 25 (gap closure) | Pending |
-| NOTIF-05 | Phase 14 → Phase 28 (verification) | Pending |
-| DOC-01 | Phase 13 → Phase 28 (verification) | Pending |
-| DOC-02 | Phase 13 → Phase 24 (gap closure) | Pending |
-| DOC-03 | Phase 13 → Phase 26 (gap closure) | Pending |
-| DOC-04 | Phase 13 → Phase 26 (gap closure) | Pending |
-| DOC-05 | Phase 13 → Phase 28 (verification) | Pending |
-| TEAM-01 | Phase 15 → Phase 23 (gap closure) | Pending |
-| TEAM-02 | Phase 15 → Phase 23 (gap closure) | Pending |
-| TEAM-03 | Phase 15 → Phase 23 (gap closure) | Pending |
-| TEAM-04 | Phase 15 → Phase 25 (gap closure) | Pending |
-| TEAM-05 | Phase 15 → Phase 23 (gap closure) | Pending |
-| REPORT-01 | Phase 19 → Phase 28 (verification) | Pending |
-| REPORT-02 | Phase 19 → Phase 28 (verification) | Pending |
-| REPORT-03 | Phase 19 → Phase 28 (verification) | Pending |
-| REPORT-04 | Phase 19 → Phase 28 (verification) | Pending |
-| AI-01 | Phase 18 | Complete |
-| AI-02 | Phase 18 | Complete |
-| AI-03 | Phase 18 | Complete |
-| AI-04 | Phase 18 | Complete |
-| FIELD-01 | Phase 16 → Phase 28 (verification) | Pending |
-| FIELD-02 | Phase 16 → Phase 28 (verification) | Pending |
-| FIELD-03 | Phase 16 → Phase 28 (verification) | Pending |
-| FIELD-04 | Phase 16 → Phase 28 (verification) | Pending |
-| PORTAL-01 | Phase 20 | Complete |
-| PORTAL-02 | Phase 20 | Complete |
-| PORTAL-03 | Phase 20 | Complete |
-| PORTAL-04 | Phase 20 | Complete |
-| CAL-01 | Phase 17 → Phase 28 (verification) | Pending |
-| CAL-02 | Phase 17 → Phase 28 (verification) | Pending |
-| CAL-03 | Phase 17 → Phase 23 (gap closure) | Pending |
-| CAL-04 | Phase 17 → Phase 28 (verification) | Pending |
-| MAP-01 | Phase 21 | Complete |
-| MAP-02 | Phase 21 | Complete |
-| MAP-03 | Phase 21 | Complete |
-| MAP-04 | Phase 21 | Complete |
+| NOTIF-01 | Phase 28 (verification) | Pending |
+| NOTIF-02 | Phase 24 (gap closure) | Pending |
+| NOTIF-03 | Phase 28 (verification) | Pending |
+| NOTIF-04 | Phase 25 (gap closure) | Pending |
+| NOTIF-05 | Phase 28 (verification) | Pending |
+| DOC-01 | Phase 28 (verification) | Pending |
+| DOC-02 | Phase 24 (gap closure) | Pending |
+| DOC-03 | Phase 26 (gap closure) | Pending |
+| DOC-04 | Phase 26 (gap closure) | Pending |
+| DOC-05 | Phase 28 (verification) | Pending |
+| TEAM-01 | Phase 28 (verification) | Pending |
+| TEAM-02 | Phase 28 (verification) | Pending |
+| TEAM-03 | Phase 28 (verification) | Pending |
+| TEAM-04 | Phase 25 (gap closure) | Pending |
+| TEAM-05 | Phase 28 (verification) | Pending |
+| FIELD-01 | Phase 28 (verification) | Pending |
+| FIELD-02 | Phase 28 (verification) | Pending |
+| FIELD-03 | Phase 28 (verification) | Pending |
+| FIELD-04 | Phase 28 (verification) | Pending |
+| CAL-01 | Phase 28 (verification) | Pending |
+| CAL-02 | Phase 28 (verification) | Pending |
+| CAL-03 | Phase 28 (verification) | Pending |
+| CAL-04 | Phase 28 (verification) | Pending |
+| REPORT-01 | Phase 28 (verification) | Pending |
+| REPORT-02 | Phase 28 (verification) | Pending |
+| REPORT-03 | Phase 28 (verification) | Pending |
+| REPORT-04 | Phase 28 (verification) | Pending |
+| VIDEO-01 | Phase 22 (TBD) | Not planned |
 
 **Coverage:**
-- v2.0 requirements: 39 total
-- Mapped to phases: 39 ✓
+- v2.1 requirements: 28 total (27 carryover + 1 Phase 22)
+- Mapped to phases: 28
 - Unmapped: 0
-- Satisfied: 12 (AI-01..04, PORTAL-01..04, MAP-01..04)
-- Pending gap closure: 27 (reopened 2026-04-14 after milestone audit — see v2.0-MILESTONE-AUDIT.md)
+- Shipped in v2.0: 0 (see `milestones/v2.0-REQUIREMENTS.md` for AI/PORTAL/MAP — 12 shipped)
 
 ---
-*Requirements defined: 2026-04-06*
-*Last updated: 2026-04-14 — reopened 27 requirements after milestone audit; reassigned to gap closure phases 23–28*
+*v2.1 requirements carried forward 2026-04-14 after v2.0 milestone scope reduction. See `milestones/v2.0-MILESTONE-AUDIT.md` for the audit that drove the scope change.*

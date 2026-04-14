@@ -10,10 +10,10 @@ Every user action must either succeed visibly or fail with a clear, actionable m
 
 ## Current State
 
-**Shipped:** v1.0 Production Hardening (2026-04-06)
-**Codebase:** ~31,684 LOC Swift + ~25,105 LOC TypeScript = ~56,789 total
-**Tech stack:** SwiftUI (iOS 18.2+), Next.js 16.2.2, React 19, Supabase, Anthropic Claude API
-**Tests:** 18 iOS unit tests (XCTest), 42 web unit tests (Vitest), 2 Playwright E2E specs
+**Shipped:** v2.0 Portal & AI Expansion (2026-04-14) — reduced scope after audit (see `milestones/v2.0-MILESTONE-AUDIT.md`)
+**Previous milestones:** v1.0 Production Hardening (2026-04-06)
+**Tech stack:** SwiftUI (iOS 18.2+), Next.js 16.2.2, React 19, Supabase, Anthropic Claude API, Mapbox GL JS, MapKit
+**Current focus:** v2.1 Gap Closure — verification backfill for Phases 13–19 + gap-closure phases 23–28
 
 ## Requirements
 
@@ -48,17 +48,19 @@ Every user action must either succeed visibly or fail with a clear, actionable m
 - ✓ iOS unit tests (SupabaseService, Keychain, auth, AppStorageJSON) — v1.0
 - ✓ Web unit tests (chat, leads, middleware, Paddle, checkout) — v1.0
 - ✓ Playwright E2E tests (auth/project, chat flows) — v1.0
+- ✓ Enhanced AI with Claude tool calling (RFI/CO drafts, live Supabase data) — v2.0
+- ✓ Client Portal with branding, photo timeline, PDF export, soft-delete audit log — v2.0
+- ✓ Live Satellite & Traffic Maps (Mapbox/MapKit unified, equipment tracking, GPS photos) — v2.0
 
-### Active
+### Active (v2.1)
 
-- [ ] Notifications & Activity Feed
-- [ ] Document Management
-- [ ] Team & Crew Management
-- [ ] Reporting & Dashboards
-- [ ] Enhanced AI (Angelic AI v2)
-- [ ] Field Tools (photos, punch lists, daily logs)
-- [ ] Client Portal / Sharing
-- [ ] Calendar & Scheduling
+- [ ] Notifications & Activity Feed — code written, verification pending (Phases 24, 25, 28)
+- [ ] Document Management — code written, RLS reconciliation + activity emission pending (Phases 24, 26, 28)
+- [ ] Team & Crew Management — iOS wired 2026-04-14, cert notifications pending (Phase 25)
+- [ ] Reporting & Dashboards — code written (18 plans), verification pending (Phase 28)
+- [ ] Field Tools (photos, punch lists, daily logs) — code written, verification pending (Phase 28)
+- [ ] Calendar & Scheduling — code written, AgendaListView wired 2026-04-14, verification pending (Phase 28)
+- [ ] Live Site Video (Phase 22) — never planned
 
 ### Out of Scope
 
@@ -68,19 +70,18 @@ Every user action must either succeed visibly or fail with a clear, actionable m
 - Load/performance testing — defer until after feature expansion
 - OAuth login (Google, Apple) — deferred to v2.1+
 
-## Current Milestone: v2.0 Feature Expansion
+## Current Milestone: v2.1 Gap Closure & Feature Completion
 
-**Goal:** Add 8 major feature areas that transform ConstructionOS from a hardened shell into a full-featured construction management platform.
+**Goal:** Close v2.0 carryover: add missing VERIFICATION.md for phases 13–19, resolve 4 integration blockers (INT-01, INT-02, INT-06, INT-07), and plan Phase 22 (Live Site Video).
 
-**Target features:**
-- Notifications & Activity Feed
-- Document Management
-- Team & Crew Management
-- Reporting & Dashboards
-- Enhanced AI (Angelic AI v2)
-- Field Tools (photos, punch lists, daily logs)
-- Client Portal / Sharing
-- Calendar & Scheduling
+**Target work:**
+- Phase 23: iOS Navigation & Assignment Wiring (code closed by quick task 260414-n4w; phase formalizes verification)
+- Phase 24: Document → Activity Event Emission (INT-02)
+- Phase 25: Certification Expiry Notifications (INT-06)
+- Phase 26: Documents RLS Table Reconciliation (INT-01)
+- Phase 27: Portal → Map Navigation Link (INT-07)
+- Phase 28: Retroactive Verification Sweep (Phases 13–19)
+- Phase 22: Live Site Video — requires planning
 
 ## Constraints
 
@@ -102,6 +103,13 @@ Every user action must either succeed visibly or fail with a clear, actionable m
 | Sequential security chain (Keychain → Auth → RLS) | RLS without user_id backfill makes data invisible | ✓ Good — clean dependency ordering |
 | AI SDK migration (raw fetch → streamText) | SDK already in package.json, provides streaming + error handling | ✓ Good — maxOutputTokens fixed, streaming works |
 | 3-phase RLS migration (columns → backfill → policies) | Safe rollout with backfill before enabling enforcement | ✓ Good — all 23 tables secured |
+| AI tool calls return structured drafts, no direct DB insert (Phase 18) | User always approves before persistence — safety rail for hallucinated content | ✓ Good — `_action: "review_before_saving"` pattern adopted across RFI and CO tools |
+| Service-role Supabase client for public portal SSR (Phase 20) | Anonymous viewers can't authenticate but still need gated data access after token/slug validation | ✓ Good — same pattern as shared reports, RLS bypass is scoped |
+| INSERT-only RLS on portal audit log (Phase 20) | Immutable audit trail required for compliance | ✓ Good — no UPDATE/DELETE policies defined |
+| Soft-delete via flags for portal links (Phase 20) | Preserve audit history and allow undo | ✓ Good — hard deletes avoided in this domain |
+| Append-only cs_equipment_locations with no UPDATE/DELETE RLS (Phase 21) | Tamper-proof location history for equipment tracking | ✓ Good — DISTINCT ON view gives efficient latest-position query |
+| Design tokens as single-file export (Phase 20) | Source of truth for portal and app styling | ✓ Good — `web/src/lib/design-tokens.ts` used across portal and management UI |
+| Ship reduced v2.0 scope (3 phases) after audit failure | Honest milestone — avoid shipping with 27 unverified requirements | ⚠ Revisit — verify whether v2.0 users perceive portal/AI/maps as a coherent shipment without the feature phases they visually depend on |
 
 ## Evolution
 
@@ -121,4 +129,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-06 after v2.0 milestone start*
+*Last updated: 2026-04-14 after v2.0 milestone completion (reduced scope: phases 18, 20, 21)*

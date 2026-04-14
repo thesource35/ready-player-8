@@ -1,34 +1,34 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Feature Expansion
-status: executing
-stopped_at: Completed 21-06-PLAN.md (final plan of Phase 21)
-last_updated: "2026-04-14T20:50:00.000Z"
-last_activity: 2026-04-14 -- Quick task 260414-n4w closed INT-03/04/05
+milestone: v2.1
+milestone_name: Gap Closure & Feature Completion
+status: planning
+stopped_at: v2.0 milestone archived (reduced scope); v2.1 gap-closure phases not yet executed
+last_updated: "2026-04-14T21:15:00.000Z"
+last_activity: 2026-04-14 -- v2.0 milestone completed with reduced scope (phases 18, 20, 21)
 progress:
-  total_phases: 9
-  completed_phases: 9
-  total_plans: 63
-  completed_plans: 63
-  percent: 100
+  total_phases: 13
+  completed_phases: 6
+  total_plans: 43
+  completed_plans: 43
+  percent: 46
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-06)
+See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Every user action must either succeed visibly or fail with a clear, actionable message -- no silent data loss, no undetected errors, no security gaps.
-**Current focus:** Phase 21 — live-satellite-traffic-maps
+**Current focus:** v2.1 Gap Closure — execute phases 23–28 to close audit gaps, plan Phase 22
 
 ## Current Position
 
-Phase: 21
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-04-14 -- Phase 21 planning complete
+Milestone: v2.1
+Phase: None in progress (v2.0 just completed)
+Status: Ready to plan next phase
+Last activity: 2026-04-14 -- v2.0 archived (phases 18, 20, 21 shipped; 13–17, 19, 22–28 carried to v2.1)
 
 ## Accumulated Context
 
@@ -36,104 +36,25 @@ Last activity: 2026-04-14 -- Phase 21 planning complete
 
 See PROJECT.md Key Decisions table for full history.
 
-v2.0 roadmap decisions:
+v2.0 closing decisions:
 
-- Document Management placed first (Phase 13) as foundational — many later features attach files
-- Notifications placed early (Phase 14) so later features can emit notifications
-- Reporting placed late (Phase 19) to aggregate data from preceding feature areas
-- Client Portal last (Phase 20) — requires content from documents, field photos, and reports
-- [Phase 17]: Mirror cs_projects RLS expression on cs_project_tasks/cs_task_dependencies; duration_days as generated stored column; updateOwnedRow scoped by org_id (T-17-02)
-- [Phase 17-calendar-scheduling]: updateOwnedRow falls back to id-only update when user_orgs lookup fails/empty — prevents silent 404 until a proper user_orgs migration lands
-- [Phase 18]: 9 test stubs (exceeds 8 minimum) to cover validation edge cases for RFI and CO tools
-- [Phase 18]: Input validation on generate_rfi (subject) and draft_change_order (description) for empty-string rejection
-- [Phase 18]: Named MCP-only DTOs with MCP prefix to avoid collision with SupabaseService DTOs
-- [Phase 18]: Human verified AI-03 (draft_change_order) end-to-end on web; all 4 AI requirements confirmed working
-- [Phase 19]: Health score uses weighted composite: budget 40%, schedule 35%, issues 25%
-- [Phase 19]: parseBudgetString strips non-numeric chars, returns 0 for unparseable (T-19-01)
-- [Phase 19]: Pure aggregation functions: no side effects, no Supabase calls, accept raw data arrays
-- [Phase 19]: Recharts Tooltip formatter uses any type for Recharts 3.x ValueType/NameType intersection compatibility
-- [Phase 19-reporting-dashboards]: Immutable audit log: no UPDATE/DELETE RLS policies on cs_report_audit_log (T-19-06)
-- [Phase 19-reporting-dashboards]: Budget text parsed via regex in SQL views since cs_projects stores budget as text
-- [Phase 19]: Promise.allSettled with 10s per-section timeout for parallel section fetching (D-56)
-- [Phase 19]: Query param sanitization strips non-alphanumeric chars to prevent injection (T-19-11)
-- [Phase 19]: Reports link placed in FIELD nav group alongside Finance and Analytics per D-66
-- [Phase 19]: Project report uses tabbed sections (Financial, Schedule, Safety, Team, Activity) per D-26f with Charts+Data/Charts Only toggle
-- [Phase 19]: react-window v2 API uses rowComponent/rowCount/rowHeight (not FixedSizeList from v1)
-- [Phase 19]: PDF generation fully client-side via jsPDF + html2canvas (no server round-trip) per D-60
-- [Phase 19]: Text sanitization strips HTML tags + 2000 char limit for PDF XSS prevention (T-19-16)
-- [Phase 19]: Service-role Supabase client for cron handler (bypasses RLS for system-level schedule processing)
-- [Phase 19]: Three-tier role resolution (report -> project -> org) with manager fallback for unconfigured orgs (D-64g, D-119)
-- [Phase 19]: Financial data masked to ranges on shared views, not redacted completely (D-64f, T-19-23)
-- [Phase 19]: Export-specific rate limit (10 req/min) separate from general API rate limit (D-62b)
-- [Phase 19]: Reports tab in field nav group; SupabaseService extended with public makeReportRequest; demo data embedded inline for offline-first
-- [Phase 19]: UIGraphicsPDFRenderer for iOS PDF; Locale.current.region for paper size; ImageRenderer at 2x for chart embedding; AppIntents for Siri shortcuts
-- [Phase 19]: FabricCanvasInner separated for clean dynamic import; comment HTML stripped + 2000 char limit; Fabric.js JSON validated for objects array + 500KB limit; version diff uses inverted-metric awareness for color coding
-- [Phase 19-reporting-dashboards]: i18n uses next-intl getRequestConfig English-only; report themes via CSS custom properties on container; bulk ops limited to 50 items (T-19-34)
-- [Phase 19-reporting-dashboards]: Health notifications only emit on color transitions, not score changes within same band (D-100)
-- [Phase 19-reporting-dashboards]: Automation rules restricted to predefined action whitelist (T-19-37)
-- [Phase 19-reporting-dashboards]: Embed route uses X-Frame-Options: ALLOWALL for iframe support (D-104)
-- [Phase 19-reporting-dashboards]: Metrics endpoint bounded to 100 entries per endpoint in-memory (T-19-38)
-- [Phase 19]: Feature tour uses localStorage; template JSON validated 50KB + CSS sanitized (T-19-40); CSV sanitizes formula injection (T-19-39)
-- [Phase 19-reporting-dashboards]: SWR-compatible config object instead of SWR library dependency; feature flags default 100% rollout; SW scoped to /reports only
-- [Phase 19]: Existing ShowReportIntent/PortfolioHealthIntent reused; AppShortcut phrases static (no String param interpolation); high contrast dual-detection via colorSchemeContrast + differentiateWithoutColor
-- [Phase 19]: E2E test in web/e2e/ (matching playwright.config.ts); Resend class-based mock; webhook metadata-only per T-19-46
-- [Phase 20-client-portal-sharing]: Design tokens as flat single-file export (web/src/lib/design-tokens.ts) as source of truth for portal and app styling
-- [Phase 20-client-portal-sharing]: 56 test stubs across 8 files covering PORTAL-01 through PORTAL-04 plus CSS sanitization, image processing, rate limiting security
-- [Phase 20]: Service-role client for public portal viewing bypasses RLS after token/slug validation
-- [Phase 20]: INSERT-only RLS on cs_portal_audit_log for immutable audit trail (D-114)
-- [Phase 20]: Soft-delete via is_deleted/is_revoked flags instead of hard delete (D-116)
-- [Phase 20]: Portal API routes follow reports/share/route.ts pattern for auth, rate limiting, error handling
-- [Phase 20]: CSS sanitizer uses 9 forbidden regex patterns + 30 allowed property whitelist (T-20-10)
-- [Phase 20]: SVG validation rejects 5 attack vectors: script, event handlers, javascript:, external URLs, data: URIs (T-20-11)
-- [Phase 20]: Portal SSR page uses service-role Supabase client for data access (same pattern as shared reports)
-- [Phase 20]: Budget masking checks both section enabled AND show_exact_amounts flag (D-30, D-38)
-- [Phase 20]: CSS custom properties applied via inline style on PortalShell wrapper div for branding
-- [Phase 20]: PhotoTimeline integrates existing PhotoCard/PhotoLightbox/DateFilter from plan 20-04; sequential ZIP processing bounds memory (T-20-20)
-- [Phase 20-client-portal-sharing]: PortalPhoto type in photoHelpers.ts with signedUrl, location, has_annotation; photos grouped by YYYY-MM-DD newest-first; JSZip for bulk ZIP; portal PDF client-side via jsPDF + html2canvas
-- [Phase 20]: All portal management components use 'use client' with inline styles from design tokens; portal list API at /api/portal/list wraps existing portalQueries
-- [Phase 20]: portalEmail uses .tsx extension for JSX email templates; contrast validator uses WCAG 2.1 sRGB gamma; email sends are non-blocking
-- [Phase 20]: portalEmail uses .tsx extension for JSX email template support; Resend client lazily initialized; email sends non-blocking
-- [Phase 20]: Portal DTOs use camelCase Swift properties with JSONEncoder snake_case conversion; createPortalLink two-step insert with server ID fetch; Color hex extension for branding serialization
-- [Phase 20]: Portal DTOs use camelCase Swift properties with JSONEncoder snake_case conversion; createPortalLink sequential insert pattern; Color hex extension for branding serialization
-- [Phase 20]: Data masking tests verify pure decision logic rather than mocking Supabase; IP blocking uses metadata JSONB on cs_portal_config
-- [Phase 20]: All test stubs replaced with real assertions using pure helper functions and type-level validation (no Supabase mocking needed)
-- [Phase 20]: Webhook payloads contain only IDs and event type, no financial or PII data (T-20-31); 5s timeout fire-and-forget for webhook delivery (T-20-32)
-- [Phase 20]: Webhook payloads contain only IDs and event type, no financial or PII data (T-20-31); 5s timeout fire-and-forget for webhook delivery (T-20-32)
-- [Phase 21]: Append-only cs_equipment_locations with no UPDATE/DELETE RLS for tamper-proof location history (T-21-04)
-- [Phase 21]: Database CHECK constraints enforce coordinate ranges at schema level, duplicated in API validateCoordinates (T-21-02)
-- [Phase 21]: cs_equipment_latest_positions as DISTINCT ON database view for efficient latest-position queries
-- [Phase 21-live-satellite-traffic-maps]: camelCase Swift properties with SupabaseService convertFromSnakeCase decoder (matches existing DTO pattern)
-- [Phase 21-live-satellite-traffic-maps]: SupabaseEquipmentLatestPosition matches view columns (latest_ prefix) not raw location table columns
-- [Phase 21]: API routes follow reports/health pattern: getAuthenticatedClient, try/catch, NextResponse.json
-- [Phase 21-live-satellite-traffic-maps]: API routes follow reports/health pattern; map marker rebuild uses useCallback+useEffect; photo markers purple (#8A8FCC)
-- [Phase 21]: Circle clipShape for all equipment markers; SavedCamera Codable for camera persistence; photo fetch graceful degradation
-- [Phase 21-live-satellite-traffic-maps]: CheckInLocationManager wraps CLLocationManager via ObservableObject (requires import Combine); computedRoutes keyed by MapRoute.id UUID; straight-line MapPolyline hidden when road route exists
-- [Phase 21-live-satellite-traffic-maps]: computedRoutes dictionary keyed by MapRoute UUID (not label) — MapRoute.id is already stable unique
-- [Phase 21-live-satellite-traffic-maps]: Straight-line MapPolyline hidden when computed road MKRoute exists for same route id to avoid double-render
-- [Phase 21-live-satellite-traffic-maps]: CheckInLocationManager: NSObject+ObservableObject+CLLocationManagerDelegate with @Published location/accuracy/errorMessage triplet
-- [Phase 21-live-satellite-traffic-maps]: Extracted loadMapData() helper so check-in success callback can re-trigger equipment/photo refresh
-- [Phase 21-live-satellite-traffic-maps]: [Phase 21]: DEFAULT_MAP_OVERLAYS applied at types/API/page layers for JSONB backward compat
-- [Phase 21-live-satellite-traffic-maps]: [Phase 21-06]: Token-based portal map API (matches /api/portal/photos pattern); slug lookup only in server page component
-- [Phase 21-live-satellite-traffic-maps]: [Phase 21-06]: Portal map route path /portal/[slug]/[project]/map matches existing portal route convention (not plan's [companySlug]/[slug])
-- [Phase 21-live-satellite-traffic-maps]: [Phase 21-06]: Portal map API uses /api/portal/map with ?token= query param (not /api/portal/[slug]/map) to match existing Phase 20 portal API auth convention
-- [Phase 21-live-satellite-traffic-maps]: [Phase 21-06]: Portal map page at /portal/[slug]/[project]/map matches existing Phase 20 segment naming; Next.js disallows sibling dynamic segments with different names
-- [Phase 21-live-satellite-traffic-maps]: [Phase 21-06]: PortalSectionsConfig.map_overlays as optional JSONB field preserves backward compatibility with portals created before Phase 21; DEFAULT_MAP_OVERLAYS applied at page/API read time when absent
+- Reduced v2.0 scope to phases 18, 20, 21 after 2026-04-14 audit found 6/9 phases unverified and 4 critical integration blockers
+- Phases 13–17, 19 code left on `main` but milestone ownership reassigned to v2.1 pending verification
+- Quick task 260414-n4w closed INT-03/04/05 (iOS NavTab wiring, DailyCrewView upsert, AgendaListView wiring) immediately before milestone close
+- Milestone renamed from "Feature Expansion" to "Portal & AI Expansion" to reflect actual shipped surface
 
 ### Pending Todos
 
 None.
 
-### Roadmap Evolution
+### v2.1 Open Blockers
 
-- Phase 22 added: Live Site Video — per-project HLS camera feeds tied to project sites, tap marker on Maps tab to open floating video tile; iOS AVPlayer + web hls.js; portal viewers see feeds only if admin enabled per portal (lockable like map_overlays pattern from 21-06)
-
-### Blockers/Concerns
-
-- Plan 17-02 risk: user_orgs table existence unverified — updateOwnedRow silent-match-zero if table missing/mis-named
-- **Phase 13 RLS migration references non-existent tables (cs_submittals, cs_rfis, cs_change_orders)** — blocks Phase 14/15 live schema deployment per audit 2026-04-14
-- ~~iOS team/certs/daily-crew views not wired to NavTab~~ **CLOSED by quick task 260414-n4w** (INT-03)
-- ~~Daily crew save uses insert not upsert~~ **CLOSED by quick task 260414-n4w** (INT-04)
-- ~~iOS AgendaListView (Phase 17-04) not wired into ScheduleHubView~~ **CLOSED by quick task 260414-n4w** (INT-05)
+- INT-01: RLS references non-existent cs_rfis/cs_submittals/cs_change_orders — Phase 26
+- INT-02: Document routes do not emit cs_activity_events — Phase 24
+- INT-06: Cert expiration does not trigger notifications — Phase 25
+- INT-07: Portal home has no /map navigation link — Phase 27
+- Phase 22 (Live Site Video) never planned — requires /gsd-plan-phase 22
+- 15 human UAT items across phases 20, 21 remain unchecked (browser/device required)
 
 ### Quick Tasks Completed
 
@@ -144,6 +65,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T06:15:14.469Z
-Stopped at: Completed 21-06-PLAN.md (final plan of Phase 21)
+Last session: 2026-04-14T21:15:00.000Z
+Stopped at: v2.0 milestone archived with reduced scope
 Resume file: None

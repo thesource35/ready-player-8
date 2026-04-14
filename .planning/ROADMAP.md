@@ -3,7 +3,8 @@
 ## Milestones
 
 - ✅ **v1.0 Production Hardening** — Phases 1-12 (shipped 2026-04-06) — [archive](milestones/v1.0-ROADMAP.md)
-- 🚧 **v2.0 Feature Expansion** — Phases 13-22 (in progress)
+- ✅ **v2.0 Portal & AI Expansion** — Phases 18, 20, 21 (shipped 2026-04-14) — [archive](milestones/v2.0-ROADMAP.md)
+- 🚧 **v2.1 Gap Closure & Feature Completion** — Phases 13-17, 19, 22-28 (in progress)
 
 ## Phases
 
@@ -25,23 +26,34 @@
 
 </details>
 
-### v2.0 Feature Expansion
+<details>
+<summary>✅ v2.0 Portal & AI Expansion (Phases 18, 20, 21) — SHIPPED 2026-04-14</summary>
 
-- [x] **Phase 13: Document Management Foundation** (5/5 plans) — completed 2026-04-08
-- [x] **Phase 14: Notifications & Activity Feed** (5/5 plans) — completed 2026-04-11
-- [x] **Phase 15: Team & Crew Management** (4/4 plans) — completed 2026-04-08
-- [x] **Phase 16: Field Tools** — GPS-tagged photos, annotations, daily log templates (completed 2026-04-08)
-- [x] **Phase 17: Calendar & Scheduling** — Project timeline, Gantt chart, drag-to-reschedule (completed 2026-04-11)
-- [x] **Phase 18: Enhanced AI (Angelic AI v2)** — Context-aware chat, RFI/CO generation, bid analysis (completed 2026-04-11)
-- [x] **Phase 19: Reporting & Dashboards** — Project reports, cross-project rollups, PDF export, charts (completed 2026-04-12)
-- [x] **Phase 20: Client Portal & Sharing** — Shareable read-only project URLs with branding (completed 2026-04-13)
-- [x] **Phase 21: Live Satellite & Traffic Maps** — Satellite imagery, real-time traffic overlays, equipment tracking across all map features (completed 2026-04-14)
-- [ ] **Phase 23: iOS Navigation & Assignment Wiring** — Gap closure: wire orphaned iOS views (Team/Crew/Certifications/Agenda) into NavTab; fix DailyCrewView upsert
-- [ ] **Phase 24: Document → Activity Event Emission** — Gap closure: document routes emit `cs_activity_events` so activity feed is populated
-- [ ] **Phase 25: Certification Expiry Notifications** — Gap closure: cert-expiry cron + notification emission to satisfy TEAM-04, NOTIF-04
-- [ ] **Phase 26: Documents RLS Table Reconciliation** — Gap closure: resolve RLS references to non-existent cs_rfis/cs_submittals/cs_change_orders
-- [ ] **Phase 27: Portal → Map Navigation Link** — Gap closure: portal home links to /map sub-route when enabled
-- [ ] **Phase 28: Retroactive Verification Sweep (Phases 13–19)** — Gap closure: create missing VERIFICATION.md files to close partial requirements
+- [x] Phase 18: Enhanced AI (Angelic AI v2) (4/4 plans) — completed 2026-04-11
+- [x] Phase 20: Client Portal & Sharing (10/10 plans) — completed 2026-04-13
+- [x] Phase 21: Live Satellite & Traffic Maps (6/6 plans) — completed 2026-04-14
+
+**Scope note:** Original v2.0 included Phases 13-22. After audit (see `milestones/v2.0-MILESTONE-AUDIT.md`), scope was reduced to verified phases. Remaining phases carried to v2.1.
+
+</details>
+
+### 🚧 v2.1 Gap Closure & Feature Completion
+
+Phase code exists on `main` from original v2.0 work — verification, wiring, and integration gaps are the remaining work.
+
+- [x] **Phase 13: Document Management Foundation** (5/5 plans) — code complete 2026-04-08, verification pending
+- [x] **Phase 14: Notifications & Activity Feed** (5/5 plans) — code complete 2026-04-11, verification pending
+- [x] **Phase 15: Team & Crew Management** (4/4 plans) — code complete 2026-04-08, verification pending
+- [x] **Phase 16: Field Tools** (6/6 plans) — code complete 2026-04-08, verification pending
+- [x] **Phase 17: Calendar & Scheduling** (5/5 plans) — code complete 2026-04-11, verification pending
+- [x] **Phase 19: Reporting & Dashboards** (18/18 plans) — code complete 2026-04-12, verification pending
+- [ ] **Phase 22: Live Site Video** — TBD, never planned (0 plans)
+- [ ] **Phase 23: iOS Navigation & Assignment Wiring** — Gap closure: INT-03/04/05 closed by quick task 260414-n4w; phase formalizes verification
+- [ ] **Phase 24: Document → Activity Event Emission** — Gap closure: document routes emit `cs_activity_events` (INT-02)
+- [ ] **Phase 25: Certification Expiry Notifications** — Gap closure: cert-expiry cron + notification emission (INT-06)
+- [ ] **Phase 26: Documents RLS Table Reconciliation** — Gap closure: resolve RLS references to non-existent tables (INT-01)
+- [ ] **Phase 27: Portal → Map Navigation Link** — Gap closure: portal home links to `/map` sub-route when enabled (INT-07)
+- [ ] **Phase 28: Retroactive Verification Sweep (Phases 13–19)** — Gap closure: create missing VERIFICATION.md files, reconcile REQUIREMENTS.md
 
 ## Phase Details
 
@@ -62,6 +74,7 @@
 - [ ] 13-04-PLAN.md — Web UI integration (AttachmentList, Preview, VersionHistory on 4 entity pages)
 - [x] 13-05-PLAN.md — iOS UI integration (DocumentAttachmentsView on 4 entity surfaces)
 **UI hint**: yes
+**v2.1 status**: verification pending (see Phase 28)
 
 ### Phase 14: Notifications & Activity Feed
 **Goal**: Users see what changed, what needs attention, and what's coming due
@@ -75,6 +88,7 @@
   5. User receives iOS push notifications for bid deadlines, safety alerts, and assigned tasks
 **Plans**: TBD
 **UI hint**: yes
+**v2.1 status**: verification pending (see Phases 24, 25, 28)
 
 ### Phase 15: Team & Crew Management
 **Goal**: Users can manage team members, assignments, and credentials
@@ -87,11 +101,12 @@
   4. User receives an alert when a certification is nearing expiration
   5. User can create a daily crew assignment for a project
 **Plans**: 4 plans
-- [ ] 15-01-PLAN.md — Wave 0 schema + RLS + test stubs + db push (BLOCKING)
-- [ ] 15-02-PLAN.md — Wave 1 cert-expiry-scan Edge Function + pg_cron
-- [ ] 15-03-PLAN.md — Wave 2 web /team route + API routes + DailyCrewSection
-- [ ] 15-04-PLAN.md — Wave 2 iOS TeamView + CertificationsView + DailyCrewView
+- [x] 15-01-PLAN.md — Wave 0 schema + RLS + test stubs + db push (BLOCKING)
+- [x] 15-02-PLAN.md — Wave 1 cert-expiry-scan Edge Function + pg_cron
+- [x] 15-03-PLAN.md — Wave 2 web /team route + API routes + DailyCrewSection
+- [x] 15-04-PLAN.md — Wave 2 iOS TeamView + CertificationsView + DailyCrewView
 **UI hint**: yes
+**v2.1 status**: iOS nav wiring closed by quick task 260414-n4w; cert notification emission still open (Phase 25)
 
 ### Phase 16: Field Tools
 **Goal**: Field users can capture, annotate, and log work from the jobsite
@@ -110,6 +125,7 @@
 - [x] 16-04-PLAN.md — Wave 3 photo annotation, both platforms (FIELD-03)
 - [x] 16-05-PLAN.md — Wave 3 daily logs with layered templates, both platforms (FIELD-04)
 **UI hint**: yes
+**v2.1 status**: verification pending (see Phase 28)
 
 ### Phase 17: Calendar & Scheduling
 **Goal**: Users can see and reschedule all project work on a unified timeline
@@ -127,22 +143,7 @@
 - [x] 17-03-PLAN.md — Wave 3 web /schedule rebuild (RollupTimeline + GanttChart with Pointer Events drag + AgendaView)
 - [x] 17-04-PLAN.md — Wave 4 iOS agenda + tap-to-reschedule sheet in ScheduleTools.swift
 **UI hint**: yes
-
-### Phase 18: Enhanced AI (Angelic AI v2)
-**Goal**: AI uses live project data to assist with construction-specific tasks
-**Depends on**: Phases 13-17 (rich data to read)
-**Requirements**: AI-01, AI-02, AI-03, AI-04
-**Success Criteria** (what must be TRUE):
-  1. AI chat responses reference the user's current projects and contracts
-  2. User can have AI generate an RFI document from a chat conversation
-  3. User can have AI draft a change order from a natural language description
-  4. User can ask AI to analyze a bid's competitiveness against market data
-**Plans**: 4 plans
-- [x] 18-00-PLAN.md — Wave 0 test scaffolding (vitest stubs for tool definitions)
-- [x] 18-01-PLAN.md — Wave 1 web tools module + chat route upgrade (AI SDK tool calling with Supabase)
-- [x] 18-02-PLAN.md — Wave 1 iOS MCPToolServer async upgrade (live Supabase data + new tools)
-- [x] 18-03-PLAN.md — Wave 2 iOS draft rendering + end-to-end verification checkpoint
-**UI hint**: yes
+**v2.1 status**: AgendaListView wiring closed by quick task 260414-n4w; verification pending (see Phase 28)
 
 ### Phase 19: Reporting & Dashboards
 **Goal**: Users can view aggregated metrics and export shareable reports
@@ -154,157 +155,72 @@
   3. User can export a report to PDF
   4. User can view bar/line/pie chart visualizations for budgets, timelines, and safety metrics
 **Plans**: 18 plans
-Plans:
-- [x] 19-01-PLAN.md — Wave 1 TDD: npm deps, report types, aggregation functions with 100% coverage
-- [x] 19-02-PLAN.md — Wave 1 Recharts chart components + StatCard/HealthBadge/Skeleton UI atoms
-- [x] 19-03-PLAN.md — Wave 1 Database schema (8 cs_report_* tables, RLS, indexes, views)
-- [x] 19-04-PLAN.md — Wave 2 API routes: /api/reports/project/[id], /api/reports/rollup, /api/reports/health
-- [x] 19-05-PLAN.md — Wave 3 Web report pages: landing, single-project report with all sections, nav integration
-- [x] 19-06-PLAN.md — Wave 3 Web portfolio rollup: sortable table, portfolio charts, timeline, comparison
-- [x] 19-07-PLAN.md — Wave 4 PDF export: jsPDF + html2canvas, preview, multi-format export (CSV/Excel/PPTX/JSON)
-- [x] 19-08-PLAN.md — Wave 4 Email scheduling: CRUD API, Vercel Cron, Resend template, schedule management UI
-- [x] 19-09-PLAN.md — Wave 4 Shareable links + multi-format export generators (CSV/Excel/PPTX) + access control
-- [x] 19-10-PLAN.md — Wave 4 iOS: ReportsView + ProjectReportView + PortfolioRollupView + SwiftUI Charts
-- [x] 19-11-PLAN.md — Wave 4 iOS: PDF generation + schedule management + Siri/Spotlight/CarPlay stubs
-- [x] 19-12-PLAN.md — Wave 5 Collaboration: comments, annotations (Fabric.js), version history with diffs
-- [x] 19-13-PLAN.md — Wave 5 i18n (next-intl) + report themes + keyboard shortcuts + bookmarks + bulk ops
-- [x] 19-14-PLAN.md — Wave 5 Notifications + automation rules + embed codes + analytics (PostHog)
-- [x] 19-15-PLAN.md — Wave 5 Feature discovery + demo report + templates + audit dashboard + CSV import
-- [x] 19-16-PLAN.md — Wave 5 Caching + feature flags + data retention + PWA offline + data backup
-- [x] 19-17-PLAN.md — Wave 5 iOS: WidgetKit + Siri Shortcuts + accessibility + high contrast + String Catalogs
-- [x] 19-18-PLAN.md — Wave 6 Testing: integration + E2E Playwright + iOS XCTests + conditional formatting + print CSS
+- [x] 19-01 through 19-18 — see archive for details (all 18 plans complete)
 **UI hint**: yes
+**v2.1 status**: verification pending (see Phase 28)
 
-### Phase 20: Client Portal & Sharing
-**Goal**: Users can share a branded read-only project view with clients
-**Depends on**: Phase 13 (documents), Phase 16 (photos), Phase 19 (charts)
-**Requirements**: PORTAL-01, PORTAL-02, PORTAL-03, PORTAL-04
-**Success Criteria** (what must be TRUE):
-  1. User can generate a shareable read-only URL for a project
-  2. User can configure portal section visibility (budget, schedule, photos)
-  3. Client viewers see a chronological progress photo timeline
-  4. Portal page displays the company's logo and brand colors
-**Plans**: 10 plans
-Plans:
-- [x] 20-01-PLAN.md — Wave 0: npm deps, portal types, design tokens, test stubs
-- [x] 20-02-PLAN.md — Wave 1: Database schema (4 tables + shared_links extension), query modules, BLOCKING db push
-- [x] 20-03-PLAN.md — Wave 2: Portal API routes (7 endpoints) + CSS sanitizer + image processor + slug generator
-- [x] 20-04-PLAN.md — Wave 3: Public portal page (SSR) + portal shell/header/footer + section components
-- [x] 20-05-PLAN.md — Wave 3: Photo timeline + lightbox + ZIP download + portal PDF export
-- [x] 20-06-PLAN.md — Wave 4: Web portal management UI (dashboard, create dialog, section editor, analytics)
-- [x] 20-07-PLAN.md — Wave 4: Branding theme editor + preset picker + logo upload + branded emails
-- [x] 20-08-PLAN.md — Wave 5: iOS portal views + SupabaseService portal extensions
-- [x] 20-09-PLAN.md — Wave 5: Security hardening + all test implementations + audit log API + IP blocker
-- [x] 20-10-PLAN.md — Wave 6: Final integration (PDF button, mobile nav, webhooks, E2E tests, human verification)
-**UI hint**: yes
-
-### Phase 21: Live Satellite & Traffic Maps
-**Goal**: All map features show satellite imagery with real-time traffic overlays and construction site activity
-**Depends on**: Phase 16 (GPS-tagged photos on maps), Phase 20 (portal may embed maps)
-**Requirements**: MAP-01, MAP-02, MAP-03, MAP-04
-**Success Criteria** (what must be TRUE):
-  1. User can toggle between standard, satellite, and hybrid map layers on all map views
-  2. User can see real-time traffic flow overlays on project area maps
-  3. User can view construction equipment/vehicle locations on a project site map
-  4. All map features (MapsView iOS, /maps web, field photos, project locations) use the enhanced map system
-**Plans**: 6 plans
-Plans:
-- [x] 21-01-PLAN.md — Foundation: types, test stubs, Supabase schema + RLS
-- [x] 21-02-PLAN.md — iOS Swift foundation: EquipmentModels + SupabaseService equipment methods
-- [x] 21-03-PLAN.md — Web maps enhancement: traffic, equipment, photos, API routes
-- [x] 21-04-PLAN.md — iOS MapsView: traffic toggle, equipment markers, camera persistence
-- [x] 21-05-PLAN.md — iOS equipment check-in flow + delivery routes
-- [x] 21-06-PLAN.md — Portal map overlay configuration (D-13)
-**UI hint**: yes
+### Phase 22: Live Site Video — per-project HLS camera feeds
+**Goal:** [To be planned]
+**Requirements**: VIDEO-01 (TBD)
+**Depends on:** Phase 21
+**Plans:** 0 plans — never planned
+- [ ] TBD (run /gsd-plan-phase 22 to break down)
 
 ### Phase 23: iOS Navigation & Assignment Wiring
 **Goal:** Existing iOS views (TeamView, CertificationsView, DailyCrewView, AgendaListView) are reachable from user navigation; daily crew edits do not 409
 **Depends on:** Phase 15, Phase 17
 **Requirements:** TEAM-01, TEAM-02, TEAM-03, TEAM-05, CAL-03
 **Gap Closure:** Closes INT-03, INT-04, INT-05 · FLOW-03, FLOW-04, FLOW-05
-**Success Criteria:**
-  1. NavTab enum in ContentView.swift includes team/crew/certifications cases
-  2. Tapping each new tab opens the corresponding existing view
-  3. AgendaListView renders inside ScheduleHubView (not just defined in ScheduleTools.swift)
-  4. DailyCrewView.swift:145 upsert succeeds on edit of an existing row (no 409)
+**Status:** Code closed by quick task 260414-n4w on 2026-04-14; phase formalizes verification artifacts
 
 ### Phase 24: Document → Activity Event Emission
 **Goal:** Every document mutation emits a row into `cs_activity_events` so the activity feed populates for document ops
 **Depends on:** Phase 13, Phase 14
 **Requirements:** DOC-02, NOTIF-02
 **Gap Closure:** Closes INT-02 · FLOW-01
-**Success Criteria:**
-  1. Upload, delete, attach, and new-version routes write to `cs_activity_events`
-  2. Event shape includes action, entity_type, entity_id, actor, metadata
-  3. Project activity page displays a document event end-to-end
 
 ### Phase 25: Certification Expiry Notifications
 **Goal:** Users receive notifications when certifications approach expiration
 **Depends on:** Phase 14, Phase 15
 **Requirements:** TEAM-04, NOTIF-04
 **Gap Closure:** Closes INT-06 · FLOW-02
-**Success Criteria:**
-  1. Daily cron scans `cs_certifications.expires_at`
-  2. Certs ≤30 days out emit `cs_notifications` rows (once per threshold crossing)
-  3. Manual expiration changes in `/api/team/certifications/route.ts` also emit
-  4. iOS push path delivers an alert in a manual end-to-end test
 
 ### Phase 26: Documents RLS Table Reconciliation
 **Goal:** RLS predicates for document attachments cover all referenced entity types without silent skip
 **Depends on:** Phase 13
 **Requirements:** DOC-03, DOC-04
 **Gap Closure:** Closes INT-01
-**Success Criteria:**
-  1. Either the `cs_rfis`, `cs_submittals`, `cs_change_orders` tables exist with owner columns, OR the RLS migration no longer references them
-  2. `to_regclass` guarded-skip is removed (no silently-skipped RLS predicates)
-  3. Forward migration applies cleanly and RLS enforces on all entity types
 
 ### Phase 27: Portal → Map Navigation Link
-**Goal:** Portal viewers can reach the /map sub-route when the admin enabled it
-**Depends on:** Phase 20, Phase 21
+**Goal:** Portal viewers can reach the `/map` sub-route when the admin enabled it
+**Depends on:** Phase 20 (shipped v2.0), Phase 21 (shipped v2.0)
 **Requirements:** (integration-only — supports PORTAL-03, MAP-04)
 **Gap Closure:** Closes INT-07
-**Success Criteria:**
-  1. When `show_map` flag is true, `portal/[slug]/[project]/page.tsx` renders a visible link/button to the map sub-route
-  2. When the flag is false, no link appears
 
 ### Phase 28: Retroactive Verification Sweep (Phases 13–19)
-**Goal:** Every v2.0 phase marked complete has a VERIFICATION.md proving goal-backward coverage, and REQUIREMENTS.md reflects the true state
+**Goal:** Every v2.0-originated phase marked complete has a VERIFICATION.md proving goal-backward coverage, and REQUIREMENTS.md reflects the true state
 **Depends on:** Phases 23, 24, 25, 26 (must run after code gaps are closed)
 **Requirements:** DOC-01, DOC-02, DOC-03, DOC-04, DOC-05, NOTIF-01, NOTIF-02, NOTIF-03, NOTIF-05, FIELD-01, FIELD-02, FIELD-03, FIELD-04, CAL-01, CAL-02, CAL-04, REPORT-01, REPORT-02, REPORT-03, REPORT-04
 **Gap Closure:** Closes all "partial — no VERIFICATION.md" audit gaps; reconciles REQUIREMENTS.md traceability
-**Success Criteria:**
-  1. Phases 13, 14, 16, 17, 19 have a VERIFICATION.md (Phase 15 covered by Phase 23, Phase 18 already verified)
-  2. Each requirement traced to its phase has verification evidence
-  3. REQUIREMENTS.md checkboxes reflect verified state; coverage count matches
 
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|---------------|--------|-----------|
 | 1-12 | v1.0 | 36/36 | Complete | 2026-04-06 |
-| 13. Document Management Foundation | v2.0 | 5/5 | Complete | 2026-04-08 |
-| 14. Notifications & Activity Feed | v2.0 | 5/5 | Complete | 2026-04-11 |
-| 15. Team & Crew Management | v2.0 | 4/4 | Complete | 2026-04-08 |
-| 16. Field Tools | v2.0 | 6/6 | Complete   | 2026-04-08 |
-| 17. Calendar & Scheduling | v2.0 | 5/5 | Complete | 2026-04-11 |
-| 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete    | 2026-04-11 |
-| 19. Reporting & Dashboards | v2.0 | 18/18 | Complete    | 2026-04-12 |
-| 20. Client Portal & Sharing | v2.0 | 10/10 | Complete    | 2026-04-13 |
-| 21. Live Satellite & Traffic Maps | v2.0 | 6/6 | Complete    | 2026-04-14 |
-| 23. iOS Navigation & Assignment Wiring | v2.0 | 0/? | Planned | — |
-| 24. Document → Activity Event Emission | v2.0 | 0/? | Planned | — |
-| 25. Certification Expiry Notifications | v2.0 | 0/? | Planned | — |
-| 26. Documents RLS Table Reconciliation | v2.0 | 0/? | Planned | — |
-| 27. Portal → Map Navigation Link | v2.0 | 0/? | Planned | — |
-| 28. Retroactive Verification Sweep (Phases 13–19) | v2.0 | 0/? | Planned | — |
-
-### Phase 22: Live Site Video — per-project HLS camera feeds tied to project sites, tap marker on Maps tab to open floating video tile; iOS AVPlayer + web hls.js; portal viewers see feeds only if admin enabled per portal (lockable like map_overlays pattern from 21-06). Sources: HLS .m3u8 URLs (IP cameras, drones, YouTube Live, DOT traffic cams).
-
-**Goal:** [To be planned]
-**Requirements**: TBD
-**Depends on:** Phase 21
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd-plan-phase 22 to break down)
+| 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete | 2026-04-11 |
+| 20. Client Portal & Sharing | v2.0 | 10/10 | Complete | 2026-04-13 |
+| 21. Live Satellite & Traffic Maps | v2.0 | 6/6 | Complete | 2026-04-14 |
+| 13. Document Management Foundation | v2.1 | 5/5 | Code Complete | 2026-04-08 |
+| 14. Notifications & Activity Feed | v2.1 | 5/5 | Code Complete | 2026-04-11 |
+| 15. Team & Crew Management | v2.1 | 4/4 | Code Complete | 2026-04-08 |
+| 16. Field Tools | v2.1 | 6/6 | Code Complete | 2026-04-08 |
+| 17. Calendar & Scheduling | v2.1 | 5/5 | Code Complete | 2026-04-11 |
+| 19. Reporting & Dashboards | v2.1 | 18/18 | Code Complete | 2026-04-12 |
+| 22. Live Site Video | v2.1 | 0/? | Not planned | — |
+| 23. iOS Navigation & Assignment Wiring | v2.1 | 0/? | Planned | — |
+| 24. Document → Activity Event Emission | v2.1 | 0/? | Planned | — |
+| 25. Certification Expiry Notifications | v2.1 | 0/? | Planned | — |
+| 26. Documents RLS Table Reconciliation | v2.1 | 0/? | Planned | — |
+| 27. Portal → Map Navigation Link | v2.1 | 0/? | Planned | — |
+| 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 0/? | Planned | — |
