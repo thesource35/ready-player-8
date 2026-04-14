@@ -3,8 +3,20 @@ import SectionWrapper from "./SectionWrapper";
 // D-31: List only user-selected documents
 // Each doc: name, type icon, size, upload date, download link
 
+type PortalDocument = {
+  id?: string;
+  name?: string;
+  file_name?: string;
+  file_type?: string;
+  content_type?: string;
+  file_size?: number;
+  created_at?: string;
+  file_path?: string;
+  download_url?: string;
+};
+
 type DocumentsSectionProps = {
-  documents: Record<string, unknown>[];
+  documents: PortalDocument[];
   sectionNote?: string;
 };
 
@@ -37,7 +49,7 @@ export default function DocumentsSection({
       <div>
         {documents.map((doc, i) => (
           <div
-            key={(doc.id as string) ?? i}
+            key={doc.id ?? i}
             style={{
               display: "flex",
               alignItems: "center",
@@ -49,7 +61,7 @@ export default function DocumentsSection({
           >
             {/* Type icon */}
             <span style={{ fontSize: 20, flexShrink: 0 }}>
-              {getDocIcon((doc.file_type as string) ?? (doc.content_type as string) ?? "")}
+              {getDocIcon(doc.file_type ?? doc.content_type ?? "")}
             </span>
 
             {/* Name and metadata */}
@@ -64,9 +76,7 @@ export default function DocumentsSection({
                   whiteSpace: "nowrap",
                 }}
               >
-                {(doc.name as string) ??
-                  (doc.file_name as string) ??
-                  "Document"}
+                {doc.name ?? doc.file_name ?? "Document"}
               </div>
               <div
                 style={{
@@ -77,17 +87,16 @@ export default function DocumentsSection({
                   marginTop: 2,
                 }}
               >
-                {doc.file_size && (
-                  <span>
-                    {formatFileSize(doc.file_size as number)}
-                  </span>
+                {doc.file_size != null && (
+                  <span>{formatFileSize(doc.file_size)}</span>
                 )}
                 {doc.created_at && (
                   <span>
-                    {new Date(doc.created_at as string).toLocaleDateString(
-                      "en-US",
-                      { month: "short", day: "numeric", year: "numeric" }
-                    )}
+                    {new Date(doc.created_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
                   </span>
                 )}
               </div>
@@ -96,7 +105,7 @@ export default function DocumentsSection({
             {/* Download link */}
             {(doc.file_path || doc.download_url) && (
               <a
-                href={(doc.download_url as string) ?? (doc.file_path as string)}
+                href={doc.download_url ?? doc.file_path ?? "#"}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

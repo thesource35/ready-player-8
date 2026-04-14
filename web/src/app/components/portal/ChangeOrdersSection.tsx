@@ -67,7 +67,7 @@ export default function ChangeOrdersSection({
                     (co.description as string) ??
                     `CO-${i + 1}`}
                 </div>
-                {co.scope && (
+                {Boolean(co.scope) && (
                   <div style={{ fontSize: 12, color: "#6B7280" }}>
                     {co.scope as string}
                   </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
+import type { FabricRef } from "./FabricCanvasInner";
 
 // D-98: Visual annotation/drawing tools on charts
 // Fabric.js loaded via dynamic import with ssr: false per RESEARCH.md assumption A5
@@ -45,7 +46,7 @@ export default function AnnotationCanvas({
   const [saving, setSaving] = useState(false);
   const [annotationId, setAnnotationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const fabricRef = useRef<{ toJSON: () => unknown; loadFromJSON: (json: unknown) => void; clear: () => void } | null>(null);
+  const fabricRef = useRef<FabricRef | null>(null);
 
   // Load existing annotations
   useEffect(() => {

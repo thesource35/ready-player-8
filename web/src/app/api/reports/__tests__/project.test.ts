@@ -117,7 +117,7 @@ describe("GET /api/reports/project/[id]", () => {
     });
 
     // Mock all from().select().eq() chains return fixture data
-    mockEq.mockImplementation((col: string, val: string) => {
+    mockEq.mockImplementation(((col: string, _val: string) => {
       if (col === "id") {
         return { single: mockSingle, eq: mockEq2, order: mockOrder, data: [], error: null, limit: mockLimit };
       }
@@ -130,7 +130,7 @@ describe("GET /api/reports/project/[id]", () => {
         error: null,
         limit: mockLimit,
       };
-    });
+    }) as never);
 
     const req = makeRequest("proj-001");
     const res = await GET(req, { params: Promise.resolve({ id: "proj-001" }) });
@@ -232,7 +232,7 @@ describe("GET /api/reports/project/[id]", () => {
 
     // Make the from() call throw for a specific table to simulate section failure
     let callCount = 0;
-    mockFrom.mockImplementation((table: string) => {
+    mockFrom.mockImplementation(((table: string) => {
       if (table === "cs_safety_incidents") {
         return {
           select: () => ({
@@ -244,7 +244,7 @@ describe("GET /api/reports/project/[id]", () => {
       }
       callCount++;
       return { select: mockSelect };
-    });
+    }) as never);
 
     const req = makeRequest("proj-001");
     const res = await GET(req, { params: Promise.resolve({ id: "proj-001" }) });

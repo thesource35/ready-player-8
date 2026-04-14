@@ -19,7 +19,7 @@ type FabricCanvasInnerProps = {
   activeTool: AnnotationTool;
 };
 
-type FabricRef = {
+export type FabricRef = {
   toJSON: () => unknown;
   loadFromJSON: (json: unknown) => void;
   clear: () => void;

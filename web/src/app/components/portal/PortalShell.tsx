@@ -233,7 +233,7 @@ export default function PortalShell({
                               position: "relative",
                             }}
                           >
-                            {photo.file_path && (
+                            {Boolean(photo.file_path) && (
                               <img
                                 src={photo.file_path as string}
                                 alt={
@@ -251,7 +251,7 @@ export default function PortalShell({
                               />
                             )}
                           </div>
-                          {photo.caption && (
+                          {Boolean(photo.caption) && (
                             <div
                               style={{
                                 padding: 8,
