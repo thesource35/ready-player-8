@@ -50,6 +50,13 @@ struct MapsView: View {
     @State private var feedLatencyMS = 780
     @State private var activeSweep = 1
     @State private var cameraPreset: MapCameraPreset = .selected
+    // D-05/D-09: Check-in sheet state
+    @State private var showCheckInSheet = false
+    @State private var checkInSuccessMessage: String?
+    // D-16: Delivery route road-following state
+    @State private var computedRoutes: [UUID: MKRoute] = [:]
+    @State private var computingRoute: UUID?
+    @State private var routeError: UUID?
 
     // D-11: Overlay persistence
     @AppStorage("ConstructOS.Maps.OverlaySatellite") private var savedSatellite = true
@@ -150,6 +157,7 @@ struct MapsView: View {
                             photosOverlay: photosOverlay,
                             equipmentPositions: filteredEquipment,
                             photoAnnotations: photosOverlay ? photoAnnotations : [],
+                            computedRoutes: computedRoutes,
                             activeSweep: activeSweep,
                             cameraPreset: cameraPreset
                         )
@@ -163,6 +171,16 @@ struct MapsView: View {
                                 .padding(.vertical, 7)
                                 .background(Theme.gold)
                                 .cornerRadius(6)
+
+                            Button("CHECK IN EQUIPMENT") {
+                                showCheckInSheet = true
+                            }
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 7)
+                            .background(Theme.accent)
+                            .cornerRadius(6)
 
                             Button("CENTER \(selectedSite.name.uppercased())") { selectedSiteID = selectedSite.id }
                                 .font(.system(size: 9, weight: .bold))
@@ -296,6 +314,67 @@ struct MapsView: View {
                         .padding(12)
                         .background(Theme.surface.opacity(0.78))
                         .cornerRadius(10)
+
+                        // MARK: Delivery Routes Sidebar (D-16, MAP)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("DELIVERY ROUTES")
+                                .font(.system(size: 9, weight: .black))
+                                .tracking(1)
+                                .foregroundColor(Theme.gold)
+
+                            ForEach(mapRoutes) { route in
+                                VStack(alignment: .leading, spacing: 4) {
+                                    HStack(spacing: 6) {
+                                        Circle()
+                                            .fill(route.color)
+                                            .frame(width: 8, height: 8)
+                                        Text(route.label)
+                                            .font(.system(size: 9, weight: .black))
+                                            .foregroundColor(Theme.text)
+                                        Spacer()
+                                    }
+                                    Text("\(route.fromSiteName) \u{2192} \(route.toSiteName)")
+                                        .font(.system(size: 8, weight: .semibold))
+                                        .foregroundColor(Theme.muted)
+
+                                    if let computed = computedRoutes[route.id] {
+                                        HStack(spacing: 6) {
+                                            Text(String(format: "%.1f mi", computed.distance / 1609.34))
+                                                .font(.system(size: 7, weight: .bold))
+                                                .foregroundColor(Theme.green)
+                                            Text("\u{00B7} ETA \(Int((computed.expectedTravelTime / 60).rounded())) min")
+                                                .font(.system(size: 7, weight: .bold))
+                                                .foregroundColor(Theme.cyan)
+                                        }
+                                    } else if computingRoute == route.id {
+                                        Text("Computing route...")
+                                            .font(.system(size: 7, weight: .semibold))
+                                            .foregroundColor(Theme.gold)
+                                    } else if routeError == route.id {
+                                        Text("Route unavailable. Showing straight-line connection.")
+                                            .font(.system(size: 7, weight: .semibold))
+                                            .foregroundColor(Theme.red)
+                                    } else {
+                                        Button("GET DIRECTIONS") {
+                                            Task { await calculateRoute(for: route) }
+                                        }
+                                        .font(.system(size: 7, weight: .black))
+                                        .foregroundColor(Theme.cyan)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 3)
+                                        .background(Theme.surface)
+                                        .cornerRadius(4)
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                                .padding(8)
+                                .background(Theme.surface.opacity(0.72))
+                                .cornerRadius(8)
+                            }
+                        }
+                        .padding(12)
+                        .background(Theme.surface.opacity(0.78))
+                        .cornerRadius(10)
                     }
                     .frame(width: 250)
                 }
@@ -303,6 +382,29 @@ struct MapsView: View {
             .padding(14)
         }
         .background(Theme.bg)
+        .sheet(isPresented: $showCheckInSheet) {
+            EquipmentCheckInView(onCheckInComplete: { name in
+                checkInSuccessMessage = "Location updated for \(name)"
+                Task { await loadMapData() }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    checkInSuccessMessage = nil
+                }
+            })
+        }
+        .overlay(alignment: .top) {
+            if let msg = checkInSuccessMessage {
+                Text(msg)
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Theme.green)
+                    .cornerRadius(8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .animation(.easeInOut, value: checkInSuccessMessage)
+                    .padding(.top, 8)
+            }
+        }
         .onChange(of: satelliteMode) { _, new in savedSatellite = new }
         .onChange(of: trafficOverlay) { _, new in savedTraffic = new }
         .onChange(of: thermalOverlay) { _, new in savedThermal = new }
@@ -318,31 +420,66 @@ struct MapsView: View {
             photosOverlay = savedPhotos
         }
         .task {
-            isLoadingData = true
-            do {
-                equipmentPositions = try await SupabaseService.shared.fetchEquipmentPositions()
-            } catch {
-                CrashReporter.shared.reportError("Maps equipment load failed: \(error.localizedDescription)")
-                equipmentPositions = mockEquipmentPositions
-            }
-            do {
-                let docs: [SupabaseGpsDocument] = try await SupabaseService.shared.fetch(
-                    "cs_documents",
-                    query: ["select": "id,filename,gps_lat,gps_lng,created_at", "gps_lat": "not.is.null", "gps_lng": "not.is.null"]
-                )
-                photoAnnotations = docs.map { doc in
-                    MapPhotoAnnotation(
-                        id: doc.id,
-                        filename: doc.filename,
-                        coordinate: CLLocationCoordinate2D(latitude: doc.gpsLat, longitude: doc.gpsLng),
-                        createdAt: doc.createdAt
-                    )
-                }
-            } catch {
-                CrashReporter.shared.reportError("Maps photo load failed: \(error.localizedDescription)")
-            }
-            isLoadingData = false
+            await loadMapData()
         }
+    }
+
+    private func loadMapData() async {
+        isLoadingData = true
+        do {
+            equipmentPositions = try await SupabaseService.shared.fetchEquipmentPositions()
+        } catch {
+            CrashReporter.shared.reportError("Maps equipment load failed: \(error.localizedDescription)")
+            equipmentPositions = mockEquipmentPositions
+        }
+        do {
+            let docs: [SupabaseGpsDocument] = try await SupabaseService.shared.fetch(
+                "cs_documents",
+                query: ["select": "id,filename,gps_lat,gps_lng,created_at", "gps_lat": "not.is.null", "gps_lng": "not.is.null"]
+            )
+            photoAnnotations = docs.map { doc in
+                MapPhotoAnnotation(
+                    id: doc.id,
+                    filename: doc.filename,
+                    coordinate: CLLocationCoordinate2D(latitude: doc.gpsLat, longitude: doc.gpsLng),
+                    createdAt: doc.createdAt
+                )
+            }
+        } catch {
+            CrashReporter.shared.reportError("Maps photo load failed: \(error.localizedDescription)")
+        }
+        isLoadingData = false
+    }
+
+    // MARK: - Delivery Route Calculation (D-16)
+
+    private func calculateRoute(for route: MapRoute) async {
+        guard
+            let fromSite = mapSites.first(where: { $0.name == route.fromSiteName }),
+            let toSite = mapSites.first(where: { $0.name == route.toSiteName })
+        else { return }
+
+        computingRoute = route.id
+        routeError = nil
+
+        let request = MKDirections.Request()
+        request.source = MKMapItem(placemark: MKPlacemark(coordinate: fromSite.coordinate))
+        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: toSite.coordinate))
+        request.transportType = .automobile
+
+        let directions = MKDirections(request: request)
+        do {
+            let response = try await directions.calculate()
+            if let first = response.routes.first {
+                computedRoutes[route.id] = first
+            } else {
+                routeError = route.id
+            }
+        } catch {
+            CrashReporter.shared.reportError("MKDirections failed: \(error.localizedDescription)")
+            routeError = route.id
+        }
+        computingRoute = nil
     }
 
     private func mapMetricCard(title: String, value: String, detail: String, color: Color) -> some View {
@@ -400,6 +537,7 @@ struct LiveMapView: View {
     let photosOverlay: Bool
     let equipmentPositions: [SupabaseEquipmentLatestPosition]
     let photoAnnotations: [MapPhotoAnnotation]
+    let computedRoutes: [UUID: MKRoute]
     let activeSweep: Int
     let cameraPreset: MapCameraPreset
     @State private var cameraPosition: MapCameraPosition = .region(MapSite.defaultRegion)
@@ -613,8 +751,19 @@ struct LiveMapView: View {
     private var liveMapBase: some View {
         Map(position: $cameraPosition, interactionModes: [.pan, .zoom]) {
             ForEach(resolvedRoutes, id: \.route.id) { item in
-                MapPolyline(coordinates: item.coordinates)
-                    .stroke(item.route.color.opacity(crewOverlay ? 0.92 : 0.25), lineWidth: crewOverlay ? 4 : 2)
+                // Straight-line connector (hidden when a computed road route exists)
+                if computedRoutes[item.route.id] == nil {
+                    MapPolyline(coordinates: item.coordinates)
+                        .stroke(item.route.color.opacity(crewOverlay ? 0.92 : 0.25), lineWidth: crewOverlay ? 4 : 2)
+                }
+            }
+
+            // MARK: Computed Road Routes (D-16)
+            ForEach(Array(computedRoutes.keys), id: \.self) { key in
+                if let route = computedRoutes[key] {
+                    MapPolyline(route.polyline)
+                        .stroke(Theme.gold, lineWidth: 4)
+                }
             }
 
             ForEach(sites) { site in
