@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
-status: verifying
+status: executing
 stopped_at: Completed 21-06-PLAN.md (final plan of Phase 21)
-last_updated: "2026-04-14T06:34:53.593Z"
-last_activity: 2026-04-14
+last_updated: "2026-04-14T20:50:00.000Z"
+last_activity: 2026-04-14 -- Quick task 260414-n4w closed INT-03/04/05
 progress:
   total_phases: 9
   completed_phases: 9
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 
 Phase: 21
 Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-14
+Status: Ready to execute
+Last activity: 2026-04-14 -- Phase 21 planning complete
 
 ## Accumulated Context
 
@@ -123,15 +123,24 @@ v2.0 roadmap decisions:
 
 None.
 
+### Roadmap Evolution
+
+- Phase 22 added: Live Site Video — per-project HLS camera feeds tied to project sites, tap marker on Maps tab to open floating video tile; iOS AVPlayer + web hls.js; portal viewers see feeds only if admin enabled per portal (lockable like map_overlays pattern from 21-06)
+
 ### Blockers/Concerns
 
 - Plan 17-02 risk: user_orgs table existence unverified — updateOwnedRow silent-match-zero if table missing/mis-named
+- **Phase 13 RLS migration references non-existent tables (cs_submittals, cs_rfis, cs_change_orders)** — blocks Phase 14/15 live schema deployment per audit 2026-04-14
+- ~~iOS team/certs/daily-crew views not wired to NavTab~~ **CLOSED by quick task 260414-n4w** (INT-03)
+- ~~Daily crew save uses insert not upsert~~ **CLOSED by quick task 260414-n4w** (INT-04)
+- ~~iOS AgendaListView (Phase 17-04) not wired into ScheduleHubView~~ **CLOSED by quick task 260414-n4w** (INT-05)
 
 ### Quick Tasks Completed
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260406-rcz | Fix all 8 partial requirements and 36 TS errors from v1.0 milestone audit | 2026-04-07 | 1fe77a6 | [260406-rcz-fix-all-8-partial-requirements-and-36-ts](./quick/260406-rcz-fix-all-8-partial-requirements-and-36-ts/) |
+| 260414-n4w | Fix 4 v2.0 audit integration blockers (INT-03/04/05 + STATE cleanup) | 2026-04-14 | 44a7dd3 | [260414-n4w-fix-4-v2-0-audit-integration-blockers-wi](./quick/260414-n4w-fix-4-v2-0-audit-integration-blockers-wi/) |
 
 ## Session Continuity
 
