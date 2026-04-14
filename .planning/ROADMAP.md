@@ -48,7 +48,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 - [x] **Phase 17: Calendar & Scheduling** (5/5 plans) — code complete 2026-04-11, verification pending
 - [x] **Phase 19: Reporting & Dashboards** (18/18 plans) — code complete 2026-04-12, verification pending
 - [ ] **Phase 22: Live Site Video** — TBD, never planned (0 plans)
-- [ ] **Phase 23: iOS Navigation & Assignment Wiring** — Gap closure: INT-03/04/05 closed by quick task 260414-n4w; phase formalizes verification
+- [x] **Phase 23: iOS Navigation & Assignment Wiring** — Gap closure: INT-03/04/05 closed by quick task 260414-n4w; phase formalizes verification (completed 2026-04-14)
 - [ ] **Phase 24: Document → Activity Event Emission** — Gap closure: document routes emit `cs_activity_events` (INT-02)
 - [ ] **Phase 25: Certification Expiry Notifications** — Gap closure: cert-expiry cron + notification emission (INT-06)
 - [ ] **Phase 26: Documents RLS Table Reconciliation** — Gap closure: resolve RLS references to non-existent tables (INT-01)
@@ -218,7 +218,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 | 17. Calendar & Scheduling | v2.1 | 5/5 | Code Complete | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.1 | 18/18 | Code Complete | 2026-04-12 |
 | 22. Live Site Video | v2.1 | 0/? | Not planned | — |
-| 23. iOS Navigation & Assignment Wiring | v2.1 | 1/2 | In Progress|  |
+| 23. iOS Navigation & Assignment Wiring | v2.1 | 2/2 | Complete   | 2026-04-14 |
 | 24. Document → Activity Event Emission | v2.1 | 0/? | Planned | — |
 | 25. Certification Expiry Notifications | v2.1 | 0/? | Planned | — |
 | 26. Documents RLS Table Reconciliation | v2.1 | 0/? | Planned | — |
