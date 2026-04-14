@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
-status: planning
-stopped_at: v2.0 milestone archived (reduced scope); v2.1 gap-closure phases not yet executed
-last_updated: "2026-04-14T21:15:00.000Z"
-last_activity: 2026-04-14 -- v2.0 milestone completed with reduced scope (phases 18, 20, 21)
+status: executing
+stopped_at: Completed 23-01-PLAN.md (DailyCrewView project picker)
+last_updated: "2026-04-14T23:25:36.146Z"
+last_activity: 2026-04-14
 progress:
   total_phases: 13
   completed_phases: 6
-  total_plans: 43
-  completed_plans: 43
-  percent: 46
+  total_plans: 45
+  completed_plans: 44
+  percent: 98
 ---
 
 # Project State
@@ -21,14 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Every user action must either succeed visibly or fail with a clear, actionable message -- no silent data loss, no undetected errors, no security gaps.
-**Current focus:** v2.1 Gap Closure — execute phases 23–28 to close audit gaps, plan Phase 22
+**Current focus:** Phase 23 — iOS Navigation & Assignment Wiring
 
 ## Current Position
 
 Milestone: v2.1
-Phase: None in progress (v2.0 just completed)
-Status: Ready to plan next phase
-Last activity: 2026-04-14 -- v2.0 archived (phases 18, 20, 21 shipped; 13–17, 19, 22–28 carried to v2.1)
+Phase: 23 (iOS Navigation & Assignment Wiring) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-04-14
 
 ## Accumulated Context
 
@@ -42,6 +43,7 @@ v2.0 closing decisions:
 - Phases 13–17, 19 code left on `main` but milestone ownership reassigned to v2.1 pending verification
 - Quick task 260414-n4w closed INT-03/04/05 (iOS NavTab wiring, DailyCrewView upsert, AgendaListView wiring) immediately before milestone close
 - Milestone renamed from "Feature Expansion" to "Portal & AI Expansion" to reflect actual shipped surface
+- [Phase 23]: DailyCrewView projectId becomes internal @AppStorage state; zero-arg init lets NavTab routing instantiate it directly (Phase 23-01)
 
 ### Pending Todos
 
@@ -65,6 +67,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T21:15:00.000Z
-Stopped at: v2.0 milestone archived with reduced scope
+Last session: 2026-04-14T23:25:36.141Z
+Stopped at: Completed 23-01-PLAN.md (DailyCrewView project picker)
 Resume file: None

@@ -29,7 +29,7 @@
 - [ ] **TEAM-02**: User can assign team members to projects with role assignments
 - [ ] **TEAM-03**: User can track certifications and licenses with expiration dates
 - [ ] **TEAM-04**: User receives alerts when certifications are nearing expiration
-- [ ] **TEAM-05**: User can create daily crew assignments per project
+- [x] **TEAM-05**: User can create daily crew assignments per project
 
 ### Reporting & Dashboards
 
@@ -134,7 +134,7 @@ Deferred to v2.2 or later.
 | TEAM-02 | Phase 28 (verification) | Pending |
 | TEAM-03 | Phase 28 (verification) | Pending |
 | TEAM-04 | Phase 25 (gap closure) | Pending |
-| TEAM-05 | Phase 28 (verification) | Pending |
+| TEAM-05 | Phase 28 (verification) | Complete |
 | FIELD-01 | Phase 28 (verification) | Pending |
 | FIELD-02 | Phase 28 (verification) | Pending |
 | FIELD-03 | Phase 28 (verification) | Pending |

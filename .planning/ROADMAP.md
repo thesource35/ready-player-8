@@ -218,7 +218,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 | 17. Calendar & Scheduling | v2.1 | 5/5 | Code Complete | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.1 | 18/18 | Code Complete | 2026-04-12 |
 | 22. Live Site Video | v2.1 | 0/? | Not planned | — |
-| 23. iOS Navigation & Assignment Wiring | v2.1 | 0/? | Planned | — |
+| 23. iOS Navigation & Assignment Wiring | v2.1 | 1/2 | In Progress|  |
 | 24. Document → Activity Event Emission | v2.1 | 0/? | Planned | — |
 | 25. Certification Expiry Notifications | v2.1 | 0/? | Planned | — |
 | 26. Documents RLS Table Reconciliation | v2.1 | 0/? | Planned | — |
