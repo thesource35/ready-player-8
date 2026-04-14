@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
-status: verifying
-stopped_at: Completed 20-10-PLAN.md (human verification approved)
-last_updated: "2026-04-13T19:07:22.048Z"
-last_activity: 2026-04-13
+status: executing
+stopped_at: Completed 21-01-PLAN.md
+last_updated: "2026-04-14T00:06:15.963Z"
+last_activity: 2026-04-14
 progress:
   total_phases: 9
   completed_phases: 8
-  total_plans: 61
-  completed_plans: 57
-  percent: 93
+  total_plans: 63
+  completed_plans: 58
+  percent: 92
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Every user action must either succeed visibly or fail with a clear, actionable message -- no silent data loss, no undetected errors, no security gaps.
-**Current focus:** Phase 20 — client-portal-sharing
+**Current focus:** Phase 21 — live-satellite-traffic-maps
 
 ## Current Position
 
-Phase: 21
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-13
+Phase: 21 (live-satellite-traffic-maps) — EXECUTING
+Plan: 2 of 6
+Status: Ready to execute
+Last activity: 2026-04-14
 
 ## Accumulated Context
 
@@ -99,6 +99,9 @@ v2.0 roadmap decisions:
 - [Phase 20]: All test stubs replaced with real assertions using pure helper functions and type-level validation (no Supabase mocking needed)
 - [Phase 20]: Webhook payloads contain only IDs and event type, no financial or PII data (T-20-31); 5s timeout fire-and-forget for webhook delivery (T-20-32)
 - [Phase 20]: Webhook payloads contain only IDs and event type, no financial or PII data (T-20-31); 5s timeout fire-and-forget for webhook delivery (T-20-32)
+- [Phase 21]: Append-only cs_equipment_locations with no UPDATE/DELETE RLS for tamper-proof location history (T-21-04)
+- [Phase 21]: Database CHECK constraints enforce coordinate ranges at schema level, duplicated in API validateCoordinates (T-21-02)
+- [Phase 21]: cs_equipment_latest_positions as DISTINCT ON database view for efficient latest-position queries
 
 ### Pending Todos
 
@@ -116,6 +119,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-13T17:55:33.430Z
-Stopped at: Completed 20-10-PLAN.md (human verification approved)
+Last session: 2026-04-14T00:06:15.957Z
+Stopped at: Completed 21-01-PLAN.md
 Resume file: None

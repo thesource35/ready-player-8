@@ -203,7 +203,7 @@ Plans:
   4. All map features (MapsView iOS, /maps web, field photos, project locations) use the enhanced map system
 **Plans**: 6 plans
 Plans:
-- [ ] 21-01-PLAN.md — Foundation: types, test stubs, Supabase schema + RLS
+- [x] 21-01-PLAN.md — Foundation: types, test stubs, Supabase schema + RLS
 - [ ] 21-02-PLAN.md — iOS Swift foundation: EquipmentModels + SupabaseService equipment methods
 - [ ] 21-03-PLAN.md — Web maps enhancement: traffic, equipment, photos, API routes
 - [ ] 21-04-PLAN.md — iOS MapsView: traffic toggle, equipment markers, camera persistence
@@ -224,4 +224,4 @@ Plans:
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete    | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.0 | 18/18 | Complete    | 2026-04-12 |
 | 20. Client Portal & Sharing | v2.0 | 10/10 | Complete    | 2026-04-13 |
-| 21. Live Satellite & Traffic Maps | v2.0 | 0/0 | Not started | - |
+| 21. Live Satellite & Traffic Maps | v2.0 | 1/6 | In Progress|  |
