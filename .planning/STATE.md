@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
 status: verifying
-stopped_at: Completed 21-06-PLAN.md (phase 21 complete, ready for verification)
-last_updated: "2026-04-14T06:10:24.209Z"
+stopped_at: Completed 21-06-PLAN.md (final plan of Phase 21)
+last_updated: "2026-04-14T06:27:25.098Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 9
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 
 ## Current Position
 
-Phase: 21 (live-satellite-traffic-maps) — EXECUTING
-Plan: 6 of 6
+Phase: 21
+Plan: Not started
 Status: Phase complete — ready for verification
 Last activity: 2026-04-14
 
@@ -115,6 +115,9 @@ v2.0 roadmap decisions:
 - [Phase 21-live-satellite-traffic-maps]: [Phase 21]: DEFAULT_MAP_OVERLAYS applied at types/API/page layers for JSONB backward compat
 - [Phase 21-live-satellite-traffic-maps]: [Phase 21-06]: Token-based portal map API (matches /api/portal/photos pattern); slug lookup only in server page component
 - [Phase 21-live-satellite-traffic-maps]: [Phase 21-06]: Portal map route path /portal/[slug]/[project]/map matches existing portal route convention (not plan's [companySlug]/[slug])
+- [Phase 21-live-satellite-traffic-maps]: [Phase 21-06]: Portal map API uses /api/portal/map with ?token= query param (not /api/portal/[slug]/map) to match existing Phase 20 portal API auth convention
+- [Phase 21-live-satellite-traffic-maps]: [Phase 21-06]: Portal map page at /portal/[slug]/[project]/map matches existing Phase 20 segment naming; Next.js disallows sibling dynamic segments with different names
+- [Phase 21-live-satellite-traffic-maps]: [Phase 21-06]: PortalSectionsConfig.map_overlays as optional JSONB field preserves backward compatibility with portals created before Phase 21; DEFAULT_MAP_OVERLAYS applied at page/API read time when absent
 
 ### Pending Todos
 
@@ -132,6 +135,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T06:10:24.206Z
-Stopped at: Completed 21-06-PLAN.md (phase 21 complete, ready for verification)
+Last session: 2026-04-14T06:15:14.469Z
+Stopped at: Completed 21-06-PLAN.md (final plan of Phase 21)
 Resume file: None
