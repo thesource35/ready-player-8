@@ -555,6 +555,9 @@ struct ContentView: View {
         case ops = "ops"; case hub = "hub"; case security = "security"
         case pricing = "pricing"; case angelic = "angelic"
         case inbox = "inbox" // MARK: Phase 14
+        case team = "team" // MARK: Phase 15 — TEAM-01
+        case certifications = "certifications" // MARK: Phase 15 — TEAM-03
+        case dailyCrew = "daily-crew" // MARK: Phase 15 — TEAM-05
         case wealth = "wealth"
         case cosNetwork = "cos-network"
         case rentals = "rentals"
@@ -587,6 +590,9 @@ struct ContentView: View {
         ("security","SECURITY","\u{1F512}","intel"),("pricing","PRICING","\u{1F4B2}","intel"),
         ("angelic","ANGELIC","\u{1F47C}","intel"),
         ("inbox","INBOX","\u{1F514}","intel"), // MARK: Phase 14
+        ("team","TEAM","\u{1F465}","intel"), // MARK: Phase 15 — TEAM-01
+        ("certifications","CERTS","\u{1F4DC}","intel"), // MARK: Phase 15 — TEAM-03
+        ("daily-crew","DAILY CREW","\u{1F477}","intel"), // MARK: Phase 15 — TEAM-05
         ("wealth","WEALTH","\u{1F48E}","wealth"),
         ("cos-network","COS NET","\u{1F310}","wealth"),
         ("rentals","RENTALS","\u{1F6E0}","wealth"),
@@ -730,6 +736,13 @@ struct ContentView: View {
         case .angelic: AngelicAIView()
         // MARK: Phase 14
         case .inbox: InboxView(store: notificationsStore)
+        // MARK: Phase 15 — TEAM-01
+        case .team: TeamView()
+        // MARK: Phase 15 — TEAM-03
+        case .certifications: CertificationsView()
+        // MARK: Phase 15 — TEAM-05 — DailyCrewView requires projectId; stub with first mock project id until a project picker is added in a follow-up
+        // TODO: wrap in a project picker
+        case .dailyCrew: DailyCrewView(projectId: mockProjects.first?.id.uuidString ?? "")
         case .wealth:
             VStack(alignment: .leading, spacing: 14) {
                 ScrollView(.horizontal, showsIndicators: false) {

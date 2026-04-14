@@ -142,7 +142,12 @@ struct DailyCrewView: View {
             notes: notes.isEmpty ? nil : notes
         )
         do {
-            try await SupabaseService.shared.insert("cs_daily_crew", record: payload)
+            // TEAM-05 / INT-04: Natural key is (project_id, assignment_date) — upsert prevents 409 on edit.
+            try await SupabaseService.shared.upsert(
+                "cs_daily_crew",
+                record: payload,
+                onConflict: "project_id,assignment_date"
+            )
             await MainActor.run { toast = "Crew saved for \(f.string(from: date))" }
         } catch {
             await MainActor.run { toast = "Couldn't save crew. Check your connection and try again." }

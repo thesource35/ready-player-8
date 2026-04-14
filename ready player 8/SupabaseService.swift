@@ -704,6 +704,30 @@ final class SupabaseService: ObservableObject {
         try checkHTTPStatus(data: data, response: response)
     }
 
+    // MARK: Upsert
+
+    /// Upsert a record using PostgREST's on_conflict merge semantics.
+    /// Use for idempotent saves where the natural key (not id) determines uniqueness.
+    func upsert<T: Encodable>(_ table: String, record: T, onConflict: String) async throws {
+        guard isConfigured else { throw SupabaseError.notConfigured }
+        try validateTable(table)
+        let encoded = onConflict.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? onConflict
+        guard let url = URL(string: "\(baseURL)/rest/v1/\(table)?on_conflict=\(encoded)") else {
+            throw SupabaseError.httpError(400, "Invalid URL")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        try applyHeaders(&request, contentType: true)
+        request.setValue("resolution=merge-duplicates,return=representation", forHTTPHeaderField: "Prefer")
+        do {
+            request.httpBody = try encoder.encode(record)
+        } catch {
+            throw SupabaseError.encodingError(error)
+        }
+        let (data, response) = try await URLSession.shared.data(for: request)
+        try checkHTTPStatus(data: data, response: response)
+    }
+
     // MARK: Update
 
     func update<T: Encodable>(_ table: String, id: String, record: T) async throws {

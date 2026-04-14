@@ -503,7 +503,7 @@ struct ScannerToolsView: View {
 
 struct ScheduleHubView: View {
     @State private var activeTab = 0
-    private let tabs = ["Timeline", "Crew Calendar", "Cost Codes", "Takeoff", "Fuel Log", "Geofence", "Estimate", "Maintenance", "Prequal", "Reference"]
+    private let tabs = ["Timeline", "Agenda", "Crew Calendar", "Cost Codes", "Takeoff", "Fuel Log", "Geofence", "Estimate", "Maintenance", "Prequal", "Reference"]
 
     var body: some View {
         ScrollView {
@@ -530,14 +530,15 @@ struct ScheduleHubView: View {
                 }
 
                 if activeTab == 0 { GanttChartView() }
-                else if activeTab == 1 { CrewScheduleView() }
-                else if activeTab == 2 { CostCodeView() }
-                else if activeTab == 3 { MaterialTakeoffView() }
-                else if activeTab == 4 { FuelLogView() }
-                else if activeTab == 5 { geofenceContent }
-                else if activeTab == 6 { EstimatingView() }
-                else if activeTab == 7 { MaintenanceScheduleView() }
-                else if activeTab == 8 { SubPrequalView() }
+                else if activeTab == 1 { AgendaListView() } // CAL-03 / INT-05 — day-grouped task agenda
+                else if activeTab == 2 { CrewScheduleView() }
+                else if activeTab == 3 { CostCodeView() }
+                else if activeTab == 4 { MaterialTakeoffView() }
+                else if activeTab == 5 { FuelLogView() }
+                else if activeTab == 6 { geofenceContent }
+                else if activeTab == 7 { EstimatingView() }
+                else if activeTab == 8 { MaintenanceScheduleView() }
+                else if activeTab == 9 { SubPrequalView() }
                 else { ReferenceLibraryView() }
             }.padding(16)
         }.background(Theme.bg)
