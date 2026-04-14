@@ -1095,6 +1095,31 @@ final class SupabaseService: ObservableObject {
             print("[SupabaseService] Portal: created branding for org \(branding.orgId)")
         }
     }
+
+    // MARK: - Equipment Methods (Phase 21)
+
+    /// Fetch all equipment for the org, optionally filtered by project (D-08)
+    func fetchEquipment(projectId: String? = nil) async throws -> [SupabaseEquipment] {
+        var query: [String: String] = ["order": "name.asc"]
+        if let projectId {
+            query["assigned_project"] = "eq.\(projectId)"
+        }
+        return try await fetch("cs_equipment", query: query)
+    }
+
+    /// Fetch latest position per equipment from the view (D-10, D-15)
+    func fetchEquipmentPositions(projectId: String? = nil) async throws -> [SupabaseEquipmentLatestPosition] {
+        var query: [String: String] = ["order": "latest_recorded_at.desc"]
+        if let projectId {
+            query["assigned_project"] = "eq.\(projectId)"
+        }
+        return try await fetch("cs_equipment_latest_positions", query: query)
+    }
+
+    /// Submit equipment location check-in (D-05, D-09)
+    func checkInEquipmentLocation(_ request: EquipmentCheckInRequest) async throws {
+        try await insert("cs_equipment_locations", record: request)
+    }
 }
 
 // MARK: - Codable DTOs
