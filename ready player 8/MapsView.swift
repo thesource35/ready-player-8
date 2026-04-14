@@ -4,6 +4,25 @@ import SwiftUI
 
 // MARK: - ========== MapsView.swift ==========
 
+// MARK: - Map Photo Annotation (D-17, MAP-04)
+
+struct MapPhotoAnnotation: Identifiable {
+    let id: String
+    let filename: String
+    let coordinate: CLLocationCoordinate2D
+    let createdAt: String
+}
+
+// MARK: - GPS Document DTO (for photo annotation fetch)
+
+private struct SupabaseGpsDocument: Codable {
+    let id: String
+    let filename: String
+    let gpsLat: Double
+    let gpsLng: Double
+    let createdAt: String
+}
+
 // MARK: - Maps View
 
 struct MapsView: View {
@@ -22,12 +41,35 @@ struct MapsView: View {
     @State private var crewOverlay = true
     @State private var weatherOverlay = false
     @State private var autoTrack = true
+    @State private var trafficOverlay = false
+    @State private var photosOverlay = false
+    @State private var equipmentPositions: [SupabaseEquipmentLatestPosition] = []
+    @State private var photoAnnotations: [MapPhotoAnnotation] = []
+    @State private var equipmentFilter: String = "All"
+    @State private var isLoadingData = true
     @State private var feedLatencyMS = 780
     @State private var activeSweep = 1
     @State private var cameraPreset: MapCameraPreset = .selected
 
+    // D-11: Overlay persistence
+    @AppStorage("ConstructOS.Maps.OverlaySatellite") private var savedSatellite = true
+    @AppStorage("ConstructOS.Maps.OverlayTraffic") private var savedTraffic = false
+    @AppStorage("ConstructOS.Maps.OverlayThermal") private var savedThermal = true
+    @AppStorage("ConstructOS.Maps.OverlayCrew") private var savedCrew = true
+    @AppStorage("ConstructOS.Maps.OverlayWeather") private var savedWeather = false
+    @AppStorage("ConstructOS.Maps.OverlayPhotos") private var savedPhotos = false
+
     private var selectedSite: MapSite {
         mapSites.first { $0.id == selectedSiteID } ?? mapSites[1]
+    }
+
+    private var filteredEquipment: [SupabaseEquipmentLatestPosition] {
+        switch equipmentFilter {
+        case "Equipment": return equipmentPositions.filter { $0.type == "equipment" }
+        case "Vehicles": return equipmentPositions.filter { $0.type == "vehicle" }
+        case "Materials": return equipmentPositions.filter { $0.type == "material" }
+        default: return equipmentPositions
+        }
     }
 
     var body: some View {
@@ -64,6 +106,10 @@ struct MapsView: View {
                         .toggleStyle(.button)
                     Toggle("AUTO TRACK", isOn: $autoTrack)
                         .toggleStyle(.button)
+                    Toggle("TRAFFIC", isOn: $trafficOverlay)
+                        .toggleStyle(.button)
+                    Toggle("PHOTOS", isOn: $photosOverlay)
+                        .toggleStyle(.button)
                 }
                 .font(.system(size: 8, weight: .bold))
 
@@ -85,7 +131,7 @@ struct MapsView: View {
 
                 HStack(spacing: 8) {
                     mapMetricCard(title: "ACTIVE SITES", value: "\(mapSites.count)", detail: "4 live overlays", color: Theme.cyan)
-                    mapMetricCard(title: "SAT LATENCY", value: "\(feedLatencyMS)ms", detail: "within ops target", color: Theme.green)
+                    mapMetricCard(title: "EQUIPMENT", value: "\(equipmentPositions.count)", detail: "\(equipmentPositions.filter { $0.status == "active" }.count) active", color: Theme.green)
                     mapMetricCard(title: "NEXT PASS", value: satellitePasses[0].eta, detail: satellitePasses[0].name, color: Theme.gold)
                     mapMetricCard(title: "SELECTED", value: selectedSite.name, detail: selectedSite.type, color: Theme.accent)
                 }
@@ -97,9 +143,13 @@ struct MapsView: View {
                             routes: mapRoutes,
                             selectedSiteID: $selectedSiteID,
                             satelliteMode: satelliteMode,
+                            trafficOverlay: trafficOverlay,
                             thermalOverlay: thermalOverlay,
                             crewOverlay: crewOverlay,
                             weatherOverlay: weatherOverlay,
+                            photosOverlay: photosOverlay,
+                            equipmentPositions: filteredEquipment,
+                            photoAnnotations: photosOverlay ? photoAnnotations : [],
                             activeSweep: activeSweep,
                             cameraPreset: cameraPreset
                         )
@@ -186,6 +236,66 @@ struct MapsView: View {
                         .padding(12)
                         .background(Theme.surface.opacity(0.78))
                         .cornerRadius(10)
+
+                        // MARK: Equipment Sidebar (D-08, MAP-03)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("EQUIPMENT")
+                                .font(.system(size: 9, weight: .black))
+                                .tracking(1)
+                                .foregroundColor(Theme.green)
+
+                            HStack(spacing: 6) {
+                                ForEach(["All", "Equipment", "Vehicles", "Materials"], id: \.self) { filter in
+                                    Button(filter.uppercased()) { equipmentFilter = filter }
+                                    .font(.system(size: 7, weight: .black))
+                                    .foregroundColor(equipmentFilter == filter ? .black : Theme.muted)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 4)
+                                    .background(equipmentFilter == filter ? Theme.accent : Theme.surface)
+                                    .cornerRadius(4)
+                                    .buttonStyle(.plain)
+                                }
+                            }
+
+                            if filteredEquipment.isEmpty && !isLoadingData {
+                                VStack(spacing: 6) {
+                                    Text("No Equipment Tracked")
+                                        .font(.system(size: 10, weight: .black))
+                                        .foregroundColor(Theme.text)
+                                    Text("Check in your first piece of equipment to see it on the map. Tap Check In Equipment to get started.")
+                                        .font(.system(size: 8, weight: .semibold))
+                                        .foregroundColor(Theme.muted)
+                                        .multilineTextAlignment(.center)
+                                }
+                                .padding(12)
+                            } else {
+                                ForEach(filteredEquipment) { eq in
+                                    HStack(spacing: 8) {
+                                        Image(systemName: eq.sfSymbolName)
+                                            .font(.system(size: 12, weight: .bold))
+                                            .foregroundColor(.white)
+                                            .frame(width: 24, height: 24)
+                                            .background(eq.statusColor)
+                                            .clipShape(Circle())
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(eq.name)
+                                                .font(.system(size: 9, weight: .black))
+                                                .foregroundColor(Theme.text)
+                                            Text("\(eq.type.capitalized) \u{00B7} \(eq.status.replacingOccurrences(of: "_", with: " ").capitalized)")
+                                                .font(.system(size: 7, weight: .semibold))
+                                                .foregroundColor(Theme.muted)
+                                        }
+                                        Spacer()
+                                    }
+                                    .padding(8)
+                                    .background(Theme.surface.opacity(0.72))
+                                    .cornerRadius(8)
+                                }
+                            }
+                        }
+                        .padding(12)
+                        .background(Theme.surface.opacity(0.78))
+                        .cornerRadius(10)
                     }
                     .frame(width: 250)
                 }
@@ -193,6 +303,46 @@ struct MapsView: View {
             .padding(14)
         }
         .background(Theme.bg)
+        .onChange(of: satelliteMode) { _, new in savedSatellite = new }
+        .onChange(of: trafficOverlay) { _, new in savedTraffic = new }
+        .onChange(of: thermalOverlay) { _, new in savedThermal = new }
+        .onChange(of: crewOverlay) { _, new in savedCrew = new }
+        .onChange(of: weatherOverlay) { _, new in savedWeather = new }
+        .onChange(of: photosOverlay) { _, new in savedPhotos = new }
+        .onAppear {
+            satelliteMode = savedSatellite
+            trafficOverlay = savedTraffic
+            thermalOverlay = savedThermal
+            crewOverlay = savedCrew
+            weatherOverlay = savedWeather
+            photosOverlay = savedPhotos
+        }
+        .task {
+            isLoadingData = true
+            do {
+                equipmentPositions = try await SupabaseService.shared.fetchEquipmentPositions()
+            } catch {
+                CrashReporter.shared.reportError("Maps equipment load failed: \(error.localizedDescription)")
+                equipmentPositions = mockEquipmentPositions
+            }
+            do {
+                let docs: [SupabaseGpsDocument] = try await SupabaseService.shared.fetch(
+                    "cs_documents",
+                    query: ["select": "id,filename,gps_lat,gps_lng,created_at", "gps_lat": "not.is.null", "gps_lng": "not.is.null"]
+                )
+                photoAnnotations = docs.map { doc in
+                    MapPhotoAnnotation(
+                        id: doc.id,
+                        filename: doc.filename,
+                        coordinate: CLLocationCoordinate2D(latitude: doc.gpsLat, longitude: doc.gpsLng),
+                        createdAt: doc.createdAt
+                    )
+                }
+            } catch {
+                CrashReporter.shared.reportError("Maps photo load failed: \(error.localizedDescription)")
+            }
+            isLoadingData = false
+        }
     }
 
     private func mapMetricCard(title: String, value: String, detail: String, color: Color) -> some View {
