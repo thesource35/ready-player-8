@@ -102,23 +102,26 @@ struct MapsView: View {
                         .cornerRadius(6)
                 }
 
-                HStack(spacing: 8) {
-                    Toggle("SATELLITE", isOn: $satelliteMode)
-                        .toggleStyle(.button)
-                    Toggle("THERMAL", isOn: $thermalOverlay)
-                        .toggleStyle(.button)
-                    Toggle("CREWS", isOn: $crewOverlay)
-                        .toggleStyle(.button)
-                    Toggle("WEATHER", isOn: $weatherOverlay)
-                        .toggleStyle(.button)
-                    Toggle("AUTO TRACK", isOn: $autoTrack)
-                        .toggleStyle(.button)
-                    Toggle("TRAFFIC", isOn: $trafficOverlay)
-                        .toggleStyle(.button)
-                    Toggle("PHOTOS", isOn: $photosOverlay)
-                        .toggleStyle(.button)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        Toggle("SATELLITE", isOn: $satelliteMode)
+                            .toggleStyle(.button)
+                        Toggle("TRAFFIC", isOn: $trafficOverlay)
+                            .toggleStyle(.button)
+                        Toggle("PHOTOS", isOn: $photosOverlay)
+                            .toggleStyle(.button)
+                        Toggle("CREWS", isOn: $crewOverlay)
+                            .toggleStyle(.button)
+                        Toggle("THERMAL", isOn: $thermalOverlay)
+                            .toggleStyle(.button)
+                        Toggle("WEATHER", isOn: $weatherOverlay)
+                            .toggleStyle(.button)
+                        Toggle("AUTO TRACK", isOn: $autoTrack)
+                            .toggleStyle(.button)
+                    }
+                    .padding(.horizontal, 2)
                 }
-                .font(.system(size: 8, weight: .bold))
+                .font(.system(size: 9, weight: .bold))
 
                 HStack(spacing: 8) {
                     ForEach(MapCameraPreset.allCases) { preset in
