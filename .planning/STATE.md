@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
 status: executing
-stopped_at: Completed 21-01-PLAN.md
-last_updated: "2026-04-14T01:54:47.718Z"
+stopped_at: Completed 21-02-PLAN.md
+last_updated: "2026-04-14T01:59:53.823Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 9
   completed_phases: 8
   total_plans: 63
-  completed_plans: 58
-  percent: 92
+  completed_plans: 59
+  percent: 94
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 21 (live-satellite-traffic-maps) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-04-14
 
@@ -102,6 +102,8 @@ v2.0 roadmap decisions:
 - [Phase 21]: Append-only cs_equipment_locations with no UPDATE/DELETE RLS for tamper-proof location history (T-21-04)
 - [Phase 21]: Database CHECK constraints enforce coordinate ranges at schema level, duplicated in API validateCoordinates (T-21-02)
 - [Phase 21]: cs_equipment_latest_positions as DISTINCT ON database view for efficient latest-position queries
+- [Phase 21-live-satellite-traffic-maps]: camelCase Swift properties with SupabaseService convertFromSnakeCase decoder (matches existing DTO pattern)
+- [Phase 21-live-satellite-traffic-maps]: SupabaseEquipmentLatestPosition matches view columns (latest_ prefix) not raw location table columns
 
 ### Pending Todos
 
@@ -119,6 +121,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T01:54:14.488Z
-Stopped at: Completed 21-01-PLAN.md
+Last session: 2026-04-14T01:59:53.815Z
+Stopped at: Completed 21-02-PLAN.md
 Resume file: None
