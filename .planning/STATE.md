@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
-status: executing
+status: verifying
 stopped_at: Completed 21-03-PLAN.md
-last_updated: "2026-04-14T02:47:25.470Z"
+last_updated: "2026-04-14T02:50:12.767Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 9
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 
 Phase: 21 (live-satellite-traffic-maps) — EXECUTING
 Plan: 6 of 6
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-14
 
 ## Accumulated Context
@@ -105,6 +105,7 @@ v2.0 roadmap decisions:
 - [Phase 21-live-satellite-traffic-maps]: camelCase Swift properties with SupabaseService convertFromSnakeCase decoder (matches existing DTO pattern)
 - [Phase 21-live-satellite-traffic-maps]: SupabaseEquipmentLatestPosition matches view columns (latest_ prefix) not raw location table columns
 - [Phase 21]: API routes follow reports/health pattern: getAuthenticatedClient, try/catch, NextResponse.json
+- [Phase 21-live-satellite-traffic-maps]: API routes follow reports/health pattern; map marker rebuild uses useCallback+useEffect; photo markers purple (#8A8FCC)
 
 ### Pending Todos
 
@@ -122,6 +123,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T02:47:25.466Z
+Last session: 2026-04-14T02:50:12.762Z
 Stopped at: Completed 21-03-PLAN.md
 Resume file: None
