@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
 status: verifying
-stopped_at: Completed 21-03-PLAN.md
-last_updated: "2026-04-14T02:50:12.767Z"
+stopped_at: Completed 21-04-PLAN.md
+last_updated: "2026-04-14T04:57:49.301Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 9
   completed_phases: 8
   total_plans: 63
-  completed_plans: 60
-  percent: 95
+  completed_plans: 61
+  percent: 97
 ---
 
 # Project State
@@ -106,6 +106,7 @@ v2.0 roadmap decisions:
 - [Phase 21-live-satellite-traffic-maps]: SupabaseEquipmentLatestPosition matches view columns (latest_ prefix) not raw location table columns
 - [Phase 21]: API routes follow reports/health pattern: getAuthenticatedClient, try/catch, NextResponse.json
 - [Phase 21-live-satellite-traffic-maps]: API routes follow reports/health pattern; map marker rebuild uses useCallback+useEffect; photo markers purple (#8A8FCC)
+- [Phase 21]: Circle clipShape for all equipment markers; SavedCamera Codable for camera persistence; photo fetch graceful degradation
 
 ### Pending Todos
 
@@ -123,6 +124,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T02:50:12.762Z
-Stopped at: Completed 21-03-PLAN.md
+Last session: 2026-04-14T04:57:49.292Z
+Stopped at: Completed 21-04-PLAN.md
 Resume file: None
