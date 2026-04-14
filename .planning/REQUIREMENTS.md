@@ -25,9 +25,9 @@
 
 ### Team & Crew Management
 
-- [ ] **TEAM-01**: User can create team member profiles with role, trade, and contact info
-- [ ] **TEAM-02**: User can assign team members to projects with role assignments
-- [ ] **TEAM-03**: User can track certifications and licenses with expiration dates
+- [x] **TEAM-01**: User can create team member profiles with role, trade, and contact info
+- [x] **TEAM-02**: User can assign team members to projects with role assignments
+- [x] **TEAM-03**: User can track certifications and licenses with expiration dates
 - [ ] **TEAM-04**: User receives alerts when certifications are nearing expiration
 - [x] **TEAM-05**: User can create daily crew assignments per project
 
@@ -49,7 +49,7 @@
 
 - [ ] **CAL-01**: User can view a timeline of all projects with milestones and bid due dates
 - [ ] **CAL-02**: User can view a Gantt chart with task bars and dependencies
-- [ ] **CAL-03**: Timeline highlights milestone markers (bid due, project start/end, inspections)
+- [x] **CAL-03**: Timeline highlights milestone markers (bid due, project start/end, inspections)
 - [ ] **CAL-04**: User can drag items on timeline to reschedule them
 
 ### Live Site Video (Phase 22 — not yet planned)
@@ -130,18 +130,18 @@ Deferred to v2.2 or later.
 | DOC-03 | Phase 26 (gap closure) | Pending |
 | DOC-04 | Phase 26 (gap closure) | Pending |
 | DOC-05 | Phase 28 (verification) | Pending |
-| TEAM-01 | Phase 28 (verification) | Pending |
-| TEAM-02 | Phase 28 (verification) | Pending |
-| TEAM-03 | Phase 28 (verification) | Pending |
+| TEAM-01 | Phase 23 | Satisfied |
+| TEAM-02 | Phase 23 | Satisfied |
+| TEAM-03 | Phase 23 | Satisfied |
 | TEAM-04 | Phase 25 (gap closure) | Pending |
-| TEAM-05 | Phase 28 (verification) | Complete |
+| TEAM-05 | Phase 23 | Satisfied |
 | FIELD-01 | Phase 28 (verification) | Pending |
 | FIELD-02 | Phase 28 (verification) | Pending |
 | FIELD-03 | Phase 28 (verification) | Pending |
 | FIELD-04 | Phase 28 (verification) | Pending |
 | CAL-01 | Phase 28 (verification) | Pending |
 | CAL-02 | Phase 28 (verification) | Pending |
-| CAL-03 | Phase 28 (verification) | Pending |
+| CAL-03 | Phase 23 | Satisfied |
 | CAL-04 | Phase 28 (verification) | Pending |
 | REPORT-01 | Phase 28 (verification) | Pending |
 | REPORT-02 | Phase 28 (verification) | Pending |
@@ -153,6 +153,7 @@ Deferred to v2.2 or later.
 - v2.1 requirements: 28 total (27 carryover + 1 Phase 22)
 - Mapped to phases: 28
 - Unmapped: 0
+- **Satisfied so far (v2.1): 5** — TEAM-01, TEAM-02, TEAM-03, TEAM-05, CAL-03 (all via Phase 23, verified 2026-04-14)
 - Shipped in v2.0: 0 (see `milestones/v2.0-REQUIREMENTS.md` for AI/PORTAL/MAP — 12 shipped)
 
 ---
