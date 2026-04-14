@@ -6,6 +6,7 @@ import {
   TEMPLATE_DEFAULTS,
   EXPIRY_OPTIONS,
   SECTION_ORDER,
+  DEFAULT_MAP_OVERLAYS,
 } from "@/lib/portal/types";
 import type {
   PortalTemplate,
@@ -38,6 +39,14 @@ export function PortalCreateDialog({
   const [sectionsConfig, setSectionsConfig] = useState<PortalSectionsConfig>(
     () => ({ ...TEMPLATE_DEFAULTS.executive_summary })
   );
+  // D-13: Portal map overlay configuration
+  const [mapOverlays, setMapOverlays] = useState<{
+    show_map: boolean;
+    satellite: boolean;
+    traffic: boolean;
+    equipment: boolean;
+    photos: boolean;
+  }>(() => ({ ...DEFAULT_MAP_OVERLAYS }));
   const [showExactAmounts, setShowExactAmounts] = useState(false);
   const [sectionNotes, setSectionNotes] = useState<Record<string, string>>({});
   const [pinnedItems, setPinnedItems] = useState<Record<string, string[]>>({});
@@ -95,6 +104,12 @@ export function PortalCreateDialog({
     defaults.budget = { ...defaults.budget, enabled: false };
     setSectionsConfig(defaults);
     setShowExactAmounts(false);
+    // D-13: Reset map overlay config to the template-specific default
+    if (defaults.map_overlays) {
+      setMapOverlays({ ...defaults.map_overlays });
+    } else {
+      setMapOverlays({ ...DEFAULT_MAP_OVERLAYS });
+    }
   }, []);
 
   // Validate slug format
@@ -131,6 +146,8 @@ export function PortalCreateDialog({
           template,
           expiry_days: expiryDays,
           client_email: clientEmail || undefined,
+          // D-13: Portal-specific map overlay configuration
+          map_overlays: mapOverlays,
         }),
       });
 
@@ -468,6 +485,159 @@ export function PortalCreateDialog({
                   if (updates.dateRanges) setDateRanges(updates.dateRanges);
                 }}
               />
+            </div>
+
+            {/* Map Overlay Configuration (D-13) */}
+            <div style={{ marginTop: 16 }}>
+              <h4
+                style={{
+                  fontSize: 11,
+                  fontWeight: 800,
+                  letterSpacing: 1,
+                  color: tokens.colors.gray[600],
+                  margin: 0,
+                  marginBottom: 8,
+                  textTransform: "uppercase",
+                }}
+              >
+                Map Settings
+              </h4>
+              <div
+                style={{
+                  border: `1px solid ${tokens.colors.gray[200]}`,
+                  borderRadius: tokens.radius.lg,
+                  padding: tokens.spacing.md,
+                }}
+              >
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    cursor: "pointer",
+                    fontSize: tokens.typography.fontSize.sm,
+                    fontWeight: tokens.typography.fontWeight.medium,
+                    color: tokens.colors.gray[900],
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={mapOverlays.show_map}
+                    onChange={(e) =>
+                      setMapOverlays((prev) => ({
+                        ...prev,
+                        show_map: e.target.checked,
+                      }))
+                    }
+                    aria-label="Show map on portal"
+                  />
+                  <span>Show Map</span>
+                </label>
+                {mapOverlays.show_map && (
+                  <div
+                    style={{
+                      paddingLeft: 24,
+                      marginTop: 8,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 6,
+                    }}
+                  >
+                    <label
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        cursor: "pointer",
+                        fontSize: tokens.typography.fontSize.xs,
+                        color: tokens.colors.gray[700],
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={mapOverlays.satellite}
+                        onChange={(e) =>
+                          setMapOverlays((prev) => ({
+                            ...prev,
+                            satellite: e.target.checked,
+                          }))
+                        }
+                        aria-label="Satellite imagery"
+                      />
+                      <span>Satellite imagery</span>
+                    </label>
+                    <label
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        cursor: "pointer",
+                        fontSize: tokens.typography.fontSize.xs,
+                        color: tokens.colors.gray[700],
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={mapOverlays.traffic}
+                        onChange={(e) =>
+                          setMapOverlays((prev) => ({
+                            ...prev,
+                            traffic: e.target.checked,
+                          }))
+                        }
+                        aria-label="Traffic overlay"
+                      />
+                      <span>Traffic overlay</span>
+                    </label>
+                    <label
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        cursor: "pointer",
+                        fontSize: tokens.typography.fontSize.xs,
+                        color: tokens.colors.gray[700],
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={mapOverlays.equipment}
+                        onChange={(e) =>
+                          setMapOverlays((prev) => ({
+                            ...prev,
+                            equipment: e.target.checked,
+                          }))
+                        }
+                        aria-label="Equipment locations"
+                      />
+                      <span>Equipment locations</span>
+                    </label>
+                    <label
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        cursor: "pointer",
+                        fontSize: tokens.typography.fontSize.xs,
+                        color: tokens.colors.gray[700],
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={mapOverlays.photos}
+                        onChange={(e) =>
+                          setMapOverlays((prev) => ({
+                            ...prev,
+                            photos: e.target.checked,
+                          }))
+                        }
+                        aria-label="GPS photos"
+                      />
+                      <span>GPS photos</span>
+                    </label>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Error */}

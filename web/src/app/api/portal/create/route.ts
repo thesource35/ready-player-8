@@ -38,6 +38,13 @@ export async function POST(req: Request) {
     template?: PortalTemplate;
     expiry_days?: number | null;
     client_email?: string;
+    map_overlays?: {
+      show_map?: boolean;
+      satellite?: boolean;
+      traffic?: boolean;
+      equipment?: boolean;
+      photos?: boolean;
+    };
   };
   try {
     body = await req.json();
@@ -149,6 +156,18 @@ export async function POST(req: Request) {
 
   // Get default sections config from template
   const sectionsConfig = { ...TEMPLATE_DEFAULTS[template] };
+
+  // D-13: Merge client-supplied map overlay config, coercing to booleans for safety
+  if (body.map_overlays && typeof body.map_overlays === "object") {
+    const templateMap = sectionsConfig.map_overlays;
+    sectionsConfig.map_overlays = {
+      show_map: Boolean(body.map_overlays.show_map ?? templateMap?.show_map ?? true),
+      satellite: Boolean(body.map_overlays.satellite ?? templateMap?.satellite ?? true),
+      traffic: Boolean(body.map_overlays.traffic ?? templateMap?.traffic ?? false),
+      equipment: Boolean(body.map_overlays.equipment ?? templateMap?.equipment ?? false),
+      photos: Boolean(body.map_overlays.photos ?? templateMap?.photos ?? true),
+    };
+  }
 
   try {
     const { link, config } = await createPortalLink({
