@@ -23,7 +23,27 @@ export type PortalSectionsConfig = {
     date_range?: { start: string; end: string };
   };
   documents: { enabled: boolean; allowed_document_ids?: string[] };
+  // D-13: Portal map overlay configuration. Optional for backward compatibility
+  // with portal links created before Phase 21.
+  map_overlays?: {
+    show_map: boolean;
+    satellite: boolean;
+    traffic: boolean;
+    equipment: boolean;
+    photos: boolean;
+  };
 };
+
+// D-13: Default map overlay configuration. Used when a portal link has no
+// map_overlays field (backward compatibility) or as the initial state in the
+// portal creation dialog.
+export const DEFAULT_MAP_OVERLAYS = {
+  show_map: true,
+  satellite: true,
+  traffic: false,
+  equipment: false,
+  photos: true,
+} as const;
 
 export type PortalConfig = {
   id: string;
@@ -113,6 +133,7 @@ export type PortalAuditLog = {
 };
 
 // Default section configs per template (D-18, D-33)
+// D-13: Each template also seeds map_overlays with template-appropriate defaults.
 export const TEMPLATE_DEFAULTS: Record<PortalTemplate, PortalSectionsConfig> = {
   executive_summary: {
     schedule: { enabled: true },
@@ -120,6 +141,13 @@ export const TEMPLATE_DEFAULTS: Record<PortalTemplate, PortalSectionsConfig> = {
     photos: { enabled: false },
     change_orders: { enabled: true },
     documents: { enabled: false },
+    map_overlays: {
+      show_map: true,
+      satellite: true,
+      traffic: false,
+      equipment: false,
+      photos: true,
+    },
   },
   full_progress: {
     schedule: { enabled: true },
@@ -127,6 +155,13 @@ export const TEMPLATE_DEFAULTS: Record<PortalTemplate, PortalSectionsConfig> = {
     photos: { enabled: true },
     change_orders: { enabled: true },
     documents: { enabled: true },
+    map_overlays: {
+      show_map: true,
+      satellite: true,
+      traffic: false,
+      equipment: true,
+      photos: true,
+    },
   },
   photo_update: {
     schedule: { enabled: false },
@@ -134,6 +169,13 @@ export const TEMPLATE_DEFAULTS: Record<PortalTemplate, PortalSectionsConfig> = {
     photos: { enabled: true },
     change_orders: { enabled: false },
     documents: { enabled: false },
+    map_overlays: {
+      show_map: true,
+      satellite: true,
+      traffic: false,
+      equipment: false,
+      photos: true,
+    },
   },
 };
 
