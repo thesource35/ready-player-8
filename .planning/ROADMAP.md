@@ -35,7 +35,7 @@
 - [x] **Phase 18: Enhanced AI (Angelic AI v2)** — Context-aware chat, RFI/CO generation, bid analysis (completed 2026-04-11)
 - [x] **Phase 19: Reporting & Dashboards** — Project reports, cross-project rollups, PDF export, charts (completed 2026-04-12)
 - [x] **Phase 20: Client Portal & Sharing** — Shareable read-only project URLs with branding (completed 2026-04-13)
-- [ ] **Phase 21: Live Satellite & Traffic Maps** — Satellite imagery, real-time traffic overlays, equipment tracking across all map features
+- [x] **Phase 21: Live Satellite & Traffic Maps** — Satellite imagery, real-time traffic overlays, equipment tracking across all map features (completed 2026-04-14)
 
 ## Phase Details
 
@@ -208,7 +208,7 @@ Plans:
 - [x] 21-03-PLAN.md — Web maps enhancement: traffic, equipment, photos, API routes
 - [x] 21-04-PLAN.md — iOS MapsView: traffic toggle, equipment markers, camera persistence
 - [x] 21-05-PLAN.md — iOS equipment check-in flow + delivery routes
-- [ ] 21-06-PLAN.md — Portal map overlay configuration (D-13)
+- [x] 21-06-PLAN.md — Portal map overlay configuration (D-13)
 **UI hint**: yes
 
 ## Progress
@@ -224,4 +224,4 @@ Plans:
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete    | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.0 | 18/18 | Complete    | 2026-04-12 |
 | 20. Client Portal & Sharing | v2.0 | 10/10 | Complete    | 2026-04-13 |
-| 21. Live Satellite & Traffic Maps | v2.0 | 5/6 | In Progress|  |
+| 21. Live Satellite & Traffic Maps | v2.0 | 6/6 | Complete   | 2026-04-14 |

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Feature Expansion
 status: verifying
-stopped_at: Completed 21-05-PLAN.md
-last_updated: "2026-04-14T05:47:41.661Z"
+stopped_at: Completed 21-06-PLAN.md (phase 21 complete, ready for verification)
+last_updated: "2026-04-14T06:10:24.209Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 9
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 63
-  completed_plans: 62
-  percent: 98
+  completed_plans: 63
+  percent: 100
 ---
 
 # Project State
@@ -112,6 +112,9 @@ v2.0 roadmap decisions:
 - [Phase 21-live-satellite-traffic-maps]: Straight-line MapPolyline hidden when computed road MKRoute exists for same route id to avoid double-render
 - [Phase 21-live-satellite-traffic-maps]: CheckInLocationManager: NSObject+ObservableObject+CLLocationManagerDelegate with @Published location/accuracy/errorMessage triplet
 - [Phase 21-live-satellite-traffic-maps]: Extracted loadMapData() helper so check-in success callback can re-trigger equipment/photo refresh
+- [Phase 21-live-satellite-traffic-maps]: [Phase 21]: DEFAULT_MAP_OVERLAYS applied at types/API/page layers for JSONB backward compat
+- [Phase 21-live-satellite-traffic-maps]: [Phase 21-06]: Token-based portal map API (matches /api/portal/photos pattern); slug lookup only in server page component
+- [Phase 21-live-satellite-traffic-maps]: [Phase 21-06]: Portal map route path /portal/[slug]/[project]/map matches existing portal route convention (not plan's [companySlug]/[slug])
 
 ### Pending Todos
 
@@ -129,6 +132,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T05:47:41.657Z
-Stopped at: Completed 21-05-PLAN.md
+Last session: 2026-04-14T06:10:24.206Z
+Stopped at: Completed 21-06-PLAN.md (phase 21 complete, ready for verification)
 Resume file: None
