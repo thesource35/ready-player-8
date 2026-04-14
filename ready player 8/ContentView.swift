@@ -740,9 +740,8 @@ struct ContentView: View {
         case .team: TeamView()
         // MARK: Phase 15 — TEAM-03
         case .certifications: CertificationsView()
-        // MARK: Phase 15 — TEAM-05 — DailyCrewView requires projectId; stub with first mock project id until a project picker is added in a follow-up
-        // TODO: wrap in a project picker
-        case .dailyCrew: DailyCrewView(projectId: mockProjects.first?.id.uuidString ?? "")
+        // MARK: Phase 15 — TEAM-05 — project picker lives inside DailyCrewView (Phase 23-01).
+        case .dailyCrew: DailyCrewView()
         case .wealth:
             VStack(alignment: .leading, spacing: 14) {
                 ScrollView(.horizontal, showsIndicators: false) {
