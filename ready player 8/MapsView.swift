@@ -379,17 +379,33 @@ struct MapsView: View {
 
 // MARK: - Live Map View
 
+// MARK: - Saved Camera (D-12)
+
+private struct SavedCamera: Codable {
+    let lat: Double
+    let lng: Double
+    let spanLat: Double
+    let spanLng: Double
+}
+
 struct LiveMapView: View {
     let sites: [MapSite]
     let routes: [MapRoute]
     @Binding var selectedSiteID: UUID?
     let satelliteMode: Bool
+    let trafficOverlay: Bool
     let thermalOverlay: Bool
     let crewOverlay: Bool
     let weatherOverlay: Bool
+    let photosOverlay: Bool
+    let equipmentPositions: [SupabaseEquipmentLatestPosition]
+    let photoAnnotations: [MapPhotoAnnotation]
     let activeSweep: Int
     let cameraPreset: MapCameraPreset
     @State private var cameraPosition: MapCameraPosition = .region(MapSite.defaultRegion)
+    @State private var selectedEquipmentID: String?
+    @State private var selectedPhotoID: String?
+    @AppStorage("ConstructOS.Maps.Camera.default") private var savedCameraJSON = ""
 
     private var selectedSite: MapSite? {
         sites.first { $0.id == selectedSiteID }
@@ -516,6 +532,12 @@ struct LiveMapView: View {
                         if weatherOverlay {
                             overlayTag("Wind", color: Theme.purple)
                         }
+                        if trafficOverlay {
+                            overlayTag("Traffic", color: Theme.gold)
+                        }
+                        if photosOverlay {
+                            overlayTag("Photos", color: Theme.cyan)
+                        }
                         Spacer()
                         Text("Sweep #\(activeSweep)")
                             .font(.system(size: 7, weight: .bold))
@@ -536,7 +558,28 @@ struct LiveMapView: View {
             }
         }
         .onAppear {
-            updateCamera()
+            if !savedCameraJSON.isEmpty,
+               let data = savedCameraJSON.data(using: .utf8),
+               let cam = try? JSONDecoder().decode(SavedCamera.self, from: data) {
+                cameraPosition = .region(MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: cam.lat, longitude: cam.lng),
+                    span: MKCoordinateSpan(latitudeDelta: cam.spanLat, longitudeDelta: cam.spanLng)
+                ))
+            } else {
+                updateCamera()
+            }
+        }
+        .onDisappear {
+            let currentRegion = region(for: cameraPreset)
+            let cam = SavedCamera(
+                lat: currentRegion.center.latitude,
+                lng: currentRegion.center.longitude,
+                spanLat: currentRegion.span.latitudeDelta,
+                spanLng: currentRegion.span.longitudeDelta
+            )
+            if let data = try? JSONEncoder().encode(cam), let str = String(data: data, encoding: .utf8) {
+                savedCameraJSON = str
+            }
         }
         .onChange(of: selectedSiteID) { _, _ in
             updateCamera()
@@ -560,10 +603,10 @@ struct LiveMapView: View {
     private var mapLayer: some View {
         if satelliteMode {
             liveMapBase
-                .mapStyle(.hybrid)
+                .mapStyle(.hybrid(elevation: .realistic, showsTraffic: trafficOverlay))
         } else {
             liveMapBase
-                .mapStyle(.standard)
+                .mapStyle(.standard(showsTraffic: trafficOverlay))
         }
     }
 
@@ -591,6 +634,73 @@ struct LiveMapView: View {
                     }
                     .onTapGesture {
                         selectedSiteID = site.id
+                    }
+                }
+            }
+
+            // MARK: Equipment Annotations (D-08, MAP-03)
+            ForEach(equipmentPositions) { item in
+                Annotation(item.name, coordinate: item.coordinate, anchor: .bottom) {
+                    VStack(spacing: 2) {
+                        Image(systemName: item.sfSymbolName)
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 28, height: 28)
+                            .background(item.statusColor)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.white, lineWidth: 2))
+
+                        if selectedEquipmentID == item.id {
+                            VStack(spacing: 1) {
+                                Text(item.name)
+                                    .font(.system(size: 7, weight: .black))
+                                    .foregroundColor(Theme.text)
+                                Text(item.status.replacingOccurrences(of: "_", with: " ").capitalized)
+                                    .font(.system(size: 6, weight: .semibold))
+                                    .foregroundColor(item.statusColor)
+                            }
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 3)
+                            .background(Theme.surface.opacity(0.9))
+                            .cornerRadius(4)
+                        }
+                    }
+                    .onTapGesture {
+                        selectedEquipmentID = selectedEquipmentID == item.id ? nil : item.id
+                    }
+                }
+            }
+
+            // MARK: Photo Annotations (D-17, MAP-04)
+            ForEach(photoAnnotations) { photo in
+                Annotation(photo.filename, coordinate: photo.coordinate, anchor: .bottom) {
+                    VStack(spacing: 2) {
+                        Image(systemName: "camera.fill")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 22, height: 22)
+                            .background(Theme.purple)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
+
+                        if selectedPhotoID == photo.id {
+                            VStack(spacing: 1) {
+                                Text(photo.filename)
+                                    .font(.system(size: 7, weight: .black))
+                                    .foregroundColor(Theme.text)
+                                    .lineLimit(1)
+                                Text(photo.createdAt)
+                                    .font(.system(size: 6, weight: .semibold))
+                                    .foregroundColor(Theme.muted)
+                            }
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 3)
+                            .background(Theme.surface.opacity(0.9))
+                            .cornerRadius(4)
+                        }
+                    }
+                    .onTapGesture {
+                        selectedPhotoID = selectedPhotoID == photo.id ? nil : photo.id
                     }
                 }
             }
