@@ -171,10 +171,10 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
   5. Retention is self-maintaining: 30 d VOD / 24 h live / 30 d idle-source archive / 7 d webhook-events / 5-min stuck-upload requeue — all via pg_cron + Supabase Edge Functions
   6. Every user action either succeeds visibly or surfaces an AppError with actionable copy — no silent failures in the Mux, upload, transcode, or portal paths
   7. All 8 D-40 analytics events emit at their defined call sites with project/org/user context (portal_link_id for portal events)
-**Plans:** 2/12 plans executed
+**Plans:** 3/12 plans executed
 - [x] 22-00-PLAN.md — Wave 0 test scaffolding (9 web stubs + 4 iOS stubs + worker skeleton + Mux webhook fixtures + tiny.mp4)
 - [x] 22-01-PLAN.md — Wave 1 schema migrations: cs_video_sources, cs_video_assets, cs_video_webhook_events, cs_portal_config.show_cameras, 'videos' bucket + storage RLS, pg_net DB webhook trigger (applied to remote 2026-04-15)
-- [ ] 22-02-PLAN.md — Wave 1 shared model types (Swift structs + TS types + 9 AppError cases + VideoErrorCode wire taxonomy)
+- [x] 22-02-PLAN.md — Wave 1 shared model types (Swift structs + TS types + 9 AppError cases + VideoErrorCode wire taxonomy)
 - [ ] 22-03-PLAN.md — Wave 2 Mux server integration: SDK wrapper + HMAC verify + create/delete live-input + playback-token + webhook receiver with D-27 5-min grace
 - [ ] 22-04-PLAN.md — Wave 2 VOD pipeline: tus upload-url route, HLS manifest sign+rewrite route, ffmpeg worker container on Fly.io with codec check + 2x retry
 - [ ] 22-05-PLAN.md — Wave 2 iOS service layer: SupabaseService extensions, VideoSyncManager, VideoPlaybackAuth, VideoUploadClient
@@ -238,7 +238,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 | 16. Field Tools | v2.1 | 6/6 | Code Complete | 2026-04-08 |
 | 17. Calendar & Scheduling | v2.1 | 5/5 | Code Complete | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.1 | 18/18 | Code Complete | 2026-04-12 |
-| 22. Live Site Video | v2.1 | 2/12 | In Progress |  |
+| 22. Live Site Video | v2.1 | 3/12 | In Progress|  |
 | 23. iOS Navigation & Assignment Wiring | v2.1 | 2/2 | Complete   | 2026-04-14 |
 | 24. Document → Activity Event Emission | v2.1 | 0/? | Planned | — |
 | 25. Certification Expiry Notifications | v2.1 | 0/? | Planned | — |

@@ -68,7 +68,7 @@ VIDEO-01 expanded into 16 sub-requirements during Phase 22 planning (2026-04-15)
 - [ ] **VIDEO-01-J**: iOS service layer — SupabaseService extensions, VideoSyncManager cache, VideoPlaybackAuth client, VideoUploadClient with probeFile + retry (Plan 22-05)
 - [ ] **VIDEO-01-K**: Cellular auto-downgrade — iOS NWPathMonitor defaults player to 480p on cellular; ConstructOS.Video.DefaultQuality AppStorage override; HD toggle overlay current-session only per D-26/D-36 (Plans 22-05, 22-06)
 - [ ] **VIDEO-01-L**: Portal exposure — cs_portal_config.show_cameras toggle + per-clip portal_visible; /api/portal/video/playback-token + /api/portal/video/playback-url enforce drone exclusion + head-only live + streaming-only VOD per D-15/D-21/D-22/D-34 (Plans 22-01, 22-09)
-- [ ] **VIDEO-01-M**: Error taxonomy — 9 new AppError cases (unsupportedVideoFormat, clipTooLong, clipTooLarge, audioConsentRequired, transcodeTimeout, muxIngestFailed, muxDeleteFailed, cameraLimitReached, webhookSignatureInvalid); wire-portable VideoErrorCode enum for web per D-40 discretion (Plan 22-02)
+- [x] **VIDEO-01-M**: Error taxonomy — 9 new AppError cases (unsupportedVideoFormat, clipTooLong, clipTooLarge, audioConsentRequired, transcodeTimeout, muxIngestFailed, muxDeleteFailed, cameraLimitReached, webhookSignatureInvalid); wire-portable VideoErrorCode enum for web per D-40 discretion (Plan 22-02)
 - [x] **VIDEO-01-N**: Webhook security — Mux HMAC verify + cs_video_webhook_events dedupe table with 7-day prune; 5-min disconnect-grace window (D-27) before closing live asset rows per D-32/D-27 (Plans 22-01 [dedupe table], 22-03 [HMAC verify + grace], 22-10 [7-day prune])
 - [ ] **VIDEO-01-O**: Retention + lifecycle — daily cron prunes VOD (30 d) + live assets (24 h after ended_at) + Mux archived assets; archives idle fixed_camera sources after 30 d + disables Mux live_input; prunes webhook-events older than 7 d; every-5-min backstop requeues stuck uploads per D-09/D-10/D-30/D-32 (Plan 22-10)
 - [ ] **VIDEO-01-P**: Analytics — 8 D-40 events (video_upload_started/failed, video_transcode_succeeded/failed, live_stream_started/disconnected, video_playback_started, portal_video_view) wired at all call sites with org/project/user context; no PII in payloads (Plan 22-11)
@@ -178,7 +178,7 @@ Deferred to v2.2 or later.
 | VIDEO-01-J | Phase 22 (planned) | Pending |
 | VIDEO-01-K | Phase 22 (planned) | Pending |
 | VIDEO-01-L | Phase 22 (planned) | Pending |
-| VIDEO-01-M | Phase 22 (planned) | Pending |
+| VIDEO-01-M | Phase 22 (planned) | Complete |
 | VIDEO-01-N | Phase 22 (22-01 dedupe table; 22-03 HMAC verify; 22-10 7-day prune) | Satisfied |
 | VIDEO-01-O | Phase 22 (planned) | Pending |
 | VIDEO-01-P | Phase 22 (planned) | Pending |
