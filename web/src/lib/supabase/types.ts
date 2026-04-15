@@ -313,3 +313,15 @@ export type DailyCrew = {
   created_at: string;
 };
 
+// Phase 22 re-exports (keep import paths stable for consumers that use @/lib/supabase/types)
+export type {
+  VideoSource,
+  VideoAsset,
+  VideoWebhookEvent,
+  VideoKind,
+  VideoSourceType,
+  VideoAssetKind,
+  VideoSourceStatus,
+  VideoAssetStatus,
+  VideoDefaultQuality,
+} from '@/lib/video/types'
