@@ -1,0 +1,13 @@
+{
+  "type": "video.asset.ready",
+  "object": { "type": "asset", "id": "test-asset-id-001" },
+  "id": "mux-event-test-asset-ready-001",
+  "created_at": "2026-04-15T12:45:00.000Z",
+  "data": {
+    "id": "test-asset-id-001",
+    "live_stream_id": "test-live-input-id-active",
+    "status": "ready",
+    "duration": 120.5,
+    "playback_ids": [{ "id": "test-playback-id-vod-001", "policy": "signed" }]
+  }
+}

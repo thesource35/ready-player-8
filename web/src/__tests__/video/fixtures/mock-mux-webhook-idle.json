@@ -1,0 +1,13 @@
+{
+  "type": "video.live_stream.idle",
+  "object": { "type": "live_stream", "id": "test-live-input-id-active" },
+  "id": "mux-event-test-idle-001",
+  "created_at": "2026-04-15T12:30:00.000Z",
+  "data": {
+    "id": "test-live-input-id-active",
+    "status": "idle",
+    "stream_key": "REDACTED",
+    "latency_mode": "low",
+    "playback_ids": [{ "id": "test-playback-id-001", "policy": "signed" }]
+  }
+}
