@@ -160,11 +160,32 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 **v2.1 status**: verification pending (see Phase 28)
 
 ### Phase 22: Live Site Video — per-project HLS camera feeds
-**Goal:** [To be planned]
-**Requirements**: VIDEO-01 (TBD)
-**Depends on:** Phase 21
-**Plans:** 0 plans — never planned
-- [ ] TBD (run /gsd-plan-phase 22 to break down)
+**Goal:** Deliver per-project live camera feeds + recorded-clip VOD, viewable on iOS and web via HLS, with opt-in client-portal exposure. Mux owns the live ingest + LL-HLS pipeline; a Fly.io-hosted ffmpeg worker transcodes uploads into Supabase Storage. Two-table data model (`cs_video_sources` + `cs_video_assets`) with a `source_type` discriminator so Phase 29 extends row-only.
+**Depends on:** Phase 21 (RLS + AppStorage patterns), Phase 20 (portal-link schema extension), Phase 13 (upload UX + signed-URL pattern)
+**Requirements**: VIDEO-01-A..P (16 sub-requirements, see REQUIREMENTS.md)
+**Success Criteria** (what must be TRUE):
+  1. User can register a jobsite camera in ProjectDetail → Cameras (wizard creates Mux live_input, shows RTMP URL + stream key once)
+  2. User can watch a live LL-HLS stream within 3-5 s glass-to-glass on iOS + web with 24 h DVR scrubback
+  3. User can upload MP4/MOV clips (≤ 2 GB / ≤ 60 min) that transcode to HLS in the background and play back on both platforms
+  4. User can toggle a Phase 20 portal link to `show_cameras=true` and flag individual clips `portal_visible=true`; portal viewers get head-only live + streaming-only VOD; drone-typed assets are NEVER exposed
+  5. Retention is self-maintaining: 30 d VOD / 24 h live / 30 d idle-source archive / 7 d webhook-events / 5-min stuck-upload requeue — all via pg_cron + Supabase Edge Functions
+  6. Every user action either succeeds visibly or surfaces an AppError with actionable copy — no silent failures in the Mux, upload, transcode, or portal paths
+  7. All 8 D-40 analytics events emit at their defined call sites with project/org/user context (portal_link_id for portal events)
+**Plans:** 12 plans
+- [ ] 22-00-PLAN.md — Wave 0 test scaffolding (9 web stubs + 4 iOS stubs + worker skeleton + Mux webhook fixtures + tiny.mp4)
+- [ ] 22-01-PLAN.md — Wave 1 schema migrations: cs_video_sources, cs_video_assets, cs_video_webhook_events, cs_portal_config.show_cameras, 'videos' bucket + storage RLS, pg_net DB webhook trigger [BLOCKING db push]
+- [ ] 22-02-PLAN.md — Wave 1 shared model types (Swift structs + TS types + 9 AppError cases + VideoErrorCode wire taxonomy)
+- [ ] 22-03-PLAN.md — Wave 2 Mux server integration: SDK wrapper + HMAC verify + create/delete live-input + playback-token + webhook receiver with D-27 5-min grace
+- [ ] 22-04-PLAN.md — Wave 2 VOD pipeline: tus upload-url route, HLS manifest sign+rewrite route, ffmpeg worker container on Fly.io with codec check + 2x retry
+- [ ] 22-05-PLAN.md — Wave 2 iOS service layer: SupabaseService extensions, VideoSyncManager, VideoPlaybackAuth, VideoUploadClient
+- [ ] 22-06-PLAN.md — Wave 3 iOS player wrappers: LiveStreamView (LL-HLS, mute-on-boot), VideoClipPlayer, CellularQualityMonitor (D-36), VideoPlayerChrome
+- [ ] 22-07-PLAN.md — Wave 3 web player wrappers: LiveStreamView + VideoClipPlayer via @mux/mux-player-react, usePlaybackToken hook with auto-refresh
+- [ ] 22-08-PLAN.md — Wave 3 Cameras section UI: wizard (with audio jurisdiction warning), upload sheet, cards, soft-cap banner, per-clip portal toggle — both platforms
+- [ ] 22-09-PLAN.md — Wave 4 portal exposure: portal playback-token + playback-url routes with D-22/D-34 enforcement, Show cameras toggle on Phase 20 portal editor (web + iOS)
+- [ ] 22-10-PLAN.md — Wave 4 retention + lifecycle: 4 Supabase Edge Functions + pg_cron schedules (daily prune/archive, 7-day dedupe prune, 5-min stuck-upload backstop)
+- [ ] 22-11-PLAN.md — Wave 4 analytics wiring + un-skip Wave 0 tests + VERIFICATION.md for manual UAT
+**UI hint**: yes (ProjectDetail → new Cameras section per D-20; no top-level nav tab — reserved for Phase 29)
+**Blocks**: Phase 29 (Live Video Traffic Feed) — Phase 29 is row-only extension of this schema
 
 ### Phase 23: iOS Navigation & Assignment Wiring
 **Goal:** Existing iOS views (TeamView, CertificationsView, DailyCrewView, AgendaListView) are reachable from user navigation; daily crew edits do not 409
@@ -217,10 +238,25 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 | 16. Field Tools | v2.1 | 6/6 | Code Complete | 2026-04-08 |
 | 17. Calendar & Scheduling | v2.1 | 5/5 | Code Complete | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.1 | 18/18 | Code Complete | 2026-04-12 |
-| 22. Live Site Video | v2.1 | 0/? | Not planned | — |
+| 22. Live Site Video | v2.1 | 0/12 | Planned | — |
 | 23. iOS Navigation & Assignment Wiring | v2.1 | 2/2 | Complete   | 2026-04-14 |
 | 24. Document → Activity Event Emission | v2.1 | 0/? | Planned | — |
 | 25. Certification Expiry Notifications | v2.1 | 0/? | Planned | — |
 | 26. Documents RLS Table Reconciliation | v2.1 | 0/? | Planned | — |
 | 27. Portal → Map Navigation Link | v2.1 | 0/? | Planned | — |
 | 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 0/? | Planned | — |
+| 29. Live Video Traffic Feed (Sat + Drone + Suggestions) | v2.1 | 0/? | Planned | — |
+
+## Backlog
+
+_No items in backlog._
+
+### Phase 29: Live Video Traffic Feed (Sat + Drone + Suggestions)
+
+**Goal:** [To be planned — promoted from backlog 2026-04-14]
+**Requirements:** TBD
+**Depends on:** Phase 21 (Live Satellite Traffic Maps), Phase 22 (Live Site Video)
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 29 to break down)
