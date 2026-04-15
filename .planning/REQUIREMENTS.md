@@ -56,9 +56,9 @@
 
 VIDEO-01 expanded into 16 sub-requirements during Phase 22 planning (2026-04-15). Every sub-requirement is claimed by at least one plan's `requirements` frontmatter field.
 
-- [ ] **VIDEO-01-A**: Data model — `cs_video_sources` (per camera) and `cs_video_assets` (per clip or live session) exist with `source_type` discriminator for Phase 29 row-only extension, `audio_enabled`, `portal_visible`, `retention_expires_at`, and `name` columns per D-07/D-08/D-21/D-35/D-38 (Plans 22-01, 22-02)
-- [ ] **VIDEO-01-B**: RLS — `cs_video_sources` and `cs_video_assets` enforce org-scoped SELECT/INSERT/UPDATE via `user_orgs`; DELETE role-gated (owner/admin or created_by self) per D-16/D-39 (Plan 22-01)
-- [ ] **VIDEO-01-C**: Storage — private `videos` Supabase bucket with org-path RLS, 2 GB file_size_limit, MP4/MOV/m3u8/ts/jpeg MIME allowlist per D-12/D-17/D-31 (Plan 22-01)
+- [x] **VIDEO-01-A**: Data model — `cs_video_sources` (per camera) and `cs_video_assets` (per clip or live session) exist with `source_type` discriminator for Phase 29 row-only extension, `audio_enabled`, `portal_visible`, `retention_expires_at`, and `name` columns per D-07/D-08/D-21/D-35/D-38 (Plans 22-01, 22-02)
+- [x] **VIDEO-01-B**: RLS — `cs_video_sources` and `cs_video_assets` enforce org-scoped SELECT/INSERT/UPDATE via `user_orgs`; DELETE role-gated (owner/admin or created_by self) per D-16/D-39 (Plan 22-01)
+- [x] **VIDEO-01-C**: Storage — private `videos` Supabase bucket with org-path RLS, 2 GB file_size_limit, MP4/MOV/m3u8/ts/jpeg MIME allowlist per D-12/D-17/D-31 (Plan 22-01)
 - [ ] **VIDEO-01-D**: Live ingest — POST /api/video/mux/create-live-input creates Mux live_input (LL-HLS, 60s reconnect_window, signed playback, DVR archive) and inserts cs_video_sources row with atomic rollback on failure per D-03/D-04/D-29 (Plan 22-03)
 - [ ] **VIDEO-01-E**: Playback auth (live) — POST /api/video/mux/playback-token mints RS256 Mux JWT bound to playback_id with TTL ≤ 5 min per D-14 (Plan 22-03)
 - [ ] **VIDEO-01-F**: Playback wrappers — iOS `LiveStreamView` + `VideoClipPlayer` over AVPlayer; web `<LiveStreamView>` + `<VideoClipPlayer>` over @mux/mux-player-react; both accept optional portalToken per D-18/D-19 (Plans 22-06, 22-07)
@@ -69,7 +69,7 @@ VIDEO-01 expanded into 16 sub-requirements during Phase 22 planning (2026-04-15)
 - [ ] **VIDEO-01-K**: Cellular auto-downgrade — iOS NWPathMonitor defaults player to 480p on cellular; ConstructOS.Video.DefaultQuality AppStorage override; HD toggle overlay current-session only per D-26/D-36 (Plans 22-05, 22-06)
 - [ ] **VIDEO-01-L**: Portal exposure — cs_portal_config.show_cameras toggle + per-clip portal_visible; /api/portal/video/playback-token + /api/portal/video/playback-url enforce drone exclusion + head-only live + streaming-only VOD per D-15/D-21/D-22/D-34 (Plans 22-01, 22-09)
 - [ ] **VIDEO-01-M**: Error taxonomy — 9 new AppError cases (unsupportedVideoFormat, clipTooLong, clipTooLarge, audioConsentRequired, transcodeTimeout, muxIngestFailed, muxDeleteFailed, cameraLimitReached, webhookSignatureInvalid); wire-portable VideoErrorCode enum for web per D-40 discretion (Plan 22-02)
-- [ ] **VIDEO-01-N**: Webhook security — Mux HMAC verify + cs_video_webhook_events dedupe table with 7-day prune; 5-min disconnect-grace window (D-27) before closing live asset rows per D-32/D-27 (Plans 22-01, 22-03)
+- [x] **VIDEO-01-N**: Webhook security — Mux HMAC verify + cs_video_webhook_events dedupe table with 7-day prune; 5-min disconnect-grace window (D-27) before closing live asset rows per D-32/D-27 (Plans 22-01 [dedupe table], 22-03 [HMAC verify + grace], 22-10 [7-day prune])
 - [ ] **VIDEO-01-O**: Retention + lifecycle — daily cron prunes VOD (30 d) + live assets (24 h after ended_at) + Mux archived assets; archives idle fixed_camera sources after 30 d + disables Mux live_input; prunes webhook-events older than 7 d; every-5-min backstop requeues stuck uploads per D-09/D-10/D-30/D-32 (Plan 22-10)
 - [ ] **VIDEO-01-P**: Analytics — 8 D-40 events (video_upload_started/failed, video_transcode_succeeded/failed, live_stream_started/disconnected, video_playback_started, portal_video_view) wired at all call sites with org/project/user context; no PII in payloads (Plan 22-11)
 
@@ -166,9 +166,9 @@ Deferred to v2.2 or later.
 | REPORT-02 | Phase 28 (verification) | Pending |
 | REPORT-03 | Phase 28 (verification) | Pending |
 | REPORT-04 | Phase 28 (verification) | Pending |
-| VIDEO-01-A | Phase 22 (planned) | Pending |
-| VIDEO-01-B | Phase 22 (planned) | Pending |
-| VIDEO-01-C | Phase 22 (planned) | Pending |
+| VIDEO-01-A | Phase 22 (22-01) | Satisfied |
+| VIDEO-01-B | Phase 22 (22-01) | Satisfied |
+| VIDEO-01-C | Phase 22 (22-01) | Satisfied |
 | VIDEO-01-D | Phase 22 (planned) | Pending |
 | VIDEO-01-E | Phase 22 (planned) | Pending |
 | VIDEO-01-F | Phase 22 (planned) | Pending |
@@ -179,7 +179,7 @@ Deferred to v2.2 or later.
 | VIDEO-01-K | Phase 22 (planned) | Pending |
 | VIDEO-01-L | Phase 22 (planned) | Pending |
 | VIDEO-01-M | Phase 22 (planned) | Pending |
-| VIDEO-01-N | Phase 22 (planned) | Pending |
+| VIDEO-01-N | Phase 22 (22-01 dedupe table; 22-03 HMAC verify; 22-10 7-day prune) | Satisfied |
 | VIDEO-01-O | Phase 22 (planned) | Pending |
 | VIDEO-01-P | Phase 22 (planned) | Pending |
 
@@ -187,7 +187,7 @@ Deferred to v2.2 or later.
 - v2.1 requirements: 43 total (27 carryover + 16 Phase 22 sub-requirements VIDEO-01-A..P)
 - Mapped to phases: 43
 - Unmapped: 0
-- **Satisfied so far (v2.1): 5** — TEAM-01, TEAM-02, TEAM-03, TEAM-05, CAL-03 (all via Phase 23, verified 2026-04-14)
+- **Satisfied so far (v2.1): 9** — TEAM-01, TEAM-02, TEAM-03, TEAM-05, CAL-03 (Phase 23, 2026-04-14) + VIDEO-01-A, VIDEO-01-B, VIDEO-01-C, VIDEO-01-N (Phase 22-01, 2026-04-15)
 - Shipped in v2.0: 0 (see `milestones/v2.0-REQUIREMENTS.md` for AI/PORTAL/MAP — 12 shipped)
 
 ---
