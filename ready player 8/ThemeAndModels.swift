@@ -10,6 +10,12 @@ import SwiftUI
 // CONSTRUCTIONOS — Theme, Models & Mock Data
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// MARK: - ConstructOS namespace
+// Container for feature-scoped static constants (AppStorage keys, feature flags, etc.).
+// Pattern: ConstructOS.{Feature}.{Property} — see also ConstructOS.Video (Phase 22),
+// ConstructOS.Wealth.*, ConstructOS.AngelicAI.*, ConstructOS.Integrations.Backend.*.
+enum ConstructOS {}
+
 // MARK: - Theme System (Dark + Light mode)
 struct Theme {
     // Dark mode colors (default)

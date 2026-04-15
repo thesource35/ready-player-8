@@ -21,6 +21,16 @@ enum AppError: LocalizedError, Identifiable {
     case uploadFailed(String)
     case fileTooLarge(maxMB: Int)
     case unsupportedFileType(String)
+    // MARK: - Phase 22 Video cases (D-40)
+    case unsupportedVideoFormat(details: String)      // server reject codec (D-31 server-side) OR client reject container
+    case clipTooLong(maxMinutes: Int)                 // > 60 min (D-31)
+    case clipTooLarge(maxGB: Int)                     // > 2 GB (D-31)
+    case audioConsentRequired                         // D-35 jurisdiction warning
+    case transcodeTimeout                             // > 10 min poll timeout, D-33 final failure
+    case muxIngestFailed(reason: String)              // Mux API POST /live-streams failed (D-23 wizard)
+    case muxDeleteFailed(reason: String)              // Mux API DELETE /live-streams/:id failed (D-29)
+    case cameraLimitReached(cap: Int)                 // D-28 soft cap hit
+    case webhookSignatureInvalid                      // D-32 HMAC reject path
     case unknown(String)
 
     var id: String { localizedDescription }
@@ -53,6 +63,24 @@ enum AppError: LocalizedError, Identifiable {
             return "File exceeds \(max) MB limit"
         case .unsupportedFileType(let type):
             return "Unsupported file type: \(type)"
+        case .unsupportedVideoFormat(let details):
+            return "Unsupported file type or codec: \(details). Use MP4 or MOV with H.264, HEVC, or ProRes encoding."
+        case .clipTooLong(let m):
+            return "Clip is too long. Maximum length is \(m) minutes — please split the recording into shorter segments."
+        case .clipTooLarge(let gb):
+            return "File is too large. Clips must be \(gb) GB or smaller — try trimming the video or exporting at a lower bitrate."
+        case .audioConsentRequired:
+            return "Recording audio may require consent from everyone on site. Confirm you have consent before enabling, or leave audio off."
+        case .transcodeTimeout:
+            return "Transcode failed. Tap Retry, or re-upload the source file if the problem persists."
+        case .muxIngestFailed(let reason):
+            return "Couldn't reach Mux to create the camera. \(reason). Try again — nothing has been saved."
+        case .muxDeleteFailed(let reason):
+            return "Couldn't delete the Mux live input. \(reason). The camera wasn't removed — try again in a moment."
+        case .cameraLimitReached(let cap):
+            return "Camera limit reached (\(cap)). Archive an unused camera or contact support to raise the cap."
+        case .webhookSignatureInvalid:
+            return "Webhook signature verification failed."
         case .unknown(let msg):
             return msg
         }
@@ -66,6 +94,11 @@ enum AppError: LocalizedError, Identifiable {
             return code >= 500
         case .uploadFailed:
             return true
+        case .muxIngestFailed, .muxDeleteFailed, .transcodeTimeout:
+            return true
+        case .unsupportedVideoFormat, .clipTooLong, .clipTooLarge,
+             .audioConsentRequired, .cameraLimitReached, .webhookSignatureInvalid:
+            return false
         default:
             return false
         }
@@ -75,6 +108,11 @@ enum AppError: LocalizedError, Identifiable {
         switch self {
         case .offlineQueued: return .info
         case .validationFailed: return .warning
+        case .unsupportedVideoFormat, .clipTooLong, .clipTooLarge,
+             .audioConsentRequired, .cameraLimitReached:
+            return .warning
+        case .muxIngestFailed, .muxDeleteFailed, .transcodeTimeout, .webhookSignatureInvalid:
+            return .error
         default: return .error
         }
     }
