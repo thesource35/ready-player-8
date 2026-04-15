@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
-status: verifying
-stopped_at: Completed 23-02-PLAN.md (VERIFICATION.md + REQUIREMENTS traceability)
-last_updated: "2026-04-14T23:38:11.535Z"
-last_activity: 2026-04-14
+status: executing
+stopped_at: Completed 22-00-PLAN.md
+last_updated: "2026-04-15T06:49:02.815Z"
+last_activity: 2026-04-15
 progress:
-  total_phases: 13
+  total_phases: 14
   completed_phases: 7
-  total_plans: 45
-  completed_plans: 45
-  percent: 100
+  total_plans: 57
+  completed_plans: 46
+  percent: 81
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Every user action must either succeed visibly or fail with a clear, actionable message -- no silent data loss, no undetected errors, no security gaps.
-**Current focus:** Phase 23 — iOS Navigation & Assignment Wiring
+**Current focus:** Phase 22 — live-site-video-per-project-hls-camera-feeds-tied-to-project
 
 ## Current Position
 
 Milestone: v2.1
-Phase: 23 (iOS Navigation & Assignment Wiring) — EXECUTING
-Plan: 2 of 2
-Status: Phase complete — ready for verification
-Last activity: 2026-04-14
+Phase: 22 (live-site-video-per-project-hls-camera-feeds-tied-to-project) — EXECUTING
+Plan: 2 of 12
+Status: Ready to execute
+Last activity: 2026-04-15
 
 ## Accumulated Context
 
@@ -45,6 +45,8 @@ v2.0 closing decisions:
 - Milestone renamed from "Feature Expansion" to "Portal & AI Expansion" to reflect actual shipped surface
 - [Phase 23]: DailyCrewView projectId becomes internal @AppStorage state; zero-arg init lets NavTab routing instantiate it directly (Phase 23-01)
 - [Phase 23]: Phase 23 closed: VERIFICATION.md proves 5/5 goal-backward criteria (INT-03/04/05 CLOSED, FLOW-03/04/05 RESTORED); 5 requirements flipped to Satisfied
+- [Phase 22]: [Phase 22]: Wave 0 scaffolding complete — 9 vitest stubs, 4 XCTest stubs, worker/ skeleton, 4 Mux webhook fixtures. Every Wave 1-4 automated verify command now resolves to a file on main.
+- [Phase 22]: [Phase 22]: Pre-existing async/concurrency compile errors in ready_player_8Tests.swift + ReportTests.swift logged to deferred-items.md; Phase 22 iOS waves must either bundle a fix or use compile-only verification until Phase 28.
 
 ### Pending Todos
 
@@ -68,6 +70,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T23:37:43.433Z
-Stopped at: Completed 23-02-PLAN.md (VERIFICATION.md + REQUIREMENTS traceability)
+Last session: 2026-04-15T06:49:02.812Z
+Stopped at: Completed 22-00-PLAN.md
 Resume file: None
