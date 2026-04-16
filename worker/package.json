@@ -2,6 +2,7 @@
   "name": "constructionos-video-worker",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "ffmpeg transcode worker for ConstructionOS Phase 22 — deploys to Fly.io",
   "scripts": {
     "build": "tsc",
@@ -10,6 +11,7 @@
     "test": "vitest --run"
   },
   "dependencies": {
+    "@hono/node-server": "^1.14.0",
     "@supabase/supabase-js": "^2.101.1",
     "hono": "^4.6.0"
   },
