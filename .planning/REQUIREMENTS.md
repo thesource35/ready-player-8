@@ -65,8 +65,8 @@ VIDEO-01 expanded into 16 sub-requirements during Phase 22 planning (2026-04-15)
 - [x] **VIDEO-01-G**: VOD upload — tus resumable upload to Supabase Storage with 6 MB chunks, 3× retry, client-side D-31 pre-check (2 GB / 60 min / MP4 or MOV) per D-05/D-24/D-31 (Plans 22-04, 22-08)
 - [x] **VIDEO-01-H**: VOD transcode — ffmpeg worker on Fly.io single-bitrate HLS output (1280x720@2500k, hls_time 6) with ffprobe codec pre-check + 2x retry on failure per D-05/D-06/D-33 (Plan 22-04)
 - [x] **VIDEO-01-I**: VOD playback — GET /api/video/vod/playback-url returns HLS manifest with batch-signed per-segment URLs (Supabase-directory-signing workaround) and TTL = 1 h per D-13/D-14 (Plan 22-04)
-- [ ] **VIDEO-01-J**: iOS service layer — SupabaseService extensions, VideoSyncManager cache, VideoPlaybackAuth client, VideoUploadClient with probeFile + retry (Plan 22-05)
-- [ ] **VIDEO-01-K**: Cellular auto-downgrade — iOS NWPathMonitor defaults player to 480p on cellular; ConstructOS.Video.DefaultQuality AppStorage override; HD toggle overlay current-session only per D-26/D-36 (Plans 22-05, 22-06)
+- [x] **VIDEO-01-J**: iOS service layer — SupabaseService extensions, VideoSyncManager cache, VideoPlaybackAuth client, VideoUploadClient with probeFile + retry (Plan 22-05)
+- [x] **VIDEO-01-K**: Cellular auto-downgrade — iOS NWPathMonitor defaults player to 480p on cellular; ConstructOS.Video.DefaultQuality AppStorage override; HD toggle overlay current-session only per D-26/D-36 (Plans 22-05, 22-06)
 - [x] **VIDEO-01-L**: Portal exposure — cs_portal_config.show_cameras toggle + per-clip portal_visible; /api/portal/video/playback-token + /api/portal/video/playback-url enforce drone exclusion + head-only live + streaming-only VOD per D-15/D-21/D-22/D-34 (Plans 22-01, 22-09)
 - [x] **VIDEO-01-M**: Error taxonomy — 9 new AppError cases (unsupportedVideoFormat, clipTooLong, clipTooLarge, audioConsentRequired, transcodeTimeout, muxIngestFailed, muxDeleteFailed, cameraLimitReached, webhookSignatureInvalid); wire-portable VideoErrorCode enum for web per D-40 discretion (Plan 22-02)
 - [x] **VIDEO-01-N**: Webhook security — Mux HMAC verify + cs_video_webhook_events dedupe table with 7-day prune; 5-min disconnect-grace window (D-27) before closing live asset rows per D-32/D-27 (Plans 22-01 [dedupe table], 22-03 [HMAC verify + grace], 22-10 [7-day prune])
@@ -175,8 +175,8 @@ Deferred to v2.2 or later.
 | VIDEO-01-G | Phase 22 (planned) | Complete |
 | VIDEO-01-H | Phase 22 (planned) | Complete |
 | VIDEO-01-I | Phase 22 (planned) | Complete |
-| VIDEO-01-J | Phase 22 (planned) | Pending |
-| VIDEO-01-K | Phase 22 (planned) | Pending |
+| VIDEO-01-J | Phase 22 (planned) | Complete |
+| VIDEO-01-K | Phase 22 (planned) | Complete |
 | VIDEO-01-L | Phase 22 (planned) | Complete |
 | VIDEO-01-M | Phase 22 (planned) | Complete |
 | VIDEO-01-N | Phase 22 (22-01 dedupe table; 22-03 HMAC verify; 22-10 7-day prune) | Satisfied |
