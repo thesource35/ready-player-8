@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 22-05-PLAN.md (iOS service layer)
-last_updated: "2026-04-16T05:44:33.882Z"
+stopped_at: Completed 22-06-PLAN.md (iOS player wrappers)
+last_updated: "2026-04-16T06:05:44.897Z"
 last_activity: 2026-04-16
 progress:
   total_phases: 14
   completed_phases: 7
   total_plans: 57
-  completed_plans: 51
-  percent: 89
+  completed_plans: 52
+  percent: 91
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 Milestone: v2.1
 Phase: 22 (live-site-video-per-project-hls-camera-feeds-tied-to-project) — EXECUTING
-Plan: 7 of 12 (22-01 complete; 22-02 next)
+Plan: 8 of 12 (22-01 complete; 22-02 next)
 Status: Ready to execute
 Last activity: 2026-04-16
 
@@ -53,6 +53,7 @@ v2.0 closing decisions:
 - [Phase 22-03]: Wave 2 Mux server integration complete — 4 /api/video/mux/* routes (create/delete live input, playback JWT, webhook) with rate limiting (D-37 30 req/min/IP), HMAC verify + dedupe (D-32), 5-min disconnect grace (D-27), role-gated delete (D-39), compensating Mux delete on DB insert failure (D-29), soft cap 20/org (D-28), signed playback JWT RS256 TTL=300s (D-14). createServiceRoleClient helper added to supabase/server.ts for trusted webhook receiver use. Closes VIDEO-01-D/E/F/L.
 - [Phase 22]: VOD pipeline complete: upload-URL route (D-31 caps + D-24 lazy source) + ffmpeg Fly.io worker (libx264 720p, 2x retry D-33, codec allowlist D-31) + signed-HLS-manifest playback (RESEARCH Pattern 3, 1h TTL D-14, no-store D-34). Worker uses setImmediate fire-and-forget for 202 fast-return.
 - [Phase 22]: [Phase 22-05]: iOS service layer complete — SupabaseService +8 video CRUD methods (fetch/create/delete/toggle for sources+assets, allowedTables +2), VideoSyncManager (@MainActor ObservableObject per-project stale-while-revalidate cache, D-28 soft-cap helper), VideoPlaybackAuth (Mux JWT mint + VOD manifest URL composition, D-14 + D-19 dual-path for portal viewers), VideoUploadClient (D-31 client-side caps via AVURLAsset probe, 3-attempt tus-header PUT with retry, D-40 analytics). Wave 3 UI (22-06/22-08/22-09) can now be thin views over the testable service surface. Closes VIDEO-01-J/K.
+- [Phase 22]: [Phase 22-06]: iOS player wrappers complete — CellularQualityMonitor (NWPathMonitor singleton; cellular→1.5Mbps, wifi→6Mbps, ConstructOS.Video.DefaultQuality override); VideoPlayerChrome (LiveStatusBadge green/gold/red + HDToggleButton 44pt hit target); LiveStreamView (LL-HLS via Mux with automaticallyWaitsToMinimizeStalling=false, isMuted=true at boot per D-35, requiresLinearPlayback=true in portal mode per D-34a); VideoClipPlayer distinct from LiveStreamView per D-18 (VOD via VideoPlaybackAuth.vodManifestUrl, status-aware placeholders, opportunistic resume under ConstructOS.Video.LastPlayedAssetId.{projectId} per D-26). Both accept optional portalToken (D-19) and apply D-34 restrictions at wrapper layer. Closes VIDEO-01-F, reinforces VIDEO-01-K.
 
 ### Pending Todos
 
@@ -76,6 +77,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-16T05:44:33.877Z
-Stopped at: Completed 22-05-PLAN.md (iOS service layer)
+Last session: 2026-04-16T06:05:44.890Z
+Stopped at: Completed 22-06-PLAN.md (iOS player wrappers)
 Resume file: None
