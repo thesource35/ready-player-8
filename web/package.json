@@ -12,6 +12,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.64",
     "@mux/mux-node": "^12.8.1",
+    "@mux/mux-player-react": "^3.11.7",
     "@react-email/components": "^1.0.12",
     "@supabase/ssr": "^0.10.0",
     "@supabase/supabase-js": "^2.101.1",

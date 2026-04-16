@@ -5,7 +5,7 @@
 // Covers: fetch on mount, portal routing (D-19), auto-refresh 30s before TTL (D-14), error handling,
 // cleanup on unmount. Uses vi.useFakeTimers to assert scheduling of the refresh timeout.
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { renderHook, act, waitFor } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 
 import { usePlaybackToken } from "../usePlaybackToken";
 
@@ -24,6 +24,14 @@ function mockFetch(response: unknown, ok = true, status = 200) {
   return { fn, calls };
 }
 
+// Flush the current fetch's microtask chain (fetch resolve → res.json() resolve → setState).
+// With fake timers, advancing timers by 0 inside act() is the clean way to drain the queue.
+async function flush() {
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(0);
+  });
+}
+
 describe("usePlaybackToken", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -31,6 +39,7 @@ describe("usePlaybackToken", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it("POSTs to /api/video/mux/playback-token when no portalToken is passed", async () => {
@@ -38,13 +47,9 @@ describe("usePlaybackToken", () => {
     vi.stubGlobal("fetch", fn);
 
     const { result } = renderHook(() => usePlaybackToken({ sourceId: "src-1" }));
+    await flush();
 
-    // Let the initial fetch resolve (microtasks).
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(0);
-    });
-
-    await waitFor(() => expect(result.current.token).toBe("jwt.abc"));
+    expect(result.current.token).toBe("jwt.abc");
     expect(result.current.playbackId).toBe("pb_123");
     expect(result.current.ttl).toBe(300);
     expect(result.current.loading).toBe(false);
@@ -58,12 +63,9 @@ describe("usePlaybackToken", () => {
     vi.stubGlobal("fetch", fn);
 
     const { result } = renderHook(() => usePlaybackToken({ sourceId: "src-1", portalToken: "ptok_abc" }));
+    await flush();
 
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(0);
-    });
-
-    await waitFor(() => expect(result.current.token).toBe("jwt.portal"));
+    expect(result.current.token).toBe("jwt.portal");
     expect(calls[0].url).toBe("/api/portal/video/playback-token");
     expect(calls[0].body).toEqual({ source_id: "src-1", portal_token: "ptok_abc" });
   });
@@ -72,12 +74,8 @@ describe("usePlaybackToken", () => {
     const { fn } = mockFetch({ token: "jwt.first", ttl: 300, playback_id: "pb_1" });
     vi.stubGlobal("fetch", fn);
 
-    const { result } = renderHook(() => usePlaybackToken({ sourceId: "src-1" }));
-
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(0);
-    });
-    await waitFor(() => expect(result.current.token).toBe("jwt.first"));
+    renderHook(() => usePlaybackToken({ sourceId: "src-1" }));
+    await flush();
     expect(fn).toHaveBeenCalledTimes(1);
 
     // Advance 269 seconds → still 1 call
@@ -102,12 +100,9 @@ describe("usePlaybackToken", () => {
     vi.stubGlobal("fetch", fn);
 
     const { result } = renderHook(() => usePlaybackToken({ sourceId: "src-1" }));
+    await flush();
 
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(0);
-    });
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
+    expect(result.current.loading).toBe(false);
     expect(result.current.token).toBeNull();
     expect(result.current.error).toBe("Rate limited");
   });
@@ -117,11 +112,8 @@ describe("usePlaybackToken", () => {
     vi.stubGlobal("fetch", fn);
 
     const { result, unmount } = renderHook(() => usePlaybackToken({ sourceId: "src-1" }));
-
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(0);
-    });
-    await waitFor(() => expect(result.current.token).toBe("jwt.first"));
+    await flush();
+    expect(result.current.token).toBe("jwt.first");
 
     // Unmount before the refresh fires.
     unmount();
