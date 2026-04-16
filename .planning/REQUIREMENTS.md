@@ -62,9 +62,9 @@ VIDEO-01 expanded into 16 sub-requirements during Phase 22 planning (2026-04-15)
 - [x] **VIDEO-01-D**: Live ingest — POST /api/video/mux/create-live-input creates Mux live_input (LL-HLS, 60s reconnect_window, signed playback, DVR archive) and inserts cs_video_sources row with atomic rollback on failure per D-03/D-04/D-29 (Plan 22-03)
 - [x] **VIDEO-01-E**: Playback auth (live) — POST /api/video/mux/playback-token mints RS256 Mux JWT bound to playback_id with TTL ≤ 5 min per D-14 (Plan 22-03)
 - [x] **VIDEO-01-F**: Playback wrappers — iOS `LiveStreamView` + `VideoClipPlayer` over AVPlayer; web `<LiveStreamView>` + `<VideoClipPlayer>` over @mux/mux-player-react; both accept optional portalToken per D-18/D-19 (Plans 22-06, 22-07)
-- [ ] **VIDEO-01-G**: VOD upload — tus resumable upload to Supabase Storage with 6 MB chunks, 3× retry, client-side D-31 pre-check (2 GB / 60 min / MP4 or MOV) per D-05/D-24/D-31 (Plans 22-04, 22-08)
-- [ ] **VIDEO-01-H**: VOD transcode — ffmpeg worker on Fly.io single-bitrate HLS output (1280x720@2500k, hls_time 6) with ffprobe codec pre-check + 2x retry on failure per D-05/D-06/D-33 (Plan 22-04)
-- [ ] **VIDEO-01-I**: VOD playback — GET /api/video/vod/playback-url returns HLS manifest with batch-signed per-segment URLs (Supabase-directory-signing workaround) and TTL = 1 h per D-13/D-14 (Plan 22-04)
+- [x] **VIDEO-01-G**: VOD upload — tus resumable upload to Supabase Storage with 6 MB chunks, 3× retry, client-side D-31 pre-check (2 GB / 60 min / MP4 or MOV) per D-05/D-24/D-31 (Plans 22-04, 22-08)
+- [x] **VIDEO-01-H**: VOD transcode — ffmpeg worker on Fly.io single-bitrate HLS output (1280x720@2500k, hls_time 6) with ffprobe codec pre-check + 2x retry on failure per D-05/D-06/D-33 (Plan 22-04)
+- [x] **VIDEO-01-I**: VOD playback — GET /api/video/vod/playback-url returns HLS manifest with batch-signed per-segment URLs (Supabase-directory-signing workaround) and TTL = 1 h per D-13/D-14 (Plan 22-04)
 - [ ] **VIDEO-01-J**: iOS service layer — SupabaseService extensions, VideoSyncManager cache, VideoPlaybackAuth client, VideoUploadClient with probeFile + retry (Plan 22-05)
 - [ ] **VIDEO-01-K**: Cellular auto-downgrade — iOS NWPathMonitor defaults player to 480p on cellular; ConstructOS.Video.DefaultQuality AppStorage override; HD toggle overlay current-session only per D-26/D-36 (Plans 22-05, 22-06)
 - [x] **VIDEO-01-L**: Portal exposure — cs_portal_config.show_cameras toggle + per-clip portal_visible; /api/portal/video/playback-token + /api/portal/video/playback-url enforce drone exclusion + head-only live + streaming-only VOD per D-15/D-21/D-22/D-34 (Plans 22-01, 22-09)
@@ -172,9 +172,9 @@ Deferred to v2.2 or later.
 | VIDEO-01-D | Phase 22 (planned) | Complete |
 | VIDEO-01-E | Phase 22 (planned) | Complete |
 | VIDEO-01-F | Phase 22 (planned) | Complete |
-| VIDEO-01-G | Phase 22 (planned) | Pending |
-| VIDEO-01-H | Phase 22 (planned) | Pending |
-| VIDEO-01-I | Phase 22 (planned) | Pending |
+| VIDEO-01-G | Phase 22 (planned) | Complete |
+| VIDEO-01-H | Phase 22 (planned) | Complete |
+| VIDEO-01-I | Phase 22 (planned) | Complete |
 | VIDEO-01-J | Phase 22 (planned) | Pending |
 | VIDEO-01-K | Phase 22 (planned) | Pending |
 | VIDEO-01-L | Phase 22 (planned) | Complete |

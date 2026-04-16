@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 22-03-PLAN.md (Mux server integration)
-last_updated: "2026-04-15T23:48:21.834Z"
-last_activity: 2026-04-15
+stopped_at: Completed 22-04-PLAN.md (VOD pipeline)
+last_updated: "2026-04-16T03:04:53.709Z"
+last_activity: 2026-04-16
 progress:
   total_phases: 14
   completed_phases: 7
   total_plans: 57
-  completed_plans: 49
-  percent: 86
+  completed_plans: 50
+  percent: 88
 ---
 
 # Project State
@@ -27,9 +27,9 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 Milestone: v2.1
 Phase: 22 (live-site-video-per-project-hls-camera-feeds-tied-to-project) — EXECUTING
-Plan: 5 of 12 (22-01 complete; 22-02 next)
+Plan: 6 of 12 (22-01 complete; 22-02 next)
 Status: Ready to execute
-Last activity: 2026-04-15
+Last activity: 2026-04-16
 
 ## Accumulated Context
 
@@ -51,6 +51,7 @@ v2.0 closing decisions:
 - [Phase 22-01]: Storage path layout standardized as `<org_id>/<project_id>/<asset_id>/<filename>` so storage.foldername(name)[1]::uuid reliably extracts org_id for RLS — binding constraint on all Wave 2 upload routes (22-04, 22-08).
 - [Phase 22]: [Phase 22-02]: Shared video vocabulary locked — 9 AppError cases + VideoSource/VideoAsset structs on iOS, matching TS unions + row-shape types + VideoErrorCode taxonomy on web. Swift CodingKeys map camelCase to DB snake_case; TS types use DB-shaped snake_case directly. ConstructOS {} root namespace bootstrapped in ThemeAndModels.swift to host D-26 AppStorage key helpers (ConstructOS.Video.defaultQualityKey etc.). iOS compiles clean; web tsc --noEmit exits 0. VIDEO-01-M satisfied.
 - [Phase 22-03]: Wave 2 Mux server integration complete — 4 /api/video/mux/* routes (create/delete live input, playback JWT, webhook) with rate limiting (D-37 30 req/min/IP), HMAC verify + dedupe (D-32), 5-min disconnect grace (D-27), role-gated delete (D-39), compensating Mux delete on DB insert failure (D-29), soft cap 20/org (D-28), signed playback JWT RS256 TTL=300s (D-14). createServiceRoleClient helper added to supabase/server.ts for trusted webhook receiver use. Closes VIDEO-01-D/E/F/L.
+- [Phase 22]: VOD pipeline complete: upload-URL route (D-31 caps + D-24 lazy source) + ffmpeg Fly.io worker (libx264 720p, 2x retry D-33, codec allowlist D-31) + signed-HLS-manifest playback (RESEARCH Pattern 3, 1h TTL D-14, no-store D-34). Worker uses setImmediate fire-and-forget for 202 fast-return.
 
 ### Pending Todos
 
@@ -74,6 +75,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-15T23:48:21.831Z
-Stopped at: Completed 22-03-PLAN.md (Mux server integration)
+Last session: 2026-04-16T03:04:53.702Z
+Stopped at: Completed 22-04-PLAN.md (VOD pipeline)
 Resume file: None
