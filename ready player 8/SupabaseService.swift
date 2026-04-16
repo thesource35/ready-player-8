@@ -793,6 +793,8 @@ final class SupabaseService: ObservableObject {
         // Phase 20: Client Portal & Sharing
         "cs_portal_config", "cs_company_branding", "cs_report_shared_links",
         "cs_portal_analytics", "cs_portal_audit_log",
+        // Phase 22: Live Site Video
+        "cs_video_sources", "cs_video_assets",
     ]
 
     /// Validates table name against allowlist
@@ -1143,6 +1145,70 @@ final class SupabaseService: ObservableObject {
     /// Submit equipment location check-in (D-05, D-09)
     func checkInEquipmentLocation(_ request: EquipmentCheckInRequest) async throws {
         try await insert("cs_equipment_locations", record: request)
+    }
+
+    // MARK: - Phase 22: Video sources & assets
+
+    /// Fetch video sources for a project, ordered by created_at desc.
+    /// Returns [] when Supabase is unconfigured (standard list-op pattern) or empty result.
+    func fetchVideoSources(projectId: UUID) async throws -> [VideoSource] {
+        guard isConfigured else { return [] }
+        return try await fetch(
+            "cs_video_sources",
+            query: ["project_id": "eq.\(projectId.uuidString)"],
+            orderBy: "created_at"
+        )
+    }
+
+    /// Fetch video assets for a project, optionally filtered by kind ('live' | 'vod').
+    /// Returns [] when Supabase is unconfigured.
+    func fetchVideoAssets(projectId: UUID, kind: VideoAssetKind? = nil) async throws -> [VideoAsset] {
+        guard isConfigured else { return [] }
+        var query = ["project_id": "eq.\(projectId.uuidString)"]
+        if let k = kind { query["kind"] = "eq.\(k.rawValue)" }
+        return try await fetch(
+            "cs_video_assets",
+            query: query,
+            orderBy: "started_at"
+        )
+    }
+
+    /// Insert a video source row (used by synthetic 'upload' source creation; camera registration
+    /// goes through the web API route /api/video/mux/create-live-input instead so Mux + DB stay atomic).
+    func createVideoSource(_ record: VideoSource) async throws {
+        try await insert("cs_video_sources", record: record)
+    }
+
+    /// Insert a video asset row (used for VOD uploads — row is created server-side by
+    /// /api/video/vod/upload-url before the tus upload, but the client may need this for offline paths).
+    func createVideoAsset(_ record: VideoAsset) async throws {
+        try await insert("cs_video_assets", record: record)
+    }
+
+    /// Delete a video source row. NOTE: Deleting a row directly here does NOT call Mux —
+    /// use the web API route /api/video/mux/delete-live-input for user-initiated deletes.
+    /// This method exists for cleanup paths and tests only.
+    func deleteVideoSource(id: UUID) async throws {
+        try await delete("cs_video_sources", id: id.uuidString)
+    }
+
+    /// Delete a video asset row. Storage objects are cleaned up by the retention cron (22-10),
+    /// not by this call. Fire-and-forget; retention eventually removes orphaned segments.
+    func deleteVideoAsset(id: UUID) async throws {
+        try await delete("cs_video_assets", id: id.uuidString)
+    }
+
+    /// Toggle cs_video_assets.portal_visible. RLS enforces owner/admin per D-39 —
+    /// non-governance users get 403 back from Supabase.
+    func toggleAssetPortalVisible(assetId: UUID, visible: Bool) async throws {
+        struct PortalVisiblePatch: Encodable { let portal_visible: Bool }
+        try await update("cs_video_assets", id: assetId.uuidString, record: PortalVisiblePatch(portal_visible: visible))
+    }
+
+    /// Toggle cs_video_sources.audio_enabled (D-35 governance control; owner/admin only).
+    func toggleSourceAudioEnabled(sourceId: UUID, enabled: Bool) async throws {
+        struct AudioPatch: Encodable { let audio_enabled: Bool }
+        try await update("cs_video_sources", id: sourceId.uuidString, record: AudioPatch(audio_enabled: enabled))
     }
 }
 
