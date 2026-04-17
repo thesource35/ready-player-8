@@ -49,6 +49,22 @@ struct DailyCrewView: View {
                 .tracking(2)
                 .foregroundColor(Theme.muted)
 
+            // Phase 23-05 D-19: Offline/demo-mode indicator
+            if !supabase.isConfigured {
+                HStack(spacing: 8) {
+                    Image(systemName: "icloud.slash")
+                        .font(.system(size: 12))
+                    Text("Demo mode — connect Supabase to save")
+                        .font(.system(size: 11, weight: .medium))
+                }
+                .foregroundColor(Theme.gold)
+                .padding(10)
+                .frame(maxWidth: .infinity)
+                .background(Theme.gold.opacity(0.1))
+                .cornerRadius(8)
+                .accessibilityLabel("Demo mode active. Connect Supabase in the Hub tab to save crew assignments.")
+            }
+
             // Phase 23-01: Project picker (replaces parameterized projectId).
             projectPicker
 
@@ -59,6 +75,7 @@ struct DailyCrewView: View {
                     .frame(maxWidth: .infinity, minHeight: 120)
             } else {
                 DatePicker("Date", selection: $date, displayedComponents: .date)
+                    .accessibilityLabel("Crew assignment date")
                     .onChange(of: date) { _, _ in
                         Task {
                             if isDirty { await save() }
@@ -101,6 +118,7 @@ struct DailyCrewView: View {
                                     .cornerRadius(8)
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel("\(m.name)\(m.trade.map { ", \($0)" } ?? ""), \(selected.contains(m.id) ? "assigned to crew" : "not assigned")")
                             }
                         }
                     }
@@ -115,6 +133,7 @@ struct DailyCrewView: View {
                     .padding(12)
                     .background(Theme.surface)
                     .cornerRadius(8)
+                    .accessibilityLabel("Scope and notes for today's crew")
 
                 Button(action: { Task { await save() } }) {
                     HStack(spacing: 8) {
@@ -133,11 +152,20 @@ struct DailyCrewView: View {
                     .cornerRadius(10)
                 }
                 .disabled(saving || selectedProjectId.isEmpty)
+                .accessibilityLabel("Save crew assignments")
+                .accessibilityValue(saving ? "Saving in progress" : (toast?.contains("saved") == true ? "Saved successfully" : "Ready to save"))
 
                 if let toast = toast {
                     Text(toast)
                         .font(.system(size: 12))
-                        .foregroundColor(Theme.gold)
+                        .foregroundColor(toast.contains("saved") ? Theme.green : Theme.gold)
+                        .accessibilityLabel(toast)
+                        .onAppear {
+                            Task {
+                                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                                await MainActor.run { self.toast = nil }
+                            }
+                        }
                 }
             }
         }
@@ -235,6 +263,8 @@ struct DailyCrewView: View {
             .frame(maxWidth: .infinity, minHeight: 48)
             .background(Theme.surface)
             .cornerRadius(8)
+            .accessibilityLabel("Select project, currently \(selectedProject?.name ?? "none selected")")
+            .accessibilityHint("Double tap to choose a different project")
         }
     }
 
