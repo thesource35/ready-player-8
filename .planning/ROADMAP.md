@@ -250,7 +250,7 @@ Plans:
 | 19. Reporting & Dashboards | v2.1 | 18/18 | Code Complete | 2026-04-12 |
 | 22. Live Site Video | v2.1 | 12/12 | Complete    | 2026-04-17 |
 | 23. iOS Nav & Assignment Wiring | v2.1 | 5/5 | Complete    | 2026-04-17 |
-| 24. Document → Activity Event Emission | v2.1 | 2/2 | Complete   | 2026-04-17 |
+| 24. Document → Activity Event Emission | v2.1 | 2/2 | Complete    | 2026-04-17 |
 | 25. Certification Expiry Notifications | v2.1 | 0/? | Planned | — |
 | 26. Documents RLS Table Reconciliation | v2.1 | 0/? | Planned | — |
 | 27. Portal → Map Navigation Link | v2.1 | 0/? | Planned | — |
