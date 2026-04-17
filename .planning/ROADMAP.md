@@ -48,7 +48,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 - [x] **Phase 17: Calendar & Scheduling** (5/5 plans) — code complete 2026-04-11, verification pending
 - [x] **Phase 19: Reporting & Dashboards** (18/18 plans) — code complete 2026-04-12, verification pending
 - [x] **Phase 22: Live Site Video** — planned 2026-04-15 (12 plans, 4 waves); 2/12 executed (22-00 Wave 0 scaffolding + 22-01 Wave 1 schema) (completed 2026-04-17)
-- [x] **Phase 23: iOS Navigation & Assignment Wiring** — Gap closure: INT-03/04/05 closed by quick task 260414-n4w; phase formalizes verification (completed 2026-04-14)
+- [ ] **Phase 23: iOS Nav & Assignment Wiring + Web Parity** (5 plans, 2 waves) — Plans 01-02 complete; plans 03-05 add cross-nav, save hardening, accessibility on both platforms
 - [ ] **Phase 24: Document → Activity Event Emission** — Gap closure: document routes emit `cs_activity_events` (INT-02)
 - [ ] **Phase 25: Certification Expiry Notifications** — Gap closure: cert-expiry cron + notification emission (INT-06)
 - [ ] **Phase 26: Documents RLS Table Reconciliation** — Gap closure: resolve RLS references to non-existent tables (INT-01)
@@ -188,11 +188,16 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 **Blocks**: Phase 29 (Live Video Traffic Feed) — Phase 29 is row-only extension of this schema
 
 ### Phase 23: iOS Navigation & Assignment Wiring
-**Goal:** Existing iOS views (TeamView, CertificationsView, DailyCrewView, AgendaListView) are reachable from user navigation; daily crew edits do not 409
+**Goal:** Existing iOS views (TeamView, CertificationsView, DailyCrewView, AgendaListView) are reachable from user navigation; daily crew edits do not 409. Cross-navigation, save hardening, and accessibility on both iOS and web.
 **Depends on:** Phase 15, Phase 17
 **Requirements:** TEAM-01, TEAM-02, TEAM-03, TEAM-05, CAL-03
 **Gap Closure:** Closes INT-03, INT-04, INT-05 · FLOW-03, FLOW-04, FLOW-05
-**Status:** Code closed by quick task 260414-n4w on 2026-04-14; phase formalizes verification artifacts
+**Plans:** 5 plans
+- [x] 23-01-PLAN.md — DailyCrewView project picker (iOS, Wave 1)
+- [x] 23-02-PLAN.md — VERIFICATION.md + REQUIREMENTS.md updates (Wave 2)
+- [ ] 23-03-PLAN.md — Cross-navigation + badge + deep-link + web nav wiring (iOS + Web, Wave 1)
+- [ ] 23-04-PLAN.md — Save-flow hardening: dirty tracking, unsaved guard, auto-save, error handling, spinner (iOS + Web, Wave 1)
+- [ ] 23-05-PLAN.md — Accessibility labels + state announcements + offline indicator (iOS + Web, Wave 2)
 
 ### Phase 24: Document → Activity Event Emission
 **Goal:** Every document mutation emits a row into `cs_activity_events` so the activity feed populates for document ops
@@ -239,7 +244,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 | 17. Calendar & Scheduling | v2.1 | 5/5 | Code Complete | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.1 | 18/18 | Code Complete | 2026-04-12 |
 | 22. Live Site Video | v2.1 | 12/12 | Complete    | 2026-04-17 |
-| 23. iOS Navigation & Assignment Wiring | v2.1 | 2/2 | Complete   | 2026-04-14 |
+| 23. iOS Nav & Assignment Wiring | v2.1 | 2/5 | In Progress | — |
 | 24. Document → Activity Event Emission | v2.1 | 0/? | Planned | — |
 | 25. Certification Expiry Notifications | v2.1 | 0/? | Planned | — |
 | 26. Documents RLS Table Reconciliation | v2.1 | 0/? | Planned | — |
