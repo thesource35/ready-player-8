@@ -685,14 +685,14 @@ struct ContentView: View {
                     if isWide {
                         HStack(spacing: 0) {
                             VStack(spacing: 0) {
-                                ScrollView { NavigationRailView(activeNav: $activeNav, navItems: navItems) }
+                                ScrollView { NavigationRailView(activeNav: $activeNav, navItems: navItems, certBadgeCount: 0) }
                                 SidebarStatusView(pulse: $pulse)
                             }.frame(width: 180).background(Theme.surface)
                             .border(width: 1, edges: [.trailing], color: Theme.border)
                             ScrollView { activeTabContent.padding(16) }
                         }
                     } else {
-                        NavigationTabsView(activeNav: $activeNav, navItems: navItems)
+                        NavigationTabsView(activeNav: $activeNav, navItems: navItems, certBadgeCount: 0)
                         ScrollView { activeTabContent.padding(16) }
                     }
                     FooterView(pulse: $pulse)
@@ -705,6 +705,14 @@ struct ContentView: View {
         .environmentObject(notificationsStore)
         .onReceive(NotificationCenter.default.publisher(for: .init("ConstructOS.NavToProjects"))) { _ in
             activeNav = .projects
+        }
+        // Phase 23: Cross-nav to DailyCrew tab (D-14)
+        .onReceive(NotificationCenter.default.publisher(for: .init("ConstructOS.NavToDailyCrew"))) { _ in
+            activeNav = .dailyCrew
+        }
+        // Phase 23: Basic team deep-link (D-10)
+        .onReceive(NotificationCenter.default.publisher(for: .init("ConstructOS.NavToTeam"))) { _ in
+            activeNav = .team
         }
     }
 

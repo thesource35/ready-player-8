@@ -129,6 +129,15 @@ struct DailyCrewView: View {
             if selectedProjectId.isEmpty, let first = displayProjects.first?.id {
                 selectedProjectId = first
             }
+            // Phase 23: Consume date relay from AgendaListView cross-nav (D-13)
+            if let relayDate = UserDefaults.standard.string(forKey: "ConstructOS.Team.DailyCrewDateRelay") {
+                UserDefaults.standard.removeObject(forKey: "ConstructOS.Team.DailyCrewDateRelay")
+                let f = DateFormatter()
+                f.dateFormat = "yyyy-MM-dd"
+                if let parsed = f.date(from: relayDate) {
+                    date = parsed
+                }
+            }
             await loadMembers()
             await loadCrew()
         }

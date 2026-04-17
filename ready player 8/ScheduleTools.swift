@@ -1154,11 +1154,29 @@ struct AgendaListView: View {
 
     private func agendaDaySection(day: String, items: [AgendaItem]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(formatDayHeader(day))
-                .font(.system(size: 10, weight: .bold))
-                .tracking(2)
-                .foregroundColor(Theme.gold)
-                .padding(.leading, 4)
+            HStack {
+                Text(formatDayHeader(day))
+                    .font(.system(size: 10, weight: .bold))
+                    .tracking(2)
+                    .foregroundColor(Theme.gold)
+                    .padding(.leading, 4)
+
+                Spacer()
+
+                // Phase 23: Cross-nav to DailyCrew with date relay (D-13)
+                Button(action: {
+                    UserDefaults.standard.set(day, forKey: "ConstructOS.Team.DailyCrewDateRelay")
+                    NotificationCenter.default.post(name: .init("ConstructOS.NavToDailyCrew"), object: nil)
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "person.badge.clock")
+                        Text("Crew")
+                    }
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(Theme.accent)
+                }
+                .buttonStyle(.plain)
+            }
 
             ForEach(items) { item in
                 agendaRow(item)

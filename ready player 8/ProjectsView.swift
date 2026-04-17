@@ -500,6 +500,25 @@ private struct ProjectDetailSheet: View {
                 )
             }
 
+            // MARK: - Phase 23: Cross-nav to DailyCrew (D-12)
+            if let pid = project.id {
+                Button(action: {
+                    UserDefaults.standard.set(pid, forKey: "ConstructOS.Team.LastDailyCrewProjectId")
+                    NotificationCenter.default.post(name: .init("ConstructOS.NavToDailyCrew"), object: nil)
+                }) {
+                    HStack {
+                        Image(systemName: "person.badge.clock")
+                        Text("View Crew")
+                    }
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(Theme.accent)
+                    .frame(maxWidth: .infinity)
+                    .padding(14)
+                    .background(Theme.surface)
+                    .cornerRadius(10)
+                }
+            }
+
             // MARK: - Phase 14: Project Activity Tab
             if let pid = project.id {
                 ProjectActivityView(projectId: pid)

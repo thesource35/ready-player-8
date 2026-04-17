@@ -158,6 +158,7 @@ struct HeaderView: View {
 struct NavigationTabsView: View {
     @Binding var activeNav: ContentView.NavTab
     let navItems: [(String, String, String, String)]
+    var certBadgeCount: Int = 0
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -202,6 +203,18 @@ struct NavigationTabsView: View {
                         )
                         .cornerRadius(14)
                         .shadow(color: activeNav.rawValue == id ? Theme.green.opacity(0.18) : .clear, radius: 14, x: 0, y: 6)
+                        // Phase 23: Badge overlay on CERTS tab (D-09)
+                        .overlay(alignment: .topTrailing) {
+                            if id == "certifications" && certBadgeCount > 0 {
+                                Text("\(certBadgeCount)")
+                                    .font(.system(size: 9, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .padding(4)
+                                    .background(Theme.red)
+                                    .clipShape(Circle())
+                                    .offset(x: 6, y: -6)
+                            }
+                        }
                     }
                     .contentShape(Rectangle())
                     .buttonStyle(.plain)
@@ -217,6 +230,7 @@ struct NavigationTabsView: View {
 struct NavigationRailView: View {
     @Binding var activeNav: ContentView.NavTab
     let navItems: [(String, String, String, String)]
+    var certBadgeCount: Int = 0
     @State private var hoveredNav: String?
 
     var body: some View {
@@ -271,6 +285,18 @@ struct NavigationRailView: View {
                         }
                     )
                     .cornerRadius(11)
+                    // Phase 23: Badge overlay on CERTS tab (D-09)
+                    .overlay(alignment: .topTrailing) {
+                        if id == "certifications" && certBadgeCount > 0 {
+                            Text("\(certBadgeCount)")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(.white)
+                                .padding(4)
+                                .background(Theme.red)
+                                .clipShape(Circle())
+                                .offset(x: 6, y: -6)
+                        }
+                    }
                 }
                 .contentShape(Rectangle())
                 .buttonStyle(.plain)
