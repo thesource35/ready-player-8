@@ -238,7 +238,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 | 16. Field Tools | v2.1 | 6/6 | Code Complete | 2026-04-08 |
 | 17. Calendar & Scheduling | v2.1 | 5/5 | Code Complete | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.1 | 18/18 | Code Complete | 2026-04-12 |
-| 22. Live Site Video | v2.1 | 12/12 | Complete   | 2026-04-17 |
+| 22. Live Site Video | v2.1 | 12/12 | Complete    | 2026-04-17 |
 | 23. iOS Navigation & Assignment Wiring | v2.1 | 2/2 | Complete   | 2026-04-14 |
 | 24. Document → Activity Event Emission | v2.1 | 0/? | Planned | — |
 | 25. Certification Expiry Notifications | v2.1 | 0/? | Planned | — |
