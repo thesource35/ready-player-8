@@ -10,7 +10,7 @@
 ### Notifications & Activity Feed
 
 - [ ] **NOTIF-01**: User can view in-app notification list with unread count badge
-- [ ] **NOTIF-02**: User can view activity timeline per project (chronological action log)
+- [x] **NOTIF-02**: User can view activity timeline per project (chronological action log)
 - [ ] **NOTIF-03**: User can mark notifications as read (individually or all)
 - [ ] **NOTIF-04**: User can dismiss notifications
 - [ ] **NOTIF-05**: User receives push notifications on iOS for bid deadlines, safety alerts, and assigned tasks
@@ -18,7 +18,7 @@
 ### Document Management
 
 - [ ] **DOC-01**: User can upload files (PDF, images, drawings) to Supabase Storage
-- [ ] **DOC-02**: User can download attached files
+- [x] **DOC-02**: User can download attached files
 - [ ] **DOC-03**: User can attach files to projects, RFIs, submittals, and change orders
 - [ ] **DOC-04**: User can preview PDFs and images in-app without downloading
 - [ ] **DOC-05**: User can view version history of revised documents
@@ -140,12 +140,12 @@ Deferred to v2.2 or later.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | NOTIF-01 | Phase 28 (verification) | Pending |
-| NOTIF-02 | Phase 24 (gap closure) | Pending |
+| NOTIF-02 | Phase 24 (gap closure) | Complete |
 | NOTIF-03 | Phase 28 (verification) | Pending |
 | NOTIF-04 | Phase 25 (gap closure) | Pending |
 | NOTIF-05 | Phase 28 (verification) | Pending |
 | DOC-01 | Phase 28 (verification) | Pending |
-| DOC-02 | Phase 24 (gap closure) | Pending |
+| DOC-02 | Phase 24 (gap closure) | Complete |
 | DOC-03 | Phase 26 (gap closure) | Pending |
 | DOC-04 | Phase 26 (gap closure) | Pending |
 | DOC-05 | Phase 28 (verification) | Pending |

@@ -204,10 +204,10 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 **Depends on:** Phase 13, Phase 14
 **Requirements:** DOC-02, NOTIF-02
 **Gap Closure:** Closes INT-02 · FLOW-01
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
-- [ ] 24-01-PLAN.md — Trigger function + trigger attachments + backfill + emission tests (Wave 1)
+- [x] 24-01-PLAN.md — Trigger function + trigger attachments + backfill + emission tests (Wave 1)
 - [ ] 24-02-PLAN.md — Activity feed rendering updates + rendering tests + human verification (Wave 2)
 
 ### Phase 25: Certification Expiry Notifications
@@ -250,7 +250,7 @@ Plans:
 | 19. Reporting & Dashboards | v2.1 | 18/18 | Code Complete | 2026-04-12 |
 | 22. Live Site Video | v2.1 | 12/12 | Complete    | 2026-04-17 |
 | 23. iOS Nav & Assignment Wiring | v2.1 | 5/5 | Complete    | 2026-04-17 |
-| 24. Document → Activity Event Emission | v2.1 | 0/2 | Planned | — |
+| 24. Document → Activity Event Emission | v2.1 | 1/2 | In Progress|  |
 | 25. Certification Expiry Notifications | v2.1 | 0/? | Planned | — |
 | 26. Documents RLS Table Reconciliation | v2.1 | 0/? | Planned | — |
 | 27. Portal → Map Navigation Link | v2.1 | 0/? | Planned | — |
