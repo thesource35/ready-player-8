@@ -56,6 +56,7 @@ export type PortalConfig = {
   template: PortalTemplate;
   sections_config: PortalSectionsConfig;
   show_exact_amounts: boolean;
+  show_cameras: boolean;
   welcome_message: string | null;
   section_notes: Record<string, string>;
   pinned_items: Record<string, string[]>;

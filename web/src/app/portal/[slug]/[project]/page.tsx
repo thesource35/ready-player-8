@@ -14,6 +14,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import PortalShell from "@/app/components/portal/PortalShell";
 import ExpiredPage from "@/app/components/portal/ExpiredPage";
+import PortalCamerasSection from "./cameras/PortalCamerasSection";
 
 // D-24: URL pattern /portal/{company_slug}/{project_slug}
 // D-123: Disabled sections never queried from database
@@ -447,16 +448,24 @@ export default async function PortalPage({
   // D-20: public, s-maxage=60, stale-while-revalidate=300
 
   return (
-    <PortalShell
-      branding={branding}
-      theme={theme}
-      portalConfig={portalConfig}
-      sections={sections}
-      healthScore={healthScore}
-      projectName={projectName}
-      sectionOrder={SECTION_ORDER}
-      showAmounts={showAmounts}
-    />
+    <>
+      <PortalShell
+        branding={branding}
+        theme={theme}
+        portalConfig={portalConfig}
+        sections={sections}
+        healthScore={healthScore}
+        projectName={projectName}
+        sectionOrder={SECTION_ORDER}
+        showAmounts={showAmounts}
+      />
+      {portalConfig.show_cameras && (
+        <PortalCamerasSection
+          projectId={portalConfig.project_id}
+          portalToken={link.token as string}
+        />
+      )}
+    </>
   );
 }
 

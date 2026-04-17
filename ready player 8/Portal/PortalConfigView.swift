@@ -17,6 +17,9 @@ struct PortalConfigView: View {
     // D-30: Budget data masked by default
     @State private var showExactAmounts = false
 
+    // D-21: Show cameras toggle for portal viewers
+    @State private var showCameras = false
+
     // Template picker (D-18)
     @State private var selectedTemplate = "full_progress"
     private let templates = ["executive_summary", "full_progress", "photo_update"]
@@ -166,6 +169,13 @@ struct PortalConfigView: View {
                 title: "Documents",
                 subtitle: "Shared project documents",
                 isOn: $documentsEnabled
+            )
+
+            sectionToggle(
+                icon: "video",
+                title: "Show cameras",
+                subtitle: "Portal viewers can watch live streams (head-only) and any clips you've flagged as shareable.",
+                isOn: $showCameras
             )
         }
         .padding(14)
@@ -360,6 +370,7 @@ struct PortalConfigView: View {
         watermarkEnabled = config.watermarkEnabled
         poweredByEnabled = config.poweredByEnabled
         showExactAmounts = config.showExactAmounts
+        showCameras = config.showCameras
 
         // Parse sections_config JSON to set toggles
         if let data = config.sectionsConfig.data(using: .utf8),
@@ -397,6 +408,7 @@ struct PortalConfigView: View {
         updated.template = selectedTemplate
         updated.sectionsConfig = sectionsString
         updated.showExactAmounts = showExactAmounts
+        updated.showCameras = showCameras
         updated.slug = slug
         updated.clientEmail = clientEmail.isEmpty ? nil : clientEmail
         updated.welcomeMessage = welcomeMessage.isEmpty ? nil : welcomeMessage

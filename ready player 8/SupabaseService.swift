@@ -2038,6 +2038,7 @@ struct SupabasePortalConfig: Codable, Identifiable, Sendable {
     var template: String  // "executive_summary" | "full_progress" | "photo_update"
     var sectionsConfig: String  // JSON string of PortalSectionsConfig
     var showExactAmounts: Bool
+    var showCameras: Bool = false
     var welcomeMessage: String?
     var sectionNotes: String?  // JSON string
     var pinnedItems: String?   // JSON string

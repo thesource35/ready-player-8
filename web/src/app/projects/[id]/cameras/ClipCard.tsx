@@ -243,7 +243,19 @@ export function ClipCard({
                   <button
                     type="button"
                     onClick={() => {
-                      onToggleVisibility(!asset.portal_visible)
+                      if (asset.portal_visible) {
+                        // Remove from portal — no confirmation needed
+                        onToggleVisibility(false)
+                      } else {
+                        // Share with portal — confirmation modal (D-21)
+                        if (
+                          confirm(
+                            'Share this clip with portal viewers?\n\nAnyone with the portal link will be able to stream (but not download) this clip. You can revoke sharing any time.',
+                          )
+                        ) {
+                          onToggleVisibility(true)
+                        }
+                      }
                       setShowMenu(false)
                     }}
                     style={{
