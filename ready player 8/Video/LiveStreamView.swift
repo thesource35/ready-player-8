@@ -89,6 +89,16 @@ struct LiveStreamView: View {
                 portalToken: portalToken
             )
             self.token = mintedToken.token
+            // D-40 analytics: video_playback_started (live)
+            await MainActor.run {
+                VideoAnalytics.playbackStarted(
+                    sourceId: source.id.uuidString,
+                    kind: "live",
+                    isCellular: quality.isCellular,
+                    projectId: source.projectId,
+                    orgId: source.orgId
+                )
+            }
             // Schedule refresh ~30s before expiry so playback never lapses mid-session.
             let refreshIn = max(60, mintedToken.ttl - 30)
             try? await Task.sleep(nanoseconds: UInt64(refreshIn) * 1_000_000_000)

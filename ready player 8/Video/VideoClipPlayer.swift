@@ -82,6 +82,16 @@ struct VideoClipPlayer: View {
                     portalToken: portalToken
                 )
                 self.manifestURL = url
+                // D-40 analytics: video_playback_started (vod)
+                await MainActor.run {
+                    VideoAnalytics.playbackStarted(
+                        assetId: asset.id.uuidString,
+                        kind: "vod",
+                        isCellular: quality.isCellular,
+                        projectId: asset.projectId,
+                        orgId: asset.orgId
+                    )
+                }
             } catch let err as AppError {
                 self.loadError = err
                 print("[VideoClipPlayer] manifest URL failed: \(err.localizedDescription)")

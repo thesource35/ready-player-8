@@ -13,6 +13,7 @@ import crypto from 'crypto'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { verifyMuxSignature, recordWebhookEvent } from '@/lib/video/webhook-verify'
 import { videoError, VideoErrorCode } from '@/lib/video/errors'
+import { emitVideoEvent } from '@/lib/video/analytics'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -131,7 +132,14 @@ export async function POST(req: Request) {
             created_by: src.created_by,
           })
         }
-        // D-40 analytics: live_stream_started — wired in plan 22-11 if added.
+        // D-40 analytics: live_stream_started
+        emitVideoEvent({
+          event: 'live_stream_started',
+          source_id: src.id,
+          mux_live_input_id: liveInputId,
+          project_id: src.project_id,
+          org_id: src.org_id,
+        })
         break
       }
 
@@ -166,7 +174,36 @@ export async function POST(req: Request) {
           .eq('kind', 'live')
           .is('ended_at', null)
         await supabase.from('cs_video_sources').update({ status: 'idle' }).eq('id', src.id)
-        // D-40 analytics: live_stream_disconnected with session_elapsed_s — wired in 22-11.
+
+        // D-40 analytics: live_stream_disconnected
+        // Compute session_elapsed_s from the open live asset row's started_at to now.
+        const { data: closedAsset } = await supabase
+          .from('cs_video_assets')
+          .select('started_at')
+          .eq('source_id', src.id)
+          .eq('kind', 'live')
+          .order('started_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        const sessionElapsedS = closedAsset?.started_at
+          ? Math.round((Date.now() - new Date(closedAsset.started_at as string).getTime()) / 1000)
+          : 0
+        // Need project_id + org_id — re-fetch source with those fields
+        const { data: srcFull } = await supabase
+          .from('cs_video_sources')
+          .select('project_id, org_id')
+          .eq('id', src.id)
+          .maybeSingle()
+        if (srcFull) {
+          emitVideoEvent({
+            event: 'live_stream_disconnected',
+            source_id: src.id,
+            session_elapsed_s: sessionElapsedS,
+            reason: 'idle',
+            project_id: srcFull.project_id,
+            org_id: srcFull.org_id,
+          })
+        }
         break
       }
 

@@ -11,6 +11,7 @@ import { checkVideoRateLimit } from '@/lib/video/ratelimit'
 import { videoError, VideoErrorCode } from '@/lib/video/errors'
 import { VOD_SIGNED_URL_TTL_SECONDS } from '@/lib/video/types'
 import { NextResponse } from 'next/server'
+import { emitVideoEvent } from '@/lib/video/analytics'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -156,7 +157,16 @@ export async function GET(req: Request) {
     )
   }
 
-  // D-40: Analytics event (fire-and-forget)
+  // D-40: portal_video_view analytics event
+  emitVideoEvent({
+    event: 'portal_video_view',
+    asset_id: asset.id,
+    portal_link_id: link.id,
+    project_id: asset.project_id,
+    org_id: asset.org_id,
+  })
+
+  // Portal analytics table insert (fire-and-forget)
   void (async () => {
     try {
       await supabase

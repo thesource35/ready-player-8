@@ -13,6 +13,7 @@ import { signPlaybackJWT } from '@/lib/video/mux'
 import { checkVideoRateLimit } from '@/lib/video/ratelimit'
 import { videoError, VideoErrorCode } from '@/lib/video/errors'
 import { MUX_PLAYBACK_JWT_TTL_SECONDS } from '@/lib/video/types'
+import { emitVideoEvent } from '@/lib/video/analytics'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -100,7 +101,7 @@ export async function POST(req: Request) {
   // Step 2: Look up the video source; cross-check project_id
   const { data: source, error: srcErr } = await supabase
     .from('cs_video_sources')
-    .select('id, project_id, kind, mux_playback_id')
+    .select('id, project_id, org_id, kind, mux_playback_id')
     .eq('id', source_id)
     .maybeSingle()
 
@@ -148,7 +149,25 @@ export async function POST(req: Request) {
     )
   }
 
-  // D-40: Analytics event (fire-and-forget)
+  // D-40: portal_video_view analytics event
+  // Use the open live asset id if available, else stable "live:{source_id}" placeholder
+  const { data: liveAsset } = await supabase
+    .from('cs_video_assets')
+    .select('id')
+    .eq('source_id', source_id)
+    .eq('kind', 'live')
+    .is('ended_at', null)
+    .limit(1)
+    .maybeSingle()
+  emitVideoEvent({
+    event: 'portal_video_view',
+    asset_id: liveAsset?.id ?? `live:${source_id}`,
+    portal_link_id: link.id,
+    project_id: source.project_id,
+    org_id: source.org_id,
+  })
+
+  // Portal analytics table insert (fire-and-forget)
   void (async () => {
     try {
       await supabase

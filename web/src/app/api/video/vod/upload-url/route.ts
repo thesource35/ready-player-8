@@ -14,6 +14,7 @@ import {
   MAX_UPLOAD_DURATION_SECONDS,
   ALLOWED_UPLOAD_CONTAINERS,
 } from '@/lib/video/types'
+import { emitVideoEvent } from '@/lib/video/analytics'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -233,6 +234,18 @@ export async function POST(req: Request) {
       { status: 503 },
     )
   }
+
+  // D-40 analytics: video_upload_started
+  emitVideoEvent({
+    event: 'video_upload_started',
+    asset_id: asset.id,
+    file_size_bytes: file_size_bytes,
+    container: containerLower,
+    client_duration_estimate: typeof duration_s === 'number' ? duration_s : undefined,
+    project_id,
+    org_id,
+    user_id: user.id,
+  })
 
   // Client will POST chunks to this endpoint with Bearer {auth_token} and tus metadata
   // { bucketName: 'videos', objectName: storagePath, contentType: 'video/...' }.

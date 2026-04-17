@@ -36,6 +36,7 @@ export async function transcodeAsset(job: TranscodeJob): Promise<void> {
   // 1. Mark transcoding.
   await updateAssetRow(asset_id, { status: 'transcoding' })
 
+  const transcodeStartMs = Date.now()
   try {
     await mkdir(hlsDir, { recursive: true })
 
@@ -100,10 +101,29 @@ export async function transcodeAsset(job: TranscodeJob): Promise<void> {
       ended_at: new Date().toISOString(),
     })
 
-    console.log(`[worker] video_transcode_succeeded asset=${asset_id} duration_s=${Math.round(info.duration)}`)
+    // D-40 analytics: video_transcode_succeeded (structured log — pipeline consumes from Fly.io logs)
+    const transcodeElapsedMs = Date.now() - transcodeStartMs
+    console.log('[analytics]', JSON.stringify({
+      event: 'video_transcode_succeeded',
+      asset_id,
+      duration_s: Math.round(info.duration),
+      transcode_elapsed_ms: transcodeElapsedMs,
+      project_id,
+      org_id,
+    }))
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     await markFailed(asset_id, msg)
+    // D-40 analytics: video_transcode_failed (structured log)
+    const errorCategory = msg.includes('codec') ? 'codec' : msg.includes('upload') ? 'upload' : msg.includes('ffmpeg') ? 'ffmpeg' : 'unknown'
+    console.log('[analytics]', JSON.stringify({
+      event: 'video_transcode_failed',
+      asset_id,
+      attempt_number: 3,
+      error_category: errorCategory,
+      project_id,
+      org_id,
+    }))
     console.error(`[worker] video_transcode_failed asset=${asset_id} reason=${msg}`)
   } finally {
     await rm(workDir, { recursive: true, force: true }).catch(() => {})
