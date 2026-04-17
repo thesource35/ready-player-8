@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 23-03-PLAN.md
-last_updated: "2026-04-17T17:07:05.487Z"
+stopped_at: Completed 23-04-PLAN.md
+last_updated: "2026-04-17T17:27:43.910Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 14
   completed_phases: 7
   total_plans: 60
-  completed_plans: 58
-  percent: 97
+  completed_plans: 59
+  percent: 98
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 Milestone: v2.1
 Phase: 23 (ios-nav-assignment-wiring) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-04-17
 
@@ -60,6 +60,7 @@ v2.0 closing decisions:
 - [Phase 22]: [Phase 22-10]: All 4 retention/lifecycle jobs use pg_cron + net.http_post to Supabase Edge Functions with GUC-based service-role auth; staggered daily schedules (03:00/03:05/03:30 UTC) + 5-min backstop. Closes VIDEO-01-O.
 - [Phase 22]: D-40 analytics use structured console.log with [analytics] prefix for Vercel/Fly.io log pipeline ingestion; iOS wraps AnalyticsEngine.shared.track with sanitization
 - [Phase 23]: UserDefaults relay key pattern (write-then-clear) for iOS cross-tab navigation; certBadgeCount=0 placeholder for Phase 25
+- [Phase 23]: Used inline .alert with Binding<Bool> for AppError display instead of AlertState ObservableObject — simpler for single-view DailyCrewView
 
 ### Pending Todos
 
@@ -83,6 +84,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T17:07:05.483Z
-Stopped at: Completed 23-03-PLAN.md
+Last session: 2026-04-17T17:27:43.906Z
+Stopped at: Completed 23-04-PLAN.md
 Resume file: None
