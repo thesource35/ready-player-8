@@ -22,6 +22,11 @@ struct DailyCrewView: View {
     @State private var notes: String = ""
     @State private var saving = false
     @State private var toast: String?
+    @State private var lastSavedSelected: Set<String> = []
+    @State private var lastSavedNotes: String = ""
+    @State private var showUnsavedAlert = false
+    @State private var pendingProjectId: String?
+    @State private var appError: AppError?
 
     private let supabase = SupabaseService.shared
 
@@ -31,6 +36,10 @@ struct DailyCrewView: View {
 
     private var selectedProject: SupabaseProject? {
         displayProjects.first { $0.id == selectedProjectId }
+    }
+
+    private var isDirty: Bool {
+        selected != lastSavedSelected || notes != lastSavedNotes
     }
 
     var body: some View {
@@ -50,7 +59,12 @@ struct DailyCrewView: View {
                     .frame(maxWidth: .infinity, minHeight: 120)
             } else {
                 DatePicker("Date", selection: $date, displayedComponents: .date)
-                    .onChange(of: date) { _, _ in Task { await loadCrew() } }
+                    .onChange(of: date) { _, _ in
+                        Task {
+                            if isDirty { await save() }
+                            await loadCrew()
+                        }
+                    }
 
                 Text("WHO'S ON SITE")
                     .font(.system(size: 10, weight: .semibold))
@@ -103,13 +117,20 @@ struct DailyCrewView: View {
                     .cornerRadius(8)
 
                 Button(action: { Task { await save() } }) {
-                    Text("Save Crew")
-                        .font(.system(size: 14, weight: .semibold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Theme.accent)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                    HStack(spacing: 8) {
+                        if saving {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .scaleEffect(0.8)
+                        }
+                        Text(saving ? "Saving..." : "Save Crew")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(saving ? Theme.muted : Theme.accent)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
                 }
                 .disabled(saving || selectedProjectId.isEmpty)
 
@@ -141,6 +162,44 @@ struct DailyCrewView: View {
             await loadMembers()
             await loadCrew()
         }
+        .confirmationDialog("You have unsaved changes", isPresented: $showUnsavedAlert) {
+            Button("Save & Switch") {
+                Task {
+                    await save()
+                    if let pid = pendingProjectId {
+                        selectedProjectId = pid
+                        pendingProjectId = nil
+                        await loadCrew()
+                    }
+                }
+            }
+            Button("Discard Changes", role: .destructive) {
+                if let pid = pendingProjectId {
+                    selectedProjectId = pid
+                    pendingProjectId = nil
+                    Task { await loadCrew() }
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                pendingProjectId = nil
+            }
+        }
+        .alert("Error", isPresented: Binding(
+            get: { appError != nil },
+            set: { if !$0 { appError = nil } }
+        )) {
+            Button("OK") { appError = nil }
+            if let err = appError, err.isRetryable {
+                Button("Retry") {
+                    appError = nil
+                    Task { await save() }
+                }
+            }
+        } message: {
+            if let err = appError {
+                Text(err.localizedDescription)
+            }
+        }
     }
 
     // MARK: - Sub-views
@@ -150,8 +209,13 @@ struct DailyCrewView: View {
             ForEach(displayProjects) { p in
                 Button(action: {
                     if let pid = p.id {
-                        selectedProjectId = pid
-                        Task { await loadCrew() }
+                        if isDirty {
+                            pendingProjectId = pid
+                            showUnsavedAlert = true
+                        } else {
+                            selectedProjectId = pid
+                            Task { await loadCrew() }
+                        }
                     }
                 }) {
                     Text(p.name)
@@ -224,6 +288,8 @@ struct DailyCrewView: View {
             selected = []
             notes = ""
         }
+        lastSavedSelected = selected
+        lastSavedNotes = notes
     }
 
     private func save() async {
@@ -247,9 +313,22 @@ struct DailyCrewView: View {
                 record: payload,
                 onConflict: "project_id,assignment_date"
             )
-            await MainActor.run { toast = "Crew saved for \(f.string(from: date))" }
+            await MainActor.run {
+                toast = "Crew saved for \(f.string(from: date))"
+                lastSavedSelected = selected
+                lastSavedNotes = notes
+            }
+        } catch let err as AppError {
+            await MainActor.run {
+                appError = err
+                toast = err.localizedDescription
+            }
         } catch {
-            await MainActor.run { toast = "Couldn't save crew. Check your connection and try again." }
+            let mapped = AppError.network(underlying: error)
+            await MainActor.run {
+                appError = mapped
+                toast = mapped.localizedDescription
+            }
         }
         await MainActor.run { saving = false }
     }
