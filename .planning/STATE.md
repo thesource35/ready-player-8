@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
-status: executing
-stopped_at: Completed 22-10-PLAN.md (retention + lifecycle jobs)
-last_updated: "2026-04-17T08:14:35.305Z"
+status: verifying
+stopped_at: "Completed 22-11-PLAN.md (analytics + test un-skip); checkpoint:human-verify pending"
+last_updated: "2026-04-17T10:01:06.997Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 14
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 57
-  completed_plans: 56
-  percent: 98
+  completed_plans: 57
+  percent: 100
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 Milestone: v2.1
 Phase: 22 (live-site-video-per-project-hls-camera-feeds-tied-to-project) — EXECUTING
 Plan: 12 of 12 (22-01 complete; 22-02 next)
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-17
 
 ## Accumulated Context
@@ -58,6 +58,7 @@ v2.0 closing decisions:
 - [Phase 22]: tus-js-client ^4.3.1 for web resumable uploads; CamerasSection client component hydrates after server render
 - [Phase 22]: Portal playback routes use service-role Supabase client; D-22 drone exclusion at route + UI; D-34 no-store on VOD manifest
 - [Phase 22]: [Phase 22-10]: All 4 retention/lifecycle jobs use pg_cron + net.http_post to Supabase Edge Functions with GUC-based service-role auth; staggered daily schedules (03:00/03:05/03:30 UTC) + 5-min backstop. Closes VIDEO-01-O.
+- [Phase 22]: D-40 analytics use structured console.log with [analytics] prefix for Vercel/Fly.io log pipeline ingestion; iOS wraps AnalyticsEngine.shared.track with sanitization
 
 ### Pending Todos
 
@@ -81,6 +82,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T08:14:35.275Z
-Stopped at: Completed 22-10-PLAN.md (retention + lifecycle jobs)
+Last session: 2026-04-17T10:01:06.993Z
+Stopped at: Completed 22-11-PLAN.md (analytics + test un-skip); checkpoint:human-verify pending
 Resume file: None
