@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: verifying
-stopped_at: Completed 24-02-PLAN.md
-last_updated: "2026-04-17T19:35:22.408Z"
+stopped_at: Phase 25 context gathered
+last_updated: "2026-04-17T23:29:18.688Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 14
@@ -86,6 +86,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T19:29:45.714Z
-Stopped at: Completed 24-02-PLAN.md
-Resume file: None
+Last session: 2026-04-17T23:29:18.672Z
+Stopped at: Phase 25 context gathered
+Resume file: .planning/phases/25-certification-expiry-notifications/25-CONTEXT.md
