@@ -9,6 +9,17 @@ export default function DailyCrewSection({ projectId }: { projectId: string }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [lastSaved, setLastSaved] = useState<{ selected: Set<string>; notes: string }>({
+    selected: new Set(),
+    notes: "",
+  });
+  const [error, setError] = useState<{ message: string; retryable: boolean } | null>(null);
+
+  const isDirty = (() => {
+    if (selected.size !== lastSaved.selected.size) return true;
+    for (const id of selected) if (!lastSaved.selected.has(id)) return true;
+    return notes !== lastSaved.notes;
+  })();
 
   useEffect(() => {
     fetch("/api/team")
@@ -23,16 +34,19 @@ export default function DailyCrewSection({ projectId }: { projectId: string }) {
       .then((c: DailyCrew | null) => {
         setNotes(c?.notes ?? "");
         setSelected(new Set(c?.member_ids ?? []));
+        setLastSaved({ selected: new Set(c?.member_ids ?? []), notes: c?.notes ?? "" });
       })
       .catch(() => {
         setNotes("");
         setSelected(new Set());
+        setLastSaved({ selected: new Set(), notes: "" });
       });
   }, [projectId, date]);
 
   async function save() {
     setSaving(true);
     setStatus(null);
+    setError(null);
     try {
       const res = await fetch(`/api/projects/${projectId}/daily-crew`, {
         method: "POST",
@@ -45,9 +59,13 @@ export default function DailyCrewSection({ projectId }: { projectId: string }) {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "save failed" }));
-        setStatus(`Error: ${err.error ?? "save failed"}`);
+        const isRetryable = res.status >= 500;
+        setError({ message: err.error ?? "save failed", retryable: isRetryable });
+        setStatus(null);
       } else {
         setStatus("Saved");
+        setError(null);
+        setLastSaved({ selected: new Set(selected), notes });
       }
     } finally {
       setSaving(false);
@@ -64,6 +82,7 @@ export default function DailyCrewSection({ projectId }: { projectId: string }) {
         border: "1px solid var(--border)",
       }}
     >
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       <h2
         style={{
           fontSize: 16,
@@ -82,7 +101,13 @@ export default function DailyCrewSection({ projectId }: { projectId: string }) {
       <input
         type="date"
         value={date}
-        onChange={(e) => setDate(e.target.value)}
+        onChange={async (e) => {
+          if (isDirty) {
+            const confirmed = window.confirm("You have unsaved changes. Save before switching dates?");
+            if (confirmed) await save();
+          }
+          setDate(e.target.value);
+        }}
         style={{
           marginBottom: 16,
           padding: 8,
@@ -124,7 +149,7 @@ export default function DailyCrewSection({ projectId }: { projectId: string }) {
               />
               <span style={{ color: "var(--text)", fontSize: 14 }}>{m.name}</span>
               {m.trade && (
-                <span style={{ color: "var(--muted)", fontSize: 12 }}>· {m.trade}</span>
+                <span style={{ color: "var(--muted)", fontSize: 12 }}>&middot; {m.trade}</span>
               )}
             </li>
           ))}
@@ -152,19 +177,64 @@ export default function DailyCrewSection({ projectId }: { projectId: string }) {
           disabled={saving}
           style={{
             padding: "10px 20px",
-            background: "var(--accent)",
+            background: saving ? "var(--muted)" : "var(--accent)",
             color: "var(--bg)",
             borderRadius: 8,
             border: "none",
             fontWeight: 600,
             cursor: saving ? "wait" : "pointer",
             minHeight: 44,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
           }}
+          aria-busy={saving}
+          aria-label="Save crew assignments"
         >
-          {saving ? "Saving…" : "Save"}
+          {saving && (
+            <span
+              style={{
+                width: 14,
+                height: 14,
+                border: "2px solid transparent",
+                borderTop: "2px solid var(--bg)",
+                borderRadius: "50%",
+                animation: "spin 0.6s linear infinite",
+                display: "inline-block",
+              }}
+            />
+          )}
+          {saving ? "Saving..." : "Save"}
         </button>
-        {status && (
-          <span style={{ fontSize: 12, color: "var(--muted)" }}>{status}</span>
+        {status && !error && (
+          <span style={{ fontSize: 12, color: "var(--green)" }} role="status" aria-live="polite">
+            {status}
+          </span>
+        )}
+        {error && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 12, color: "var(--red)" }} role="alert">
+              Error: {error.message}
+            </span>
+            {error.retryable && (
+              <button
+                onClick={save}
+                disabled={saving}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "var(--accent)",
+                  background: "none",
+                  border: "1px solid var(--accent)",
+                  borderRadius: 6,
+                  padding: "4px 10px",
+                  cursor: "pointer",
+                }}
+              >
+                Retry
+              </button>
+            )}
+          </div>
         )}
       </div>
     </section>
