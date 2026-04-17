@@ -492,6 +492,14 @@ private struct ProjectDetailSheet: View {
                 )
             }
 
+            // MARK: - Phase 22: Cameras Section
+            if let pid = project.id {
+                CamerasSection(
+                    projectId: pid,
+                    orgId: SupabaseService.shared.currentOrgId
+                )
+            }
+
             // MARK: - Phase 14: Project Activity Tab
             if let pid = project.id {
                 ProjectActivityView(projectId: pid)
