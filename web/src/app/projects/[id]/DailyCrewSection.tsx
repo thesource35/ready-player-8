@@ -84,6 +84,7 @@ export default function DailyCrewSection({ projectId }: { projectId: string }) {
     >
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       <h2
+        id="daily-crew"
         style={{
           fontSize: 16,
           fontWeight: 800,
@@ -101,6 +102,7 @@ export default function DailyCrewSection({ projectId }: { projectId: string }) {
       <input
         type="date"
         value={date}
+        aria-label="Crew assignment date"
         onChange={async (e) => {
           if (isDirty) {
             const confirmed = window.confirm("You have unsaved changes. Save before switching dates?");
@@ -145,6 +147,7 @@ export default function DailyCrewSection({ projectId }: { projectId: string }) {
                   else s.delete(m.id);
                   setSelected(s);
                 }}
+                aria-label={`${m.name}${m.trade ? `, ${m.trade}` : ""}, ${selected.has(m.id) ? "assigned to crew" : "not assigned"}`}
                 style={{ minWidth: 20, minHeight: 20 }}
               />
               <span style={{ color: "var(--text)", fontSize: 14 }}>{m.name}</span>
@@ -159,6 +162,7 @@ export default function DailyCrewSection({ projectId }: { projectId: string }) {
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         placeholder="Scope notes"
+        aria-label="Scope and notes for today's crew"
         style={{
           width: "100%",
           minHeight: 80,
