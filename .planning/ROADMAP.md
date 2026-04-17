@@ -171,7 +171,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
   5. Retention is self-maintaining: 30 d VOD / 24 h live / 30 d idle-source archive / 7 d webhook-events / 5-min stuck-upload requeue — all via pg_cron + Supabase Edge Functions
   6. Every user action either succeeds visibly or surfaces an AppError with actionable copy — no silent failures in the Mux, upload, transcode, or portal paths
   7. All 8 D-40 analytics events emit at their defined call sites with project/org/user context (portal_link_id for portal events)
-**Plans:** 9/12 plans executed
+**Plans:** 10/12 plans executed
 - [x] 22-00-PLAN.md — Wave 0 test scaffolding (9 web stubs + 4 iOS stubs + worker skeleton + Mux webhook fixtures + tiny.mp4)
 - [x] 22-01-PLAN.md — Wave 1 schema migrations: cs_video_sources, cs_video_assets, cs_video_webhook_events, cs_portal_config.show_cameras, 'videos' bucket + storage RLS, pg_net DB webhook trigger (applied to remote 2026-04-15)
 - [x] 22-02-PLAN.md — Wave 1 shared model types (Swift structs + TS types + 9 AppError cases + VideoErrorCode wire taxonomy)
@@ -181,7 +181,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 - [x] 22-06-PLAN.md — Wave 3 iOS player wrappers: LiveStreamView (LL-HLS, mute-on-boot), VideoClipPlayer, CellularQualityMonitor (D-36), VideoPlayerChrome
 - [x] 22-07-PLAN.md — Wave 3 web player wrappers: LiveStreamView + VideoClipPlayer via @mux/mux-player-react, usePlaybackToken hook with auto-refresh
 - [x] 22-08-PLAN.md — Wave 3 Cameras section UI: wizard (with audio jurisdiction warning), upload sheet, cards, soft-cap banner, per-clip portal toggle — both platforms
-- [ ] 22-09-PLAN.md — Wave 4 portal exposure: portal playback-token + playback-url routes with D-22/D-34 enforcement, Show cameras toggle on Phase 20 portal editor (web + iOS)
+- [x] 22-09-PLAN.md — Wave 4 portal exposure: portal playback-token + playback-url routes with D-22/D-34 enforcement, Show cameras toggle on Phase 20 portal editor (web + iOS)
 - [ ] 22-10-PLAN.md — Wave 4 retention + lifecycle: 4 Supabase Edge Functions + pg_cron schedules (daily prune/archive, 7-day dedupe prune, 5-min stuck-upload backstop)
 - [ ] 22-11-PLAN.md — Wave 4 analytics wiring + un-skip Wave 0 tests + VERIFICATION.md for manual UAT
 **UI hint**: yes (ProjectDetail → new Cameras section per D-20; no top-level nav tab — reserved for Phase 29)
@@ -238,7 +238,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 | 16. Field Tools | v2.1 | 6/6 | Code Complete | 2026-04-08 |
 | 17. Calendar & Scheduling | v2.1 | 5/5 | Code Complete | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.1 | 18/18 | Code Complete | 2026-04-12 |
-| 22. Live Site Video | v2.1 | 9/12 | In Progress|  |
+| 22. Live Site Video | v2.1 | 10/12 | In Progress|  |
 | 23. iOS Navigation & Assignment Wiring | v2.1 | 2/2 | Complete   | 2026-04-14 |
 | 24. Document → Activity Event Emission | v2.1 | 0/? | Planned | — |
 | 25. Certification Expiry Notifications | v2.1 | 0/? | Planned | — |

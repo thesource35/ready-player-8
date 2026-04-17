@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 22-08-PLAN.md (Cameras section UI)
-last_updated: "2026-04-17T06:11:30.838Z"
+stopped_at: Completed 22-09-PLAN.md (Portal video exposure)
+last_updated: "2026-04-17T07:55:12.598Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 14
   completed_phases: 7
   total_plans: 57
-  completed_plans: 54
-  percent: 95
+  completed_plans: 55
+  percent: 96
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 Milestone: v2.1
 Phase: 22 (live-site-video-per-project-hls-camera-feeds-tied-to-project) — EXECUTING
-Plan: 10 of 12 (22-01 complete; 22-02 next)
+Plan: 11 of 12 (22-01 complete; 22-02 next)
 Status: Ready to execute
 Last activity: 2026-04-17
 
@@ -56,6 +56,7 @@ v2.0 closing decisions:
 - [Phase 22]: [Phase 22-06]: iOS player wrappers complete — CellularQualityMonitor (NWPathMonitor singleton; cellular→1.5Mbps, wifi→6Mbps, ConstructOS.Video.DefaultQuality override); VideoPlayerChrome (LiveStatusBadge green/gold/red + HDToggleButton 44pt hit target); LiveStreamView (LL-HLS via Mux with automaticallyWaitsToMinimizeStalling=false, isMuted=true at boot per D-35, requiresLinearPlayback=true in portal mode per D-34a); VideoClipPlayer distinct from LiveStreamView per D-18 (VOD via VideoPlaybackAuth.vodManifestUrl, status-aware placeholders, opportunistic resume under ConstructOS.Video.LastPlayedAssetId.{projectId} per D-26). Both accept optional portalToken (D-19) and apply D-34 restrictions at wrapper layer. Closes VIDEO-01-F, reinforces VIDEO-01-K.
 - [Phase 22]: [Phase 22-07]: Web player wrappers complete — @mux/mux-player-react ^3.11.7 installed, LiveStreamView (LL-HLS, portal head-only via targetLiveWindow=0), VideoClipPlayer (VOD 4-status, portal download suppression via CSS), usePlaybackToken hook (auto-refresh 30s before TTL). 14 vitest specs GREEN. Closes VIDEO-01-F web parity, reinforces VIDEO-01-K.
 - [Phase 22]: tus-js-client ^4.3.1 for web resumable uploads; CamerasSection client component hydrates after server render
+- [Phase 22]: Portal playback routes use service-role Supabase client; D-22 drone exclusion at route + UI; D-34 no-store on VOD manifest
 
 ### Pending Todos
 
@@ -79,6 +80,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T06:11:30.834Z
-Stopped at: Completed 22-08-PLAN.md (Cameras section UI)
+Last session: 2026-04-17T07:55:12.595Z
+Stopped at: Completed 22-09-PLAN.md (Portal video exposure)
 Resume file: None
