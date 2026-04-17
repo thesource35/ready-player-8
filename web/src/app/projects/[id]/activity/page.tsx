@@ -31,6 +31,15 @@ const ENTITY_LABELS: Record<string, string> = {
   cs_safety_incidents: "Safety incident",
   cs_submittals: "Submittal",
   cs_punch_list: "Punch item",
+  cs_documents: "Document",
+  cs_document_attachments: "Document",
+};
+
+const DETAIL_LABELS: Record<string, string> = {
+  document_uploaded: "Document uploaded",
+  document_attached: "Document attached",
+  document_detached: "Document detached",
+  version_added: "New version added",
 };
 
 export default async function ProjectActivityPage({
@@ -92,6 +101,17 @@ export default async function ProjectActivityPage({
         >
           {events.map((e: ActivityEvent, idx) => {
             const label = ENTITY_LABELS[e.entity_type] ?? e.entity_type;
+            const detail = (e.payload as Record<string, unknown>)?.detail as string | undefined;
+            const filename = (e.payload as Record<string, unknown>)?.filename as string | undefined;
+            const historical = (e.payload as Record<string, unknown>)?.historical === true;
+            const isDocEvent = e.category === "document";
+
+            let displayText = `${label} ${e.action}`;
+            if (detail && DETAIL_LABELS[detail]) {
+              displayText = DETAIL_LABELS[detail];
+              if (filename) displayText += `: ${filename}`;
+            }
+
             return (
               <li
                 key={e.id}
@@ -124,8 +144,23 @@ export default async function ProjectActivityPage({
                       marginBottom: 2,
                     }}
                   >
+                    {isDocEvent && (
+                      <span
+                        style={{
+                          background: "rgba(242,158,61,0.15)",
+                          color: "#F29E3D",
+                          padding: "2px 6px",
+                          borderRadius: 4,
+                          fontSize: 10,
+                          fontWeight: 800,
+                          marginRight: 6,
+                        }}
+                      >
+                        DOC
+                      </span>
+                    )}
                     <span style={{ fontSize: 13, fontWeight: 700, color: "#F0F8F8" }}>
-                      {label} {e.action}
+                      {displayText}
                     </span>
                     <span
                       style={{
@@ -139,7 +174,21 @@ export default async function ProjectActivityPage({
                       {e.category.replace(/_/g, " ")}
                     </span>
                   </div>
-                  <div style={{ fontSize: 11, color: "#9EBDC2" }}>{timeAgo(e.created_at)}</div>
+                  <div style={{ fontSize: 11, color: "#9EBDC2" }}>
+                    {timeAgo(e.created_at)}
+                    {historical && (
+                      <span
+                        style={{
+                          fontSize: 9,
+                          color: "rgba(158,189,194,0.4)",
+                          fontStyle: "italic",
+                          marginLeft: 6,
+                        }}
+                      >
+                        (historical)
+                      </span>
+                    )}
+                  </div>
                 </div>
               </li>
             );
