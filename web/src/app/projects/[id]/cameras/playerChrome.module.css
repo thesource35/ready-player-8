@@ -1,0 +1,138 @@
+/* Phase 22-07 — Player chrome module for LiveStreamView + VideoClipPlayer.
+ *
+ * Enforces the 22-UI-SPEC contract: 16:9 aspect ratio, rounded 14px, var(--panel) background,
+ * accent scrubber. `.portalNoDownload` hides the Mux Player download control in portal mode
+ * (D-34(b) streaming-only). `.shimmer` drives the gold transcoding animation on VOD clip cards.
+ */
+
+.container {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--panel);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.placeholderFailed {
+  color: var(--red);
+  font-weight: 700;
+}
+
+.badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: rgba(22, 40, 50, 0.9); /* var(--panel) at ~90% */
+  color: var(--text);
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.badgeDotLive {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 0 var(--green);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.badgeDotOffline {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+}
+
+.badgeDotIdle {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(105, 210, 148, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(105, 210, 148, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(105, 210, 148, 0);
+  }
+}
+
+/* Portal mode: hide Mux Player's download control element. Selector targets the shadow-DOM
+ * passthrough slot Mux exposes for the download menu item. Also uses CSS variable override
+ * which mux-player honors on recent versions. We pair both for resilience across minor updates. */
+.portalNoDownload {
+  --controls-backdrop-color: transparent;
+  --media-control-display: none;
+}
+
+.portalNoDownload :global(mux-player::part(download-button)),
+.portalNoDownload :global(media-download-button) {
+  display: none !important;
+}
+
+/* Gold shimmer for transcoding placeholders — matches UI-SPEC gold status vocabulary. */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--panel) 0%,
+    rgba(252, 199, 87, 0.15) 50%,
+    var(--panel) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.retryButton {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.retryButton:hover {
+  filter: brightness(1.08);
+}

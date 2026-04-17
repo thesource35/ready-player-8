@@ -119,9 +119,10 @@ describe("LiveStreamView", () => {
 
   it("shows an offline status instead of the player when source.status === 'offline'", () => {
     installFetchMock({ token: "jwt_1", ttl: 300, playback_id: "pb_1" });
-    render(<LiveStreamView source={{ ...source, status: "offline" }} />);
-    // Offline state swaps the player for a status panel with OFFLINE badge text.
-    expect(screen.getByText(/Offline/i)).toBeTruthy();
+    const { getByTestId } = render(<LiveStreamView source={{ ...source, status: "offline" }} />);
+    // Offline state swaps the player for a status panel; no MuxPlayer mounted.
+    expect(getByTestId("live-offline")).toBeTruthy();
+    expect(screen.queryByTestId("mock-mux-player")).toBeNull();
   });
 });
 
