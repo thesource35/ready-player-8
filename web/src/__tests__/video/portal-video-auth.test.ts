@@ -28,6 +28,11 @@ function makeMockChain(table: string) {
   return {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
+    is: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    not: vi.fn().mockReturnThis(),
+    lt: vi.fn().mockReturnThis(),
     insert: vi.fn().mockReturnValue(Promise.resolve({ data: null, error: null })),
     maybeSingle: vi.fn().mockImplementation(() => {
       return Promise.resolve({ data: mockQueryResults[table] ?? null, error: null })
