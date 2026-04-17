@@ -49,7 +49,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 - [x] **Phase 19: Reporting & Dashboards** (18/18 plans) — code complete 2026-04-12, verification pending
 - [x] **Phase 22: Live Site Video** — planned 2026-04-15 (12 plans, 4 waves); 2/12 executed (22-00 Wave 0 scaffolding + 22-01 Wave 1 schema) (completed 2026-04-17)
 - [x] **Phase 23: iOS Nav & Assignment Wiring + Web Parity** (5 plans, 2 waves) — Plans 01-02 complete; plans 03-05 add cross-nav, save hardening, accessibility on both platforms (completed 2026-04-17)
-- [ ] **Phase 24: Document → Activity Event Emission** (2 plans, 2 waves) — Gap closure: document routes emit `cs_activity_events` (INT-02)
+- [x] **Phase 24: Document → Activity Event Emission** (2 plans, 2 waves) — Gap closure: document routes emit `cs_activity_events` (INT-02) (completed 2026-04-17)
 - [ ] **Phase 25: Certification Expiry Notifications** — Gap closure: cert-expiry cron + notification emission (INT-06)
 - [ ] **Phase 26: Documents RLS Table Reconciliation** — Gap closure: resolve RLS references to non-existent tables (INT-01)
 - [ ] **Phase 27: Portal → Map Navigation Link** — Gap closure: portal home links to `/map` sub-route when enabled (INT-07)
@@ -204,11 +204,11 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 **Depends on:** Phase 13, Phase 14
 **Requirements:** DOC-02, NOTIF-02
 **Gap Closure:** Closes INT-02 · FLOW-01
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 24-01-PLAN.md — Trigger function + trigger attachments + backfill + emission tests (Wave 1)
-- [ ] 24-02-PLAN.md — Activity feed rendering updates + rendering tests + human verification (Wave 2)
+- [x] 24-02-PLAN.md — Activity feed rendering updates + rendering tests + human verification (Wave 2)
 
 ### Phase 25: Certification Expiry Notifications
 **Goal:** Users receive notifications when certifications approach expiration
@@ -250,7 +250,7 @@ Plans:
 | 19. Reporting & Dashboards | v2.1 | 18/18 | Code Complete | 2026-04-12 |
 | 22. Live Site Video | v2.1 | 12/12 | Complete    | 2026-04-17 |
 | 23. iOS Nav & Assignment Wiring | v2.1 | 5/5 | Complete    | 2026-04-17 |
-| 24. Document → Activity Event Emission | v2.1 | 1/2 | In Progress|  |
+| 24. Document → Activity Event Emission | v2.1 | 2/2 | Complete   | 2026-04-17 |
 | 25. Certification Expiry Notifications | v2.1 | 0/? | Planned | — |
 | 26. Documents RLS Table Reconciliation | v2.1 | 0/? | Planned | — |
 | 27. Portal → Map Navigation Link | v2.1 | 0/? | Planned | — |
