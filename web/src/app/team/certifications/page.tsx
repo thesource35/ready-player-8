@@ -64,6 +64,9 @@ export default async function CertificationsPage() {
           <Link href="/team/certifications" style={{ ...navLink, color: "var(--text)", fontWeight: 600 }}>
             Certifications
           </Link>
+          <Link href="/team" style={navLink}>
+            Daily Crew
+          </Link>
         </nav>
       </header>
 

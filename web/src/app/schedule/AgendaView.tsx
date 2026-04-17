@@ -92,14 +92,29 @@ export default function AgendaView({ data }: { data: TimelineResponse }) {
           >
             <div
               style={{
-                fontSize: 11,
-                fontWeight: 900,
-                letterSpacing: 1,
-                color: "var(--accent)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
                 marginBottom: 8,
               }}
             >
-              {label.toUpperCase()}
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 900,
+                  letterSpacing: 1,
+                  color: "var(--accent)",
+                }}
+              >
+                {label.toUpperCase()}
+              </div>
+              <a
+                href="/team"
+                style={{ fontSize: 9, fontWeight: 700, color: "var(--accent)", textDecoration: "none" }}
+                aria-label={`View crew assignments for ${label}`}
+              >
+                VIEW CREW
+              </a>
             </div>
             {dayItems.map((it, i) => (
               <div

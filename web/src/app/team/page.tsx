@@ -48,6 +48,9 @@ export default async function TeamPage() {
           <Link href="/team/certifications" style={navLink}>
             Certifications
           </Link>
+          <Link href="/team" style={navLink}>
+            Daily Crew
+          </Link>
         </nav>
       </header>
       <section style={{ background: "var(--surface)", borderRadius: 14, padding: 16 }}>

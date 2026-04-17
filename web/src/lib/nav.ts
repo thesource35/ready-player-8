@@ -23,6 +23,7 @@ export const navGroups: NavGroup[] = [
     { href: "/jobs", label: "Jobs", icon: "💼" },
   ]},
   { label: "INTEL", color: "#4AC4CC", links: [
+    { href: "/team", label: "Team", icon: "👥" },
     { href: "/ops", label: "Ops", icon: "⚙️" },
     { href: "/hub", label: "Hub", icon: "🔌" },
     { href: "/security", label: "Security", icon: "🔐" },
