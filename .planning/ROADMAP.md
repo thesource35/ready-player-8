@@ -192,10 +192,10 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 **Depends on:** Phase 15, Phase 17
 **Requirements:** TEAM-01, TEAM-02, TEAM-03, TEAM-05, CAL-03
 **Gap Closure:** Closes INT-03, INT-04, INT-05 · FLOW-03, FLOW-04, FLOW-05
-**Plans:** 5 plans
+**Plans:** 3/5 plans executed
 - [x] 23-01-PLAN.md — DailyCrewView project picker (iOS, Wave 1)
 - [x] 23-02-PLAN.md — VERIFICATION.md + REQUIREMENTS.md updates (Wave 2)
-- [ ] 23-03-PLAN.md — Cross-navigation + badge + deep-link + web nav wiring (iOS + Web, Wave 1)
+- [x] 23-03-PLAN.md — Cross-navigation + badge + deep-link + web nav wiring (iOS + Web, Wave 1)
 - [ ] 23-04-PLAN.md — Save-flow hardening: dirty tracking, unsaved guard, auto-save, error handling, spinner (iOS + Web, Wave 1)
 - [ ] 23-05-PLAN.md — Accessibility labels + state announcements + offline indicator (iOS + Web, Wave 2)
 
@@ -244,7 +244,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 | 17. Calendar & Scheduling | v2.1 | 5/5 | Code Complete | 2026-04-11 |
 | 19. Reporting & Dashboards | v2.1 | 18/18 | Code Complete | 2026-04-12 |
 | 22. Live Site Video | v2.1 | 12/12 | Complete    | 2026-04-17 |
-| 23. iOS Nav & Assignment Wiring | v2.1 | 2/5 | In Progress | — |
+| 23. iOS Nav & Assignment Wiring | v2.1 | 3/5 | In Progress|  |
 | 24. Document → Activity Event Emission | v2.1 | 0/? | Planned | — |
 | 25. Certification Expiry Notifications | v2.1 | 0/? | Planned | — |
 | 26. Documents RLS Table Reconciliation | v2.1 | 0/? | Planned | — |

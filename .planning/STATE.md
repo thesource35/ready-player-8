@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
-status: verifying
-stopped_at: "Completed 22-11-PLAN.md (analytics + test un-skip); checkpoint:human-verify pending"
-last_updated: "2026-04-17T10:40:04.616Z"
+status: executing
+stopped_at: Completed 23-03-PLAN.md
+last_updated: "2026-04-17T17:07:05.487Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 14
-  completed_phases: 8
-  total_plans: 57
-  completed_plans: 57
-  percent: 100
+  completed_phases: 7
+  total_plans: 60
+  completed_plans: 58
+  percent: 97
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Every user action must either succeed visibly or fail with a clear, actionable message -- no silent data loss, no undetected errors, no security gaps.
-**Current focus:** Phase 22 — live-site-video-per-project-hls-camera-feeds-tied-to-project
+**Current focus:** Phase 23 — ios-nav-assignment-wiring
 
 ## Current Position
 
 Milestone: v2.1
-Phase: 23
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 23 (ios-nav-assignment-wiring) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
 Last activity: 2026-04-17
 
 ## Accumulated Context
@@ -59,6 +59,7 @@ v2.0 closing decisions:
 - [Phase 22]: Portal playback routes use service-role Supabase client; D-22 drone exclusion at route + UI; D-34 no-store on VOD manifest
 - [Phase 22]: [Phase 22-10]: All 4 retention/lifecycle jobs use pg_cron + net.http_post to Supabase Edge Functions with GUC-based service-role auth; staggered daily schedules (03:00/03:05/03:30 UTC) + 5-min backstop. Closes VIDEO-01-O.
 - [Phase 22]: D-40 analytics use structured console.log with [analytics] prefix for Vercel/Fly.io log pipeline ingestion; iOS wraps AnalyticsEngine.shared.track with sanitization
+- [Phase 23]: UserDefaults relay key pattern (write-then-clear) for iOS cross-tab navigation; certBadgeCount=0 placeholder for Phase 25
 
 ### Pending Todos
 
@@ -82,6 +83,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T10:01:06.993Z
-Stopped at: Completed 22-11-PLAN.md (analytics + test un-skip); checkpoint:human-verify pending
+Last session: 2026-04-17T17:07:05.483Z
+Stopped at: Completed 23-03-PLAN.md
 Resume file: None
