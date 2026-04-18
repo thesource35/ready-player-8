@@ -43,6 +43,12 @@ export function titleFor(event: ActivityEvent): string {
     case 'safety_alert':
       return 'Safety alert'
     case 'assigned_task':
+      if (event.entity_type === 'certifications') {
+        const threshold = event.payload?.threshold
+        if (threshold === 0) return 'Cert Expires Today'
+        if (threshold === 'post-expiry') return 'Cert Has Expired'
+        if (typeof threshold === 'number') return `Cert Expiring in ${threshold} Days`
+      }
       return 'New assignment'
     default:
       return 'Activity'
@@ -50,6 +56,14 @@ export function titleFor(event: ActivityEvent): string {
 }
 
 export function bodyFor(event: ActivityEvent): string {
+  if (event.entity_type === 'certifications') {
+    const p = event.payload ?? {}
+    const memberName = (p.member_name as string) ?? 'Team member'
+    const certNames = (p.cert_names as string[]) ?? []
+    return certNames.length > 0
+      ? `${memberName}: ${certNames.join(' + ')}`
+      : memberName
+  }
   const entity = event.entity_type.replace(/^cs_/, '')
   const payload = event.payload ?? {}
   const name = (payload['name'] ?? payload['title'] ?? payload['description']) as string | undefined
@@ -78,29 +92,50 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
 
   const event = body.record
   const { supabase, sendApns } = deps
+  const isCertEvent = event.entity_type === 'certifications'
 
   // 1. Resolve recipients (project members minus the actor).
-  //    If project_id is null, broadcast is out of scope — skip.
-  if (!event.project_id) {
+  //    Cert events may have null project_id (unassigned members per D-15) —
+  //    they carry their own recipient list, so skip the early return for them.
+  if (!event.project_id && !isCertEvent) {
     return new Response(JSON.stringify({ skipped: 'no project_id' }), {
       status: 200,
       headers: { 'content-type': 'application/json' },
     })
   }
 
-  const { data: members, error: memErr } = await supabase
-    .from('cs_project_members')
-    .select('user_id')
-    .eq('project_id', event.project_id)
+  // Cert events carry their own recipient list (resolved by cert-expiry-scan)
+  let recipients: string[]
+  if (isCertEvent && Array.isArray(event.payload?.recipient_user_ids)) {
+    recipients = (event.payload.recipient_user_ids as string[])
+      .filter((uid: string) => uid && uid !== event.actor_id)
+  } else {
+    if (!event.project_id) {
+      return new Response(JSON.stringify({ skipped: 'no project_id' }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    }
+    const { data: members, error: memErr } = await supabase
+      .from('cs_project_members')
+      .select('user_id')
+      .eq('project_id', event.project_id)
 
-  if (memErr) {
-    console.error('[notifications-fanout] member lookup failed:', memErr.message)
-    return new Response(memErr.message, { status: 500 })
+    if (memErr) {
+      console.error('[notifications-fanout] member lookup failed:', memErr.message)
+      return new Response(memErr.message, { status: 500 })
+    }
+
+    recipients = (members ?? [])
+      .map((m: { user_id: string }) => m.user_id)
+      .filter((uid: string) => uid && uid !== event.actor_id)
   }
 
-  const recipients = (members ?? [])
-    .map((m: { user_id: string }) => m.user_id)
-    .filter((uid: string) => uid && uid !== event.actor_id)
+  // Suppress dismissed users (D-11) — cert events carry suppress_user_ids
+  const suppressIds = new Set((event.payload?.suppress_user_ids as string[]) ?? [])
+  if (suppressIds.size > 0) {
+    recipients = recipients.filter((uid: string) => !suppressIds.has(uid))
+  }
 
   if (recipients.length === 0) {
     return new Response(JSON.stringify({ recipients: 0 }), {
@@ -153,22 +188,44 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
     })
   }
 
-  // 5. Send pushes in parallel; tolerate per-device failures
+  // 5a. Resolve push subtitle for cert events (D-10: project name)
+  let subtitle: string | undefined
+  if (isCertEvent && event.project_id) {
+    const { data: proj } = await supabase
+      .from('cs_projects')
+      .select('name')
+      .eq('id', event.project_id)
+      .single()
+    subtitle = (proj as Record<string, unknown>)?.name as string | undefined
+  }
+
+  // 5b. Send pushes in parallel; tolerate per-device failures
   let pushed = 0
   await Promise.allSettled(
     (tokens ?? []).map(async (t: { user_id: string; device_token: string }) => {
       try {
-        await sendApns(t.device_token, {
-          aps: {
-            alert: { title, body: bodyText },
-            sound: 'default',
-            badge: 1,
-            'thread-id': event.project_id ?? 'global',
-          },
+        const alertObj: Record<string, unknown> = { title, body: bodyText }
+        if (subtitle) alertObj.subtitle = subtitle
+
+        const apsObj: Record<string, unknown> = {
+          alert: alertObj,
+          sound: 'default',
+          badge: 1,
+          'thread-id': event.project_id ?? 'global',
+        }
+        if (isCertEvent) apsObj.category = 'cert-expiry'
+
+        const apnsPayload: Record<string, unknown> = {
+          aps: apsObj,
           event_id: event.id,
           project_id: event.project_id,
           category: event.category,
-        })
+        }
+        if (isCertEvent && event.payload?.cert_id) {
+          apnsPayload.cert_id = event.payload.cert_id
+        }
+
+        await sendApns(t.device_token, apnsPayload)
         pushed++
       } catch (err) {
         const apnsErr = err as ApnsError
