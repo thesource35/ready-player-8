@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 25-04-PLAN.md
-last_updated: "2026-04-18T08:21:49.146Z"
+stopped_at: Completed 25-05-PLAN.md
+last_updated: "2026-04-18T09:17:40.037Z"
 last_activity: 2026-04-18
 progress:
   total_phases: 14
   completed_phases: 9
   total_plans: 69
-  completed_plans: 66
-  percent: 96
+  completed_plans: 67
+  percent: 97
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 Milestone: v2.1
 Phase: 25 (certification-expiry-notifications) — EXECUTING
-Plan: 5 of 7
+Plan: 6 of 7
 Status: Ready to execute
 Last activity: 2026-04-18
 
@@ -69,6 +69,7 @@ v2.0 closing decisions:
 - [Phase 25]: Cert recipient resolution uses payload.recipient_user_ids directly, bypassing cs_project_members lookup
 - [Phase 25-certification-expiry-notifications]: CertUrgency enum and helpers as internal free functions for XCTest access; added cs_certifications to SupabaseService allowedTables
 - [Phase 25]: Extracted CertHighlightScroller to separate file for proper use-client in Next.js server component page; noon UTC fake timers for timezone-safe vitest
+- [Phase 25]: UserDefaults write-then-clear relay pattern for cold-launch cert deep-link, matching Phase 23 cross-nav pattern
 
 ### Pending Todos
 
@@ -92,6 +93,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-18T08:21:48.334Z
-Stopped at: Completed 25-04-PLAN.md
+Last session: 2026-04-18T09:17:39.482Z
+Stopped at: Completed 25-05-PLAN.md
 Resume file: None

@@ -215,14 +215,14 @@ Plans:
 **Depends on:** Phase 14, Phase 15
 **Requirements:** TEAM-04, NOTIF-04
 **Gap Closure:** Closes INT-06 · FLOW-02
-**Plans:** 4/7 plans executed
+**Plans:** 5/7 plans executed
 
 Plans:
 - [x] 25-01-PLAN.md — Edge Function expansion: multi-threshold, batch, dedupe, grouping, cert renewal trigger (Wave 1)
 - [x] 25-02-PLAN.md — Fanout enhancements: cert-specific push copy, APNs category registration (Wave 1)
 - [x] 25-03-PLAN.md — iOS urgency badges, summary banner, renewal CTA, pulse animation, XCTest (Wave 2)
 - [x] 25-04-PLAN.md — Web urgency badges, summary banner, deep-link highlight, renewal CTA, vitest (Wave 2)
-- [ ] 25-05-PLAN.md — iOS deep-link routing (cold + warm launch), CarPlay cert tab, analytics, badge count (Wave 2)
+- [x] 25-05-PLAN.md — iOS deep-link routing (cold + warm launch), CarPlay cert tab, analytics, badge count (Wave 2)
 - [ ] 25-06-PLAN.md — MCP tool, cert compliance widget, db push, manual test plan (Wave 3)
 - [ ] 25-07-PLAN.md — Cert name autocomplete (iOS + web), admin scan status badge (Wave 3)
 
@@ -261,7 +261,7 @@ Plans:
 | 22. Live Site Video | v2.1 | 12/12 | Complete    | 2026-04-17 |
 | 23. iOS Nav & Assignment Wiring | v2.1 | 5/5 | Complete    | 2026-04-17 |
 | 24. Document → Activity Event Emission | v2.1 | 2/2 | Complete    | 2026-04-17 |
-| 25. Certification Expiry Notifications | v2.1 | 4/7 | In Progress|  |
+| 25. Certification Expiry Notifications | v2.1 | 5/7 | In Progress|  |
 | 26. Documents RLS Table Reconciliation | v2.1 | 0/? | Planned | — |
 | 27. Portal → Map Navigation Link | v2.1 | 0/? | Planned | — |
 | 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 0/? | Planned | — |
