@@ -97,6 +97,10 @@ final class DocumentSyncManager: ObservableObject {
         orgId: String,
         uploadedBy: String
     ) async throws -> SupabaseDocument {
+        // Phase 26 D-06: pre-flight before any side effect (HEIC conversion,
+        // upload, row insert). Any failure raises AppError.validationFailed.
+        try await preflightEntityExists(entityType: entityType, entityId: entityId)
+
         var data = try Data(contentsOf: fileURL)
         var mime = mimeType(for: fileURL)
         var filename = fileURL.lastPathComponent
@@ -198,5 +202,44 @@ final class DocumentSyncManager: ObservableObject {
         let ext = url.pathExtension.lowercased()
         if let type = UTType(filenameExtension: ext)?.preferredMIMEType { return type }
         return "application/octet-stream"
+    }
+
+    // MARK: - Phase 26 pre-flight
+
+    /// Phase 26 D-06: verify the target entity exists before touching storage
+    /// or inserting document rows. Replaces the silent RLS 403 with an
+    /// actionable AppError.validationFailed.
+    ///
+    /// The `table` parameter is a HARD-CODED switch on the DocumentEntityType
+    /// enum — never interpolated from user input — so there is no
+    /// SQL-injection exposure (T-26-SQLI iOS parity).
+    private func preflightEntityExists(
+        entityType: DocumentEntityType,
+        entityId: String
+    ) async throws {
+        let svc = SupabaseService.shared
+        guard svc.isConfigured else { return }  // offline-first: defer to server
+        let table: String
+        switch entityType {
+        case .project:         table = "cs_projects"
+        case .rfi:             table = "cs_rfis"
+        case .submittal:       table = "cs_submittals"
+        case .changeOrder:     table = "cs_change_orders"
+        case .dailyLog:        table = "cs_daily_logs"
+        case .safetyIncident:  table = "cs_safety_incidents"
+        case .punchItem:       table = "cs_punch_items"
+        }
+        struct IdRow: Decodable { let id: String }
+        let rows: [IdRow] = (try? await svc.fetch(
+            table,
+            query: ["select": "id", "id": "eq.\(entityId)"],
+            orderBy: nil
+        )) ?? []
+        if rows.isEmpty {
+            throw AppError.validationFailed(
+                field: "entity",
+                reason: "\(entityType.rawValue) not found"
+            )
+        }
     }
 }

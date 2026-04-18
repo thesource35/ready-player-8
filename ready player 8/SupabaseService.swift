@@ -786,6 +786,8 @@ final class SupabaseService: ObservableObject {
         "cs_verification_requests",
         // Phase 13: Document Management
         "cs_documents", "cs_document_attachments", "cs_document_versions",
+        // Phase 26: document entity stubs (pre-flight existence checks)
+        "cs_punch_items",
         // Phase 16: Field Tools
         "cs_photo_annotations",
         // Phase 17: Calendar & Scheduling
