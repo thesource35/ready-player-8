@@ -204,6 +204,59 @@ final class DocumentSyncManager: ObservableObject {
         return "application/octet-stream"
     }
 
+    // MARK: - Phase 26 D-12 picker helper
+
+    /// Returns the subset of DocumentEntityType values whose backing table
+    /// has at least one row visible to the current user. Used by picker UIs
+    /// to hide entity types with empty stub tables until future feature
+    /// phases populate them (web parity: see
+    /// `web/src/lib/documents/entityPickerQuery.ts` nonEmptyEntityTypes).
+    ///
+    /// Implementation: one bounded `fetch` per entity type inside a
+    /// TaskGroup — exactly 7 parallel HEAD-shaped requests (select=id,
+    /// limit=1), no N+1 recursion. Table names are resolved by a
+    /// hard-coded switch on DocumentEntityType — user input never flows
+    /// into the table-name position (T-26-SQLI iOS parity).
+    ///
+    /// When Supabase is not configured (offline / demo mode), returns
+    /// `DocumentEntityType.allCases` so the picker is permissive — the
+    /// server-side pre-flight will still catch bogus entity ids.
+    func nonEmptyEntityTypes() async -> [DocumentEntityType] {
+        let svc = SupabaseService.shared
+        guard svc.isConfigured else { return DocumentEntityType.allCases }
+
+        let tableFor: (DocumentEntityType) -> String = { t in
+            switch t {
+            case .project:         return "cs_projects"
+            case .rfi:             return "cs_rfis"
+            case .submittal:       return "cs_submittals"
+            case .changeOrder:     return "cs_change_orders"
+            case .dailyLog:        return "cs_daily_logs"
+            case .safetyIncident:  return "cs_safety_incidents"
+            case .punchItem:       return "cs_punch_items"
+            }
+        }
+
+        struct IdRow: Decodable { let id: String }
+        var out: [DocumentEntityType] = []
+        await withTaskGroup(of: (DocumentEntityType, Bool).self) { group in
+            for t in DocumentEntityType.allCases {
+                group.addTask {
+                    let rows: [IdRow] = (try? await svc.fetch(
+                        tableFor(t),
+                        query: ["select": "id", "limit": "1"],
+                        orderBy: nil
+                    )) ?? []
+                    return (t, !rows.isEmpty)
+                }
+            }
+            for await (t, hasRow) in group where hasRow {
+                out.append(t)
+            }
+        }
+        return out
+    }
+
     // MARK: - Phase 26 pre-flight
 
     /// Phase 26 D-06: verify the target entity exists before touching storage
