@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { isEntityType } from "@/lib/documents/validation";
+import {
+  isEntityType,
+  ENTITY_TABLE_MAP,
+  type DocumentEntityType,
+} from "@/lib/documents/validation";
 
 export async function POST(req: Request) {
   const supabase = await createServerSupabase();
@@ -27,6 +31,31 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { error: "document_id, entity_type, entity_id required" },
       { status: 400 }
+    );
+  }
+
+  // Phase 26 D-06: pre-flight entity existence check. Replaces the silent RLS
+  // 403 with an actionable 404. The table name comes from a hard-coded map
+  // (ENTITY_TABLE_MAP in validation.ts) — never string-interpolated from user
+  // input — so there is no SQL-injection exposure (T-26-SQLI mitigation).
+  const entityType = body.entity_type as DocumentEntityType;
+  const targetTable = ENTITY_TABLE_MAP[entityType];
+  const { data: existing, error: preErr } = await supabase
+    .from(targetTable)
+    .select("id")
+    .eq("id", body.entity_id)
+    .maybeSingle();
+  if (preErr) {
+    console.error(
+      `[documents/attach] pre-flight ${targetTable} lookup failed:`,
+      preErr.message
+    );
+    return NextResponse.json({ error: preErr.message }, { status: 500 });
+  }
+  if (!existing) {
+    return NextResponse.json(
+      { error: `${entityType} not found` },
+      { status: 404 }
     );
   }
 

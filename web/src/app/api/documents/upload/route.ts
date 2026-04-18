@@ -4,6 +4,8 @@ import {
   validateDocumentUpload,
   isEntityType,
   ALLOWED_MIME,
+  ENTITY_TABLE_MAP,
+  type DocumentEntityType,
 } from "@/lib/documents/validation";
 
 // Reference ALLOWED_MIME so static analysis sees the import even though
@@ -53,6 +55,29 @@ export async function POST(req: Request) {
 
   const v = validateDocumentUpload({ size: file.size, mimeType: file.type });
   if (!v.ok) return NextResponse.json({ error: v.error }, { status: v.status });
+
+  // Phase 26 D-06: pre-flight entity existence check BEFORE storage upload
+  // to avoid orphan objects. Hard-coded ENTITY_TABLE_MAP is the only source
+  // of the table name (T-26-SQLI).
+  const targetTable = ENTITY_TABLE_MAP[entityType as DocumentEntityType];
+  const { data: existing, error: preErr } = await supabase
+    .from(targetTable)
+    .select("id")
+    .eq("id", entityId)
+    .maybeSingle();
+  if (preErr) {
+    console.error(
+      `[documents/upload] pre-flight ${targetTable} lookup failed:`,
+      preErr.message
+    );
+    return NextResponse.json({ error: preErr.message }, { status: 500 });
+  }
+  if (!existing) {
+    return NextResponse.json(
+      { error: `${entityType} not found` },
+      { status: 404 }
+    );
+  }
 
   const documentId = crypto.randomUUID();
   const ext = (file.name.split(".").pop() ?? "bin")

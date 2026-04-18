@@ -9,13 +9,21 @@ let docInsertResp: InsertResp = { error: null };
 let attachInsertResp: InsertResp = { error: null };
 const removed: string[][] = [];
 const insertedRows: { table: string; row: unknown }[] = [];
+// Phase 26 pre-flight mock state
+let preflightExists = true;
+let preflightError: { message: string } | null = null;
+const preflightTablesQueried: string[] = [];
+let storageUploadCallCount = 0;
 
 vi.mock("@/lib/supabase/server", () => ({
   createServerSupabase: vi.fn(async () => ({
     auth: { getUser: vi.fn(async () => ({ data: { user } })) },
     storage: {
       from: vi.fn(() => ({
-        upload: vi.fn(async () => storageUploadResp),
+        upload: vi.fn(async () => {
+          storageUploadCallCount += 1;
+          return storageUploadResp;
+        }),
         remove: vi.fn(async (paths: string[]) => {
           removed.push(paths);
           return { error: null };
@@ -23,6 +31,18 @@ vi.mock("@/lib/supabase/server", () => ({
       })),
     },
     from: vi.fn((table: string) => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          maybeSingle: vi.fn(async () => {
+            preflightTablesQueried.push(table);
+            if (preflightError) return { data: null, error: preflightError };
+            return {
+              data: preflightExists ? { id: "exists" } : null,
+              error: null,
+            };
+          }),
+        })),
+      })),
       insert: vi.fn(async (row: unknown) => {
         insertedRows.push({ table, row });
         if (table === "cs_documents") return docInsertResp;
@@ -53,6 +73,10 @@ beforeEach(() => {
   attachInsertResp = { error: null };
   removed.length = 0;
   insertedRows.length = 0;
+  preflightExists = true;
+  preflightError = null;
+  preflightTablesQueried.length = 0;
+  storageUploadCallCount = 0;
 });
 
 describe("POST /api/documents/upload", () => {
@@ -168,5 +192,87 @@ describe("POST /api/documents/upload", () => {
     expect(
       insertedRows.some((r) => r.table === "cs_document_attachments")
     ).toBe(true);
+  });
+});
+
+describe("POST /api/documents/upload — Phase 26 pre-flight (D-06)", () => {
+  it("returns 404 and does NOT upload when daily_log entity missing", async () => {
+    preflightExists = false;
+    const fd = new FormData();
+    fd.append("file", makeFile("hi", "a.pdf", "application/pdf"));
+    fd.append("entity_type", "daily_log");
+    fd.append("entity_id", "missing");
+    const res = await POST(makeReq(fd));
+    expect(res.status).toBe(404);
+    const json = (await res.json()) as { error: string };
+    expect(json.error).toBe("daily_log not found");
+    // T-26-ORPHAN: storage.upload must NOT have been called on the 404 path
+    expect(storageUploadCallCount).toBe(0);
+    expect(preflightTablesQueried).toContain("cs_daily_logs");
+  });
+
+  it("returns 404 and does NOT upload when safety_incident missing", async () => {
+    preflightExists = false;
+    const fd = new FormData();
+    fd.append("file", makeFile("hi", "a.pdf", "application/pdf"));
+    fd.append("entity_type", "safety_incident");
+    fd.append("entity_id", "missing");
+    const res = await POST(makeReq(fd));
+    expect(res.status).toBe(404);
+    const json = (await res.json()) as { error: string };
+    expect(json.error).toBe("safety_incident not found");
+    expect(storageUploadCallCount).toBe(0);
+    expect(preflightTablesQueried).toContain("cs_safety_incidents");
+  });
+
+  it("returns 404 and does NOT upload when punch_item missing", async () => {
+    preflightExists = false;
+    const fd = new FormData();
+    fd.append("file", makeFile("hi", "a.pdf", "application/pdf"));
+    fd.append("entity_type", "punch_item");
+    fd.append("entity_id", "missing");
+    const res = await POST(makeReq(fd));
+    expect(res.status).toBe(404);
+    const json = (await res.json()) as { error: string };
+    expect(json.error).toBe("punch_item not found");
+    expect(storageUploadCallCount).toBe(0);
+    expect(preflightTablesQueried).toContain("cs_punch_items");
+  });
+
+  it("returns 404 and does NOT upload when rfi entity missing", async () => {
+    preflightExists = false;
+    const fd = new FormData();
+    fd.append("file", makeFile("hi", "a.pdf", "application/pdf"));
+    fd.append("entity_type", "rfi");
+    fd.append("entity_id", "missing");
+    const res = await POST(makeReq(fd));
+    expect(res.status).toBe(404);
+    const json = (await res.json()) as { error: string };
+    expect(json.error).toBe("rfi not found");
+    expect(storageUploadCallCount).toBe(0);
+    expect(preflightTablesQueried).toContain("cs_rfis");
+  });
+
+  it("returns 500 when pre-flight lookup itself errors (no upload)", async () => {
+    preflightError = { message: "pg boom" };
+    const fd = new FormData();
+    fd.append("file", makeFile("hi", "a.pdf", "application/pdf"));
+    fd.append("entity_type", "rfi");
+    fd.append("entity_id", "whatever");
+    const res = await POST(makeReq(fd));
+    expect(res.status).toBe(500);
+    expect(storageUploadCallCount).toBe(0);
+  });
+
+  it("proceeds to upload+insert when entity exists (no regression)", async () => {
+    preflightExists = true;
+    const fd = new FormData();
+    fd.append("file", makeFile("hi", "a.pdf", "application/pdf"));
+    fd.append("entity_type", "submittal");
+    fd.append("entity_id", "s1");
+    const res = await POST(makeReq(fd));
+    expect(res.status).toBe(200);
+    expect(storageUploadCallCount).toBe(1);
+    expect(preflightTablesQueried).toContain("cs_submittals");
   });
 });
