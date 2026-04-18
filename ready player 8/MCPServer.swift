@@ -108,6 +108,10 @@ final class MCPToolServer: ObservableObject {
             toolDef("analyze_bid", "Analyze a contract bid's competitiveness using market data", [
                 "contract_id": ["type": "string", "description": "Contract ID to analyze"]
             ]),
+            toolDef("get_expiring_certs",
+                "Get certifications expiring within N days with member names and expiry dates",
+                ["days": ["type": "integer", "description": "Number of days to look ahead (default: 30)"]]
+            ),
         ]
     }
 
@@ -456,6 +460,38 @@ final class MCPToolServer: ObservableObject {
             {"type":"change_order_draft","number":"CO-DRAFT-\(Int(Date().timeIntervalSince1970))","description":"\(desc)","amount":\(amount),"requested_by":"\(requestedBy)","project_id":"\(projectId)","status":"DRAFT","created_at":"\(iso)","_action":"review_before_saving"}
             """
 
+        case "get_expiring_certs":
+            let days = (input["days"] as? Int) ?? 30
+            let f = DateFormatter()
+            f.dateFormat = "yyyy-MM-dd"
+            let targetDate = f.string(from: Calendar.current.date(byAdding: .day, value: days, to: Date())!)
+
+            let allCerts: [SupabaseCertification] = await DataSyncManager.shared.syncTable(
+                "cs_certifications",
+                localKey: "ConstructOS.Team.CertsCache",
+                defaultValue: []
+            )
+            let members: [SupabaseTeamMember] = await DataSyncManager.shared.syncTable(
+                "cs_team_members",
+                localKey: "ConstructOS.Team.MembersCache",
+                defaultValue: []
+            )
+            let memberMap = Dictionary(uniqueKeysWithValues: members.map { ($0.id, $0.name) })
+
+            let filtered = allCerts.filter { cert in
+                guard let exp = cert.expires_at else { return false }
+                return exp <= targetDate || cert.status == "expired"
+            }
+            if filtered.isEmpty {
+                return "No certifications expiring within \(days) days."
+            }
+            return filtered.map { cert in
+                let daysLeft = daysUntil(cert.expires_at)
+                let memberName = memberMap[cert.member_id] ?? "Unknown"
+                let status = daysLeft < 0 ? "EXPIRED" : daysLeft == 0 ? "EXPIRES TODAY" : "Expires in \(daysLeft)d"
+                return "\(cert.name) | \(memberName) | \(cert.expires_at ?? "N/A") | \(status)"
+            }.joined(separator: "\n")
+
         case "analyze_bid":
             let contractId = input["contract_id"] as? String ?? ""
             if supabase.isConfigured && !contractId.isEmpty {
@@ -484,6 +520,16 @@ final class MCPToolServer: ObservableObject {
         default:
             return "Unknown tool: \(name)"
         }
+    }
+
+    // MARK: - Helpers
+
+    private func daysUntil(_ dateStr: String?) -> Int {
+        guard let s = dateStr else { return 0 }
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        guard let d = f.date(from: s) else { return 0 }
+        return Calendar.current.dateComponents([.day], from: Date(), to: d).day ?? 0
     }
 }
 

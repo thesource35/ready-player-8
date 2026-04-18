@@ -7,6 +7,7 @@ import { StatCard } from "./components/StatCard";
 import { SkeletonReport } from "./components/SkeletonReport";
 import type { HealthScore } from "@/lib/reports/types";
 import { HEALTH_THRESHOLDS } from "@/lib/reports/constants";
+import { CertComplianceWidget } from "./components/CertComplianceWidget";
 
 // ---------- Types ----------
 
@@ -217,6 +218,9 @@ export default function ReportsPage() {
           color="var(--cyan)"
         />
       </div>
+
+      {/* D-36: cert compliance widget */}
+      <CertComplianceWidget />
 
       {/* D-106: filter bar */}
       <div
