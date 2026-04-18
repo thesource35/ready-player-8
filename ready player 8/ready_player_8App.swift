@@ -75,8 +75,29 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
             completion()
         }
 
-        let section = CPListSection(items: [projects, crew, messages, budgets])
+        // Phase 25: Cert status tab (D-45)
+        let certs = CPListItem(text: "Certifications", detailText: certStatusSummary())
+        certs.handler = { [weak self] _, completion in
+            self?.pushDetail(title: "Certifications", detail: self?.certStatusDetail() ?? "No cert data")
+            completion()
+        }
+
+        let section = CPListSection(items: [projects, crew, certs, messages, budgets])
         return CPListTemplate(title: "Construction OS", sections: [section])
+    }
+
+    // MARK: - Phase 25: Cert status helpers for CarPlay (D-45)
+
+    private func certStatusSummary() -> String {
+        let count = UserDefaults.standard.integer(forKey: "ConstructOS.CertBadgeCount")
+        if count > 0 { return "\(count) expiring or expired" }
+        return "All certifications current"
+    }
+
+    private func certStatusDetail() -> String {
+        let count = UserDefaults.standard.integer(forKey: "ConstructOS.CertBadgeCount")
+        if count > 0 { return "\(count) certifications need attention. Open the app to review and renew." }
+        return "All certifications are current. No action needed."
     }
 
     private func pushDetail(title: String, detail: String) {
@@ -87,7 +108,15 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
     }
 }
 
-final class AppDelegate: NSObject, UIApplicationDelegate {
+final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        UNUserNotificationCenter.current().delegate = self
+        return true
+    }
+
     func application(
         _ application: UIApplication,
         configurationForConnecting connectingSceneSession: UISceneSession,
@@ -142,6 +171,41 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     /// Delegates to the platform-agnostic free function for unit-test access.
     static func hexString(from data: Data) -> String {
         APNsHexEncoder.hexString(from: data)
+    }
+
+    // MARK: - Phase 25: Push notification deep-link routing (D-17)
+
+    /// Handle push notification tap (cold launch + warm launch).
+    /// Stores cert_id for ContentView to consume, posts NavToCert for warm-launch routing.
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse
+    ) async {
+        let userInfo = response.notification.request.content.userInfo
+        guard let certId = userInfo["cert_id"] as? String else { return }
+
+        // Store in UserDefaults for cold-launch (ContentView reads on appear)
+        UserDefaults.standard.set(certId, forKey: "ConstructOS.PendingCertDeepLink")
+
+        // Post notification for warm-launch (ContentView is already loaded)
+        await MainActor.run {
+            NotificationCenter.default.post(
+                name: .init("ConstructOS.NavToCert"),
+                object: nil,
+                userInfo: ["cert_id": certId]
+            )
+        }
+
+        // D-46: Analytics
+        AnalyticsEngine.shared.track("cert_alert_opened", properties: ["cert_id": certId])
+    }
+
+    /// Show notifications even when app is in foreground
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification
+    ) async -> UNNotificationPresentationOptions {
+        [.banner, .sound, .badge]
     }
 }
 #endif
