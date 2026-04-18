@@ -50,7 +50,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 - [x] **Phase 22: Live Site Video** — planned 2026-04-15 (12 plans, 4 waves); 2/12 executed (22-00 Wave 0 scaffolding + 22-01 Wave 1 schema) (completed 2026-04-17)
 - [x] **Phase 23: iOS Nav & Assignment Wiring + Web Parity** (5 plans, 2 waves) — Plans 01-02 complete; plans 03-05 add cross-nav, save hardening, accessibility on both platforms (completed 2026-04-17)
 - [x] **Phase 24: Document → Activity Event Emission** (2 plans, 2 waves) — Gap closure: document routes emit `cs_activity_events` (INT-02) (completed 2026-04-17)
-- [ ] **Phase 25: Certification Expiry Notifications** (7 plans, 3 waves) — Gap closure: cert-expiry cron + notification emission (INT-06)
+- [x] **Phase 25: Certification Expiry Notifications** (7 plans, 3 waves) — Gap closure: cert-expiry cron + notification emission (INT-06) (completed 2026-04-18)
 - [ ] **Phase 26: Documents RLS Table Reconciliation** — Gap closure: resolve RLS references to non-existent tables (INT-01)
 - [ ] **Phase 27: Portal → Map Navigation Link** — Gap closure: portal home links to `/map` sub-route when enabled (INT-07)
 - [ ] **Phase 28: Retroactive Verification Sweep (Phases 13–19)** — Gap closure: create missing VERIFICATION.md files, reconcile REQUIREMENTS.md
@@ -215,7 +215,7 @@ Plans:
 **Depends on:** Phase 14, Phase 15
 **Requirements:** TEAM-04, NOTIF-04
 **Gap Closure:** Closes INT-06 · FLOW-02
-**Plans:** 6/7 plans executed
+**Plans:** 7/7 plans complete
 
 Plans:
 - [x] 25-01-PLAN.md — Edge Function expansion: multi-threshold, batch, dedupe, grouping, cert renewal trigger (Wave 1)
@@ -224,7 +224,7 @@ Plans:
 - [x] 25-04-PLAN.md — Web urgency badges, summary banner, deep-link highlight, renewal CTA, vitest (Wave 2)
 - [x] 25-05-PLAN.md — iOS deep-link routing (cold + warm launch), CarPlay cert tab, analytics, badge count (Wave 2)
 - [x] 25-06-PLAN.md — MCP tool, cert compliance widget, db push, manual test plan (Wave 3)
-- [ ] 25-07-PLAN.md — Cert name autocomplete (iOS + web), admin scan status badge (Wave 3)
+- [x] 25-07-PLAN.md — Cert name autocomplete (iOS + web), admin scan status badge (Wave 3)
 
 ### Phase 26: Documents RLS Table Reconciliation
 **Goal:** RLS predicates for document attachments cover all referenced entity types without silent skip
@@ -261,7 +261,7 @@ Plans:
 | 22. Live Site Video | v2.1 | 12/12 | Complete    | 2026-04-17 |
 | 23. iOS Nav & Assignment Wiring | v2.1 | 5/5 | Complete    | 2026-04-17 |
 | 24. Document → Activity Event Emission | v2.1 | 2/2 | Complete    | 2026-04-17 |
-| 25. Certification Expiry Notifications | v2.1 | 6/7 | In Progress|  |
+| 25. Certification Expiry Notifications | v2.1 | 7/7 | Complete   | 2026-04-18 |
 | 26. Documents RLS Table Reconciliation | v2.1 | 0/? | Planned | — |
 | 27. Portal → Map Navigation Link | v2.1 | 0/? | Planned | — |
 | 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 0/? | Planned | — |

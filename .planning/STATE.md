@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
-status: executing
-stopped_at: Completed 25-06-PLAN.md
-last_updated: "2026-04-18T13:47:06.693Z"
+status: verifying
+stopped_at: Completed 25-07-PLAN.md
+last_updated: "2026-04-18T17:15:23.488Z"
 last_activity: 2026-04-18
 progress:
   total_phases: 14
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 69
-  completed_plans: 68
-  percent: 99
+  completed_plans: 69
+  percent: 100
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 Milestone: v2.1
 Phase: 25 (certification-expiry-notifications) — EXECUTING
 Plan: 7 of 7
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-18
 
 ## Accumulated Context
@@ -71,6 +71,7 @@ v2.0 closing decisions:
 - [Phase 25]: Extracted CertHighlightScroller to separate file for proper use-client in Next.js server component page; noon UTC fake timers for timezone-safe vitest
 - [Phase 25]: UserDefaults write-then-clear relay pattern for cold-launch cert deep-link, matching Phase 23 cross-nav pattern
 - [Phase 25]: CertComplianceWidget as client component; MCP tool date-range filter with member name resolution; migration history repair for remote push
+- [Phase 25]: Autocomplete uses localizedCaseInsensitiveContains for CERT_NAMES matching; admin detection via cs_projects.created_by ownership proxy
 
 ### Pending Todos
 
@@ -94,6 +95,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-18T13:47:06.604Z
-Stopped at: Completed 25-06-PLAN.md
+Last session: 2026-04-18T17:15:21.762Z
+Stopped at: Completed 25-07-PLAN.md
 Resume file: None
