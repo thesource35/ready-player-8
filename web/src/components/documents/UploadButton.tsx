@@ -3,11 +3,18 @@ import { useState, useRef } from "react";
 import {
   validateDocumentUpload,
   ALLOWED_MIME,
+  type DocumentEntityType,
 } from "@/lib/documents/validation";
 import type { Document } from "@/lib/supabase/types";
 
+// Phase 26 Plan 04: entityType prop widened from the original 4-value union
+// (project | rfi | submittal | change_order) to the canonical 7-value
+// DocumentEntityType so all downstream stub tables (daily_log,
+// safety_incident, punch_item) are first-class citizens here. Existing
+// callers that pass one of the original 4 narrow string literals still
+// compile — the new type is a superset.
 type Props = {
-  entityType: "project" | "rfi" | "submittal" | "change_order";
+  entityType: DocumentEntityType;
   entityId: string;
   chainId?: string;
   onUploaded: (doc: Document) => void;

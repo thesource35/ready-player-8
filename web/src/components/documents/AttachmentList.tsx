@@ -1,11 +1,17 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import type { Document } from "@/lib/supabase/types";
+import type { DocumentEntityType } from "@/lib/documents/validation";
 import { UploadButton } from "./UploadButton";
 import { DocumentPreview } from "./DocumentPreview";
 
+// Phase 26 Plan 04: entityType prop widened from the original 4-value union
+// (project | rfi | submittal | change_order) to the canonical 7-value
+// DocumentEntityType so daily_log / safety_incident / punch_item pages can
+// reuse this component without a second narrowing cast. The prop type is
+// a superset of the old one — existing callers pass-through unchanged.
 type Props = {
-  entityType: "project" | "rfi" | "submittal" | "change_order";
+  entityType: DocumentEntityType;
   entityId: string;
 };
 
