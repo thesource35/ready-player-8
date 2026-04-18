@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 25-01-PLAN.md
-last_updated: "2026-04-18T05:55:51.371Z"
+stopped_at: Completed 25-02-PLAN.md
+last_updated: "2026-04-18T06:04:23.775Z"
 last_activity: 2026-04-18
 progress:
   total_phases: 14
   completed_phases: 9
   total_plans: 69
-  completed_plans: 63
-  percent: 91
+  completed_plans: 64
+  percent: 93
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 Milestone: v2.1
 Phase: 25 (certification-expiry-notifications) — EXECUTING
-Plan: 2 of 7
+Plan: 3 of 7
 Status: Ready to execute
 Last activity: 2026-04-18
 
@@ -66,6 +66,7 @@ v2.0 closing decisions:
 - [Phase 25]: Payload-marker dedupe uses cert_id + threshold + expires_at in cs_activity_events.payload -- no new side table
 - [Phase 25]: Dismiss-suppress via suppress_user_ids array in activity event payload for fanout consumption
 - [Phase 25]: Batch recipient resolution: bulk queries for assignments + PMs + projects to avoid N+1
+- [Phase 25]: Cert recipient resolution uses payload.recipient_user_ids directly, bypassing cs_project_members lookup
 
 ### Pending Todos
 
@@ -89,6 +90,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-18T05:55:51.366Z
-Stopped at: Completed 25-01-PLAN.md
+Last session: 2026-04-18T06:04:23.771Z
+Stopped at: Completed 25-02-PLAN.md
 Resume file: None
