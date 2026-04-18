@@ -337,11 +337,20 @@ struct AddCertSheet: View {
     var onSaved: () -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var memberId: String = ""
-    @State private var name: String = ""
-    @State private var customName: String = ""
+    @State private var certName: String = ""
+    @State private var showSuggestions: Bool = false
     @State private var issuer: String = ""
     @State private var expiresAt: Date = Date().addingTimeInterval(60*60*24*365)
     @State private var errorMessage: String?
+
+    private var filteredCertNames: [String] {
+        if certName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return CERT_NAMES
+        }
+        return CERT_NAMES.filter {
+            $0.localizedCaseInsensitiveContains(certName)
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -350,12 +359,30 @@ struct AddCertSheet: View {
                     Text("—").tag("")
                     ForEach(members) { Text($0.name).tag($0.id) }
                 }
-                Picker("Certification", selection: $name) {
-                    Text("Custom…").tag("")
-                    ForEach(CERT_NAMES, id: \.self) { Text($0).tag($0) }
-                }
-                if name.isEmpty {
-                    TextField("Custom name", text: $customName)
+                Section("Certification Name") {
+                    TextField("Type cert name (e.g. OSHA 30)", text: $certName)
+                        .onChange(of: certName) { _, _ in
+                            showSuggestions = !certName.isEmpty
+                        }
+
+                    if showSuggestions && !filteredCertNames.isEmpty {
+                        ForEach(filteredCertNames, id: \.self) { suggestion in
+                            Button(action: {
+                                certName = suggestion
+                                showSuggestions = false
+                            }) {
+                                HStack {
+                                    Image(systemName: "checkmark.circle")
+                                        .foregroundColor(Theme.accent)
+                                        .font(.system(size: 14))
+                                    Text(suggestion)
+                                        .foregroundColor(Theme.text)
+                                        .font(.system(size: 14))
+                                    Spacer()
+                                }
+                            }
+                        }
+                    }
                 }
                 TextField("Issuing Body", text: $issuer)
                 DatePicker("Expires", selection: $expiresAt, displayedComponents: .date)
@@ -376,7 +403,7 @@ struct AddCertSheet: View {
     }
 
     private func save() {
-        let finalName = name.isEmpty ? customName.trimmingCharacters(in: .whitespacesAndNewlines) : name
+        let finalName = certName.trimmingCharacters(in: .whitespacesAndNewlines)
         if memberId.isEmpty { errorMessage = "Member is required"; return }
         if finalName.isEmpty { errorMessage = "Certification name is required"; return }
         let f = DateFormatter()
