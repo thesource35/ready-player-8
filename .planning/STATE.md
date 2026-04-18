@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
-status: verifying
-stopped_at: Phase 25 context gathered
-last_updated: "2026-04-17T23:29:18.688Z"
-last_activity: 2026-04-17
+status: executing
+stopped_at: Completed 25-01-PLAN.md
+last_updated: "2026-04-18T05:55:51.371Z"
+last_activity: 2026-04-18
 progress:
   total_phases: 14
   completed_phases: 9
-  total_plans: 62
-  completed_plans: 62
-  percent: 100
+  total_plans: 69
+  completed_plans: 63
+  percent: 91
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Every user action must either succeed visibly or fail with a clear, actionable message -- no silent data loss, no undetected errors, no security gaps.
-**Current focus:** Phase 24 — document-activity-event-emission
+**Current focus:** Phase 25 — certification-expiry-notifications
 
 ## Current Position
 
 Milestone: v2.1
-Phase: 25
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-17
+Phase: 25 (certification-expiry-notifications) — EXECUTING
+Plan: 2 of 7
+Status: Ready to execute
+Last activity: 2026-04-18
 
 ## Accumulated Context
 
@@ -63,6 +63,9 @@ v2.0 closing decisions:
 - [Phase 23]: Used inline .alert with Binding<Bool> for AppError display instead of AlertState ObservableObject — simpler for single-view DailyCrewView
 - [Phase 24]: Separate emit_document_activity_event() trigger function per D-03; app.version_copy GUC guard suppresses duplicate events during create_document_version() RPC
 - [Phase 24]: Contract tests duplicate ENTITY_LABELS/DETAIL_LABELS rather than exporting from server component; DOC badge as styled text span matching inline style patterns
+- [Phase 25]: Payload-marker dedupe uses cert_id + threshold + expires_at in cs_activity_events.payload -- no new side table
+- [Phase 25]: Dismiss-suppress via suppress_user_ids array in activity event payload for fanout consumption
+- [Phase 25]: Batch recipient resolution: bulk queries for assignments + PMs + projects to avoid N+1
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-17T23:29:18.672Z
-Stopped at: Phase 25 context gathered
-Resume file: .planning/phases/25-certification-expiry-notifications/25-CONTEXT.md
+Last session: 2026-04-18T05:55:51.366Z
+Stopped at: Completed 25-01-PLAN.md
+Resume file: None

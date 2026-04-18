@@ -12,7 +12,7 @@
 - [ ] **NOTIF-01**: User can view in-app notification list with unread count badge
 - [x] **NOTIF-02**: User can view activity timeline per project (chronological action log)
 - [ ] **NOTIF-03**: User can mark notifications as read (individually or all)
-- [ ] **NOTIF-04**: User can dismiss notifications
+- [x] **NOTIF-04**: User can dismiss notifications
 - [ ] **NOTIF-05**: User receives push notifications on iOS for bid deadlines, safety alerts, and assigned tasks
 
 ### Document Management
@@ -28,7 +28,7 @@
 - [x] **TEAM-01**: User can create team member profiles with role, trade, and contact info
 - [x] **TEAM-02**: User can assign team members to projects with role assignments
 - [x] **TEAM-03**: User can track certifications and licenses with expiration dates
-- [ ] **TEAM-04**: User receives alerts when certifications are nearing expiration
+- [x] **TEAM-04**: User receives alerts when certifications are nearing expiration
 - [x] **TEAM-05**: User can create daily crew assignments per project
 
 ### Reporting & Dashboards
@@ -142,7 +142,7 @@ Deferred to v2.2 or later.
 | NOTIF-01 | Phase 28 (verification) | Pending |
 | NOTIF-02 | Phase 24 (gap closure) | Complete |
 | NOTIF-03 | Phase 28 (verification) | Pending |
-| NOTIF-04 | Phase 25 (gap closure) | Pending |
+| NOTIF-04 | Phase 25 (gap closure) | Complete |
 | NOTIF-05 | Phase 28 (verification) | Pending |
 | DOC-01 | Phase 28 (verification) | Pending |
 | DOC-02 | Phase 24 (gap closure) | Complete |
@@ -152,7 +152,7 @@ Deferred to v2.2 or later.
 | TEAM-01 | Phase 23 | Satisfied |
 | TEAM-02 | Phase 23 | Satisfied |
 | TEAM-03 | Phase 23 | Satisfied |
-| TEAM-04 | Phase 25 (gap closure) | Pending |
+| TEAM-04 | Phase 25 (gap closure) | Complete |
 | TEAM-05 | Phase 23 | Satisfied |
 | FIELD-01 | Phase 28 (verification) | Pending |
 | FIELD-02 | Phase 28 (verification) | Pending |
