@@ -5,6 +5,15 @@ import { CertHighlightScroller } from "./CertHighlightScroller";
 
 export const metadata = { title: "Team Certifications — ConstructionOS" };
 
+function timeAgo(isoDate: string): string {
+  const diff = Date.now() - new Date(isoDate).getTime();
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  if (hours < 1) return "< 1h ago";
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
 type CertRow = {
   id: string;
   member_id: string;
@@ -37,6 +46,42 @@ export default async function CertificationsPage({ searchParams }: PageProps) {
       )
       .order("expires_at", { ascending: true, nullsFirst: false });
     rows = (data as unknown as CertRow[] | null) ?? [];
+  }
+
+  // D-38: Admin-only cert scan status badge
+  let lastScanInfo: { lastScanAt: string | null; alertCount: number } = { lastScanAt: null, alertCount: 0 };
+  let isAdmin = false;
+  if (supabase) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { count: ownedProjects } = await supabase
+        .from("cs_projects")
+        .select("id", { count: "exact", head: true })
+        .eq("created_by", user.id);
+      isAdmin = (ownedProjects ?? 0) > 0;
+    }
+
+    if (isAdmin) {
+      const { data: lastEvent } = await supabase
+        .from("cs_activity_events")
+        .select("created_at")
+        .eq("entity_type", "certifications")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count: recentAlerts } = await supabase
+        .from("cs_activity_events")
+        .select("id", { count: "exact", head: true })
+        .eq("entity_type", "certifications")
+        .gte("created_at", oneDayAgo);
+
+      lastScanInfo = {
+        lastScanAt: lastEvent?.created_at ?? null,
+        alertCount: recentAlerts ?? 0,
+      };
+    }
   }
 
   return (
@@ -99,6 +144,28 @@ export default async function CertificationsPage({ searchParams }: PageProps) {
           </div>
         );
       })()}
+
+      {/* D-38: Admin-only cert scan status badge */}
+      {isAdmin && lastScanInfo.lastScanAt && (
+        <div
+          aria-label={`Last cert scan: ${timeAgo(lastScanInfo.lastScanAt)}, ${lastScanInfo.alertCount} alerts sent`}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            background: "var(--panel)",
+            border: "1px solid var(--border)",
+            borderRadius: 8,
+            padding: "6px 12px",
+            fontSize: 12,
+            color: "var(--muted)",
+            marginBottom: 16,
+          }}
+        >
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--green)", display: "inline-block" }} />
+          Last cert scan: {timeAgo(lastScanInfo.lastScanAt)} &middot; {lastScanInfo.alertCount} alerts sent
+        </div>
+      )}
 
       <CertHighlightScroller certId={highlightId} />
 
