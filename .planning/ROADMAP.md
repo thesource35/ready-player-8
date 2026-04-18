@@ -261,7 +261,7 @@ Plans:
 | 22. Live Site Video | v2.1 | 12/12 | Complete    | 2026-04-17 |
 | 23. iOS Nav & Assignment Wiring | v2.1 | 5/5 | Complete    | 2026-04-17 |
 | 24. Document → Activity Event Emission | v2.1 | 2/2 | Complete    | 2026-04-17 |
-| 25. Certification Expiry Notifications | v2.1 | 7/7 | Complete   | 2026-04-18 |
+| 25. Certification Expiry Notifications | v2.1 | 7/7 | Complete    | 2026-04-18 |
 | 26. Documents RLS Table Reconciliation | v2.1 | 0/? | Planned | — |
 | 27. Portal → Map Navigation Link | v2.1 | 0/? | Planned | — |
 | 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 0/? | Planned | — |
