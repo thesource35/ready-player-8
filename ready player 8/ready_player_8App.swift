@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import UserNotifications
 #if canImport(UIKit) && canImport(CarPlay)
 import UIKit
 import CarPlay
@@ -166,6 +167,10 @@ struct ready_player_8App: App {
     @StateObject private var crashReporter = CrashReporter.shared
     @StateObject private var persistence = PersistenceController.shared
 
+    init() {
+        Self.registerNotificationCategories()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -175,6 +180,31 @@ struct ready_player_8App: App {
                 .environmentObject(persistence)
                 .environment(ToastManager.shared)
                 .environment(\.managedObjectContext, persistence.container.viewContext)
+        }
+    }
+
+    // MARK: - Phase 25: Cert-expiry notification category registration (D-25)
+
+    /// Registers the `cert-expiry` APNs notification category with a "View Cert"
+    /// action button so the lock screen shows an actionable button on cert alerts.
+    /// Merges with any existing categories to avoid overwriting Phase 14 registrations.
+    private static func registerNotificationCategories() {
+        let viewCertAction = UNNotificationAction(
+            identifier: "VIEW_CERT",
+            title: "View Cert",
+            options: [.foreground]
+        )
+        let certExpiryCategory = UNNotificationCategory(
+            identifier: "cert-expiry",
+            actions: [viewCertAction],
+            intentIdentifiers: [],
+            options: []
+        )
+        // Merge with any existing categories to preserve other registrations
+        UNUserNotificationCenter.current().getNotificationCategories { existing in
+            var categories = existing
+            categories.insert(certExpiryCategory)
+            UNUserNotificationCenter.current().setNotificationCategories(categories)
         }
     }
 }
