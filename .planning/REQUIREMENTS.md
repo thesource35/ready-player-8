@@ -19,8 +19,8 @@
 
 - [ ] **DOC-01**: User can upload files (PDF, images, drawings) to Supabase Storage
 - [x] **DOC-02**: User can download attached files
-- [ ] **DOC-03**: User can attach files to projects, RFIs, submittals, and change orders
-- [ ] **DOC-04**: User can preview PDFs and images in-app without downloading
+- [x] **DOC-03**: User can attach files to projects, RFIs, submittals, and change orders
+- [x] **DOC-04**: User can preview PDFs and images in-app without downloading
 - [ ] **DOC-05**: User can view version history of revised documents
 
 ### Team & Crew Management
@@ -146,8 +146,8 @@ Deferred to v2.2 or later.
 | NOTIF-05 | Phase 28 (verification) | Pending |
 | DOC-01 | Phase 28 (verification) | Pending |
 | DOC-02 | Phase 24 (gap closure) | Complete |
-| DOC-03 | Phase 26 (gap closure) | Pending |
-| DOC-04 | Phase 26 (gap closure) | Pending |
+| DOC-03 | Phase 26 (gap closure) | Complete |
+| DOC-04 | Phase 26 (gap closure) | Complete |
 | DOC-05 | Phase 28 (verification) | Pending |
 | TEAM-01 | Phase 23 | Satisfied |
 | TEAM-02 | Phase 23 | Satisfied |

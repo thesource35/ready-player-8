@@ -51,7 +51,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 - [x] **Phase 23: iOS Nav & Assignment Wiring + Web Parity** (5 plans, 2 waves) — Plans 01-02 complete; plans 03-05 add cross-nav, save hardening, accessibility on both platforms (completed 2026-04-17)
 - [x] **Phase 24: Document → Activity Event Emission** (2 plans, 2 waves) — Gap closure: document routes emit `cs_activity_events` (INT-02) (completed 2026-04-17)
 - [x] **Phase 25: Certification Expiry Notifications** (7 plans, 3 waves) — Gap closure: cert-expiry cron + notification emission (INT-06) (completed 2026-04-18)
-- [ ] **Phase 26: Documents RLS Table Reconciliation** — Gap closure: resolve RLS references to non-existent tables (INT-01)
+- [ ] **Phase 26: Documents RLS Table Reconciliation** (5 plans, 4 waves) — Gap closure: stub tables + rebuilt RLS + pre-flight + trigger extension (INT-01)
 - [ ] **Phase 27: Portal → Map Navigation Link** — Gap closure: portal home links to `/map` sub-route when enabled (INT-07)
 - [ ] **Phase 28: Retroactive Verification Sweep (Phases 13–19)** — Gap closure: create missing VERIFICATION.md files, reconcile REQUIREMENTS.md
 
@@ -231,6 +231,14 @@ Plans:
 **Depends on:** Phase 13
 **Requirements:** DOC-03, DOC-04
 **Gap Closure:** Closes INT-01
+**Plans:** 4/5 plans executed
+
+Plans:
+- [x] 26-01-stub-tables-and-rls-PLAN.md — Migration A: 5 stub tables + RLS + pre-migration audit (Wave 1)
+- [x] 26-02-rebuilt-document-rls-and-trigger-PLAN.md — Migration B: rebuild Phase 13 policies for all 7 entity types + Migration C: extend Phase 24 trigger whitelist (Wave 1)
+- [x] 26-03-api-preflight-and-validation-PLAN.md — Web validation.ts 7 values + API pre-flight + iOS DocumentSyncManager pre-flight + drift-guard tests (Wave 2)
+- [x] 26-04-ui-picker-empty-table-filter-PLAN.md — nonEmptyEntityTypes helper + component prop widening (web + iOS) (Wave 3)
+- [ ] 26-05-schema-push-and-verification-PLAN.md — [BLOCKING] supabase db push + DB/app verification + VERIFICATION.md (Wave 4)
 
 ### Phase 27: Portal → Map Navigation Link
 **Goal:** Portal viewers can reach the `/map` sub-route when the admin enabled it
@@ -262,7 +270,7 @@ Plans:
 | 23. iOS Nav & Assignment Wiring | v2.1 | 5/5 | Complete    | 2026-04-17 |
 | 24. Document → Activity Event Emission | v2.1 | 2/2 | Complete    | 2026-04-17 |
 | 25. Certification Expiry Notifications | v2.1 | 7/7 | Complete    | 2026-04-18 |
-| 26. Documents RLS Table Reconciliation | v2.1 | 0/? | Planned | — |
+| 26. Documents RLS Table Reconciliation | v2.1 | 4/5 | In Progress|  |
 | 27. Portal → Map Navigation Link | v2.1 | 0/? | Planned | — |
 | 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 0/? | Planned | — |
 | 29. Live Video Traffic Feed (Sat + Drone + Suggestions) | v2.1 | 0/? | Planned | — |

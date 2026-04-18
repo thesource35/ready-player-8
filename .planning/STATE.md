@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
-status: verifying
-stopped_at: Completed 25-07-PLAN.md
-last_updated: "2026-04-18T17:22:50.766Z"
+status: executing
+stopped_at: Completed 26-04-ui-picker-empty-table-filter-PLAN.md
+last_updated: "2026-04-18T21:54:24.295Z"
 last_activity: 2026-04-18
 progress:
   total_phases: 14
   completed_phases: 10
-  total_plans: 69
-  completed_plans: 69
-  percent: 100
+  total_plans: 74
+  completed_plans: 73
+  percent: 99
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Every user action must either succeed visibly or fail with a clear, actionable message -- no silent data loss, no undetected errors, no security gaps.
-**Current focus:** Phase 25 — certification-expiry-notifications
+**Current focus:** Phase 26 — documents-rls-table-reconciliation
 
 ## Current Position
 
 Milestone: v2.1
-Phase: 26
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 26 (documents-rls-table-reconciliation) — EXECUTING
+Plan: 5 of 5
+Status: Ready to execute
 Last activity: 2026-04-18
 
 ## Accumulated Context
@@ -72,6 +72,14 @@ v2.0 closing decisions:
 - [Phase 25]: UserDefaults write-then-clear relay pattern for cold-launch cert deep-link, matching Phase 23 cross-nav pattern
 - [Phase 25]: CertComplianceWidget as client component; MCP tool date-range filter with member name resolution; migration history repair for remote push
 - [Phase 25]: Autocomplete uses localizedCaseInsensitiveContains for CERT_NAMES matching; admin detection via cs_projects.created_by ownership proxy
+- [Phase 26-documents-rls-table-reconciliation]: Migration A ships 5 stub tables with RLS enabled BEFORE any CREATE POLICY (T-26-01 no-window invariant); policies copy cs_daily_logs pattern verbatim; pre-migration audit is non-blocking RAISE NOTICE per entity_type; whole migration wrapped in BEGIN/COMMIT
+- [Phase 26]: [Phase 26-02]: Migration B (rebuild document RLS) uses static CREATE POLICY bodies wrapped in BEGIN/COMMIT — no DO block, no to_regclass, no RLS gap window (T-26-03); storage.objects predicate mirrors cs_documents predicate for signed-URL parity (T-26-04)
+- [Phase 26]: [Phase 26-02]: Migration C uses CREATE OR REPLACE FUNCTION to extend emit_document_activity_event() whitelist from 3 to 6 entity types — preserves function OID so attached Phase 24 triggers keep firing with zero DROP TRIGGER / CREATE TRIGGER churn; byte-faithful preservation of bulk_import guard, version_copy guard, and D-09 null-project silent-return
+- [Phase 26-documents-rls-table-reconciliation]: D-06 actionable 404 pre-flight replaces silent RLS 403 on web + iOS document upload paths
+- [Phase 26-documents-rls-table-reconciliation]: T-26-SQLI mitigation via hard-coded ENTITY_TABLE_MAP / switch on DocumentEntityType — user input never flows into pre-flight table-name position
+- [Phase 26-documents-rls-table-reconciliation]: T-26-ORPHAN mitigation via pre-flight line-order invariant in /api/documents/upload (maybeSingle before supabase.storage.upload)
+- [Phase 26]: [Phase 26-04]: nonEmptyEntityTypes helper shipped for both web (Promise.all over ENTITY_TABLE_MAP) and iOS (withTaskGroup) — 7 bounded HEAD-count requests, no N+1; UploadButton + AttachmentList widen prop union from 4 to 7 DocumentEntityType values (strict superset so existing callers compile unchanged)
+- [Phase 26]: [Phase 26-04]: iOS nonEmptyEntityTypes returns DocumentEntityType.allCases when SupabaseService not configured — offline-permissive picker, server pre-flight (Plan 03) stays authoritative
 
 ### Pending Todos
 
@@ -95,6 +103,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-18T17:15:21.762Z
-Stopped at: Completed 25-07-PLAN.md
+Last session: 2026-04-18T21:54:24.292Z
+Stopped at: Completed 26-04-ui-picker-empty-table-filter-PLAN.md
 Resume file: None
