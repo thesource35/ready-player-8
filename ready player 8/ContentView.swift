@@ -627,6 +627,8 @@ struct ContentView: View {
     @State private var biometricUnlocked = false
     @ObservedObject private var profileStore = UserProfileStore.shared
     @AppStorage("ConstructOS.OnboardingComplete") private var onboardingComplete = false
+    // Phase 25: Live cert badge count from CertificationsView urgency calculation
+    @AppStorage("ConstructOS.CertBadgeCount") private var certBadgeCount: Int = 0
 
     var body: some View {
         Group {
@@ -651,6 +653,13 @@ struct ContentView: View {
             if supabase.isConfigured { supabase.startRealtimeSync() }
             SpotlightIndexer.shared.indexProjects(mockProjects)
             SpotlightIndexer.shared.indexRentalItems(rentalInventory)
+
+            // Phase 25: Cold-launch deep-link from cert push notification (D-17)
+            if let pendingCertId = UserDefaults.standard.string(forKey: "ConstructOS.PendingCertDeepLink") {
+                activeNav = .certifications
+                UserDefaults.standard.set(pendingCertId, forKey: "ConstructOS.HighlightCertId")
+                UserDefaults.standard.removeObject(forKey: "ConstructOS.PendingCertDeepLink")
+            }
         }
         .onChange(of: activeNav) { _, newTab in
             HapticEngine.tap()
@@ -685,14 +694,14 @@ struct ContentView: View {
                     if isWide {
                         HStack(spacing: 0) {
                             VStack(spacing: 0) {
-                                ScrollView { NavigationRailView(activeNav: $activeNav, navItems: navItems, certBadgeCount: 0) }
+                                ScrollView { NavigationRailView(activeNav: $activeNav, navItems: navItems, certBadgeCount: certBadgeCount) }
                                 SidebarStatusView(pulse: $pulse)
                             }.frame(width: 180).background(Theme.surface)
                             .border(width: 1, edges: [.trailing], color: Theme.border)
                             ScrollView { activeTabContent.padding(16) }
                         }
                     } else {
-                        NavigationTabsView(activeNav: $activeNav, navItems: navItems, certBadgeCount: 0)
+                        NavigationTabsView(activeNav: $activeNav, navItems: navItems, certBadgeCount: certBadgeCount)
                         ScrollView { activeTabContent.padding(16) }
                     }
                     FooterView(pulse: $pulse)
@@ -713,6 +722,13 @@ struct ContentView: View {
         // Phase 23: Basic team deep-link (D-10)
         .onReceive(NotificationCenter.default.publisher(for: .init("ConstructOS.NavToTeam"))) { _ in
             activeNav = .team
+        }
+        // Phase 25: Cert push notification deep-link (D-17)
+        .onReceive(NotificationCenter.default.publisher(for: .init("ConstructOS.NavToCert"))) { notification in
+            activeNav = .certifications
+            if let certId = notification.userInfo?["cert_id"] as? String {
+                UserDefaults.standard.set(certId, forKey: "ConstructOS.HighlightCertId")
+            }
         }
     }
 
