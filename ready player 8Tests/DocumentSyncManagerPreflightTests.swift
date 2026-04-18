@@ -26,6 +26,9 @@ final class DocumentSyncManagerPreflightTests: XCTestCase {
     // defers enforcement to the server (both API route pre-flight and RLS).
     // This test documents the expected contract; the private preflight helper
     // is exercised end-to-end via the web route tests on the server side.
+    // @MainActor required: SupabaseService is @MainActor-isolated (Swift 6
+    // strict concurrency enforcement).
+    @MainActor
     func test_preflight_notConfigured_isNoop() async {
         XCTAssertFalse(
             SupabaseService.shared.isConfigured,
