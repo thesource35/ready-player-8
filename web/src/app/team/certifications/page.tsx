@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { getUrgencyInfo } from "@/lib/certifications/urgency";
+import { CertHighlightScroller } from "./CertHighlightScroller";
 
 export const metadata = { title: "Team Certifications — ConstructionOS" };
 
@@ -16,21 +18,15 @@ type CertRow = {
   cs_team_members: { name: string | null } | null;
 };
 
+type PageProps = { searchParams: Promise<{ highlight?: string }> };
+
 const navLink: React.CSSProperties = { color: "var(--muted)", textDecoration: "none", fontSize: 14 };
 
-// D-06 / UI-SPEC "license card": expires_at is visually prominent. Color-code by proximity.
-function expiryColor(expires: string | null): string {
-  if (!expires) return "var(--muted)";
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const exp = new Date(expires);
-  const diffDays = (exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-  if (diffDays < 0) return "var(--red)";
-  if (diffDays < 30) return "var(--gold)";
-  return "var(--text)";
-}
+export default async function CertificationsPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const highlightId =
+    params.highlight && /^[0-9a-f-]{36}$/i.test(params.highlight) ? params.highlight : null;
 
-export default async function CertificationsPage() {
   const supabase = await createServerSupabase();
   let rows: CertRow[] = [];
   if (supabase) {
@@ -45,6 +41,8 @@ export default async function CertificationsPage() {
 
   return (
     <main style={{ padding: 32, maxWidth: 1200, margin: "0 auto" }}>
+      <style>{`@keyframes certPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }`}</style>
+
       <header
         style={{
           display: "flex",
@@ -70,6 +68,40 @@ export default async function CertificationsPage() {
         </nav>
       </header>
 
+      {/* Summary banner — D-19 */}
+      {(() => {
+        const expiring30 = rows.filter((c) => {
+          const info = getUrgencyInfo(c.expires_at);
+          return info.level === "warning" || info.level === "urgent";
+        }).length;
+        const expired = rows.filter((c) => getUrgencyInfo(c.expires_at).level === "expired").length;
+        if (expiring30 === 0 && expired === 0) return null;
+        return (
+          <div
+            role="alert"
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--gold)",
+              borderRadius: 10,
+              padding: "12px 16px",
+              marginBottom: 16,
+              display: "flex",
+              gap: 16,
+              alignItems: "center",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--text)",
+            }}
+          >
+            {expiring30 > 0 && <span>{expiring30} expiring within 30 days</span>}
+            {expiring30 > 0 && expired > 0 && <span style={{ color: "var(--muted)" }}>·</span>}
+            {expired > 0 && <span style={{ color: "var(--red)" }}>{expired} expired</span>}
+          </div>
+        );
+      })()}
+
+      <CertHighlightScroller certId={highlightId} />
+
       {rows.length ? (
         <div
           style={{
@@ -78,44 +110,89 @@ export default async function CertificationsPage() {
             gap: 16,
           }}
         >
-          {rows.map((c) => (
-            <article
-              key={c.id}
-              style={{
-                background: "var(--surface)",
-                borderRadius: 14,
-                padding: 16,
-                border: "1px solid var(--border)",
-              }}
-            >
-              <h2 style={{ fontSize: 16, fontWeight: 800, color: "var(--text)", marginBottom: 4 }}>
-                {c.name}
-              </h2>
-              <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 12 }}>
-                {c.issuer ?? "—"}
-              </p>
-              <p style={{ fontSize: 13, color: "var(--text)", marginBottom: 4 }}>
-                <strong>Member:</strong> {c.cs_team_members?.name ?? c.member_id}
-              </p>
-              <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 12 }}>
-                Issued {c.issued_date ?? "—"}
-              </p>
-              <p
+          {rows.map((c) => {
+            const urgency = getUrgencyInfo(c.expires_at);
+            const isHighlighted = c.id === highlightId;
+            const shouldPulse = urgency.level === "urgent" || urgency.level === "expired";
+
+            return (
+              <article
+                key={c.id}
+                id={`cert-${c.id}`}
                 style={{
-                  fontSize: 20,
-                  fontWeight: 800,
-                  letterSpacing: 1,
-                  color: expiryColor(c.expires_at),
+                  background: isHighlighted ? "var(--panel)" : "var(--surface)",
+                  borderRadius: 14,
+                  padding: 16,
+                  border: isHighlighted
+                    ? "2px solid var(--accent)"
+                    : "1px solid var(--border)",
+                  scrollMarginTop: 80,
                 }}
               >
-                EXPIRES {c.expires_at ?? "—"}
-              </p>
-              <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 8 }}>
-                Status: {c.status}
-                {c.document_id ? " · Doc attached" : ""}
-              </p>
-            </article>
-          ))}
+                <h2 style={{ fontSize: 16, fontWeight: 800, color: "var(--text)", marginBottom: 4 }}>
+                  {c.name}
+                </h2>
+                <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 12 }}>
+                  {c.issuer ?? "\u2014"}
+                </p>
+                <p style={{ fontSize: 13, color: "var(--text)", marginBottom: 4 }}>
+                  <strong>Member:</strong> {c.cs_team_members?.name ?? c.member_id}
+                </p>
+                <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 12 }}>
+                  Issued {c.issued_date ?? "\u2014"}
+                </p>
+                <p
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 800,
+                    letterSpacing: 1,
+                    color: urgency.color,
+                  }}
+                >
+                  EXPIRES {c.expires_at ?? "\u2014"}
+                </p>
+                <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 8 }}>
+                  Status: {c.status}
+                  {c.document_id ? " \u00b7 Doc attached" : ""}
+                </p>
+
+                {/* Urgency badge — D-18 */}
+                <span
+                  style={{
+                    display: "inline-block",
+                    marginTop: 8,
+                    padding: "3px 10px",
+                    borderRadius: 6,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#fff",
+                    background: urgency.color,
+                    animation: shouldPulse ? "certPulse 1.5s ease-in-out infinite" : "none",
+                  }}
+                >
+                  {urgency.label}
+                </span>
+
+                {/* Update Cert CTA — D-20 */}
+                <div style={{ marginTop: 10 }}>
+                  <Link
+                    href={`/team/certifications/${c.id}/edit`}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "var(--accent)",
+                      border: "1px solid var(--accent)",
+                      borderRadius: 8,
+                      padding: "4px 12px",
+                      textDecoration: "none",
+                    }}
+                  >
+                    Update Cert
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
         </div>
       ) : (
         <section style={{ background: "var(--surface)", borderRadius: 14, padding: 48, textAlign: "center" }}>
@@ -127,3 +204,4 @@ export default async function CertificationsPage() {
     </main>
   );
 }
+
