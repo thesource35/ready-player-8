@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 27-01-PLAN.md
-last_updated: "2026-04-19T03:46:43.993Z"
+stopped_at: Completed 27-05-PLAN.md
+last_updated: "2026-04-19T03:56:31.194Z"
 last_activity: 2026-04-19
 progress:
   total_phases: 14
   completed_phases: 11
   total_plans: 80
-  completed_plans: 75
-  percent: 94
+  completed_plans: 76
+  percent: 95
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 Milestone: v2.1
 Phase: 27 (portal-map-navigation-link) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 Status: Ready to execute
 Last activity: 2026-04-19
 
@@ -84,6 +84,7 @@ v2.0 closing decisions:
 - [Phase 26]: Plan 05 Rule 1 fix: @MainActor annotation on DocumentSyncManagerPreflightTests.test_preflight_notConfigured_isNoop — Swift 6 strict concurrency requires main-actor context to read SupabaseService.shared.isConfigured
 - [Phase 27-portal-map-navigation-link]: [Phase 27-01]: Server-computed showMapLink = Boolean(sections_config?.map_overlays?.show_map) — D-09 overrides DEFAULT_MAP_OVERLAYS.show_map=true so pre-Phase-21 portals (no map_overlays field) stay OFF. Helper exported from page.tsx alongside shouldShowAmounts; 5 vitest cases GREEN.
 - [Phase 27-portal-map-navigation-link]: [Phase 27-01]: PortalShellProps adds required showMapLink: boolean; PortalHeaderProps adds optional showMapLink?: boolean as Plan 01->02 bridge placeholder — Plan 02 widens to required and activates Map link render.
+- [Phase 27]: [Phase 27-05]: Admin helper copy 'Clients see a Map link in the portal navigation when enabled.' placed in PortalCreateDialog.tsx (not SectionVisibilityEditor) per D-15 parenthetical — co-located with the toggle the admin interacts with. SectionVisibilityEditor intentionally untouched because it does not host the show_map toggle.
 
 ### Pending Todos
 
@@ -107,6 +108,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-19T03:46:43.990Z
-Stopped at: Completed 27-01-PLAN.md
+Last session: 2026-04-19T03:56:31.190Z
+Stopped at: Completed 27-05-PLAN.md
 Resume file: None

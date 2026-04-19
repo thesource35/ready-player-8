@@ -245,14 +245,14 @@ Plans:
 **Depends on:** Phase 20 (shipped v2.0), Phase 21 (shipped v2.0)
 **Requirements:** INT-07 (primary), PORTAL-03, MAP-04 (supporting — integration-only)
 **Gap Closure:** Closes INT-07
-**Plans:** 1/6 plans executed
+**Plans:** 2/6 plans executed
 
 Plans:
 - [x] 27-01-PLAN.md — Server-side compute showMapLink + thread through PortalShell (Wave 1)
 - [ ] 27-02-PLAN.md — PortalHeader Map anchor (last on home) + Overview anchor (first on /map) via usePathname (Wave 2)
 - [ ] 27-03-PLAN.md — MobilePortalNav 6th MapPin icon with route-aware active state (Wave 2)
 - [ ] 27-04-PLAN.md — /map page: branding inheritance + PortalHeader + analytics + rate limit + cache config (Wave 3)
-- [ ] 27-05-PLAN.md — Admin helper copy beneath Show Map toggle in PortalCreateDialog (Wave 1)
+- [x] 27-05-PLAN.md — Admin helper copy beneath Show Map toggle in PortalCreateDialog (Wave 1)
 - [ ] 27-06-PLAN.md — Wire MobilePortalNav into PortalShell so mobile viewers reach /map (Wave 2)
 
 ### Phase 28: Retroactive Verification Sweep (Phases 13–19)
@@ -280,7 +280,7 @@ Plans:
 | 24. Document → Activity Event Emission | v2.1 | 2/2 | Complete    | 2026-04-17 |
 | 25. Certification Expiry Notifications | v2.1 | 7/7 | Complete    | 2026-04-18 |
 | 26. Documents RLS Table Reconciliation | v2.1 | 5/5 | Complete    | 2026-04-19 |
-| 27. Portal → Map Navigation Link | v2.1 | 1/6 | In Progress|  |
+| 27. Portal → Map Navigation Link | v2.1 | 2/6 | In Progress|  |
 | 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 0/? | Planned | — |
 | 29. Live Video Traffic Feed (Sat + Drone + Suggestions) | v2.1 | 0/? | Planned | — |
 
