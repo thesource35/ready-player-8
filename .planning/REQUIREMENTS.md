@@ -150,32 +150,32 @@ Deferred to v2.2 or later.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | NOTIF-01 | Phase 30 (remediation planned) | Unsatisfied |
-| NOTIF-02 | Phase 28 (verified) | Satisfied |
+| NOTIF-02 | Phase 28 (verified); UAT deferred 2026-04-19 | Satisfied |
 | NOTIF-03 | Phase 30 (remediation planned) | Unsatisfied |
 | NOTIF-04 | Phase 28 (verified) | Satisfied |
-| NOTIF-05 | Phase 30 (remediation planned) | Unsatisfied |
-| DOC-01 | Phase 28 (verified) + UAT pending | Partial |
+| NOTIF-05 | Phase 30 (remediation planned); UAT deferred 2026-04-19 | Unsatisfied |
+| DOC-01 | Phase 28 (verified) + UAT pending; UAT deferred 2026-04-19 | Partial |
 | DOC-02 | Phase 28 (verified) | Satisfied |
 | DOC-03 | Phase 28 (verified) | Satisfied |
-| DOC-04 | Phase 28 (verified) + UAT pending | Partial |
-| DOC-05 | Phase 28 (verified) + UAT pending | Partial |
+| DOC-04 | Phase 28 (verified) + UAT pending; UAT deferred 2026-04-19 | Partial |
+| DOC-05 | Phase 28 (verified) + UAT pending; UAT deferred 2026-04-19 | Partial |
 | TEAM-01 | Phase 23 | Satisfied |
 | TEAM-02 | Phase 23 | Satisfied |
 | TEAM-03 | Phase 23 | Satisfied |
 | TEAM-04 | Phase 25 (gap closure) | Complete |
 | TEAM-05 | Phase 23 | Satisfied |
-| FIELD-01 | Phase 28 (verified) + UAT pending | Partial |
+| FIELD-01 | Phase 28 (verified) + UAT pending; UAT deferred 2026-04-19 | Partial |
 | FIELD-02 | Phase 28 (verified) | Satisfied |
-| FIELD-03 | Phase 28 (verified) | Satisfied |
-| FIELD-04 | Phase 28 (verified) + UAT pending | Partial |
-| CAL-01 | Phase 28 (verified) + UAT pending | Partial |
-| CAL-02 | Phase 28 (verified) + UAT pending | Partial |
+| FIELD-03 | Phase 28 (verified); UAT deferred 2026-04-19 | Satisfied |
+| FIELD-04 | Phase 28 (verified) + UAT pending; UAT deferred 2026-04-19 | Partial |
+| CAL-01 | Phase 28 (verified) + UAT pending; UAT deferred 2026-04-19 | Partial |
+| CAL-02 | Phase 28 (verified) + UAT pending; UAT deferred 2026-04-19 | Partial |
 | CAL-03 | Phase 23 | Satisfied |
-| CAL-04 | Phase 28 (verified) + UAT pending | Partial |
-| REPORT-01 | Phase 28 (verified) + UAT pending | Partial |
-| REPORT-02 | Phase 28 (verified) + UAT pending | Partial |
-| REPORT-03 | Phase 28 (verified) + UAT pending | Partial |
-| REPORT-04 | Phase 28 (verified) + UAT pending | Partial |
+| CAL-04 | Phase 28 (verified) + UAT pending; UAT deferred 2026-04-19 | Partial |
+| REPORT-01 | Phase 28 (verified) + UAT pending; UAT deferred 2026-04-19 | Partial |
+| REPORT-02 | Phase 28 (verified) + UAT pending; UAT deferred 2026-04-19 | Partial |
+| REPORT-03 | Phase 28 (verified) + UAT pending; UAT deferred 2026-04-19 | Partial |
+| REPORT-04 | Phase 28 (verified) + UAT pending; UAT deferred 2026-04-19 | Partial |
 | VIDEO-01-A | Phase 22 (22-01) | Satisfied |
 | VIDEO-01-B | Phase 22 (22-01) | Satisfied |
 | VIDEO-01-C | Phase 22 (22-01) | Satisfied |
