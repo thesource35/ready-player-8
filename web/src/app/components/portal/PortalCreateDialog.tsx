@@ -533,6 +533,17 @@ export function PortalCreateDialog({
                   />
                   <span>Show Map</span>
                 </label>
+                {/* D-15 (Phase 27): Admin helper copy — explains what enabling Show Map does for client viewer */}
+                <p
+                  style={{
+                    fontSize: tokens.typography.fontSize.xs,
+                    color: tokens.colors.gray[500],
+                    margin: "4px 0 0 24px",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Clients see a Map link in the portal navigation when enabled.
+                </p>
                 {mapOverlays.show_map && (
                   <div
                     style={{
