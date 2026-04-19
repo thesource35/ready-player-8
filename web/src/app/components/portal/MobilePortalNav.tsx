@@ -7,11 +7,22 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { PortalSectionKey } from "@/lib/portal/types";
 
 type MobilePortalNavProps = {
   sections: { key: PortalSectionKey; label: string; enabled: boolean }[];
+  showMapLink: boolean;  // Phase 27 D-19 — when true, renders the 6th MapPin icon
 };
+
+// D-25 (Phase 27): MapPin Lucide-style inline SVG, 20×20 stroke-2, matches SECTION_ICONS pattern.
+const MAP_PIN_ICON: React.ReactNode = (
+  <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx={12} cy={10} r={3} />
+  </svg>
+);
 
 // Section icon SVGs (Lucide-style, inline to avoid dependency)
 const SECTION_ICONS: Record<PortalSectionKey, React.ReactNode> = {
@@ -52,7 +63,9 @@ const SECTION_ICONS: Record<PortalSectionKey, React.ReactNode> = {
   ),
 };
 
-export default function MobilePortalNav({ sections }: MobilePortalNavProps) {
+export default function MobilePortalNav({ sections, showMapLink }: MobilePortalNavProps) {
+  const pathname = usePathname() ?? "";
+  const isOnMap = pathname.endsWith("/map");
   const enabledSections = sections.filter((s) => s.enabled);
   const [activeSection, setActiveSection] = useState<PortalSectionKey | null>(
     enabledSections[0]?.key ?? null,
@@ -132,7 +145,7 @@ export default function MobilePortalNav({ sections }: MobilePortalNavProps) {
     };
   }, [activeSection, enabledSections, scrollToSection]);
 
-  if (enabledSections.length === 0) return null;
+  if (enabledSections.length === 0 && !showMapLink) return null;
 
   return (
     <nav
@@ -190,6 +203,43 @@ export default function MobilePortalNav({ sections }: MobilePortalNavProps) {
           </button>
         );
       })}
+      {/* D-16, D-17, D-25 (Phase 27): 6th MapPin entry — Link, not scroll button.
+          Active state when on /map per D-17. */}
+      {showMapLink && (
+        <Link
+          key="map"
+          href="./map"
+          prefetch={true}
+          aria-label="Navigate to Map"
+          aria-current={isOnMap ? "page" : undefined}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+            padding: "6px 8px",
+            minWidth: 56,
+            background: "transparent",
+            border: "none",
+            textDecoration: "none",
+            color: isOnMap
+              ? "var(--portal-primary, #2563EB)"
+              : "#9CA3AF",
+            transition: "color 200ms ease-in-out",
+          }}
+        >
+          {MAP_PIN_ICON}
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: isOnMap ? 600 : 400,
+              lineHeight: 1,
+            }}
+          >
+            Map
+          </span>
+        </Link>
+      )}
     </nav>
   );
 }

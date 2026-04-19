@@ -1,11 +1,27 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeAll } from "vitest";
 import { render, screen, within, cleanup } from "@testing-library/react";
 
 const mockPathname = vi.fn();
 vi.mock("next/navigation", () => ({
   usePathname: () => mockPathname(),
 }));
+
+// Rule 3 auto-fix: jsdom does not implement IntersectionObserver.
+// MobilePortalNav's pre-existing useEffect calls `new IntersectionObserver(...)`,
+// so we stub the minimal shape (observe/disconnect) before any render() runs.
+beforeAll(() => {
+  class MockIntersectionObserver {
+    observe() {}
+    disconnect() {}
+    unobserve() {}
+    takeRecords() { return []; }
+    root = null;
+    rootMargin = "";
+    thresholds = [];
+  }
+  (globalThis as unknown as { IntersectionObserver: typeof MockIntersectionObserver }).IntersectionObserver = MockIntersectionObserver;
+});
 
 import MobilePortalNav from "./MobilePortalNav";
 
@@ -68,7 +84,9 @@ describe("MobilePortalNav Map icon (Phase 27)", () => {
     const mapLink = screen.getByLabelText(/navigate to map/i);
     expect(mapLink.getAttribute("aria-current")).toBeNull();
     const style = mapLink.getAttribute("style") ?? "";
-    expect(style).toMatch(/#9CA3AF/);
+    // jsdom normalizes #9CA3AF to rgb(156, 163, 175) in serialized style attr.
+    // Accept either form (original hex literal OR normalized rgb).
+    expect(style).toMatch(/#9CA3AF|rgb\(156,\s*163,\s*175\)/);
   });
 
   it("renders Map alone when sections all disabled + showMapLink=true", () => {
