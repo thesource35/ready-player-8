@@ -283,6 +283,7 @@ Plans:
 | 27. Portal → Map Navigation Link | v2.1 | 6/6 | Complete    | 2026-04-19 |
 | 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 1/2 | In Progress|  |
 | 29. Live Video Traffic Feed (Sat + Drone + Suggestions) | v2.1 | 0/? | Planned | — |
+| 30. Notifications List + Mark-Read + iOS Push Remediation | v2.1 | 0/? | Planned | — |
 
 ## Backlog
 
@@ -297,3 +298,18 @@ _No items in backlog._
 
 Plans:
 - [ ] TBD (run /gsd-plan-phase 29 to break down)
+
+### Phase 30: Notifications List + Mark-Read + iOS Push Remediation
+
+**Goal:** User can view a notification list with unread count badge on web parity with iOS, mark notifications as read individually (per-row) or all at once on both platforms, and receive iOS push notifications for bid deadlines, safety alerts, and assigned tasks on a real device.
+**Depends on:** Phase 28
+**Requirements:** NOTIF-01, NOTIF-03, NOTIF-05
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 30 to break down)
+
+**Evidence basis (from 28-01 VERIFICATION.md):**
+- NOTIF-01: iOS InboxView project-filter UI missing (14-04-SUMMARY.md KL #4); web has no NotificationsStore/InboxView equivalent (grep returns 0 files).
+- NOTIF-03: Web per-row mark-read form submits POST to `/api/notifications/[id]?_method=PATCH` but route only exports PATCH/DELETE (14-03-SUMMARY.md KL #1). iOS side works; cross-platform success criterion unmet.
+- NOTIF-05: `aps-environment` entitlement set but Apple Developer portal Push Notifications capability toggle never recorded; no real-device delivery test on file (14-05-SUMMARY.md "Manual Steps Required Before Push Delivery Works").
