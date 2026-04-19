@@ -125,13 +125,18 @@ final class VideoUploadClient {
     ///   - name: display name (optional; first 128 chars kept server-side)
     ///   - sessionToken: Supabase access token for the /api/video/vod/upload-url call
     ///   - apiBaseURL: web API base URL (same as Backend.BaseURL)
+    ///   - sourceType: Phase 29 LIVE-01 D-11. Optional discriminator written to
+    ///     cs_video_assets.source_type. `nil` lets the server default to `'upload'`
+    ///     (Phase 22 back-compat). Only `.upload` and `.drone` are accepted by the
+    ///     route; `.fixedCamera` is server-side only and will 400.
     func upload(
         fileUrl: URL,
         projectId: UUID,
         orgId: UUID,
         name: String?,
         sessionToken: String,
-        apiBaseURL: URL
+        apiBaseURL: URL,
+        sourceType: VideoSourceType? = nil
     ) async {
         // Analytics: video_upload_started (D-40) — emitted at top so failed probes still appear in the funnel.
         await MainActor.run {
@@ -163,7 +168,8 @@ final class VideoUploadClient {
                 name: name,
                 probe: probe,
                 sessionToken: sessionToken,
-                apiBaseURL: apiBaseURL
+                apiBaseURL: apiBaseURL,
+                sourceType: sourceType
             )
         } catch let err as AppError {
             await self.failAndReport(err, reason: "upload-url")
@@ -222,7 +228,8 @@ final class VideoUploadClient {
         name: String?,
         probe: VideoProbeResult,
         sessionToken: String,
-        apiBaseURL: URL
+        apiBaseURL: URL,
+        sourceType: VideoSourceType?
     ) async throws -> VideoUploadURLResponse {
         let url = apiBaseURL.appendingPathComponent("/api/video/vod/upload-url")
         var req = URLRequest(url: url)
@@ -238,6 +245,9 @@ final class VideoUploadClient {
             "container": probe.containerExt
         ]
         if let name { body["name"] = name }
+        // Phase 29 LIVE-01: only serialize source_type when explicitly set; absent key
+        // keeps the route on its Phase 22 back-compat default of 'upload'.
+        if let sourceType { body["source_type"] = sourceType.rawValue }
         req.httpBody = try JSONSerialization.data(withJSONObject: body)
 
         let (data, response) = try await session.data(for: req)
