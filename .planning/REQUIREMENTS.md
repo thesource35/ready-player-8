@@ -3,6 +3,16 @@
 **Defined:** 2026-04-14 (carried from v2.0 after milestone scope reduction)
 **Core Value:** Every user action must either succeed visibly or fail with a clear, actionable message — no silent data loss, no undetected errors, no security gaps.
 
+## Requirement Status Legend
+
+Phase 28 reconciliation (D-09) introduces a three-state convention for inline tick boxes and the Traceability table at the bottom of this file:
+
+- `[x]` **Satisfied** — code evidence green AND (no UAT needed OR UAT complete with pass verdict)
+- `[~]` **Partial** — code evidence green, but UAT enumerated in the owning VERIFICATION.md and not yet walked (or user deferred)
+- `[ ]` **Unsatisfied** — code evidence missing in the owning phase; a remediation phase owns the fix
+
+Downstream tools and reviewers MUST treat `[~]` as distinct from `[x]` (partial is not passing) and distinct from `[ ]` (work is done, human sign-off is the only missing piece).
+
 ## v2.1 Requirements
 
 27 requirements carried from v2.0. Phase code exists on `main`; verification, wiring, and cross-phase integration are the remaining work.
@@ -17,11 +27,11 @@
 
 ### Document Management
 
-- [ ] **DOC-01**: User can upload files (PDF, images, drawings) to Supabase Storage
+- [~] **DOC-01**: User can upload files (PDF, images, drawings) to Supabase Storage
 - [x] **DOC-02**: User can download attached files
 - [x] **DOC-03**: User can attach files to projects, RFIs, submittals, and change orders
-- [x] **DOC-04**: User can preview PDFs and images in-app without downloading
-- [ ] **DOC-05**: User can view version history of revised documents
+- [~] **DOC-04**: User can preview PDFs and images in-app without downloading
+- [~] **DOC-05**: User can view version history of revised documents
 
 ### Team & Crew Management
 
@@ -33,24 +43,24 @@
 
 ### Reporting & Dashboards
 
-- [ ] **REPORT-01**: User can generate single-project summary report (budget, schedule, issues, team)
-- [ ] **REPORT-02**: User can view cross-project financial rollup dashboard
-- [ ] **REPORT-03**: User can export reports to PDF
-- [ ] **REPORT-04**: User can view chart visualizations (bar/line/pie) for budgets, timelines, and safety metrics
+- [~] **REPORT-01**: User can generate single-project summary report (budget, schedule, issues, team)
+- [~] **REPORT-02**: User can view cross-project financial rollup dashboard
+- [~] **REPORT-03**: User can export reports to PDF
+- [~] **REPORT-04**: User can view chart visualizations (bar/line/pie) for budgets, timelines, and safety metrics
 
 ### Field Tools
 
-- [ ] **FIELD-01**: User can capture photos with automatic GPS location and timestamp tagging
-- [ ] **FIELD-02**: User can attach photos to punch items, daily logs, and safety incidents
-- [ ] **FIELD-03**: User can annotate/markup photos to highlight issues
-- [ ] **FIELD-04**: User can create daily logs from pre-filled templates based on project context
+- [~] **FIELD-01**: User can capture photos with automatic GPS location and timestamp tagging
+- [x] **FIELD-02**: User can attach photos to punch items, daily logs, and safety incidents
+- [x] **FIELD-03**: User can annotate/markup photos to highlight issues
+- [~] **FIELD-04**: User can create daily logs from pre-filled templates based on project context
 
 ### Calendar & Scheduling
 
-- [ ] **CAL-01**: User can view a timeline of all projects with milestones and bid due dates
-- [ ] **CAL-02**: User can view a Gantt chart with task bars and dependencies
+- [~] **CAL-01**: User can view a timeline of all projects with milestones and bid due dates
+- [~] **CAL-02**: User can view a Gantt chart with task bars and dependencies
 - [x] **CAL-03**: Timeline highlights milestone markers (bid due, project start/end, inspections)
-- [ ] **CAL-04**: User can drag items on timeline to reschedule them
+- [~] **CAL-04**: User can drag items on timeline to reschedule them
 
 ### Live Site Video (Phase 22)
 
@@ -139,33 +149,33 @@ Deferred to v2.2 or later.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NOTIF-01 | Phase 28 (verification) | Pending |
-| NOTIF-02 | Phase 24 (gap closure) | Complete |
-| NOTIF-03 | Phase 28 (verification) | Pending |
-| NOTIF-04 | Phase 25 (gap closure) | Complete |
-| NOTIF-05 | Phase 28 (verification) | Pending |
-| DOC-01 | Phase 28 (verification) | Pending |
-| DOC-02 | Phase 24 (gap closure) | Complete |
-| DOC-03 | Phase 26 (gap closure) | Complete |
-| DOC-04 | Phase 26 (gap closure) | Complete |
-| DOC-05 | Phase 28 (verification) | Pending |
+| NOTIF-01 | Phase 30 (remediation planned) | Unsatisfied |
+| NOTIF-02 | Phase 28 (verified) | Satisfied |
+| NOTIF-03 | Phase 30 (remediation planned) | Unsatisfied |
+| NOTIF-04 | Phase 28 (verified) | Satisfied |
+| NOTIF-05 | Phase 30 (remediation planned) | Unsatisfied |
+| DOC-01 | Phase 28 (verified) + UAT pending | Partial |
+| DOC-02 | Phase 28 (verified) | Satisfied |
+| DOC-03 | Phase 28 (verified) | Satisfied |
+| DOC-04 | Phase 28 (verified) + UAT pending | Partial |
+| DOC-05 | Phase 28 (verified) + UAT pending | Partial |
 | TEAM-01 | Phase 23 | Satisfied |
 | TEAM-02 | Phase 23 | Satisfied |
 | TEAM-03 | Phase 23 | Satisfied |
 | TEAM-04 | Phase 25 (gap closure) | Complete |
 | TEAM-05 | Phase 23 | Satisfied |
-| FIELD-01 | Phase 28 (verification) | Pending |
-| FIELD-02 | Phase 28 (verification) | Pending |
-| FIELD-03 | Phase 28 (verification) | Pending |
-| FIELD-04 | Phase 28 (verification) | Pending |
-| CAL-01 | Phase 28 (verification) | Pending |
-| CAL-02 | Phase 28 (verification) | Pending |
+| FIELD-01 | Phase 28 (verified) + UAT pending | Partial |
+| FIELD-02 | Phase 28 (verified) | Satisfied |
+| FIELD-03 | Phase 28 (verified) | Satisfied |
+| FIELD-04 | Phase 28 (verified) + UAT pending | Partial |
+| CAL-01 | Phase 28 (verified) + UAT pending | Partial |
+| CAL-02 | Phase 28 (verified) + UAT pending | Partial |
 | CAL-03 | Phase 23 | Satisfied |
-| CAL-04 | Phase 28 (verification) | Pending |
-| REPORT-01 | Phase 28 (verification) | Pending |
-| REPORT-02 | Phase 28 (verification) | Pending |
-| REPORT-03 | Phase 28 (verification) | Pending |
-| REPORT-04 | Phase 28 (verification) | Pending |
+| CAL-04 | Phase 28 (verified) + UAT pending | Partial |
+| REPORT-01 | Phase 28 (verified) + UAT pending | Partial |
+| REPORT-02 | Phase 28 (verified) + UAT pending | Partial |
+| REPORT-03 | Phase 28 (verified) + UAT pending | Partial |
+| REPORT-04 | Phase 28 (verified) + UAT pending | Partial |
 | VIDEO-01-A | Phase 22 (22-01) | Satisfied |
 | VIDEO-01-B | Phase 22 (22-01) | Satisfied |
 | VIDEO-01-C | Phase 22 (22-01) | Satisfied |
@@ -183,12 +193,16 @@ Deferred to v2.2 or later.
 | VIDEO-01-O | Phase 22 (planned) | Complete |
 | VIDEO-01-P | Phase 22 (planned) | Complete |
 
-**Coverage:**
+**Coverage (Phase 28 reconciled, D-09 three-state):**
 - v2.1 requirements: 43 total (27 carryover + 16 Phase 22 sub-requirements VIDEO-01-A..P)
 - Mapped to phases: 43
 - Unmapped: 0
-- **Satisfied so far (v2.1): 9** — TEAM-01, TEAM-02, TEAM-03, TEAM-05, CAL-03 (Phase 23, 2026-04-14) + VIDEO-01-A, VIDEO-01-B, VIDEO-01-C, VIDEO-01-N (Phase 22-01, 2026-04-15)
+- **`[x]` Satisfied: 28** — NOTIF-02, NOTIF-04, DOC-02, DOC-03, TEAM-01..05, CAL-03, FIELD-02, FIELD-03 (12 carryover) + VIDEO-01-A..P (16 Phase 22)
+- **`[~]` Partial (code green, UAT pending): 12** — DOC-01, DOC-04, DOC-05, FIELD-01, FIELD-04, CAL-01, CAL-02, CAL-04, REPORT-01..04
+- **`[ ]` Unsatisfied (remediation owned): 3** — NOTIF-01, NOTIF-03, NOTIF-05 (Phase 30 remediation planned per D-10)
 - Shipped in v2.0: 0 (see `milestones/v2.0-REQUIREMENTS.md` for AI/PORTAL/MAP — 12 shipped)
+
+Methodology (D-09): `[x]` = code evidence green AND (no UAT needed OR UAT complete); `[~]` = code green, UAT enumerated but not yet walked; `[ ]` = code missing in owning phase. See Requirement Status Legend at top of file.
 
 ---
 *v2.1 requirements carried forward 2026-04-14 after v2.0 milestone scope reduction. See `milestones/v2.0-MILESTONE-AUDIT.md` for the audit that drove the scope change.*
