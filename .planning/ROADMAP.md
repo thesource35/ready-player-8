@@ -53,7 +53,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 - [x] **Phase 25: Certification Expiry Notifications** (7 plans, 3 waves) — Gap closure: cert-expiry cron + notification emission (INT-06) (completed 2026-04-18)
 - [x] **Phase 26: Documents RLS Table Reconciliation** (5 plans, 4 waves) — Gap closure: stub tables + rebuilt RLS + pre-flight + trigger extension (INT-01) (completed 2026-04-18)
 - [x] **Phase 27: Portal → Map Navigation Link** (6 plans, 3 waves) — Gap closure: portal home links to `/map` sub-route when enabled (INT-07) (completed 2026-04-19)
-- [ ] **Phase 28: Retroactive Verification Sweep (Phases 13–19)** — Gap closure: create missing VERIFICATION.md files, reconcile REQUIREMENTS.md
+- [x] **Phase 28: Retroactive Verification Sweep (Phases 13–19)** — Gap closure: create missing VERIFICATION.md files, reconcile REQUIREMENTS.md (completed 2026-04-19)
 
 ## Phase Details
 
@@ -281,7 +281,7 @@ Plans:
 | 25. Certification Expiry Notifications | v2.1 | 7/7 | Complete    | 2026-04-18 |
 | 26. Documents RLS Table Reconciliation | v2.1 | 5/5 | Complete    | 2026-04-19 |
 | 27. Portal → Map Navigation Link | v2.1 | 6/6 | Complete    | 2026-04-19 |
-| 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 1/2 | In Progress|  |
+| 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 2/2 | Complete   | 2026-04-19 |
 | 29. Live Video Traffic Feed (Sat + Drone + Suggestions) | v2.1 | 0/? | Planned | — |
 | 30. Notifications List + Mark-Read + iOS Push Remediation | v2.1 | 0/? | Planned | — |
 
@@ -294,7 +294,7 @@ _No items in backlog._
 **Goal:** [To be planned — promoted from backlog 2026-04-14]
 **Requirements:** TBD
 **Depends on:** Phase 21 (Live Satellite Traffic Maps), Phase 22 (Live Site Video)
-**Plans:** 1/2 plans executed
+**Plans:** 0 plans (reserved)
 
 Plans:
 - [ ] TBD (run /gsd-plan-phase 29 to break down)

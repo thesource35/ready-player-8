@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
-status: executing
-stopped_at: Completed 28-01-PLAN.md (6 VERIFICATION.md + 1 EVIDENCE.md)
-last_updated: "2026-04-19T16:51:36.314Z"
+status: verifying
+stopped_at: Completed 28-02-PLAN.md with defer-all (22 UAT items deferred; 28-02 ships partial)
+last_updated: "2026-04-19T17:41:46.492Z"
 last_activity: 2026-04-19
 progress:
-  total_phases: 14
-  completed_phases: 12
+  total_phases: 15
+  completed_phases: 13
   total_plans: 82
-  completed_plans: 81
-  percent: 99
+  completed_plans: 82
+  percent: 100
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 Milestone: v2.1
 Phase: 28 (retroactive-verification-sweep) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-19
 
 ## Accumulated Context
@@ -90,6 +90,7 @@ v2.0 closing decisions:
 - [Phase 27-portal-map-navigation-link]: [Phase 27-06]: PortalShell now imports MobilePortalNav and forwards the SAME showMapLink boolean to both PortalHeader and MobilePortalNav (D-19 single source of truth). mobileSections derived from sectionOrder + sections_config with defensive Boolean coercion (T-27-16). Closes mobile half of INT-07: <640px viewers can reach /map via the 6th MapPin icon. 4/4 vitest cases GREEN under jsdom pragma; zero tsc/lint regressions.
 - [Phase 27-portal-map-navigation-link]: [Phase 27-04]: Branded /map sub-route complete — PortalHeader with showMapLink=true (Overview anchor first) + 5 portal CSS custom properties + fire-and-forget recordPortalView(sectionViewed='map') + checkDailyViewLimit shared 100/day budget with portal home + dynamic='force-dynamic'+revalidate=60 cache. Closes desktop half of INT-07. page.tsx 157→302 lines; 4 vitest cases GREEN; 0 deviations. Helper inlining over extraction: checkDailyViewLimit + hashIP copied verbatim with canonical-source comments (files_modified scoped to map/ only). User approved 11-step manual UAT.
 - [Phase 28-retroactive-verification-sweep]: Plan 28-01: 6 VERIFICATION.md + 1 EVIDENCE.md; Phase 14 honest partial verdict (NOTIF-01/03/05 UNSATISFIED per D-02); Phase 19 REPORT-04 audit concern refuted with grep evidence
+- [Phase 28-retroactive-verification-sweep]: Plan 28-02: REQUIREMENTS.md three-state legend codified (D-09); ROADMAP.md Phase 30 remediation cluster appended for NOTIF-01/03/05 (D-10); UAT walk-through deferred via defer-all resume-signal (D-07); 28-02 ships status=partial with 22 UAT items catalogued for follow-up session
 
 ### Pending Todos
 
@@ -113,6 +114,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-19T16:51:02.233Z
-Stopped at: Completed 28-01-PLAN.md (6 VERIFICATION.md + 1 EVIDENCE.md)
+Last session: 2026-04-19T17:41:17.582Z
+Stopped at: Completed 28-02-PLAN.md with defer-all (22 UAT items deferred; 28-02 ships partial)
 Resume file: None
