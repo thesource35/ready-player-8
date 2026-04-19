@@ -1,6 +1,11 @@
+"use client";
 // D-77: Company logo (left) + project name (center) + section anchor nav + "Last updated [date]"
 // D-2: Responsive -- on mobile (< 640px), hide section anchors
 // D-16: aria-label on nav, role="navigation"
+// D-01..D-07, D-23, D-24, D-26 (Phase 27): Map anchor (last on home) + Overview anchor (first on /map) gated by showMapLink
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 type PortalHeaderProps = {
   companyName: string;
@@ -8,10 +13,22 @@ type PortalHeaderProps = {
   projectName: string;
   sectionAnchors: { id: string; label: string }[];
   lastUpdated: string;
-  // D-10, D-19: Accepted now as a placeholder so PortalShell can forward it
-  // without a TS error. Plan 02 will activate rendering of the Map link in
-  // the header when this is true.
-  showMapLink?: boolean;
+  // Phase 27 D-19 -- required, single source of truth for desktop + mobile.
+  // Server-computed in portal page.tsx and threaded through PortalShell.
+  showMapLink: boolean;
+};
+
+// Shared anchor style used by section anchors AND the Map/Overview links
+// so visual parity (D-02, D-24) is preserved in one place.
+const ANCHOR_STYLE = {
+  fontSize: 13,
+  fontWeight: 500,
+  color: "var(--portal-primary, #2563EB)",
+  textDecoration: "none",
+  padding: "6px 12px",
+  borderRadius: 6,
+  whiteSpace: "nowrap" as const,
+  transition: "background 200ms ease-in-out",
 };
 
 export default function PortalHeader({
@@ -20,11 +37,16 @@ export default function PortalHeader({
   projectName,
   sectionAnchors,
   lastUpdated,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  showMapLink: _showMapLink,
+  showMapLink,
 }: PortalHeaderProps) {
   // Static CSS for responsive behavior (no user input, safe to inline)
   const responsiveCSS = `@media (max-width: 639px) { .portal-section-nav { display: none !important; } }`;
+
+  // Route awareness (D-06 LOCKED): client-side pathname read drives which of
+  // {Map, Overview} renders. On /map we show Overview (return to portal home);
+  // on portal home we show Map (navigate to /map).
+  const pathname = usePathname() ?? "";
+  const isOnMap = pathname.endsWith("/map");
 
   return (
     <header
@@ -97,8 +119,9 @@ export default function PortalHeader({
         </div>
       </div>
 
-      {/* Section anchor navigation -- hidden on mobile via CSS above */}
-      {sectionAnchors.length > 0 && (
+      {/* Section anchor navigation -- hidden on mobile via CSS above.
+          D-07: render when showMapLink is true even if sectionAnchors is empty. */}
+      {(sectionAnchors.length > 0 || showMapLink) && (
         <nav
           role="navigation"
           aria-label="Portal section navigation"
@@ -112,24 +135,36 @@ export default function PortalHeader({
           }}
           className="portal-section-nav"
         >
+          {/* Overview anchor -- FIRST when on /map (D-05, D-26) */}
+          {showMapLink && isOnMap && (
+            <Link
+              key="overview-return"
+              href=".."
+              prefetch={true}
+              style={ANCHOR_STYLE}
+            >Overview</Link>
+          )}
+
+          {/* Existing in-page section anchors -- unchanged */}
           {sectionAnchors.map((anchor) => (
             <a
               key={anchor.id}
               href={`#section-${anchor.id}`}
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                color: "var(--portal-primary, #2563EB)",
-                textDecoration: "none",
-                padding: "6px 12px",
-                borderRadius: 6,
-                whiteSpace: "nowrap",
-                transition: "background 200ms ease-in-out",
-              }}
+              style={ANCHOR_STYLE}
             >
               {anchor.label}
             </a>
           ))}
+
+          {/* Map anchor -- LAST when on portal home (D-03, D-04, D-23, D-24) */}
+          {showMapLink && !isOnMap && (
+            <Link
+              key="map-link"
+              href="./map"
+              prefetch={true}
+              style={ANCHOR_STYLE}
+            >Map</Link>
+          )}
         </nav>
       )}
     </header>

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { render, screen, within, cleanup } from "@testing-library/react";
 
 const mockPathname = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -19,13 +19,18 @@ const baseProps = {
   lastUpdated: "Apr 18, 2026",
 };
 
+afterEach(() => {
+  cleanup();
+  mockPathname.mockReset();
+});
+
 describe("PortalHeader Map/Overview anchors (Phase 27)", () => {
   it("D-01,D-03,D-23: renders Map anchor as last nav child when showMapLink=true on home", () => {
     mockPathname.mockReturnValue("/portal/acme/riverdale");
     render(<PortalHeader {...baseProps} showMapLink={true} />);
     const nav = screen.getByRole("navigation", { name: /portal section navigation/i });
     const links = within(nav).getAllByRole("link");
-    expect(links[links.length - 1]).toHaveTextContent("Map");
+    expect(links[links.length - 1].textContent).toBe("Map");
   });
 
   it("D-04: Map anchor uses href='./map' (Next.js Link relative)", () => {
@@ -40,7 +45,7 @@ describe("PortalHeader Map/Overview anchors (Phase 27)", () => {
     render(<PortalHeader {...baseProps} showMapLink={true} />);
     const nav = screen.getByRole("navigation", { name: /portal section navigation/i });
     const links = within(nav).getAllByRole("link");
-    expect(links[0]).toHaveTextContent("Overview");
+    expect(links[0].textContent).toBe("Overview");
     expect(links[0].getAttribute("href")).toMatch(/\.\.$|\/portal\/acme\/riverdale$/);
   });
 
@@ -64,6 +69,6 @@ describe("PortalHeader Map/Overview anchors (Phase 27)", () => {
     const nav = screen.getByRole("navigation", { name: /portal section navigation/i });
     const links = within(nav).getAllByRole("link");
     expect(links).toHaveLength(1);
-    expect(links[0]).toHaveTextContent("Map");
+    expect(links[0].textContent).toBe("Map");
   });
 });
