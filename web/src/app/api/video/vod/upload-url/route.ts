@@ -6,6 +6,7 @@
 // to the ffmpeg worker; the worker then downloads the raw upload and produces HLS.
 
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { checkVideoRateLimit } from '@/lib/video/ratelimit'
 import { videoError, VideoErrorCode } from '@/lib/video/errors'
@@ -26,6 +27,7 @@ type UploadUrlBody = {
   file_size_bytes?: number
   duration_s?: number
   container?: string
+  source_type?: string // Phase 29 LIVE-01 D-11 — 'upload' | 'drone' (enum-validated below)
 }
 
 export async function POST(req: Request) {
@@ -79,7 +81,24 @@ export async function POST(req: Request) {
     )
   }
 
-  const { project_id, org_id, name, file_size_bytes, duration_s, container } = body
+  const { project_id, org_id, name, file_size_bytes, duration_s, container, source_type } = body
+
+  // Phase 29 LIVE-01 / T-29-02-01: validate source_type enum (defaults to 'upload' for
+  // Phase 22 backward compat). Only 'upload' and 'drone' are accepted from user-facing
+  // routes; 'fixed_camera' is server-side only (live inputs).
+  const SourceTypeSchema = z.enum(['upload', 'drone'])
+  const sourceTypeParse = SourceTypeSchema.safeParse(source_type ?? 'upload')
+  if (!sourceTypeParse.success) {
+    return NextResponse.json(
+      videoError(
+        VideoErrorCode.PermissionDenied,
+        'Invalid source_type. Allowed: upload, drone.',
+        false,
+      ),
+      { status: 400 },
+    )
+  }
+  const sourceType: 'upload' | 'drone' = sourceTypeParse.data
 
   if (!project_id || !org_id || typeof project_id !== 'string' || typeof org_id !== 'string') {
     return NextResponse.json(
@@ -194,7 +213,7 @@ export async function POST(req: Request) {
       source_id: uploadSource.id,
       org_id,
       project_id,
-      source_type: 'upload',
+      source_type: sourceType, // Phase 29 LIVE-01 — was hardcoded 'upload', now validated enum
       kind: 'vod',
       status: 'uploading',
       name: name && typeof name === 'string' ? name.slice(0, 128) : null,
@@ -235,7 +254,7 @@ export async function POST(req: Request) {
     )
   }
 
-  // D-40 analytics: video_upload_started
+  // D-40 analytics: video_upload_started (T-29-02-03: include source_type for drone traceability)
   emitVideoEvent({
     event: 'video_upload_started',
     asset_id: asset.id,
@@ -245,6 +264,7 @@ export async function POST(req: Request) {
     project_id,
     org_id,
     user_id: user.id,
+    source_type: sourceType,
   })
 
   // Client will POST chunks to this endpoint with Bearer {auth_token} and tus metadata

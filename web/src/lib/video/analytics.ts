@@ -4,7 +4,7 @@
 type BasePayload = { project_id: string; org_id: string; user_id?: string; portal_link_id?: string }
 
 export type VideoEventPayload =
-  | ({ event: 'video_upload_started'; asset_id: string; file_size_bytes: number; container: string; client_duration_estimate?: number } & BasePayload)
+  | ({ event: 'video_upload_started'; asset_id: string; file_size_bytes: number; container: string; client_duration_estimate?: number; source_type?: 'upload' | 'drone' | 'fixed_camera' } & BasePayload)
   | ({ event: 'video_upload_failed'; asset_id: string; error_code: string; bytes_sent: number } & BasePayload)
   | ({ event: 'video_transcode_succeeded'; asset_id: string; duration_s: number; transcode_elapsed_ms: number } & BasePayload)
   | ({ event: 'video_transcode_failed'; asset_id: string; attempt_number: number; error_category: string } & BasePayload)
