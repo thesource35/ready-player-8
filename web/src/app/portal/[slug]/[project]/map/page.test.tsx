@@ -37,10 +37,8 @@ const {
 // ---------------------------------------------------------------------------
 vi.mock("@supabase/supabase-js", () => {
   const makeBuilder = (table: string) => {
-    const state: { filters: Array<[string, unknown]> } = { filters: [] };
     const builder: Record<string, unknown> = {};
-    const chain = () => builder;
-    builder.select = vi.fn((cols: string, opts?: { count?: string; head?: boolean }) => {
+    builder.select = vi.fn((_cols: string, opts?: { count?: string; head?: boolean }) => {
       if (opts?.count === "exact" && opts?.head) {
         // rate-limit path -- return count directly awaitable
         return {
@@ -50,10 +48,7 @@ vi.mock("@supabase/supabase-js", () => {
       }
       return builder;
     });
-    builder.eq = vi.fn((col: string, val: unknown) => {
-      state.filters.push([col, val]);
-      return builder;
-    });
+    builder.eq = vi.fn(() => builder);
     builder.maybeSingle = vi.fn(async () => {
       if (table === "cs_portal_config") {
         return { data: mockConfig.value, error: null };
@@ -66,7 +61,7 @@ vi.mock("@supabase/supabase-js", () => {
       }
       return { data: null, error: null };
     });
-    return builder as { select: typeof chain; eq: typeof chain; maybeSingle: typeof chain };
+    return builder;
   };
   return {
     createClient: vi.fn(() => ({
