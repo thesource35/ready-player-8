@@ -13,7 +13,7 @@ Every user action must either succeed visibly or fail with a clear, actionable m
 **Shipped:** v2.0 Portal & AI Expansion (2026-04-14) — reduced scope after audit (see `milestones/v2.0-MILESTONE-AUDIT.md`)
 **Previous milestones:** v1.0 Production Hardening (2026-04-06)
 **Tech stack:** SwiftUI (iOS 18.2+), Next.js 16.2.2, React 19, Supabase, Anthropic Claude API, Mapbox GL JS, MapKit
-**Current focus:** v2.1 Gap Closure — verification backfill for Phases 13–19 + gap-closure phases 23–28
+**Current focus:** v2.1 Gap Closure — INT-01 + INT-07 closed (Phases 26, 27); verification backfill for Phases 13–19 shipped (Phase 28, status=partial — 22 UAT items deferred to follow-up session; NOTIF-01/03/05 cluster scheduled for Phase 30 remediation)
 
 ## Requirements
 
@@ -51,11 +51,13 @@ Every user action must either succeed visibly or fail with a clear, actionable m
 - ✓ Enhanced AI with Claude tool calling (RFI/CO drafts, live Supabase data) — v2.0
 - ✓ Client Portal with branding, photo timeline, PDF export, soft-delete audit log — v2.0
 - ✓ Live Satellite & Traffic Maps (Mapbox/MapKit unified, equipment tracking, GPS photos) — v2.0
+- ✓ Document RLS reconciliation — 5 stub entity tables + rebuilt RLS for all 7 entity types + trigger whitelist extension + API preflight validation + UI picker filter — v2.1 (Phase 26)
+- ✓ Portal → Map navigation link (INT-07) — server-gated `showMapLink`, PortalHeader Map/Overview anchors, MobilePortalNav 6th MapPin icon, branded /map page with analytics + shared rate limit + 60s revalidate — v2.1 (Phase 27)
 
 ### Active (v2.1)
 
 - [ ] Notifications & Activity Feed — code written, verification pending (Phases 24, 25, 28)
-- [ ] Document Management — code written, RLS reconciliation + activity emission pending (Phases 24, 26, 28)
+- [ ] Document Management — RLS reconciled 2026-04-19 (Phase 26); activity emission + verification pending (Phases 24, 28)
 - [ ] Team & Crew Management — iOS wired 2026-04-14, cert notifications pending (Phase 25)
 - [ ] Reporting & Dashboards — code written (18 plans), verification pending (Phase 28)
 - [ ] Field Tools (photos, punch lists, daily logs) — code written, verification pending (Phase 28)
@@ -110,6 +112,9 @@ Every user action must either succeed visibly or fail with a clear, actionable m
 | Append-only cs_equipment_locations with no UPDATE/DELETE RLS (Phase 21) | Tamper-proof location history for equipment tracking | ✓ Good — DISTINCT ON view gives efficient latest-position query |
 | Design tokens as single-file export (Phase 20) | Source of truth for portal and app styling | ✓ Good — `web/src/lib/design-tokens.ts` used across portal and management UI |
 | Ship reduced v2.0 scope (3 phases) after audit failure | Honest milestone — avoid shipping with 27 unverified requirements | ⚠ Revisit — verify whether v2.0 users perceive portal/AI/maps as a coherent shipment without the feature phases they visually depend on |
+| Return HTTP 404 + `validationFailed` on missing entity instead of RLS 403 (Phase 26) | 403 silently mapped to "permission denied" toasts hiding the real cause (empty table) — defense-in-depth preflight produces actionable error naming the missing entity | ✓ Good — web `/api/documents/attach` + iOS `DocumentSyncManager.preflightEntityExists` surface `"<entity_type> not found"` before any DB write or storage upload |
+| Hide entity_types with empty backing tables from picker UIs (Phase 26) | Stub tables exist for RLS parity but have no feature UI yet; showing them in pickers would create orphan-attach dead-ends | ✓ Good — `nonEmptyEntityTypes()` helper on web + iOS queries HEAD counts via `withTaskGroup`, prop unions widened to full 7-value `DocumentEntityType` |
+| Bump Phase 26 migration timestamps after Phase 25 collision (Phase 26) | Supabase CLI identifies migrations by prefix; two phases picking `20260418001` caused silent-skip. Rename preserves SQL bodies via `git mv` | ✓ Good — Phase 26 migrations renumbered to `20260418002/003/004`, applied cleanly on remote |
 
 ## Evolution
 
@@ -129,4 +134,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-14 after v2.0 milestone completion (reduced scope: phases 18, 20, 21)*
+*Last updated: 2026-04-19 after Phase 28 (Retroactive Verification Sweep) — 6 backfilled VERIFICATION.md files shipped; status=partial pending UAT walkthrough; Phase 30 NOTIF remediation queued*
