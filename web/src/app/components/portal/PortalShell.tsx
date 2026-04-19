@@ -13,6 +13,7 @@ import ScheduleSection from "./ScheduleSection";
 import ChangeOrdersSection from "./ChangeOrdersSection";
 import DocumentsSection from "./DocumentsSection";
 import CookieConsent from "./CookieConsent";
+import MobilePortalNav from "./MobilePortalNav";
 
 // Server component wrapper that applies branding via CSS custom properties
 // D-32: Sections render in fixed SECTION_ORDER
@@ -65,6 +66,18 @@ export default function PortalShell({
   const sectionAnchors = activeSections.map((key) => ({
     id: key,
     label: SECTION_LABELS[key] ?? key,
+  }));
+
+  // Phase 27 D-19: Build the sections prop for MobilePortalNav.
+  // Shape: { key: PortalSectionKey, label: string, enabled: boolean }[]
+  // enabled comes from portalConfig.sections_config[key].enabled.
+  // Defensive cast + optional chain coerces missing keys / non-boolean values to false (T-27-16).
+  const mobileSections = sectionOrder.map((key) => ({
+    key,
+    label: SECTION_LABELS[key] ?? key,
+    enabled: Boolean(
+      (portalConfig.sections_config as Record<string, { enabled?: boolean }>)[key]?.enabled,
+    ),
   }));
 
   const companyName = branding?.company_name ?? "";
@@ -300,6 +313,13 @@ export default function PortalShell({
         contactInfo={branding?.contact_info ?? undefined}
         poweredByEnabled={portalConfig.powered_by_enabled}
         reportAbuseUrl={`mailto:abuse@constructionos.com?subject=Report portal: ${portalConfig.slug}`}
+      />
+
+      {/* Phase 27 D-19: Mobile bottom nav (<=640px viewport via MobilePortalNav's md:hidden).
+          Receives the SAME showMapLink boolean as PortalHeader (single source of truth). */}
+      <MobilePortalNav
+        sections={mobileSections}
+        showMapLink={showMapLink}
       />
 
       <CookieConsent />
