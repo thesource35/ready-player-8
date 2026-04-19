@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 27-03-PLAN.md
-last_updated: "2026-04-19T04:25:41.234Z"
+stopped_at: Completed 28-01-PLAN.md (6 VERIFICATION.md + 1 EVIDENCE.md)
+last_updated: "2026-04-19T16:51:36.314Z"
 last_activity: 2026-04-19
 progress:
   total_phases: 14
-  completed_phases: 11
-  total_plans: 80
-  completed_plans: 78
-  percent: 98
+  completed_phases: 12
+  total_plans: 82
+  completed_plans: 81
+  percent: 99
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Every user action must either succeed visibly or fail with a clear, actionable message -- no silent data loss, no undetected errors, no security gaps.
-**Current focus:** Phase 27 — portal-map-navigation-link
+**Current focus:** Phase 28 — retroactive-verification-sweep
 
 ## Current Position
 
 Milestone: v2.1
-Phase: 27 (portal-map-navigation-link) — EXECUTING
-Plan: 5 of 6
+Phase: 28 (retroactive-verification-sweep) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
 Last activity: 2026-04-19
 
@@ -87,6 +87,9 @@ v2.0 closing decisions:
 - [Phase 27]: [Phase 27-05]: Admin helper copy 'Clients see a Map link in the portal navigation when enabled.' placed in PortalCreateDialog.tsx (not SectionVisibilityEditor) per D-15 parenthetical — co-located with the toggle the admin interacts with. SectionVisibilityEditor intentionally untouched because it does not host the show_map toggle.
 - [Phase 27-portal-map-navigation-link]: [Phase 27-02]: PortalHeader converted to "use client"; usePathname() drives Map (home, last) vs Overview (/map, first) anchor selection; showMapLink widened from optional placeholder to required boolean; shared ANCHOR_STYLE module const guarantees D-02/D-24 visual parity; 6/6 vitest cases GREEN under file-local jsdom pragma.
 - [Phase 27]: [Phase 27-03]: MobilePortalNav renders 6th MapPin entry as Next.js Link (not scroll button) when showMapLink=true; usePathname() drives active state when pathname ends with /map; early-return widened to render nav when sections empty + showMapLink=true; Rule 3 auto-fixes: jsdom IntersectionObserver stub in beforeAll, and RGB|HEX regex tolerance for inactive color; 6/6 vitest tests GREEN under file-local jsdom pragma.
+- [Phase 27-portal-map-navigation-link]: [Phase 27-06]: PortalShell now imports MobilePortalNav and forwards the SAME showMapLink boolean to both PortalHeader and MobilePortalNav (D-19 single source of truth). mobileSections derived from sectionOrder + sections_config with defensive Boolean coercion (T-27-16). Closes mobile half of INT-07: <640px viewers can reach /map via the 6th MapPin icon. 4/4 vitest cases GREEN under jsdom pragma; zero tsc/lint regressions.
+- [Phase 27-portal-map-navigation-link]: [Phase 27-04]: Branded /map sub-route complete — PortalHeader with showMapLink=true (Overview anchor first) + 5 portal CSS custom properties + fire-and-forget recordPortalView(sectionViewed='map') + checkDailyViewLimit shared 100/day budget with portal home + dynamic='force-dynamic'+revalidate=60 cache. Closes desktop half of INT-07. page.tsx 157→302 lines; 4 vitest cases GREEN; 0 deviations. Helper inlining over extraction: checkDailyViewLimit + hashIP copied verbatim with canonical-source comments (files_modified scoped to map/ only). User approved 11-step manual UAT.
+- [Phase 28-retroactive-verification-sweep]: Plan 28-01: 6 VERIFICATION.md + 1 EVIDENCE.md; Phase 14 honest partial verdict (NOTIF-01/03/05 UNSATISFIED per D-02); Phase 19 REPORT-04 audit concern refuted with grep evidence
 
 ### Pending Todos
 
@@ -110,6 +113,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-19T04:25:41.231Z
-Stopped at: Completed 27-03-PLAN.md
+Last session: 2026-04-19T16:51:02.233Z
+Stopped at: Completed 28-01-PLAN.md (6 VERIFICATION.md + 1 EVIDENCE.md)
 Resume file: None

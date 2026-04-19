@@ -52,7 +52,7 @@ Phase code exists on `main` from original v2.0 work — verification, wiring, an
 - [x] **Phase 24: Document → Activity Event Emission** (2 plans, 2 waves) — Gap closure: document routes emit `cs_activity_events` (INT-02) (completed 2026-04-17)
 - [x] **Phase 25: Certification Expiry Notifications** (7 plans, 3 waves) — Gap closure: cert-expiry cron + notification emission (INT-06) (completed 2026-04-18)
 - [x] **Phase 26: Documents RLS Table Reconciliation** (5 plans, 4 waves) — Gap closure: stub tables + rebuilt RLS + pre-flight + trigger extension (INT-01) (completed 2026-04-18)
-- [ ] **Phase 27: Portal → Map Navigation Link** (6 plans, 3 waves) — Gap closure: portal home links to `/map` sub-route when enabled (INT-07)
+- [x] **Phase 27: Portal → Map Navigation Link** (6 plans, 3 waves) — Gap closure: portal home links to `/map` sub-route when enabled (INT-07) (completed 2026-04-19)
 - [ ] **Phase 28: Retroactive Verification Sweep (Phases 13–19)** — Gap closure: create missing VERIFICATION.md files, reconcile REQUIREMENTS.md
 
 ## Phase Details
@@ -245,15 +245,15 @@ Plans:
 **Depends on:** Phase 20 (shipped v2.0), Phase 21 (shipped v2.0)
 **Requirements:** INT-07 (primary), PORTAL-03, MAP-04 (supporting — integration-only)
 **Gap Closure:** Closes INT-07
-**Plans:** 4/6 plans executed
+**Plans:** 6/6 plans complete
 
 Plans:
 - [x] 27-01-PLAN.md — Server-side compute showMapLink + thread through PortalShell (Wave 1)
 - [x] 27-02-PLAN.md — PortalHeader Map anchor (last on home) + Overview anchor (first on /map) via usePathname (Wave 2)
 - [x] 27-03-PLAN.md — MobilePortalNav 6th MapPin icon with route-aware active state (Wave 2)
-- [ ] 27-04-PLAN.md — /map page: branding inheritance + PortalHeader + analytics + rate limit + cache config (Wave 3)
+- [x] 27-04-PLAN.md — /map page: branding inheritance + PortalHeader + analytics + rate limit + cache config (Wave 3)
 - [x] 27-05-PLAN.md — Admin helper copy beneath Show Map toggle in PortalCreateDialog (Wave 1)
-- [ ] 27-06-PLAN.md — Wire MobilePortalNav into PortalShell so mobile viewers reach /map (Wave 2)
+- [x] 27-06-PLAN.md — Wire MobilePortalNav into PortalShell so mobile viewers reach /map (Wave 2)
 
 ### Phase 28: Retroactive Verification Sweep (Phases 13–19)
 **Goal:** Every v2.0-originated phase marked complete has a VERIFICATION.md proving goal-backward coverage, and REQUIREMENTS.md reflects the true state
@@ -280,8 +280,8 @@ Plans:
 | 24. Document → Activity Event Emission | v2.1 | 2/2 | Complete    | 2026-04-17 |
 | 25. Certification Expiry Notifications | v2.1 | 7/7 | Complete    | 2026-04-18 |
 | 26. Documents RLS Table Reconciliation | v2.1 | 5/5 | Complete    | 2026-04-19 |
-| 27. Portal → Map Navigation Link | v2.1 | 4/6 | In Progress|  |
-| 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 0/? | Planned | — |
+| 27. Portal → Map Navigation Link | v2.1 | 6/6 | Complete    | 2026-04-19 |
+| 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 1/2 | In Progress|  |
 | 29. Live Video Traffic Feed (Sat + Drone + Suggestions) | v2.1 | 0/? | Planned | — |
 
 ## Backlog
@@ -293,7 +293,7 @@ _No items in backlog._
 **Goal:** [To be planned — promoted from backlog 2026-04-14]
 **Requirements:** TBD
 **Depends on:** Phase 21 (Live Satellite Traffic Maps), Phase 22 (Live Site Video)
-**Plans:** 0 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] TBD (run /gsd-plan-phase 29 to break down)
