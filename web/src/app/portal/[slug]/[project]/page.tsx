@@ -47,6 +47,16 @@ function shouldShowAmounts(config: PortalConfig): boolean {
   );
 }
 
+// D-08, D-09, D-10, D-11: Compute showMapLink server-side from sections_config.
+// D-09: pre-Phase-21 portals (records with no map_overlays field) MUST stay OFF —
+// admin must explicitly enable. Do NOT fall back to any default-map-overlays
+// constant whose show_map is true; that would flip the gate ON for pre-existing
+// client portals without admin opt-in.
+// No DB migration (D-11). Pure read-time expression.
+export function computeShowMapLink(config: PortalConfig): boolean {
+  return Boolean(config?.sections_config?.map_overlays?.show_map);
+}
+
 function maskCurrency(value: number): string {
   if (value === 0) return "$0";
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M+`;
@@ -336,6 +346,7 @@ export default async function PortalPage({
   // Step 4: Fetch enabled sections only (D-123 / T-20-16)
   const sectionsConfig = portalConfig.sections_config;
   const showAmounts = shouldShowAmounts(portalConfig);
+  const showMapLink = computeShowMapLink(portalConfig);
 
   const sectionFetches: Promise<{ key: string; data: unknown }>[] = [];
 
@@ -458,6 +469,7 @@ export default async function PortalPage({
         projectName={projectName}
         sectionOrder={SECTION_ORDER}
         showAmounts={showAmounts}
+        showMapLink={showMapLink}
       />
       {portalConfig.show_cameras && (
         <PortalCamerasSection

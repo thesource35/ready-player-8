@@ -87,7 +87,6 @@ describe("computeShowMapLink (D-08, D-09, D-11)", () => {
   });
 
   it("returns false when map_overlays exists but show_map is undefined", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cfg = makeConfig({
       schedule: { enabled: true },
       budget: { enabled: false },

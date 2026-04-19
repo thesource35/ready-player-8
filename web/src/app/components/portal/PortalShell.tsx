@@ -29,6 +29,10 @@ type PortalShellProps = {
   projectName: string;
   sectionOrder: PortalSectionKey[];
   showAmounts: boolean;
+  // D-10, D-19: Server-computed gate for the Map navigation link.
+  // Forwarded to PortalHeader (and MobilePortalNav in Plan 03) so a single
+  // source of truth drives every navigation surface.
+  showMapLink: boolean;
 };
 
 const SECTION_LABELS: Record<PortalSectionKey, string> = {
@@ -48,6 +52,7 @@ export default function PortalShell({
   projectName,
   sectionOrder,
   showAmounts,
+  showMapLink,
 }: PortalShellProps) {
   // Build section anchors for sections that have data
   const activeSections = sectionOrder.filter((key) => {
@@ -118,6 +123,7 @@ export default function PortalShell({
         projectName={projectName}
         sectionAnchors={sectionAnchors}
         lastUpdated={lastUpdated}
+        showMapLink={showMapLink}
       />
 
       <main

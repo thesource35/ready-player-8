@@ -8,6 +8,10 @@ type PortalHeaderProps = {
   projectName: string;
   sectionAnchors: { id: string; label: string }[];
   lastUpdated: string;
+  // D-10, D-19: Accepted now as a placeholder so PortalShell can forward it
+  // without a TS error. Plan 02 will activate rendering of the Map link in
+  // the header when this is true.
+  showMapLink?: boolean;
 };
 
 export default function PortalHeader({
@@ -16,6 +20,8 @@ export default function PortalHeader({
   projectName,
   sectionAnchors,
   lastUpdated,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  showMapLink: _showMapLink,
 }: PortalHeaderProps) {
   // Static CSS for responsive behavior (no user input, safe to inline)
   const responsiveCSS = `@media (max-width: 639px) { .portal-section-nav { display: none !important; } }`;
