@@ -10,7 +10,12 @@ import { LiveFeedClient } from "./LiveFeedClient";
 export const metadata: Metadata = getPageMetadata("live-feed");
 export const dynamic = "force-dynamic";
 
-export type LiveFeedProject = { id: string; name: string; client: string | null };
+export type LiveFeedProject = {
+  id: string;
+  name: string;
+  client: string | null;
+  org_id: string;
+};
 
 export default async function LiveFeedPage() {
   const supabase = await createServerSupabase();
@@ -25,9 +30,11 @@ export default async function LiveFeedPage() {
   if (!user) redirect("/login");
 
   // RLS scopes projects to the user's orgs. No service-role client.
+  // org_id is required so client-side components (DroneUploadButton) can pass
+  // it to POST /api/video/vod/upload-url which requires it server-side.
   const { data: projects, error } = await supabase
     .from("cs_projects")
-    .select("id, name, client")
+    .select("id, name, client, org_id")
     .order("name", { ascending: true });
 
   if (error) {

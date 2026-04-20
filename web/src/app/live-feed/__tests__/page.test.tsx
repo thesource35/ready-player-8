@@ -48,14 +48,14 @@ describe("/live-feed page", () => {
 
   it("renders LIVE FEED header when projects present", () => {
     render(
-      <LiveFeedClient projects={[{ id: "p1", name: "Riverfront", client: null }]} />,
+      <LiveFeedClient projects={[{ id: "p1", name: "Riverfront", client: null, org_id: "org_1" }]} />,
     );
     expect(screen.getByText(/LIVE FEED/i)).toBeDefined();
   });
 
   it("defaults to per-project view when Fleet toggle not persisted", () => {
     render(
-      <LiveFeedClient projects={[{ id: "p1", name: "Riverfront", client: null }]} />,
+      <LiveFeedClient projects={[{ id: "p1", name: "Riverfront", client: null, org_id: "org_1" }]} />,
     );
     // Button label reads PER-PROJECT when fleetMode is false (default).
     expect(screen.getByText(/PER-PROJECT/i)).toBeDefined();

@@ -42,8 +42,8 @@ function SwitcherHarness() {
   return (
     <ProjectSwitcher
       projects={[
-        { id: "p1", name: "Alpha", client: null },
-        { id: "p2", name: "Bravo", client: null },
+        { id: "p1", name: "Alpha", client: null, org_id: "org_1" },
+        { id: "p2", name: "Bravo", client: null, org_id: "org_1" },
       ]}
       selectedProjectId={sel}
       onSelect={setSel}
@@ -96,7 +96,7 @@ describe("ProjectSwitcher persistence", () => {
   it("Fleet toggle persists to localStorage under LastFleetSelection", () => {
     render(
       <LiveFeedClient
-        projects={[{ id: "p1", name: "Alpha", client: null }]}
+        projects={[{ id: "p1", name: "Alpha", client: null, org_id: "org_1" }]}
       />,
     );
     const fleetBtn = screen.getByRole("button", {
