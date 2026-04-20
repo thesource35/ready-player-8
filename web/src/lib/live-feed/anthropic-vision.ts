@@ -173,7 +173,9 @@ export async function callAnthropicVision(
 
   const validated = LiveSuggestionResponseSchema.safeParse(parsed)
   if (!validated.success) {
-    throw new Error(`anthropic_vision_zod_failed: ${validated.error.message.slice(0, 200)}`)
+    // Full Zod error — no truncation (CLAUDE.md core value: no silent data loss).
+    // Multi-field violations would be clipped at 200 chars; operators need the whole thing to diagnose.
+    throw new Error(`anthropic_vision_zod_failed: ${validated.error.message}`)
   }
   return validated.data
 }
