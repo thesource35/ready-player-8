@@ -23,3 +23,26 @@
 - `ready player 8/LiveFeed/ProjectSwitcherSheet.swift`
 - `ready player 8Tests/Phase29/NavTabLiveFeedTests.swift` (real assertions)
 - `ready player 8Tests/Phase29/ProjectSwitcherTests.swift` (real assertions)
+
+---
+
+## Re-confirmed during 29-07 (2026-04-20)
+
+Plan 29-07 Wave 3 hit the same pre-existing test-target concurrency errors
+during `xcodebuild build-for-testing`. Verified pre-existing via `git stash &&
+xcodebuild build-for-testing` reproducing the same errors at HEAD before
+29-07's changes.
+
+**Files created by 29-07 that DO compile (app target BUILD SUCCEEDED):**
+- `ready player 8/LiveFeed/LiveSuggestionsStore.swift`
+- `ready player 8/LiveFeed/LiveSuggestionCard.swift`
+- `ready player 8/LiveFeed/LiveSuggestionCardRow.swift`
+- `ready player 8/LiveFeed/TrafficUnifiedCard.swift`
+- `ready player 8/LiveFeed/BudgetBadge.swift`
+- `ready player 8/LiveFeed/AnalyzeNowButton.swift`
+- `ready player 8/LiveFeed/LastAnalyzedLabel.swift`
+- `ready player 8Tests/Phase29/LiveSuggestionCardTests.swift` (7 assertions, un-skipped)
+
+29-07's own test file (`LiveSuggestionCardTests.swift`) uses `@MainActor`
+annotations on its async-touching methods, sidestepping the pre-existing
+pattern entirely.
