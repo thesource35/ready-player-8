@@ -8,18 +8,37 @@
 //
 // Lives in the right column at ≥ 1280 px (see LiveFeedClient grid); collapses
 // below 1024 px per UI-SPEC §Responsive.
+//
+// Parent lifts useSuggestions via props so the Last-analyzed timestamp +
+// TrafficUnifiedCard can share the same poll loop (Rule 1 fix: avoid
+// duplicate polling if both this stream and the parent called the hook
+// independently).
 
 'use client'
 
-import { useSuggestions } from './useSuggestions'
+import { useSuggestions, type LiveSuggestion } from './useSuggestions'
 import { LiveSuggestionCard } from './LiveSuggestionCard'
 
-export function LiveSuggestionStream({
-  projectId,
-}: {
-  projectId: string | null
-}) {
-  const { suggestions, loading, error, dismiss } = useSuggestions(projectId)
+export type LiveSuggestionStreamProps = {
+  // Option A: self-managed — pass a projectId and the component drives its own hook.
+  projectId?: string | null
+  // Option B: parent-managed — pass the hook outputs so sibling components can reuse them.
+  suggestions?: LiveSuggestion[]
+  loading?: boolean
+  error?: string | null
+  dismiss?: (id: string) => void | Promise<void>
+}
+
+export function LiveSuggestionStream(props: LiveSuggestionStreamProps) {
+  const parentProvided = 'suggestions' in props && props.suggestions !== undefined
+  // Always call the hook to keep hook order stable; when the parent provided
+  // its own snapshot, we pass a null projectId so the hook stays idle.
+  const hookProjectId = parentProvided ? null : props.projectId ?? null
+  const hook = useSuggestions(hookProjectId)
+  const suggestions = parentProvided ? props.suggestions! : hook.suggestions
+  const loading = parentProvided ? (props.loading ?? false) : hook.loading
+  const error = parentProvided ? (props.error ?? null) : hook.error
+  const dismiss = parentProvided ? (props.dismiss ?? (() => {})) : hook.dismiss
 
   if (loading && suggestions.length === 0) {
     return (

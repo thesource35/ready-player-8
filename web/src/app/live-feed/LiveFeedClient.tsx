@@ -21,6 +21,13 @@ import { DroneVideoPlayer } from "./DroneVideoPlayer";
 import { DroneScrubberTimeline } from "./DroneScrubberTimeline";
 import { ProjectDroneLibraryPanel } from "./ProjectDroneLibraryPanel";
 import { DroneUploadButton } from "./DroneUploadButton";
+import { LiveSuggestionStream } from "./LiveSuggestionStream";
+import { TrafficUnifiedCard } from "./TrafficUnifiedCard";
+import { BudgetBadge } from "./BudgetBadge";
+import { AnalyzeNowButton } from "./AnalyzeNowButton";
+import { LastAnalyzedTimestamp } from "./LastAnalyzedTimestamp";
+import { useSuggestions } from "./useSuggestions";
+import { useBudget } from "./useBudget";
 
 // useSyncExternalStore snapshot returns true after hydration, false during SSR.
 // This is the canonical React 19 pattern for "is this running on the client?"
@@ -136,6 +143,11 @@ function PerProjectShell({
 }) {
   const { within24h, olderThan24h } = useDroneAssets(projectId);
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+  // 29-10: lift suggestion + budget hooks to the parent so the timestamp,
+  // stream, and Traffic card can share a single 30s poll loop each.
+  const suggestionsHook = useSuggestions(projectId || null);
+  const { budget } = useBudget(projectId || null);
+  const latestSuggestion = suggestionsHook.suggestions[0] ?? null;
 
   // D-20 auto-advance 30s guard: when polling reveals a new top-of-list clip
   // AND the user has NOT touched the scrubber in the prior 30 s (tracked via
@@ -190,8 +202,11 @@ function PerProjectShell({
             }}
           />
         </div>
-        <div data-section="traffic" style={placeholderStyle(120)}>
-          Traffic — 29-10
+        <div>
+          <TrafficUnifiedCard
+            roadSummary={null}
+            latestSuggestion={latestSuggestion}
+          />
         </div>
         <div data-section="minimap" style={placeholderStyle(240)}>
           Mini-map — 29-10 or follow-up
@@ -206,9 +221,37 @@ function PerProjectShell({
           <DroneUploadButton projectId={projectId} orgId={orgId} />
         </div>
       </div>
-      <aside data-section="suggestions-stream" style={placeholderStyle(420)}>
-        Suggestion stream — 29-10
-      </aside>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            flexWrap: "wrap",
+            padding: "0 16px",
+          }}
+        >
+          <LastAnalyzedTimestamp
+            iso={latestSuggestion?.generated_at ?? null}
+          />
+          <BudgetBadge budget={budget} />
+          <AnalyzeNowButton
+            projectId={projectId || null}
+            budget={budget}
+            onAnalyzed={() => {
+              // Nudge the suggestion poll immediately so the new row surfaces
+              // without waiting for the 30s tick.
+              void suggestionsHook.refresh();
+            }}
+          />
+        </div>
+        <LiveSuggestionStream
+          suggestions={suggestionsHook.suggestions}
+          loading={suggestionsHook.loading}
+          error={suggestionsHook.error}
+          dismiss={suggestionsHook.dismiss}
+        />
+      </div>
     </section>
   );
 }
