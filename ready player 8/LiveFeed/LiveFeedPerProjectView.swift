@@ -1,7 +1,9 @@
-// Phase 29 — Per-project Live Feed view (real body, Wave 3).
+// Phase 29 — Per-project Live Feed view (real body, Wave 3 wired).
 //
 // Owned by 29-06 (video, scrubber, library, upload, D-20 auto-advance).
-// 29-07 fills suggestionsPlaceholder + trafficPlaceholder.
+// 29-07 replaces the suggestionsPlaceholder + trafficPlaceholder seams with
+// LiveSuggestionCardRow + TrafficUnifiedCard, and adds the header row
+// (BudgetBadge + LastAnalyzedLabel + AnalyzeNowButton).
 // UI-SPEC §Per-project Live Feed (iOS portrait) line 236-255 drives the layout.
 //
 // LIVE-02 parity: the video surface is Phase 22's VideoClipPlayer(asset:) —
@@ -10,9 +12,7 @@
 //
 // D-20 30s auto-advance: when a new clip lands and the user hasn't scrubbed
 // in the prior 30 seconds, we switch `selectedAssetId` to the newest clip.
-// If they HAVE scrubbed recently, we silently defer the swap — UI-SPEC line
-// 341 says show a toast, but the toast UI lives in 29-07's notification
-// chrome. We honor the guard here; the toast surface lands with 29-07.
+// If they HAVE scrubbed recently, we silently defer the swap.
 
 import SwiftUI
 
@@ -20,6 +20,7 @@ struct LiveFeedPerProjectView: View {
     let projectId: String
 
     @StateObject private var store: DroneAssetsStore
+    @StateObject private var suggestionsStore: LiveSuggestionsStore
     @State private var selectedAssetId: String?
     @State private var showLibrary: Bool = false
     @State private var showUpload: Bool = false
@@ -29,6 +30,7 @@ struct LiveFeedPerProjectView: View {
     init(projectId: String) {
         self.projectId = projectId
         self._store = StateObject(wrappedValue: DroneAssetsStore(projectId: projectId))
+        self._suggestionsStore = StateObject(wrappedValue: LiveSuggestionsStore(projectId: projectId))
     }
 
     private var lastScrubKey: String {
@@ -40,6 +42,16 @@ struct LiveFeedPerProjectView: View {
             emptyState
         } else {
             VStack(alignment: .leading, spacing: 16) {
+                // UI-SPEC §Per-project iOS portrait line 238-242 — header row sits
+                // above the video player: BudgetBadge + LastAnalyzed on the left,
+                // AnalyzeNow pinned to the trailing edge.
+                HStack(spacing: 8) {
+                    BudgetBadge(store: suggestionsStore)
+                    LastAnalyzedLabel(projectId: projectId)
+                    Spacer()
+                    AnalyzeNowButton(store: suggestionsStore)
+                }
+
                 videoPlayer
 
                 DroneScrubberTimeline(
@@ -49,8 +61,8 @@ struct LiveFeedPerProjectView: View {
                     onUploadTap: { showUpload = true }
                 )
 
-                suggestionsPlaceholder
-                trafficPlaceholder
+                LiveSuggestionCardRow(store: suggestionsStore)
+                TrafficUnifiedCard(store: suggestionsStore)
 
                 HStack(spacing: 12) {
                     Button(action: { showLibrary = true }) {
@@ -89,6 +101,8 @@ struct LiveFeedPerProjectView: View {
             }
             .task(id: projectId) {
                 await store.refresh()
+                await suggestionsStore.refresh()
+                await suggestionsStore.loadBudget()
                 advanceIfAllowed()
             }
             .onChange(of: store.within24h) { _, _ in
@@ -114,30 +128,6 @@ struct LiveFeedPerProjectView: View {
                 )
             }
         }
-    }
-
-    // MARK: - Placeholders filled by 29-07
-
-    private var suggestionsPlaceholder: some View {
-        RoundedRectangle(cornerRadius: 14)
-            .fill(Theme.surface)
-            .frame(height: 140)
-            .overlay(
-                Text("Suggestion cards — 29-07")
-                    .foregroundColor(Theme.muted)
-                    .font(.system(size: 12))
-            )
-    }
-
-    private var trafficPlaceholder: some View {
-        RoundedRectangle(cornerRadius: 14)
-            .fill(Theme.surface)
-            .frame(height: 120)
-            .overlay(
-                Text("Traffic — 29-07")
-                    .foregroundColor(Theme.muted)
-                    .font(.system(size: 12))
-            )
     }
 
     // MARK: - Empty state
