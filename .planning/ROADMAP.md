@@ -282,7 +282,7 @@ Plans:
 | 26. Documents RLS Table Reconciliation | v2.1 | 5/5 | Complete    | 2026-04-19 |
 | 27. Portal → Map Navigation Link | v2.1 | 6/6 | Complete    | 2026-04-19 |
 | 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 2/2 | Complete    | 2026-04-19 |
-| 29. Live Video Traffic Feed (Sat + Drone + Suggestions) | v2.1 | 4/11 | In Progress|  |
+| 29. Live Video Traffic Feed (Sat + Drone + Suggestions) | v2.1 | 5/11 | In Progress|  |
 | 30. Notifications List + Mark-Read + iOS Push Remediation | v2.1 | 0/? | Planned | — |
 
 ## Backlog
@@ -294,7 +294,7 @@ _No items in backlog._
 **Goal:** [To be planned — promoted from backlog 2026-04-14]
 **Requirements:** TBD
 **Depends on:** Phase 21 (Live Satellite Traffic Maps), Phase 22 (Live Site Video)
-**Plans:** 4/11 plans executed
+**Plans:** 5/11 plans executed
 
 Plans:
 - [ ] TBD (run /gsd-plan-phase 29 to break down)

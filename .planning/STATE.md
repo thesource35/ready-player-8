@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: "29-03 PARTIAL: Tasks 1-3 committed (code complete). Task 4 (supabase functions deploy + db push) deferred — awaiting user."
-last_updated: "2026-04-20T01:46:12.509Z"
+stopped_at: "29-04 PARTIAL: Tasks 1-3 committed (code complete, migrations + Edge Function authored). Task 4 (supabase functions deploy prune-expired-suggestions + supabase db push) DEFERRED — awaiting user."
+last_updated: "2026-04-20T02:18:06.666Z"
 last_activity: 2026-04-19 -- Phase 29 execution started
 progress:
   total_phases: 15
   completed_phases: 13
   total_plans: 93
-  completed_plans: 86
-  percent: 92
+  completed_plans: 87
+  percent: 94
 ---
 
 # Project State
@@ -93,6 +93,7 @@ v2.0 closing decisions:
 - [Phase 28-retroactive-verification-sweep]: Plan 28-02: REQUIREMENTS.md three-state legend codified (D-09); ROADMAP.md Phase 30 remediation cluster appended for NOTIF-01/03/05 (D-10); UAT walk-through deferred via defer-all resume-signal (D-07); 28-02 ships status=partial with 22 UAT items catalogued for follow-up session
 - [Phase 29]: 29-03: Shared Anthropic vision adapter pattern — web lib + Deno mirror in lock-step; Zod schema validates before DB insert (T-29-VISION-PAYLOAD closed in code; verified live at deploy).
 - [Phase 29]: 29-03: Budget cap enforcement lives inside generate-live-suggestions Edge Function (96/day); budget_reached_marker sentinel row is one-per-project-per-day via pre-insert count check.
+- [Phase 29]: [Phase 29-04]: pg_net trigger notify_live_suggestions_worker() AFTER UPDATE on cs_video_assets fires generate-live-suggestions ONLY on drone + status='ready' + old.status IS DISTINCT FROM 'ready' (T-29-TRIGGER-LOOP mitigation). prune-expired-suggestions Edge Function + phase29-prune-expired-suggestions cron at 03:45 UTC (staggered off Phase 22 slots) authored. Deploy DEFERRED — 'supabase functions deploy prune-expired-suggestions' + 'supabase db push' pending.
 
 ### Pending Todos
 
@@ -116,6 +117,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-20T01:46:12.505Z
-Stopped at: 29-03 PARTIAL: Tasks 1-3 committed (code complete). Task 4 (supabase functions deploy + db push) deferred — awaiting user.
+Last session: 2026-04-20T02:17:24.016Z
+Stopped at: 29-04 PARTIAL: Tasks 1-3 committed (code complete, migrations + Edge Function authored). Task 4 (supabase functions deploy prune-expired-suggestions + supabase db push) DEFERRED — awaiting user.
 Resume file: None
