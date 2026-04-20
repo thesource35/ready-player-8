@@ -30,6 +30,12 @@ export const pageMetadata: Record<string, Metadata> = {
     description: "Satellite-backed site awareness with thermal, crew, and weather overlays.",
     openGraph: { ...base, title: "Live Maps — ConstructionOS" },
   },
+  "live-feed": {
+    title: "Live Feed — ConstructionOS",
+    description:
+      "Live satellite + drone feed with AI suggestions per construction project.",
+    openGraph: { ...base, title: "Live Feed — ConstructionOS" },
+  },
   feed: {
     title: "Construction Network — ConstructionOS",
     description: "Social feed, job board, equipment marketplace, DMs, and company pages for construction professionals.",

@@ -36,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     ]},
     { label: "INTEL", links: [
       { href: "/team", label: "Team" },
+      { href: "/live-feed", label: "Live Feed" },
       { href: "/ops", label: "Ops" }, { href: "/hub", label: "Hub" },
       { href: "/security", label: "Security" }, { href: "/pricing", label: "Pricing" },
       { href: "/ai", label: "Angelic AI" },

@@ -46,3 +46,26 @@ xcodebuild build-for-testing` reproducing the same errors at HEAD before
 29-07's own test file (`LiveSuggestionCardTests.swift`) uses `@MainActor`
 annotations on its async-touching methods, sidestepping the pre-existing
 pattern entirely.
+
+---
+
+## Noted during 29-08 (2026-04-20)
+
+**Pre-existing web lint errors in `web/src/app/layout.tsx`:**
+
+- Line 81: `<a href="/">` — `@next/next/no-html-link-for-pages` (logo anchor)
+- Line 82: `<img>` — `@next/next/no-img-element` (logo image)
+- Line 107: `<a href="/projects">` — `@next/next/no-html-link-for-pages` (footer link)
+
+These errors pre-date 29-08. The only line 29-08 touched in `layout.tsx` is the
+new INTEL-group entry `{ href: "/live-feed", label: "Live Feed" }` on line 39,
+which does not introduce any lint rule violation. Per scope-boundary rule, not
+fixing pre-existing cross-nav violations in this plan.
+
+**Vitest 4 + jsdom 29 localStorage shim:**
+
+`vitest@4.1.4` exposes a bare `{}` as `window.localStorage` (no Storage
+prototype) even with `environmentOptions.jsdom.url` set. 29-08 Wave 4 tests
+install a per-file in-memory Storage shim in `beforeAll` to sidestep this. A
+future plan could consolidate this into a shared `setupFiles` entry once we
+have more tests that touch localStorage.
