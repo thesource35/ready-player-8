@@ -65,7 +65,10 @@ RULES:
 
     return result.toTextStreamResponse();
   } catch (err) {
-    console.error("[chat] AI request failed:", err);
+    console.error("[chat]", JSON.stringify({
+      code: "ai_request_failed",
+      error: err instanceof Error ? err.message : String(err),
+    }));
     const message = err instanceof Error && err.message.includes("401")
       ? "AI API key is invalid. Check your configuration."
       : "AI temporarily unavailable. Please try again.";
