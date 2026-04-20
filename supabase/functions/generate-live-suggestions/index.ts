@@ -128,11 +128,18 @@ Deno.serve(async (req) => {
       try {
         parsed = await callAnthropicVision({
           imageUrl: signed.signedUrl,
-          promptInput: { imageUrl: signed.signedUrl, ...context },
+          promptInput: context,
           model: DEFAULT_VISION_MODEL,
           apiKey: ANTHROPIC_API_KEY,
         })
       } catch (e) {
+        // Structured stderr log so errors surface in Supabase function logs, not just the JSON response body.
+        // Without this, a 5xx spike is invisible until someone reads a specific invocation's return value.
+        console.error('[live-suggestions]', JSON.stringify({
+          code: 'vision_call_failed',
+          project_id: p.project_id,
+          error: e instanceof Error ? e.message : String(e),
+        }))
         report.malformed_skipped++
         report.errors.push(`vision_${p.project_id}: ${e instanceof Error ? e.message : e}`)
         continue

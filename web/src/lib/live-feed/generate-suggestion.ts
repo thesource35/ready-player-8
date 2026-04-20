@@ -151,7 +151,7 @@ export async function generateSuggestion(
   try {
     parsed = await callAnthropicVision({
       imageUrl: signed.signedUrl,
-      promptInput: { imageUrl: signed.signedUrl, ...context },
+      promptInput: context,
       model,
       apiKey,
     })
