@@ -551,7 +551,9 @@ struct ContentView: View {
 
     enum NavTab: String, CaseIterable {
         case home = "home"; case projects = "projects"; case contracts = "contracts"
-        case market = "market"; case maps = "maps"; case network = "network"
+        case market = "market"; case maps = "maps"
+        case liveFeed = "live-feed" // MARK: Phase 29 — LIVE-03 D-04 (intel group near Maps)
+        case network = "network"
         case ops = "ops"; case hub = "hub"; case security = "security"
         case pricing = "pricing"; case angelic = "angelic"
         case inbox = "inbox" // MARK: Phase 14
@@ -586,6 +588,7 @@ struct ContentView: View {
         ("home","COMMAND","\u{2318}","core"),("projects","PROJECTS","\u{1F3D7}","core"),
         ("contracts","CONTRACTS","\u{1F4CB}","core"),("market","MARKET","\u{1F4CA}","core"),
         ("maps","MAPS","\u{1F5FA}","core"),("network","NETWORK","\u{1F4E1}","core"),
+        ("live-feed","LIVE FEED","\u{1F3A5}","intel"), // MARK: Phase 29 — LIVE-03 D-04
         ("ops","OPS","\u{2699}\u{FE0F}","intel"),("hub","HUB","\u{1F50C}","intel"),
         ("security","SECURITY","\u{1F512}","intel"),("pricing","PRICING","\u{1F4B2}","intel"),
         ("angelic","ANGELIC","\u{1F47C}","intel"),
@@ -744,6 +747,7 @@ struct ContentView: View {
         case .contracts: ContractsView()
         case .market: MarketView()
         case .maps: MapsView()
+        case .liveFeed: LiveFeedView() // MARK: Phase 29 — LIVE-03
         case .network: SocialFeedView()
         case .ops:
             VStack(alignment: .leading, spacing: 14) {

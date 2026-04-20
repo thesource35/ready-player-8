@@ -797,6 +797,8 @@ final class SupabaseService: ObservableObject {
         "cs_portal_analytics", "cs_portal_audit_log",
         // Phase 22: Live Site Video
         "cs_video_sources", "cs_video_assets",
+        // Phase 29: Live Feed suggestions (row-only extension; drone rows ride cs_video_assets)
+        "cs_live_suggestions",
         // Phase 15: Team Management
         "cs_team_members", "cs_certifications",
     ]
