@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
-status: verifying
-stopped_at: Completed 28-02-PLAN.md with defer-all (22 UAT items deferred; 28-02 ships partial)
-last_updated: "2026-04-19T17:41:46.492Z"
-last_activity: 2026-04-19
+status: executing
+stopped_at: "29-03 PARTIAL: Tasks 1-3 committed (code complete). Task 4 (supabase functions deploy + db push) deferred — awaiting user."
+last_updated: "2026-04-20T01:46:12.509Z"
+last_activity: 2026-04-19 -- Phase 29 execution started
 progress:
   total_phases: 15
   completed_phases: 13
-  total_plans: 82
-  completed_plans: 82
-  percent: 100
+  total_plans: 93
+  completed_plans: 86
+  percent: 92
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Every user action must either succeed visibly or fail with a clear, actionable message -- no silent data loss, no undetected errors, no security gaps.
-**Current focus:** Phase 28 — retroactive-verification-sweep
+**Current focus:** Phase 29 — live-video-traffic-feed-sat-drone
 
 ## Current Position
 
 Milestone: v2.1
-Phase: 28 (retroactive-verification-sweep) — EXECUTING
-Plan: 2 of 2
-Status: Phase complete — ready for verification
-Last activity: 2026-04-19
+Phase: 29 (live-video-traffic-feed-sat-drone) — EXECUTING
+Plan: 1 of 11
+Status: Executing Phase 29
+Last activity: 2026-04-19 -- Phase 29 execution started
 
 ## Accumulated Context
 
@@ -91,6 +91,8 @@ v2.0 closing decisions:
 - [Phase 27-portal-map-navigation-link]: [Phase 27-04]: Branded /map sub-route complete — PortalHeader with showMapLink=true (Overview anchor first) + 5 portal CSS custom properties + fire-and-forget recordPortalView(sectionViewed='map') + checkDailyViewLimit shared 100/day budget with portal home + dynamic='force-dynamic'+revalidate=60 cache. Closes desktop half of INT-07. page.tsx 157→302 lines; 4 vitest cases GREEN; 0 deviations. Helper inlining over extraction: checkDailyViewLimit + hashIP copied verbatim with canonical-source comments (files_modified scoped to map/ only). User approved 11-step manual UAT.
 - [Phase 28-retroactive-verification-sweep]: Plan 28-01: 6 VERIFICATION.md + 1 EVIDENCE.md; Phase 14 honest partial verdict (NOTIF-01/03/05 UNSATISFIED per D-02); Phase 19 REPORT-04 audit concern refuted with grep evidence
 - [Phase 28-retroactive-verification-sweep]: Plan 28-02: REQUIREMENTS.md three-state legend codified (D-09); ROADMAP.md Phase 30 remediation cluster appended for NOTIF-01/03/05 (D-10); UAT walk-through deferred via defer-all resume-signal (D-07); 28-02 ships status=partial with 22 UAT items catalogued for follow-up session
+- [Phase 29]: 29-03: Shared Anthropic vision adapter pattern — web lib + Deno mirror in lock-step; Zod schema validates before DB insert (T-29-VISION-PAYLOAD closed in code; verified live at deploy).
+- [Phase 29]: 29-03: Budget cap enforcement lives inside generate-live-suggestions Edge Function (96/day); budget_reached_marker sentinel row is one-per-project-per-day via pre-insert count check.
 
 ### Pending Todos
 
@@ -114,6 +116,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-19T17:41:17.582Z
-Stopped at: Completed 28-02-PLAN.md with defer-all (22 UAT items deferred; 28-02 ships partial)
+Last session: 2026-04-20T01:46:12.505Z
+Stopped at: 29-03 PARTIAL: Tasks 1-3 committed (code complete). Task 4 (supabase functions deploy + db push) deferred — awaiting user.
 Resume file: None
