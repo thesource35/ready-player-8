@@ -77,15 +77,10 @@ final class UserProfileStore: ObservableObject {
         return true
     }
 
-    func login(email: String, password: String) -> Bool {
-        if let user = allUsers.first(where: { $0.email.lowercased() == email.lowercased() }) {
-            currentUser = user
-            saveJSON(profileKey, value: user)
-            updateSuggestions(for: user)
-            return true
-        }
-        return false
-    }
+    // AUTH-GATE-01 (Phase 29.1): removed password-free local login shim.
+    // Authentication MUST go through SupabaseService.signIn (accessToken is the
+    // source of truth for `isAuthenticated`). Do NOT re-introduce a local-only
+    // login method — see .planning/phases/29.1-fix-critical-auth-bug/29.1-RESEARCH.md §Candidate 1.
 
     func updateProfile(_ profile: UserProfile) {
         currentUser = profile
