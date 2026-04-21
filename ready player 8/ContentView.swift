@@ -635,8 +635,11 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-            if profileStore.currentUser == nil {
-                // Login/Signup is ALWAYS the first screen — must have account to access app
+            if !supabase.isAuthenticated {
+                // AUTH-GATE-01 (Phase 29.1): server session is the source of truth.
+                // `profileStore.currentUser` is no longer trusted as the gate — it's
+                // local-only UserDefaults state that cannot prove a valid backend session.
+                // Existing users stay in via restoreSession() below (onAppear at ~L650).
                 AuthGateView()
             } else if !onboardingComplete {
                 OnboardingView(isComplete: $onboardingComplete)
