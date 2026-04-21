@@ -85,6 +85,39 @@ VIDEO-01 expanded into 16 sub-requirements during Phase 22 planning (2026-04-15)
 
 **Soft cap + audio posture:** VIDEO-01-D also implements D-28 20-camera soft cap (warning at 16, disable at 20) and D-35 audio-opt-in with jurisdiction-warning confirmation + mute-on-boot in every player.
 
+### Live Video Traffic Feed (Phase 29)
+
+Phase 29 composes Phase 22's shipped video pipeline + Phase 21's map surface + Anthropic Claude vision into a new top-level "Live Feed" tab surfacing drone-clip playback, per-project + Fleet views, and scheduled AI observation cards. Added 2026-04-19 per Phase 29 RESEARCH LIVE-01..LIVE-14 namespace.
+
+- [x] **LIVE-01**: Drone upload path — `/api/video/vod/upload-url` accepts `source_type: 'drone'` from request body (enum check `'upload' | 'drone'`) and inserts `cs_video_assets` row with the drone discriminator; iOS `VideoUploadClient.upload()` gains optional `sourceType` param per D-08/D-10/D-11 (Plans 29-02)
+- [~] **LIVE-02**: Drone HLS playback parity — drone-typed `cs_video_assets` rows play through existing `@mux/mux-player-react VideoClipPlayer` (web) and `VideoClipPlayer` + `VideoPlaybackAuth.vodManifestUrl` (iOS) with ZERO new player components per D-10 (Plans 29-02 verify, 29-06/29-09 consume) — *code green; end-to-end drone upload → transcode → playback on both platforms pending human UAT*
+- [~] **LIVE-03**: Live Feed surface — iOS `NavTab.liveFeed` case in `intel` group renders `LiveFeedView`; web `/live-feed/page.tsx` server component + nav entry returns 200 per D-04/D-05 (Plans 29-05 iOS, 29-08 web) — *code green (BUILD SUCCEEDED + 8 vitest GREEN); human nav walk-through pending*
+- [~] **LIVE-04**: Project switcher + Fleet toggle persistence — selection persists to `ConstructOS.LiveFeed.LastSelectedProjectId`; Fleet toggle persists to `ConstructOS.LiveFeed.LastFleetSelection` on both platforms per D-06/D-07/D-23 (Plans 29-05 iOS, 29-08 web) — *code green; persistence verified via unit tests; multi-session persistence pending human UAT*
+- [x] **LIVE-05**: `cs_live_suggestions` schema — new table with `id/project_id/org_id/generated_at/source_asset_id/model/suggestion_text/action_hint jsonb/dismissed_at/dismissed_by` columns + 3 indexes + RLS (org_id IN user_orgs pattern, mirrors cs_equipment) per D-17/D-24 (Plan 29-01) — *remote DB verified 2026-04-19: 2 policies, 3 indexes, 3 FKs*
+- [~] **LIVE-06**: `generate-live-suggestions` Edge Function — Deno function iterating active projects, budget pre-check (96/day), reads poster.jpg via 60s signed URL, calls Anthropic vision Haiku default, inserts cs_live_suggestions rows; scheduled via pg_cron `*/15 * * * *` per D-14/D-15/D-25 (Plan 29-03) — *pg_cron schedule registered + Edge Function deployed; observing first real 15-min tick generating a suggestion pending*
+- [~] **LIVE-07**: Per-upload pg_net trigger — `trg_notify_live_suggestions` on `cs_video_assets AFTER UPDATE` fires when `source_type='drone' AND new.status='ready' AND old.status IS DISTINCT FROM 'ready'`, invoking Edge Function with `?project_id=X` per D-14/D-25 (Plan 29-04) — *trigger registered on remote; first real drone upload → suggestion generation pending*
+- [x] **LIVE-08**: Anthropic vision adapter — shared prompt builder + JSON schema validator in `web/src/lib/live-feed/anthropic-vision.ts` used by both the Edge Function (via mirrored copy) and `/api/live-feed/analyze/route.ts`; malformed Anthropic responses are logged and dropped, never persisted per D-13/D-15/D-16 (Plans 29-03, 29-10) — *8 vitest GREEN incl. malformed-payload rejection*
+- [~] **LIVE-09**: Suggestion cards — iOS `LiveSuggestionCardRow` (horizontal swipable) + web `LiveSuggestionStream` (vertical side panel) render cards with severity-colored border (green/gold/red per UI-SPEC) and swipe/click dismiss updating `dismissed_at + dismissed_by` per D-13/D-17 (Plans 29-07 iOS, 29-10 web) — *code green (3 vitest + 3 XCTest GREEN); real suggestion dismiss flow pending human UAT*
+- [~] **LIVE-10**: Unified Traffic card — `TrafficUnifiedCard` combines Phase 21 road-traffic tile summary with on-site-movement summary derived from latest suggestion's `action_hint.structured_fields` per D-18 (Plans 29-07 iOS, 29-10 web) — *on-site section wired; road-traffic Phase 21 tile integration deferred to follow-up per CONTEXT Claude's Discretion — static "Light" placeholder ships v1*
+- [~] **LIVE-11**: Cost cap UX — `GET /api/live-feed/budget?project_id=X` returns `{used, remaining, resetsAt, cap:96}`; `BudgetBadge` visible in Live Feed header on both platforms with healthy/warning/reached states; `AnalyzeNowButton` disabled at ≥96/day with tooltip per D-22 (Plans 29-07 iOS, 29-10 web) — *code green (4 vitest GREEN); cap-reached disabled-button state pending human UAT under real load*
+- [~] **LIVE-12**: 24h scrubber window — `DroneScrubberTimeline` queries `cs_video_assets WHERE source_type='drone' AND created_at > now() - interval '24h'`; older clips surface via separate `ProjectDroneLibrary{Sheet|Panel}` within Phase 22's 30d retention per D-09 (Plans 29-06 iOS, 29-09 web) — *5 vitest partition tests GREEN; real 24h/>24h clip visibility pending human UAT*
+- [~] **LIVE-13**: `prune-expired-suggestions` Edge Function — Deno function deleting rows with `generated_at < now() - interval '7d'`; scheduled via pg_cron at `45 3 * * *` (03:45 UTC) staggering off Phase 22's 03:00/03:05/03:30 slots per D-21 (Plan 29-04) — *pg_cron schedule registered + Edge Function deployed; first real >7d row prune pending observation window*
+- [x] **LIVE-14**: Portal drone-exclusion regression test — vitest asserts both portal routes return 403 for drone assets: `web/src/app/api/portal/video/playback-url/route.ts` line 107 (`asset.source_type === 'drone'`) and `playback-token/route.ts` line 125 (`source.kind === 'drone'`). **CRITICAL — lands in Wave 1**, not deferred, per D-26 (Plan 29-02) — *4/4 vitest GREEN; zero portal files modified by any Phase 29 plan*
+
+**Deploy-time operator steps (from RESEARCH §Environment Availability):**
+- `supabase secrets set ANTHROPIC_API_KEY=<key>` (new, required before Edge Function invocation)
+- Phase 22's existing Vault secrets `project_url` + `service_role_key` are reused for pg_cron HTTP POST auth
+
+### Auth Gate (Phase 29.1)
+
+3 requirements added 2026-04-21 to close the critical auth bug RESEARCH identified on the iOS platform. Web platform unaffected (web middleware already gates on `supabase.auth.getUser()` correctly).
+
+- [~] **AUTH-GATE-01**: iOS auth gate predicate (`ContentView.swift:~638`) is driven by `SupabaseService.isAuthenticated` (Keychain-backed accessToken) rather than local `UserProfileStore.currentUser` (UserDefaults). Defense-in-depth includes removal of `UserProfileStore.login(email:password:)` password-free shim (Plan 03). See RESEARCH §Candidate 1.
+- [~] **AUTH-GATE-02**: `SupabaseService.signOutEverywhere()` is a composite helper that clears BOTH Keychain auth tokens AND UserDefaults-backed `UserProfileStore.currentUser`. Settings Sign Out button wired to the composite helper. See RESEARCH §Fix 3, PITFALL-03.
+- [~] **AUTH-GATE-03**: Signup is server-first — `SupabaseService.signUp()` is awaited before `UserProfileStore.createAccount()` commits local state. Supabase failure leaves `currentUser == nil` and shows retryable error copy (UI-SPEC §Copywriting Contract T4). See RESEARCH §Candidate 2.
+
+Set to `[~]` pending human UAT walkthrough (VALIDATION.md §Manual-Only Verifications, 3 scenarios). Flip to `[x]` in 29.1-05-SUMMARY if UAT verdict is PASS.
+
 ## Carried Integration Blockers
 
 These gaps were identified in the v2.0 milestone audit and remain open at v2.1 start.
@@ -192,17 +225,35 @@ Deferred to v2.2 or later.
 | VIDEO-01-N | Phase 22 (22-01 dedupe table; 22-03 HMAC verify; 22-10 7-day prune) | Satisfied |
 | VIDEO-01-O | Phase 22 (planned) | Complete |
 | VIDEO-01-P | Phase 22 (planned) | Complete |
+| LIVE-01 | Phase 29 (29-02) | Satisfied |
+| LIVE-02 | Phase 29 (29-02 verify + 29-06/29-09 consume) | Partial |
+| LIVE-03 | Phase 29 (29-05 iOS + 29-08 web) | Partial |
+| LIVE-04 | Phase 29 (29-05 iOS + 29-08 web) | Partial |
+| LIVE-05 | Phase 29 (29-01) | Satisfied |
+| LIVE-06 | Phase 29 (29-03) | Partial |
+| LIVE-07 | Phase 29 (29-04) | Partial |
+| LIVE-08 | Phase 29 (29-03 + 29-10) | Satisfied |
+| LIVE-09 | Phase 29 (29-07 iOS + 29-10 web) | Partial |
+| LIVE-10 | Phase 29 (29-07 iOS + 29-10 web) | Partial |
+| LIVE-11 | Phase 29 (29-07 iOS + 29-10 web) | Partial |
+| LIVE-12 | Phase 29 (29-06 iOS + 29-09 web) | Partial |
+| LIVE-13 | Phase 29 (29-04) | Partial |
+| LIVE-14 | Phase 29 (29-02) | Satisfied |
+| AUTH-GATE-01 | Phase 29.1 (29.1-04 + 29.1-03) | Partial |
+| AUTH-GATE-02 | Phase 29.1 (29.1-02) | Partial |
+| AUTH-GATE-03 | Phase 29.1 (29.1-04) | Partial |
 
-**Coverage (Phase 28 reconciled, D-09 three-state):**
-- v2.1 requirements: 43 total (27 carryover + 16 Phase 22 sub-requirements VIDEO-01-A..P)
-- Mapped to phases: 43
+**Coverage (Phase 28 reconciled, D-09 three-state + Phase 29 shipped 2026-04-19 + Phase 29.1 shipped 2026-04-21):**
+- v2.1 requirements: 60 total (27 carryover + 16 Phase 22 VIDEO-01-A..P + 14 Phase 29 LIVE-01..LIVE-14 + 3 Phase 29.1 AUTH-GATE-01/02/03)
+- Mapped to phases: 60
 - Unmapped: 0
-- **`[x]` Satisfied: 28** — NOTIF-02, NOTIF-04, DOC-02, DOC-03, TEAM-01..05, CAL-03, FIELD-02, FIELD-03 (12 carryover) + VIDEO-01-A..P (16 Phase 22)
-- **`[~]` Partial (code green, UAT pending): 12** — DOC-01, DOC-04, DOC-05, FIELD-01, FIELD-04, CAL-01, CAL-02, CAL-04, REPORT-01..04
-- **`[ ]` Unsatisfied (remediation owned): 3** — NOTIF-01, NOTIF-03, NOTIF-05 (Phase 30 remediation planned per D-10)
+- **`[x]` Satisfied: 32** — NOTIF-02, NOTIF-04, DOC-02, DOC-03, TEAM-01..05, CAL-03, FIELD-02, FIELD-03 (12 carryover) + VIDEO-01-A..P (16 Phase 22) + LIVE-01, LIVE-05, LIVE-08, LIVE-14 (4 Phase 29 code-verified)
+- **`[~]` Partial (code green, UAT pending): 25** — DOC-01, DOC-04, DOC-05, FIELD-01, FIELD-04, CAL-01, CAL-02, CAL-04, REPORT-01..04 (12 carryover) + LIVE-02, LIVE-03, LIVE-04, LIVE-06, LIVE-07, LIVE-09, LIVE-10, LIVE-11, LIVE-12, LIVE-13 (10 Phase 29 — human UAT or first-real-run observation pending) + AUTH-GATE-01, AUTH-GATE-02, AUTH-GATE-03 (3 Phase 29.1 — code green, 3-scenario iOS Simulator UAT pending per 29.1-05 Task 3 checkpoint)
+- **`[ ]` Unsatisfied / Planned: 3** — NOTIF-01, NOTIF-03, NOTIF-05 (Phase 30 remediation planned per D-10)
 - Shipped in v2.0: 0 (see `milestones/v2.0-REQUIREMENTS.md` for AI/PORTAL/MAP — 12 shipped)
 
-Methodology (D-09): `[x]` = code evidence green AND (no UAT needed OR UAT complete); `[~]` = code green, UAT enumerated but not yet walked; `[ ]` = code missing in owning phase. See Requirement Status Legend at top of file.
+Methodology (D-09): `[x]` = code evidence green AND (no UAT needed OR UAT complete); `[~]` = code green, UAT enumerated but not yet walked; `[ ]` = code missing in owning phase. See Requirement Status Legend at top of file. AUTH-GATE-01/02/03 added 2026-04-21 per Phase 29.1.
 
 ---
 *v2.1 requirements carried forward 2026-04-14 after v2.0 milestone scope reduction. See `milestones/v2.0-MILESTONE-AUDIT.md` for the audit that drove the scope change.*
+*Phase 29 LIVE-01..LIVE-14 added 2026-04-19 during phase planning.*
