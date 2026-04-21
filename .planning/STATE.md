@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: "29-04 PARTIAL: Tasks 1-3 committed (code complete, migrations + Edge Function authored). Task 4 (supabase functions deploy prune-expired-suggestions + supabase db push) DEFERRED — awaiting user."
-last_updated: "2026-04-20T02:18:06.666Z"
-last_activity: 2026-04-19 -- Phase 29 execution started
+stopped_at: Completed 29.1-01-PLAN.md
+last_updated: "2026-04-21T07:14:54.888Z"
+last_activity: 2026-04-21
 progress:
-  total_phases: 15
-  completed_phases: 13
-  total_plans: 93
-  completed_plans: 87
-  percent: 94
+  total_phases: 16
+  completed_phases: 14
+  total_plans: 98
+  completed_plans: 94
+  percent: 96
 ---
 
 # Project State
@@ -21,17 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Every user action must either succeed visibly or fail with a clear, actionable message -- no silent data loss, no undetected errors, no security gaps.
-**Current focus:** Phase 29 — live-video-traffic-feed-sat-drone
+**Current focus:** Phase 29.1 — fix-critical-auth-bug
 
 ## Current Position
 
 Milestone: v2.1
-Phase: 29 (live-video-traffic-feed-sat-drone) — EXECUTING
-Plan: 1 of 11
-Status: Executing Phase 29
-Last activity: 2026-04-19 -- Phase 29 execution started
+Phase: 29.1 (fix-critical-auth-bug) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-04-21
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 29.1 inserted after Phase 29: Fix critical auth bug (URGENT)
 
 ### Decisions
 
@@ -94,6 +98,7 @@ v2.0 closing decisions:
 - [Phase 29]: 29-03: Shared Anthropic vision adapter pattern — web lib + Deno mirror in lock-step; Zod schema validates before DB insert (T-29-VISION-PAYLOAD closed in code; verified live at deploy).
 - [Phase 29]: 29-03: Budget cap enforcement lives inside generate-live-suggestions Edge Function (96/day); budget_reached_marker sentinel row is one-per-project-per-day via pre-insert count check.
 - [Phase 29]: [Phase 29-04]: pg_net trigger notify_live_suggestions_worker() AFTER UPDATE on cs_video_assets fires generate-live-suggestions ONLY on drone + status='ready' + old.status IS DISTINCT FROM 'ready' (T-29-TRIGGER-LOOP mitigation). prune-expired-suggestions Edge Function + phase29-prune-expired-suggestions cron at 03:45 UTC (staggered off Phase 22 slots) authored. Deploy DEFERRED — 'supabase functions deploy prune-expired-suggestions' + 'supabase db push' pending.
+- [Phase 29.1]: Plan 01: Wave-0 AuthGateTests scaffold (5 @Test stubs mapped to criteria A-E); compile-only verification adopted due to pre-existing ready_player_8Tests.swift errors (tracked in phase deferred-items, mirrors Phase 22 precedent); no production code touched
 
 ### Pending Todos
 
@@ -117,6 +122,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-20T02:17:24.016Z
-Stopped at: 29-04 PARTIAL: Tasks 1-3 committed (code complete, migrations + Edge Function authored). Task 4 (supabase functions deploy prune-expired-suggestions + supabase db push) DEFERRED — awaiting user.
+Last session: 2026-04-21T07:14:54.884Z
+Stopped at: Completed 29.1-01-PLAN.md
 Resume file: None

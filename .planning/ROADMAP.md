@@ -282,7 +282,7 @@ Plans:
 | 26. Documents RLS Table Reconciliation | v2.1 | 5/5 | Complete    | 2026-04-19 |
 | 27. Portal → Map Navigation Link | v2.1 | 6/6 | Complete    | 2026-04-19 |
 | 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 2/2 | Complete    | 2026-04-19 |
-| 29. Live Video Traffic Feed (Sat + Drone + Suggestions) | v2.1 | 5/11 | In Progress|  |
+| 29. Live Video Traffic Feed (Sat + Drone + Suggestions) | v2.1 | 11/11 | Complete    | 2026-04-20 |
 | 30. Notifications List + Mark-Read + iOS Push Remediation | v2.1 | 0/? | Planned | — |
 
 ## Backlog
@@ -294,10 +294,24 @@ _No items in backlog._
 **Goal:** [To be planned — promoted from backlog 2026-04-14]
 **Requirements:** TBD
 **Depends on:** Phase 21 (Live Satellite Traffic Maps), Phase 22 (Live Site Video)
-**Plans:** 5/11 plans executed
+**Plans:** 11/11 plans complete
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 29 to break down)
+- [x] TBD (run /gsd-plan-phase 29 to break down) (completed 2026-04-20)
+
+### Phase 29.1: Fix critical auth bug (INSERTED)
+
+**Goal:** iOS auth gate derives its "is the user logged in" decision from the Supabase-issued access token (not local UserDefaults profile state); signup is server-first so Supabase failures cannot leave a zombie local account; signOut clears both Keychain auth tokens and UserDefaults profile state.
+**Requirements**: AUTH-GATE-01, AUTH-GATE-02, AUTH-GATE-03
+**Depends on:** Phase 29
+**Plans:** 1/5 plans executed
+
+Plans:
+- [x] 29.1-01-PLAN.md — Wave 0 AuthGateTests.swift scaffolding (5 @Test stubs for criteria A-E)
+- [ ] 29.1-02-PLAN.md — Wave 1 SupabaseService.signOutEverywhere() + SettingsProfileView wire-up (AUTH-GATE-02)
+- [ ] 29.1-03-PLAN.md — Wave 1 remove UserProfileStore.login(email:password:) dead shim (AUTH-GATE-01 defense-in-depth)
+- [ ] 29.1-04-PLAN.md — Wave 2 ContentView gate predicate swap + signup ordering inversion (AUTH-GATE-01 + AUTH-GATE-03)
+- [ ] 29.1-05-PLAN.md — Wave 3 VERIFICATION.md + REQUIREMENTS.md AUTH-GATE entries + human UAT walkthrough
 
 ### Phase 30: Notifications List + Mark-Read + iOS Push Remediation
 
