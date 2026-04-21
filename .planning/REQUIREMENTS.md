@@ -112,11 +112,11 @@ Phase 29 composes Phase 22's shipped video pipeline + Phase 21's map surface + A
 
 3 requirements added 2026-04-21 to close the critical auth bug RESEARCH identified on the iOS platform. Web platform unaffected (web middleware already gates on `supabase.auth.getUser()` correctly).
 
-- [~] **AUTH-GATE-01**: iOS auth gate predicate (`ContentView.swift:~638`) is driven by `SupabaseService.isAuthenticated` (Keychain-backed accessToken) rather than local `UserProfileStore.currentUser` (UserDefaults). Defense-in-depth includes removal of `UserProfileStore.login(email:password:)` password-free shim (Plan 03). See RESEARCH §Candidate 1.
-- [~] **AUTH-GATE-02**: `SupabaseService.signOutEverywhere()` is a composite helper that clears BOTH Keychain auth tokens AND UserDefaults-backed `UserProfileStore.currentUser`. Settings Sign Out button wired to the composite helper. See RESEARCH §Fix 3, PITFALL-03.
-- [~] **AUTH-GATE-03**: Signup is server-first — `SupabaseService.signUp()` is awaited before `UserProfileStore.createAccount()` commits local state. Supabase failure leaves `currentUser == nil` and shows retryable error copy (UI-SPEC §Copywriting Contract T4). See RESEARCH §Candidate 2.
+- [x] **AUTH-GATE-01**: iOS auth gate predicate (`ContentView.swift:~638`) is driven by `SupabaseService.isAuthenticated` (Keychain-backed accessToken) rather than local `UserProfileStore.currentUser` (UserDefaults). Defense-in-depth includes removal of `UserProfileStore.login(email:password:)` password-free shim (Plan 03). See RESEARCH §Candidate 1.
+- [x] **AUTH-GATE-02**: `SupabaseService.signOutEverywhere()` is a composite helper that clears BOTH Keychain auth tokens AND UserDefaults-backed `UserProfileStore.currentUser`. Settings Sign Out button wired to the composite helper. See RESEARCH §Fix 3, PITFALL-03.
+- [x] **AUTH-GATE-03**: Signup is server-first — `SupabaseService.signUp()` is awaited before `UserProfileStore.createAccount()` commits local state. Supabase failure leaves `currentUser == nil` and shows retryable error copy (UI-SPEC §Copywriting Contract T4). See RESEARCH §Candidate 2.
 
-Set to `[~]` pending human UAT walkthrough (VALIDATION.md §Manual-Only Verifications, 3 scenarios). Flip to `[x]` in 29.1-05-SUMMARY if UAT verdict is PASS.
+Flipped from `[~]` to `[x]` 2026-04-21 after the 3-scenario human UAT walkthrough (VALIDATION.md §Manual-Only Verifications) returned PASS on iOS Simulator (iPhone 17, iOS 26.2 SDK). See `.planning/phases/29.1-fix-critical-auth-bug/29.1-VERIFICATION.md` §UAT Verdict.
 
 ## Carried Integration Blockers
 
@@ -239,20 +239,20 @@ Deferred to v2.2 or later.
 | LIVE-12 | Phase 29 (29-06 iOS + 29-09 web) | Partial |
 | LIVE-13 | Phase 29 (29-04) | Partial |
 | LIVE-14 | Phase 29 (29-02) | Satisfied |
-| AUTH-GATE-01 | Phase 29.1 (29.1-04 + 29.1-03) | Partial |
-| AUTH-GATE-02 | Phase 29.1 (29.1-02) | Partial |
-| AUTH-GATE-03 | Phase 29.1 (29.1-04) | Partial |
+| AUTH-GATE-01 | Phase 29.1 (29.1-04 + 29.1-03) | Satisfied |
+| AUTH-GATE-02 | Phase 29.1 (29.1-02) | Satisfied |
+| AUTH-GATE-03 | Phase 29.1 (29.1-04) | Satisfied |
 
 **Coverage (Phase 28 reconciled, D-09 three-state + Phase 29 shipped 2026-04-19 + Phase 29.1 shipped 2026-04-21):**
 - v2.1 requirements: 60 total (27 carryover + 16 Phase 22 VIDEO-01-A..P + 14 Phase 29 LIVE-01..LIVE-14 + 3 Phase 29.1 AUTH-GATE-01/02/03)
 - Mapped to phases: 60
 - Unmapped: 0
-- **`[x]` Satisfied: 32** — NOTIF-02, NOTIF-04, DOC-02, DOC-03, TEAM-01..05, CAL-03, FIELD-02, FIELD-03 (12 carryover) + VIDEO-01-A..P (16 Phase 22) + LIVE-01, LIVE-05, LIVE-08, LIVE-14 (4 Phase 29 code-verified)
-- **`[~]` Partial (code green, UAT pending): 25** — DOC-01, DOC-04, DOC-05, FIELD-01, FIELD-04, CAL-01, CAL-02, CAL-04, REPORT-01..04 (12 carryover) + LIVE-02, LIVE-03, LIVE-04, LIVE-06, LIVE-07, LIVE-09, LIVE-10, LIVE-11, LIVE-12, LIVE-13 (10 Phase 29 — human UAT or first-real-run observation pending) + AUTH-GATE-01, AUTH-GATE-02, AUTH-GATE-03 (3 Phase 29.1 — code green, 3-scenario iOS Simulator UAT pending per 29.1-05 Task 3 checkpoint)
+- **`[x]` Satisfied: 35** — NOTIF-02, NOTIF-04, DOC-02, DOC-03, TEAM-01..05, CAL-03, FIELD-02, FIELD-03 (12 carryover) + VIDEO-01-A..P (16 Phase 22) + LIVE-01, LIVE-05, LIVE-08, LIVE-14 (4 Phase 29 code-verified) + AUTH-GATE-01, AUTH-GATE-02, AUTH-GATE-03 (3 Phase 29.1 — code green + 3-scenario iOS Simulator UAT PASSED 2026-04-21)
+- **`[~]` Partial (code green, UAT pending): 22** — DOC-01, DOC-04, DOC-05, FIELD-01, FIELD-04, CAL-01, CAL-02, CAL-04, REPORT-01..04 (12 carryover) + LIVE-02, LIVE-03, LIVE-04, LIVE-06, LIVE-07, LIVE-09, LIVE-10, LIVE-11, LIVE-12, LIVE-13 (10 Phase 29 — human UAT or first-real-run observation pending)
 - **`[ ]` Unsatisfied / Planned: 3** — NOTIF-01, NOTIF-03, NOTIF-05 (Phase 30 remediation planned per D-10)
 - Shipped in v2.0: 0 (see `milestones/v2.0-REQUIREMENTS.md` for AI/PORTAL/MAP — 12 shipped)
 
-Methodology (D-09): `[x]` = code evidence green AND (no UAT needed OR UAT complete); `[~]` = code green, UAT enumerated but not yet walked; `[ ]` = code missing in owning phase. See Requirement Status Legend at top of file. AUTH-GATE-01/02/03 added 2026-04-21 per Phase 29.1.
+Methodology (D-09): `[x]` = code evidence green AND (no UAT needed OR UAT complete); `[~]` = code green, UAT enumerated but not yet walked; `[ ]` = code missing in owning phase. See Requirement Status Legend at top of file. AUTH-GATE-01/02/03 added 2026-04-21 per Phase 29.1. AUTH-GATE-01/02/03 UAT walkthrough PASSED 2026-04-21 (3/3 scenarios, iOS Simulator iPhone 17/iOS 26.2 SDK).
 
 ---
 *v2.1 requirements carried forward 2026-04-14 after v2.0 milestone scope reduction. See `milestones/v2.0-MILESTONE-AUDIT.md` for the audit that drove the scope change.*
