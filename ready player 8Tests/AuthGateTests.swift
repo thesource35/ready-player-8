@@ -109,10 +109,9 @@ struct AuthGateTests {
                 connectionIDs: [], pendingConnectionIDs: [],
                 joinedDate: Date(), isVerified: false
             )
-            // Today: signOut() alone leaves currentUser stale (zombie state).
-            // Post-Plan-02: a single composite sign-out call will replace the two-line shape below.
-            svc.signOut()
-            store.logout()
+            // AUTH-GATE-02: composite helper added in Plan 02 (SupabaseService.swift).
+            // Single call MUST clear both Supabase session state AND UserProfileStore.
+            svc.signOutEverywhere()
             #expect(svc.accessToken == nil)
             #expect(svc.currentUserEmail == nil)
             #expect(store.currentUser == nil)
