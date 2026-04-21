@@ -450,6 +450,16 @@ final class SupabaseService: ObservableObject {
         KeychainHelper.delete(key: "Auth.Email")
     }
 
+    /// AUTH-GATE-02 (Phase 29.1): composite sign-out entry point.
+    /// Clears the Supabase session (Keychain tokens + accessToken) via signOut(),
+    /// then clears UserDefaults-backed profile state via UserProfileStore.logout().
+    /// All existing call sites of signOut() outside this method must be replaced
+    /// with signOutEverywhere() — see SettingsProfileView.swift:89.
+    func signOutEverywhere() {
+        signOut()
+        UserProfileStore.shared.logout()
+    }
+
     func restoreSession() {
         accessToken = KeychainHelper.read(key: "Auth.AccessToken")
         currentUserEmail = KeychainHelper.read(key: "Auth.Email")
