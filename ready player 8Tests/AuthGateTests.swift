@@ -82,10 +82,46 @@ struct AuthGateTests {
     /// Wave 0 stub: passes trivially. Plan 04 Task 2 will replace with a real assertion
     /// once the signup handler is extracted into a testable helper OR a mock seam exists.
     @Test func testSignupRollbackOnServerFailure() async throws {
-        // TODO(Plan 04 Task 2): extract signup handler or add mock SupabaseService seam,
-        // then assert that when supabase.signUp throws, profileStore.currentUser == nil.
-        // See RESEARCH §Candidate 2 for repro steps + fix shape.
-        #expect(Bool(true), "Pending Plan 04 Task 2 — see RESEARCH §Candidate 2")
+        // AUTH-GATE-03: when supabase.signUp() throws, the signup handler (in
+        // ContentView.swift signupView, Plan 04 Task 2) MUST NOT call
+        // profileStore.createAccount. We exercise the exception path directly by
+        // forcing supabase.isConfigured == false, which makes signUp throw
+        // SupabaseError.notConfigured before any network I/O.
+        try await withClearedAuthState {
+            let baseURLKey = "ConstructOS.Integrations.Backend.BaseURL"
+            let apiKeyKey  = "ConstructOS.Integrations.Backend.ApiKey"
+            let savedURL = UserDefaults.standard.string(forKey: baseURLKey)
+            let savedKey = UserDefaults.standard.string(forKey: apiKeyKey)
+            UserDefaults.standard.removeObject(forKey: baseURLKey)
+            UserDefaults.standard.removeObject(forKey: apiKeyKey)
+            defer {
+                if let v = savedURL { UserDefaults.standard.set(v, forKey: baseURLKey) }
+                if let v = savedKey { UserDefaults.standard.set(v, forKey: apiKeyKey) }
+            }
+
+            let svc = SupabaseService.shared
+            let store = UserProfileStore.shared
+
+            // Precondition: both stores empty (withClearedAuthState handled this).
+            #expect(svc.accessToken == nil)
+            #expect(store.currentUser == nil)
+
+            // Act: attempt signUp with unconfigured service. Must throw.
+            var didThrow = false
+            do {
+                try await svc.signUp(
+                    email: "rollback-test-\(UUID().uuidString)@example.com",
+                    password: "correct-horse-battery-staple"
+                )
+            } catch {
+                didThrow = true
+            }
+
+            // Assert: signUp threw AND neither store was mutated.
+            #expect(didThrow, "supabase.signUp() must throw when unconfigured")
+            #expect(svc.accessToken == nil, "accessToken must stay nil when signUp throws")
+            #expect(store.currentUser == nil, "profileStore.currentUser must stay nil when signUp throws — if this fails, the signup handler ordering is broken")
+        }
     }
 
     // MARK: - Criterion D: signOut clears both stores
