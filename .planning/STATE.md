@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 29.1-02-PLAN.md
-last_updated: "2026-04-21T07:31:27.710Z"
+stopped_at: Completed 29.1-03-PLAN.md
+last_updated: "2026-04-21T07:41:39.191Z"
 last_activity: 2026-04-21
 progress:
   total_phases: 16
   completed_phases: 14
   total_plans: 98
-  completed_plans: 95
-  percent: 97
+  completed_plans: 96
+  percent: 98
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 Milestone: v2.1
 Phase: 29.1 (fix-critical-auth-bug) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-04-21
 
@@ -100,6 +100,7 @@ v2.0 closing decisions:
 - [Phase 29]: [Phase 29-04]: pg_net trigger notify_live_suggestions_worker() AFTER UPDATE on cs_video_assets fires generate-live-suggestions ONLY on drone + status='ready' + old.status IS DISTINCT FROM 'ready' (T-29-TRIGGER-LOOP mitigation). prune-expired-suggestions Edge Function + phase29-prune-expired-suggestions cron at 03:45 UTC (staggered off Phase 22 slots) authored. Deploy DEFERRED — 'supabase functions deploy prune-expired-suggestions' + 'supabase db push' pending.
 - [Phase 29.1]: Plan 01: Wave-0 AuthGateTests scaffold (5 @Test stubs mapped to criteria A-E); compile-only verification adopted due to pre-existing ready_player_8Tests.swift errors (tracked in phase deferred-items, mirrors Phase 22 precedent); no production code touched
 - [Phase 29.1]: Plan 02: composite signOutEverywhere() helper added to SupabaseService; SettingsProfileView wired to it; Test D tightened — AUTH-GATE-02 server-side closed. Pre-existing ready_player_8Tests.swift async errors still block end-to-end xcodebuild test; compile-only verification adopted (mirrors Plan 01 precedent).
+- [Phase 29.1]: Plan 03: AUTH-GATE-01 defense-in-depth closed — UserProfileStore.login(email:password:) surgically removed (9 lines out, 4-line sentinel comment in) at UserProfileNetwork.swift:80; zero callers grep-verified pre/post edit; createAccount/updateProfile/logout byte-identically preserved. iPhone 17 sim substituted for iPhone 16 (same SDK); compile-only verification per Plans 01/02 precedent (pre-existing ready_player_8Tests.swift async errors still blocking).
 
 ### Pending Todos
 
@@ -123,6 +124,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-21T07:31:27.706Z
-Stopped at: Completed 29.1-02-PLAN.md
+Last session: 2026-04-21T07:41:39.187Z
+Stopped at: Completed 29.1-03-PLAN.md
 Resume file: None
