@@ -248,6 +248,7 @@ struct AuthGateView: View {
             }
 
             Button {
+                // AUTH-GATE-03 (Phase 29.1): field validation unchanged.
                 guard !fullName.isEmpty else { error = "Full name is required"; return }
                 guard !email.isEmpty else { error = "Work email is required"; return }
                 guard !company.isEmpty else { error = "Company name is required"; return }
@@ -255,9 +256,16 @@ struct AuthGateView: View {
                 guard !location.isEmpty else { error = "Location is required"; return }
                 guard password.count >= AppConstants.Auth.minPasswordLength else { error = "Password must be at least \(AppConstants.Auth.minPasswordLength) characters"; return }
                 guard password == confirmPassword else { error = "Passwords do not match"; return }
+
+                // Read-only duplicate-email check against the local network list.
+                // Prevents wasting a Supabase signUp when we already know the email collides.
+                if profileStore.allUsers.contains(where: { $0.email.lowercased() == email.lowercased() }) {
+                    error = "An account with this email already exists. Try signing in."
+                    return
+                }
+
                 isLoading = true; error = nil
 
-                // Create profile in local network
                 let profile = UserProfile(
                     email: email, fullName: fullName, company: company,
                     jobTitle: jobTitle, trade: trade, birthdate: birthdate,
@@ -267,22 +275,26 @@ struct AuthGateView: View {
                     joinedDate: Date(), isVerified: false
                 )
 
-                if !profileStore.createAccount(profile: profile) {
-                    error = "An account with this email already exists. Try signing in."
-                    isLoading = false
-                    return
-                }
-
-                // Also try Supabase signup
+                // AUTH-GATE-03: Supabase FIRST. Local profile commits ONLY on server success.
+                // On failure, currentUser stays nil, gate stays on AuthGateView, user can retry.
                 Task {
                     do {
                         try await supabase.signUp(email: email, password: password)
                     } catch let signUpError {
                         await MainActor.run {
-                            self.error = "Account created locally but server signup failed: \(signUpError.localizedDescription)"
+                            self.error = "Couldn't create your account: \(signUpError.localizedDescription). Try again."
+                            isLoading = false
                         }
+                        return
                     }
                     await MainActor.run {
+                        if !profileStore.createAccount(profile: profile) {
+                            // Race: someone else just added this email in allUsers.
+                            // Do NOT advance to 2FA — surface the frozen duplicate copy.
+                            self.error = "An account with this email already exists. Try signing in."
+                            isLoading = false
+                            return
+                        }
                         profileStore.emailConfirmationSent = true
                         step = .twoFactor
                         isLoading = false
