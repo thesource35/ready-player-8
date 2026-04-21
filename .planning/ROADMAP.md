@@ -304,11 +304,11 @@ Plans:
 **Goal:** iOS auth gate derives its "is the user logged in" decision from the Supabase-issued access token (not local UserDefaults profile state); signup is server-first so Supabase failures cannot leave a zombie local account; signOut clears both Keychain auth tokens and UserDefaults profile state.
 **Requirements**: AUTH-GATE-01, AUTH-GATE-02, AUTH-GATE-03
 **Depends on:** Phase 29
-**Plans:** 1/5 plans executed
+**Plans:** 2/5 plans executed
 
 Plans:
 - [x] 29.1-01-PLAN.md — Wave 0 AuthGateTests.swift scaffolding (5 @Test stubs for criteria A-E)
-- [ ] 29.1-02-PLAN.md — Wave 1 SupabaseService.signOutEverywhere() + SettingsProfileView wire-up (AUTH-GATE-02)
+- [x] 29.1-02-PLAN.md — Wave 1 SupabaseService.signOutEverywhere() + SettingsProfileView wire-up (AUTH-GATE-02)
 - [ ] 29.1-03-PLAN.md — Wave 1 remove UserProfileStore.login(email:password:) dead shim (AUTH-GATE-01 defense-in-depth)
 - [ ] 29.1-04-PLAN.md — Wave 2 ContentView gate predicate swap + signup ordering inversion (AUTH-GATE-01 + AUTH-GATE-03)
 - [ ] 29.1-05-PLAN.md — Wave 3 VERIFICATION.md + REQUIREMENTS.md AUTH-GATE entries + human UAT walkthrough

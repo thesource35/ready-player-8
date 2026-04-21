@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 29.1-01-PLAN.md
-last_updated: "2026-04-21T07:14:54.888Z"
+stopped_at: Completed 29.1-02-PLAN.md
+last_updated: "2026-04-21T07:31:27.710Z"
 last_activity: 2026-04-21
 progress:
   total_phases: 16
   completed_phases: 14
   total_plans: 98
-  completed_plans: 94
-  percent: 96
+  completed_plans: 95
+  percent: 97
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 Milestone: v2.1
 Phase: 29.1 (fix-critical-auth-bug) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-04-21
 
@@ -99,6 +99,7 @@ v2.0 closing decisions:
 - [Phase 29]: 29-03: Budget cap enforcement lives inside generate-live-suggestions Edge Function (96/day); budget_reached_marker sentinel row is one-per-project-per-day via pre-insert count check.
 - [Phase 29]: [Phase 29-04]: pg_net trigger notify_live_suggestions_worker() AFTER UPDATE on cs_video_assets fires generate-live-suggestions ONLY on drone + status='ready' + old.status IS DISTINCT FROM 'ready' (T-29-TRIGGER-LOOP mitigation). prune-expired-suggestions Edge Function + phase29-prune-expired-suggestions cron at 03:45 UTC (staggered off Phase 22 slots) authored. Deploy DEFERRED — 'supabase functions deploy prune-expired-suggestions' + 'supabase db push' pending.
 - [Phase 29.1]: Plan 01: Wave-0 AuthGateTests scaffold (5 @Test stubs mapped to criteria A-E); compile-only verification adopted due to pre-existing ready_player_8Tests.swift errors (tracked in phase deferred-items, mirrors Phase 22 precedent); no production code touched
+- [Phase 29.1]: Plan 02: composite signOutEverywhere() helper added to SupabaseService; SettingsProfileView wired to it; Test D tightened — AUTH-GATE-02 server-side closed. Pre-existing ready_player_8Tests.swift async errors still block end-to-end xcodebuild test; compile-only verification adopted (mirrors Plan 01 precedent).
 
 ### Pending Todos
 
@@ -122,6 +123,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-21T07:14:54.884Z
-Stopped at: Completed 29.1-01-PLAN.md
+Last session: 2026-04-21T07:31:27.706Z
+Stopped at: Completed 29.1-02-PLAN.md
 Resume file: None
