@@ -86,7 +86,7 @@ struct SettingsProfileView: View {
 
                     if supabase.isAuthenticated && supabase.currentUserEmail != "local" {
                         Button {
-                            supabase.signOut()
+                            supabase.signOutEverywhere()
                         } label: {
                             Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
                                 .font(.system(size: 12, weight: .semibold)).foregroundColor(Theme.red)
