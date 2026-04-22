@@ -174,8 +174,14 @@ struct EquipmentCheckInView: View {
             try await SupabaseService.shared.checkInEquipmentLocation(request)
             onCheckInComplete?(equipment.name)
             dismiss()
+        } catch let appError as AppError {
+            // Surface AppError.errorDescription so the user sees a project-convention-styled message
+            submitError = appError.errorDescription ?? "Check-in failed. Please try again."
+            CrashReporter.shared.reportError("Equipment check-in failed: \(appError.errorDescription ?? "")")
         } catch {
-            submitError = "Check-in failed: \(error.localizedDescription)"
+            // Wrap into AppError.unknown so the UI message is user-facing, not a raw SDK string
+            let wrapped = AppError.unknown(error.localizedDescription)
+            submitError = wrapped.errorDescription ?? "Check-in failed. Please try again."
             CrashReporter.shared.reportError("Equipment check-in failed: \(error.localizedDescription)")
         }
 

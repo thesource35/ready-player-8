@@ -811,6 +811,8 @@ final class SupabaseService: ObservableObject {
         "cs_live_suggestions",
         // Phase 15: Team Management
         "cs_team_members", "cs_certifications",
+        // Phase 21: Equipment tracking (tables + latest-position view)
+        "cs_equipment", "cs_equipment_locations", "cs_equipment_latest_positions",
     ]
 
     /// Validates table name against allowlist
