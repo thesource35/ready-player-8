@@ -13,6 +13,31 @@ struct MapPhotoAnnotation: Identifiable {
     let createdAt: String
 }
 
+// MARK: - Mock Photo Annotations (Phase 21-09 Task 3, D-14 fallback symmetric with mockEquipmentPositions)
+// Cluster near MapSite.mapCenter (40.7580, -73.9855, NYC-Midtown). Used by MapsView.loadMapData()
+// when cs_documents returns empty AND Supabase is unconfigured — configured-and-empty cases fall
+// through to the "0 PHOTOS WITH GPS" empty-state chip instead.
+let mockPhotoAnnotations: [MapPhotoAnnotation] = [
+    MapPhotoAnnotation(
+        id: "photo-mock-001",
+        filename: "IMG_0421.HEIC",
+        coordinate: CLLocationCoordinate2D(latitude: 40.7583, longitude: -73.9858),
+        createdAt: "2026-04-20T14:30:00Z"
+    ),
+    MapPhotoAnnotation(
+        id: "photo-mock-002",
+        filename: "site_overview.jpg",
+        coordinate: CLLocationCoordinate2D(latitude: 40.7595, longitude: -73.9843),
+        createdAt: "2026-04-19T11:00:00Z"
+    ),
+    MapPhotoAnnotation(
+        id: "photo-mock-003",
+        filename: "crew_lunch_break.jpg",
+        coordinate: CLLocationCoordinate2D(latitude: 40.7570, longitude: -73.9868),
+        createdAt: "2026-04-18T12:45:00Z"
+    ),
+]
+
 // MARK: - GPS Document DTO (for photo annotation fetch)
 
 private struct SupabaseGpsDocument: Codable {
@@ -53,6 +78,8 @@ struct MapsView: View {
     // D-05/D-09: Check-in sheet state
     @State private var showCheckInSheet = false
     @State private var checkInSuccessMessage: String?
+    // Phase 21-09: visible error surfacing from loadMapData() (Test 11 — no silent throw-swallow)
+    @State private var loadError: AppError?
     // D-16: Delivery route road-following state
     @State private var computedRoutes: [UUID: MKRoute] = [:]
     @State private var computingRoute: UUID?
@@ -144,6 +171,22 @@ struct MapsView: View {
                     mapMetricCard(title: "EQUIPMENT", value: "\(equipmentPositions.count)", detail: "\(equipmentPositions.filter { $0.status == "active" }.count) active", color: Theme.green)
                     mapMetricCard(title: "NEXT PASS", value: satellitePasses[0].eta, detail: satellitePasses[0].name, color: Theme.gold)
                     mapMetricCard(title: "SELECTED", value: selectedSite.name, detail: selectedSite.type, color: Theme.accent)
+                }
+
+                // Phase 21-09 Task 3: empty-state chip when PHOTOS overlay on + array empty (Test 9)
+                if photosOverlay && photoAnnotations.isEmpty && !isLoadingData {
+                    HStack(spacing: 6) {
+                        Image(systemName: "camera.fill")
+                            .foregroundColor(Theme.muted)
+                        Text("0 PHOTOS WITH GPS")
+                            .font(.system(size: 9, weight: .black))
+                            .tracking(1)
+                            .foregroundColor(Theme.muted)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Theme.surface.opacity(0.85))
+                    .cornerRadius(6)
                 }
 
                 HStack(alignment: .top, spacing: 12) {
@@ -394,6 +437,20 @@ struct MapsView: View {
                 }
             })
         }
+        // Phase 21-09 Task 1: surface loadMapData errors to UI (Test 11 — no silent throw-swallow)
+        .alert(
+            "Map data load failed",
+            isPresented: Binding(
+                get: { loadError != nil },
+                set: { if !$0 { loadError = nil } }
+            ),
+            presenting: loadError
+        ) { _ in
+            Button("Dismiss", role: .cancel) { loadError = nil }
+            Button("Retry") { Task { await loadMapData() } }
+        } message: { error in
+            Text(error.errorDescription ?? "Unknown error. Map is showing offline data.")
+        }
         .overlay(alignment: .top) {
             if let msg = checkInSuccessMessage {
                 Text(msg)
@@ -429,18 +486,33 @@ struct MapsView: View {
 
     private func loadMapData() async {
         isLoadingData = true
+        // MARK: Equipment fetch (Phase 21-09 Task 2: empty-success fallback; Task 1: visible errors)
         do {
-            equipmentPositions = try await SupabaseService.shared.fetchEquipmentPositions()
+            let fetched = try await SupabaseService.shared.fetchEquipmentPositions()
+            // Empty-successful response: use mocks only when Supabase is unconfigured — a configured
+            // empty result is a legitimate empty state that must stay empty (otherwise UI lies).
+            if fetched.isEmpty && !SupabaseService.shared.isConfigured {
+                equipmentPositions = mockEquipmentPositions
+            } else {
+                equipmentPositions = fetched
+            }
         } catch {
+            let wrapped = (error as? AppError) ?? AppError.unknown(error.localizedDescription)
+            // Only surface to UI when Supabase IS configured — unconfigured paths are expected to
+            // fall back to mocks silently (that's the intended dev/demo experience).
+            if SupabaseService.shared.isConfigured {
+                loadError = wrapped
+            }
             CrashReporter.shared.reportError("Maps equipment load failed: \(error.localizedDescription)")
             equipmentPositions = mockEquipmentPositions
         }
+        // MARK: Photo fetch (Phase 21-09 Task 3: mock fallback + visible errors symmetric with equipment)
         do {
             let docs: [SupabaseGpsDocument] = try await SupabaseService.shared.fetch(
                 "cs_documents",
                 query: ["select": "id,filename,gps_lat,gps_lng,created_at", "gps_lat": "not.is.null", "gps_lng": "not.is.null"]
             )
-            photoAnnotations = docs.map { doc in
+            let mapped = docs.map { doc in
                 MapPhotoAnnotation(
                     id: doc.id,
                     filename: doc.filename,
@@ -448,8 +520,18 @@ struct MapsView: View {
                     createdAt: doc.createdAt
                 )
             }
+            if mapped.isEmpty && !SupabaseService.shared.isConfigured {
+                photoAnnotations = mockPhotoAnnotations
+            } else {
+                photoAnnotations = mapped
+            }
         } catch {
+            let wrapped = (error as? AppError) ?? AppError.unknown(error.localizedDescription)
+            if SupabaseService.shared.isConfigured {
+                loadError = wrapped
+            }
             CrashReporter.shared.reportError("Maps photo load failed: \(error.localizedDescription)")
+            photoAnnotations = mockPhotoAnnotations
         }
         isLoadingData = false
     }
