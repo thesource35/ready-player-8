@@ -279,13 +279,19 @@ export default function MapsPage() {
       map.on("load", () => {
         setMapLoaded(true);
 
-        // Restore saved camera position (D-12)
+        // Phase 21 Plan 08 Task 2 (Defect 6.1): track whether a saved camera restored
+        // successfully so the geolocation branch below can skip flyTo in that case.
+        // Without this gate, getCurrentPosition's flyTo fires AFTER setCenter/setZoom
+        // and the flyTo's own moveend overwrites the user's last panned camera with
+        // browser-reported GPS — silently clobbering Test 6 defect 1.
         const savedCamera = localStorage.getItem(MAP_STORAGE_KEYS.cameraPrefix + "default");
+        let cameraRestored = false;
         if (savedCamera) {
           try {
             const { center, zoom } = JSON.parse(savedCamera);
             map.setCenter(center);
             map.setZoom(zoom);
+            cameraRestored = true;
           } catch {
             // ignore invalid saved camera
           }
@@ -303,8 +309,30 @@ export default function MapsPage() {
         // Load map data from APIs
         loadMapData();
 
-        // Geolocation fly-to (DYN-03)
-        if (navigator.geolocation) {
+        // Phase 21 Plan 08 Task 2 (Defects 6.2 + 6.3): apply persisted overlay state
+        // on first paint. The two overlay effects below bail on null mapRef.current
+        // during initial render (mapRef is populated after loadMap() resolves), and
+        // their dep arrays don't re-trigger once the ref populates. Applying overlay
+        // state here inside map.on("load") guarantees first-paint visibility for
+        // users whose persisted overlays include TRAFFIC or dark (non-SATELLITE) style.
+        if (activeOverlays.has("TRAFFIC")) addTrafficLayer(map);
+        if (!activeOverlays.has("SATELLITE")) {
+          // Persisted state is the dark style; switch synchronously and re-add layers
+          // inside the style.load handler so markers/traffic survive the style swap.
+          map.setStyle("mapbox://styles/mapbox/dark-v11");
+          setMapStyle("dark");
+          map.once("style.load", () => {
+            rebuildSiteMarkers(map);
+            rebuildEquipmentMarkers(map);
+            rebuildPhotoMarkers(map);
+            if (activeOverlays.has("TRAFFIC")) addTrafficLayer(map);
+          });
+        }
+
+        // Geolocation fly-to (DYN-03) — gated on !cameraRestored per Defect 6.1 above.
+        // If the user already has a saved camera we respect it and skip geolocation
+        // entirely. Otherwise geolocation may fly to the user's position as before.
+        if (!cameraRestored && navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             (pos) => {
               map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 12 });
@@ -324,8 +352,14 @@ export default function MapsPage() {
 
   // ---------- SATELLITE style toggle ----------
 
+  // Phase 21 Plan 08 Task 2 (Defect 6.3): include `mapLoaded` in the dep array so this
+  // effect re-runs once map.on("load") fires. Without mapLoaded, the effect bails on
+  // the initial render (mapRef.current is null until loadMap() resolves) and never
+  // re-triggers, leaving persisted non-SATELLITE style state unapplied on first paint.
+  // The map.on("load") block above now also applies this state eagerly — keeping
+  // this effect is belt-and-suspenders for user toggles AFTER load.
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
     const style = activeOverlays.has("SATELLITE")
       ? "mapbox://styles/mapbox/satellite-streets-v12"
@@ -342,16 +376,19 @@ export default function MapsPage() {
         rebuildPhotoMarkers(map);
       });
     }
-  }, [activeOverlays, mapStyle, rebuildSiteMarkers, rebuildEquipmentMarkers, rebuildPhotoMarkers]);
+  }, [activeOverlays, mapStyle, mapLoaded, rebuildSiteMarkers, rebuildEquipmentMarkers, rebuildPhotoMarkers]);
 
   // ---------- TRAFFIC toggle ----------
 
+  // Phase 21 Plan 08 Task 2 (Defect 6.2): same null-guard + mapLoaded-dep rationale
+  // as the SATELLITE effect above. Ensures persisted TRAFFIC state applies on first
+  // paint for users whose overlays Set included TRAFFIC at page reload.
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
     if (activeOverlays.has("TRAFFIC")) addTrafficLayer(map);
     else removeTrafficLayer(map);
-  }, [activeOverlays]);
+  }, [activeOverlays, mapLoaded]);
 
   // ---------- Rebuild equipment markers on data change ----------
 
@@ -377,8 +414,22 @@ export default function MapsPage() {
   // ---------- Delivery route directions ----------
 
   const fetchRouteDirections = async (routeKey: string, fromLng: number, fromLat: number, toLng: number, toLat: number) => {
-    const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-    if (!mapboxToken) return;
+    // Phase 21 Plan 08 Task 2 (Defect 5): coerce empty-string + whitespace to null and
+    // surface a visible error on the route card instead of silently no-op'ing. The route
+    // card JSX already renders routeDirections[key].error (see DELIVERY ROUTES mapping
+    // below) so no UI wiring change is required.
+    const mapboxToken = (process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "").trim() || null;
+    if (!mapboxToken) {
+      setRouteDirections((prev) => ({
+        ...prev,
+        [routeKey]: {
+          duration: "",
+          distance: "",
+          error: "Directions unavailable — Mapbox token not configured.",
+        },
+      }));
+      return;
+    }
 
     try {
       const resp = await fetch(
