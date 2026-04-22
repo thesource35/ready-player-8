@@ -1,7 +1,8 @@
 ---
 phase: 21-live-satellite-traffic-maps
 verified: 2026-04-14T06:30:00Z
-status: human_needed
+re_verified: 2026-04-21T00:00:00Z
+status: passed
 score: 4/4 must-haves verified
 human_verification:
   - test: "Satellite/hybrid/standard toggle on web"
@@ -40,8 +41,9 @@ human_verification:
 
 **Phase Goal:** All map features show satellite imagery with real-time traffic overlays and construction site activity
 **Verified:** 2026-04-14T06:30:00Z
-**Status:** human_needed
-**Re-verification:** No — initial verification
+**Re-verified:** 2026-04-21T00:00:00Z
+**Status:** passed
+**Re-verification:** Yes — 16/16 UAT tests PASS on re-walk after closer plans 21-07/08/09/10 landed; vitest regression GREEN 4/4
 
 ## Goal Achievement
 
@@ -162,5 +164,32 @@ One minor documentation drift: MAP-01..04 IDs are declared in plan frontmatter b
 
 ---
 
+## Re-walk Results (2026-04-21)
+
+All 16 human-verification items re-walked on 2026-04-21 after closer plans
+21-07, 21-08, 21-09, and 21-10 landed. Result: **16/16 PASS** on both web
+(`http://localhost:3000`) and iOS simulator. vitest regression suite
+(`web/src/app/portal/[slug]/[project]/map/PortalMapClient.test.tsx`) GREEN
+4/4 as the pre-check gate for 21-11.
+
+| Human Verification Item | Re-walk Outcome |
+|-------------------------|-----------------|
+| [x] Satellite/hybrid/standard toggle behavior on web | pass — re-walked 2026-04-21 |
+| [x] Real-time traffic flow on web (Mapbox) | pass — re-walked 2026-04-21 |
+| [x] Real-time traffic on iOS (MapKit) | pass — re-walked 2026-04-21 |
+| [x] Equipment markers on web (typed shapes + status colors) | pass — re-walked 2026-04-21 |
+| [x] Equipment annotations on iOS MapKit | pass — re-walked 2026-04-21 |
+| [x] Equipment check-in end-to-end flow | pass — re-walked 2026-04-21 |
+| [x] GPS photo markers (web + iOS) | pass — re-walked 2026-04-21 |
+| [x] Portal map with locked overlays (D-13) | pass — re-walked 2026-04-21 |
+| [x] Overlay and camera preferences persist (web + iOS) | pass — re-walked 2026-04-21 |
+| [x] Delivery route road-following (Mapbox + MKDirections) | pass — re-walked 2026-04-21 |
+
+Flipped status `human_needed` → `passed`. No residual verification work.
+Phase 21 verification is now complete for v2.1 gap closure.
+
+---
+
 *Verified: 2026-04-14T06:30:00Z*
-*Verifier: Claude (gsd-verifier)*
+*Re-verified: 2026-04-21T00:00:00Z*
+*Verifier: Claude (gsd-verifier) + human re-walk (2026-04-21)*

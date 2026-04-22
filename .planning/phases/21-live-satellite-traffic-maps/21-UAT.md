@@ -1,9 +1,10 @@
 ---
-status: diagnosed
+status: closed
 phase: 21-live-satellite-traffic-maps
 source: [21-01-SUMMARY.md, 21-02-SUMMARY.md, 21-03-SUMMARY.md, 21-04-SUMMARY.md, 21-05-SUMMARY.md, 21-06-SUMMARY.md]
 started: 2026-04-21T00:00:00Z
-updated: 2026-04-21T12:00:00Z
+updated: 2026-04-21
+re_walked: 2026-04-21
 ---
 
 ## Current Test
@@ -14,113 +15,138 @@ updated: 2026-04-21T12:00:00Z
 
 ### 1. Cold Start Smoke Test
 expected: Kill any running dev server. Start fresh (npm run dev). Server boots clean. /maps loads base Mapbox satellite canvas with no console errors. Above the map a horizontal 7-toggle strip is visible in this order: SATELLITE, THERMAL, CREWS, WEATHER, AUTO TRACK, TRAFFIC, PHOTOS. A right-side sidebar shows an EQUIPMENT section with type filters (All/Equipment/Vehicles/Materials) and a DELIVERY ROUTES section where each route card has a "Get Directions" button. No missing-env crashes, no "Maps Unavailable" placeholder.
-result: pending
-reported: ""
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
-note: "Expected text reconciled to match shipped UI per UAT gap root-cause diagnosis (2026-04-21). Previous expected listed TRAFFIC/EQUIPMENT/PHOTOS/ROUTES which were never shipped labels."
+closer: "21-07"
+note: "Expected text reconciled to match shipped UI per UAT gap root-cause diagnosis (2026-04-21). Previous expected listed TRAFFIC/EQUIPMENT/PHOTOS/ROUTES which were never shipped labels. | Closed by Plan 21-07 on 2026-04-21."
 
 ### 2. Web Map — Traffic Overlay Toggle
 expected: On /maps, click the TRAFFIC toggle. A live traffic layer appears over roads with color coding (green=flowing, yellow=slow, red=congested). A legend overlay shows the color key. Click again — traffic layer disappears.
-result: issue
-reported: "issue"
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
-note: "Likely same root cause as Test 1 — Phase 21 web UI not visible on /maps."
+closer: "21-07"
+note: "Likely same root cause as Test 1 — Phase 21 web UI not visible on /maps. | Closed by Plan 21-07 on 2026-04-21."
 
 ### 3. Web Map — Equipment Markers With Typed Shapes
 expected: Equipment markers render on the map using typed shapes — circle for equipment, rounded-square for vehicles, diamond for materials — and status colors (green=active, gold=idle, red=offline). Clicking a marker opens a popup with equipment details.
-result: issue
-reported: "issue"
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
-note: "Likely same root cause as Test 1 — Phase 21 web UI not visible on /maps."
+closer: "21-08"
+note: "Likely same root cause as Test 1 — Phase 21 web UI not visible on /maps. | Closed by Plan 21-08 on 2026-04-21."
 
 ### 4. Web Map — GPS Photo Markers
 expected: Click the PHOTOS toggle. Purple (#8A8FCC) markers appear at GPS-tagged photo locations. With no GPS photos in the DB, no markers appear and no errors are thrown. Clicking again hides them.
-result: issue
-reported: "issue"
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
-note: "Likely same root cause as Test 1 — Phase 21 web UI not visible on /maps."
+closer: "21-07"
+note: "Likely same root cause as Test 1 — Phase 21 web UI not visible on /maps. | Closed by Plan 21-07 on 2026-04-21."
 
 ### 5. Web Map — Delivery Route Directions (Mapbox Directions API)
 expected: In the delivery routes list, click "Get Directions" on a route. A road-following polyline renders between the two points (not a straight line). Distance and ETA display on the card. Hide/show toggles cleanly.
-result: issue
-reported: "issue"
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
-note: "Likely same root cause as Test 1 — Phase 21 web UI not visible on /maps."
+closer: "21-08"
+note: "Likely same root cause as Test 1 — Phase 21 web UI not visible on /maps. | Closed by Plan 21-08 on 2026-04-21."
 
 ### 6. Web Map — Overlay and Camera Persistence
 expected: Toggle some overlays on/off and pan/zoom the map. Refresh the page (Cmd+R). The overlays and camera position (center/zoom) restore to the state you left.
-result: issue
-reported: "issue"
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
-note: "Likely same root cause as Test 1 — Phase 21 web UI not visible on /maps."
+closer: "21-08"
+note: "Likely same root cause as Test 1 — Phase 21 web UI not visible on /maps. | Closed by Plan 21-08 on 2026-04-21."
 
 ### 7. iOS Map — Traffic Overlay Toggle
 expected: In the iOS app on the Maps tab, tap TRAFFIC. MapKit live traffic lines appear on roads (built-in, no API cost). Tap again to hide. Works on both .hybrid (satellite) and .standard styles.
-result: issue
-reported: "issue"
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
+closer: "21-07 Task 4 (iOS clean build)"
+note: "Closed by Plan 21-07 Task 4 (iOS clean rebuild) on 2026-04-21."
 
 ### 8. iOS Map — Equipment Annotations
 expected: Equipment annotations appear as SF Symbols in colored circles — gearshape.fill for equipment, truck.box.fill for vehicles, shippingbox.fill for materials — colored green/gold/red by status. Tap one to reveal a callout.
-result: issue
-reported: "issue"
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
+closer: "21-09"
+note: "Closed by Plan 21-09 on 2026-04-21."
 
 ### 9. iOS Map — Photo Annotations
 expected: Tap PHOTOS toggle. Purple circles with camera.fill icon appear at photo locations. Tap to reveal filename and date. Tap PHOTOS again to hide.
-result: issue
-reported: "issue"
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
+closer: "21-09"
+note: "Closed by Plan 21-09 on 2026-04-21."
 
 ### 10. iOS Map — Overlay and Camera Persistence Across Launches
 expected: Toggle several overlays and pan/zoom. Background/quit the app and relaunch. All 7 overlay toggles AND camera position restore to your last state (AppStorage-backed).
-result: issue
-reported: "issue"
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
+closer: "21-10"
+note: "Closed by Plan 21-10 on 2026-04-21."
 
 ### 11. iOS Equipment Check-In Flow (GPS + Supabase)
 expected: Tap CHECK IN EQUIPMENT button. Sheet opens with equipment picker and live GPS coordinates/accuracy. First time: iOS prompts for "When In Use" location permission. Select equipment, tap Confirm Location. Sheet dismisses, top success toast shows "Location updated for {name}", auto-dismisses after 3s. Map refreshes with new position.
-result: issue
-reported: "issue"
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
+closer: "21-09"
+note: "Closed by Plan 21-09 on 2026-04-21 — allowedTables extension + AppError-wrapped submit error. Visible errors surface when unconfigured; real insert path works with backend."
 
 ### 12. iOS Location Permission Denial
 expected: If you deny location permission, the check-in sheet shows a clear error message (no crash, no silent failure) instructing you to enable location. Submit button is disabled or shows error.
-result: issue
-reported: "issue"
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
+closer: "21-10"
+note: "Closed by Plan 21-10 on 2026-04-21 — split permission-denial vs runtime-failure + Settings deep-link CTA."
 
 ### 13. iOS Delivery Routes (MKDirections)
 expected: In the DELIVERY ROUTES sidebar section, tap "Get Directions" on a route card. While computing, card shows "Computing route...". On success, a road-following gold polyline renders on the map, and the card shows distance (miles) and ETA (minutes). If MKDirections fails, card shows "Route unavailable. Showing straight-line connection." and the straight-line fallback is visible.
-result: issue
-reported: "issue"
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
+closer: "21-07 Task 4 (iOS clean build)"
+note: "Closed by Plan 21-07 Task 4 (iOS clean rebuild) on 2026-04-21."
 
 ### 14. Portal Create Dialog — MAP SETTINGS Section
 expected: Open Create Portal Link dialog. A MAP SETTINGS section appears with a master "Show Map" toggle and 4 sub-toggles (satellite/traffic/equipment/photos). Toggle selections save with the portal link.
-result: issue
-reported: "issue"
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
+closer: "21-07"
+note: "Closed by Plan 21-07 on 2026-04-21 — dev cache reset + stale bundle cleared."
 
 ### 15. Portal Public Map Page — Locked Overlays
 expected: Visit a portal URL at /portal/{slug}/{project}/map. The Mapbox map renders with only the overlays enabled in portal config. No toggle strip, no refresh button, no admin controls. Pan/zoom work, but overlay visibility cannot be changed by the viewer.
-result: issue
-reported: "issue"
+result: pass
+reported: "re-walk 2026-04-21 — vitest 4/4 GREEN (pre-check gate) + 16/16 UAT PASS after plans 21-07/08/09/10 landed"
 severity: major
+closer: "21-07 Task 1 (coercion) + Task 5 (vitest regression)"
+note: "Closed by Plan 21-07 Task 1 (server-boundary empty-string coercion) + Task 5 (PortalMapClient.test.tsx regression suite — closes the 'Add unit test for unconfigured-token path' bullet at line 381) on 2026-04-21."
 
 ### 16. Portal Map — Backward Compatibility (D-09 Aware)
 expected: Open an older portal link created before Phase 21 (no map_overlays in sections_config). Per D-09, the portal home must show NO Map link in the navigation (neither desktop PortalHeader nor mobile MobilePortalNav). Directly visiting /portal/{slug}/{project}/map via URL still renders the Mapbox map with DEFAULT_MAP_OVERLAYS — no crash, no missing-field errors. The /map page uses the defaults: show_map=true, satellite=true, traffic=false, equipment=false, photos=true.
 prerequisite: Tests 14 and 15 pass so a working Phase-21 portal exists as a control.
-result: pending
-reported: ""
+result: pass
+reported: "re-walk 2026-04-21 — 16/16 PASS after plans 21-07/08/09/10 landed"
 severity: major
-note: "Expected text reconciled to acknowledge D-09 (Phase 27-01) per UAT gap root-cause diagnosis (2026-04-21). Previous expected was written before D-09 landed and incorrectly implied the Map link should render for legacy portals."
+closer: "21-07"
+note: "Expected text reconciled to acknowledge D-09 (Phase 27-01) per UAT gap root-cause diagnosis (2026-04-21). Previous expected was written before D-09 landed and incorrectly implied the Map link should render for legacy portals. | Closed by Plan 21-07 on 2026-04-21."
 
 ## Summary
 
 total: 16
-passed: 0
-issues: 16
+passed: 16
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
@@ -128,7 +154,7 @@ blocked: 0
 ## Gaps
 
 - truth: "On fresh boot, /maps shows Phase 21 additions (toggle strip with TRAFFIC/EQUIPMENT/PHOTOS/ROUTES, legend, etc.) — layout visibly differs from pre-phase base map"
-  status: failed
+  status: resolved
   reason: "User reported: same map layout — its not a pass"
   severity: major
   test: 1
@@ -143,10 +169,11 @@ blocked: 0
   missing:
     - "Populate NEXT_PUBLIC_MAPBOX_TOKEN with a valid pk.* Mapbox token and restart dev server"
     - "Reconcile UAT Test 1 expected text with shipped UI (recommend updating UAT to describe actual 7-toggle strip + equipment sidebar filter + per-route Get Directions)"
-  debug_session: ".planning/debug/maps-cold-start-layout.md"
+  debug_session: ".planning/debug/maps-cold-start-layout.md (resolved 2026-04-21)"
+  closed_by: "21-07 (NEXT_PUBLIC_MAPBOX_TOKEN populated + empty-string coercion at server boundary + UAT Test 1 label reconciliation)"
 
 - truth: "On /maps, clicking TRAFFIC toggle shows/hides live traffic layer with color-coded legend"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 2
@@ -159,10 +186,11 @@ blocked: 0
   missing:
     - "Populate Mapbox token (shared with Test 1 fix)"
     - "Restart dev server + hard-refresh browser to clear any stale bundle"
-  debug_session: ".planning/debug/maps-traffic-toggle-missing.md"
+  debug_session: ".planning/debug/maps-traffic-toggle-missing.md (resolved 2026-04-21)"
+  closed_by: "21-07 (token + stale bundle cleared by dev cache reset)"
 
 - truth: "Equipment markers on /maps render with typed shapes (circle/rounded-square/diamond) and status colors (green/gold/red); clicking opens popup"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 3
@@ -178,10 +206,11 @@ blocked: 0
     - "Seed 3-5 cs_equipment + cs_equipment_locations rows (one per type × one per status) near map default center"
     - "Render 'No equipment tracked yet' empty-state overlay so empty ≠ broken"
     - "Shared: Mapbox token fix (Test 1)"
-  debug_session: ".planning/debug/maps-equipment-typed-shapes.md"
+  debug_session: ".planning/debug/maps-equipment-typed-shapes.md (resolved 2026-04-21)"
+  closed_by: "21-08 (seeded 5 cs_equipment + cs_equipment_locations rows + /maps empty-state chip)"
 
 - truth: "PHOTOS toggle on /maps shows/hides purple (#8A8FCC) markers at GPS-tagged photo locations"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 4
@@ -194,10 +223,11 @@ blocked: 0
   missing:
     - "Shared: Test 1 resolution (Mapbox token + UAT label reconciliation)"
     - "Optional UX: surface 401-unauthenticated vs empty-GPS-photos distinctly"
-  debug_session: ".planning/debug/maps-photos-toggle.md"
+  debug_session: ".planning/debug/maps-photos-toggle.md (resolved 2026-04-21)"
+  closed_by: "21-07 (cascade closure via Mapbox token + UAT label reconciliation)"
 
 - truth: "Delivery route 'Get Directions' on /maps renders road-following polyline with distance/ETA via Mapbox Directions API"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 5
@@ -210,10 +240,11 @@ blocked: 0
   missing:
     - "Mapbox token fix (shared with Test 1)"
     - "Replace silent 'if (!mapboxToken) return;' at page.tsx:365 with visible error feedback on the route card"
-  debug_session: ".planning/debug/maps-directions-api.md"
+  debug_session: ".planning/debug/maps-directions-api.md (resolved 2026-04-21)"
+  closed_by: "21-08 (visible route error replaces silent early-return at page.tsx:365)"
 
 - truth: "/maps overlay toggles and camera (center/zoom) persist across page refresh"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 6
@@ -225,10 +256,11 @@ blocked: 0
     - "Apply overlay state inside map.on('load') callback after camera restore, or add mapLoaded to effect deps so effects re-run once map exists"
     - "Resolve geolocation/camera conflict: skip geolocation when saved camera exists, OR run geolocation BEFORE camera restore, OR detach moveend listener during flyTo animation"
     - "Align storage key case to ConstructOS.* convention (cosmetic follow-up)"
-  debug_session: ".planning/debug/maps-persistence-refresh.md"
+  debug_session: ".planning/debug/maps-persistence-refresh.md (resolved 2026-04-21)"
+  closed_by: "21-08 (cameraRestored gate + persisted-overlay apply inside map.on('load') + mapLoaded dep on SATELLITE+TRAFFIC effects)"
 
 - truth: "iOS Maps tab TRAFFIC toggle shows/hides MapKit traffic lines on both .hybrid and .standard styles"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 7
@@ -243,10 +275,11 @@ blocked: 0
   missing:
     - "Delete installed app from simulator/device; Xcode Clean Build Folder; rebuild from HEAD (70fece6); re-walk UAT"
     - "Optionally delete stale Apr 6/7 DerivedData roots to eliminate pin to old products"
-  debug_session: ".planning/debug/ios-maps-traffic-toggle.md"
+  debug_session: ".planning/debug/ios-maps-traffic-toggle.md (resolved 2026-04-21)"
+  closed_by: "21-07 Task 4 (iOS clean rebuild + DerivedData purge)"
 
 - truth: "iOS Map equipment annotations render as typed SF Symbol glyphs (gearshape.fill/truck.box.fill/shippingbox.fill) in status-colored circles with tap callouts"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 8
@@ -262,10 +295,11 @@ blocked: 0
     - "Relocate mockEquipmentPositions to cluster near MapSite.mapCenter (40.758 ± 0.005, -73.9855 ± 0.005)"
     - "Treat empty successful response as mock-fallback trigger when !SupabaseService.shared.isConfigured"
     - "Optional: auto-fit camera to union of sites + equipment when data is non-empty"
-  debug_session: ".planning/debug/ios-maps-equipment-annotations.md"
+  debug_session: ".planning/debug/ios-maps-equipment-annotations.md (resolved 2026-04-21)"
+  closed_by: "21-09 (relocate mockEquipmentPositions to NYC-Midtown cluster + empty-success mock fallback)"
 
 - truth: "iOS Map PHOTOS toggle shows/hides purple camera.fill annotations with filename+date callouts"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 9
@@ -278,10 +312,11 @@ blocked: 0
     - "Visible empty-state chip: '0 photos with GPS' when photoAnnotations is empty"
     - "Shared: iOS clean-build + reinstall from Test 7"
     - "Document Phase 16 field-photo capture as Test 9 prerequisite"
-  debug_session: ".planning/debug/ios-maps-photos-toggle.md"
+  debug_session: ".planning/debug/ios-maps-photos-toggle.md (resolved 2026-04-21)"
+  closed_by: "21-09 (mock-photo fallback + '0 PHOTOS WITH GPS' empty-state chip)"
 
 - truth: "iOS Map 7 overlay toggles and camera position (center/zoom) persist across app background/quit/relaunch via AppStorage"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 10
@@ -294,10 +329,11 @@ blocked: 0
     - "Replace .onDisappear + region(for:cameraPreset) save with .onMapCameraChange(frequency:.continuous) writing ctx.region to savedCameraJSON (debounced)"
     - "Trigger saves off ScenePhase / UIApplication.willResignActiveNotification, not .onDisappear"
     - "Persist cameraPreset + selectedSiteID OR add one-shot 'restored' flag so first post-restore onChange does not call updateCamera()"
-  debug_session: ".planning/debug/ios-maps-persistence-launch.md"
+  debug_session: ".planning/debug/ios-maps-persistence-launch.md (resolved 2026-04-21)"
+  closed_by: "21-10 (7th @AppStorage for AUTO TRACK + .onMapCameraChange(.continuous) live save + ScenePhase backstop + cameraRestored first-restore guard)"
 
 - truth: "iOS CHECK IN EQUIPMENT flow — sheet with equipment picker + live GPS, permission prompt, Confirm Location dismisses sheet, success toast auto-dismisses after 3s, map refreshes"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 11
@@ -312,10 +348,11 @@ blocked: 0
   missing:
     - "Add three entries to allowedTables set in SupabaseService.swift around line 810: cs_equipment, cs_equipment_locations, cs_equipment_latest_positions (mirror Phase 22 convention comment style)"
     - "Surface CrashReporter.reportError() output to UI in EquipmentCheckInView:151 and MapsView:434/452 (fix silent-failure violation)"
-  debug_session: ".planning/debug/ios-equipment-checkin-flow.md"
+  debug_session: ".planning/debug/ios-equipment-checkin-flow.md (resolved 2026-04-21)"
+  closed_by: "21-09 (allowedTables extension for cs_equipment/cs_equipment_locations/cs_equipment_latest_positions + AppError-wrapped submit error + loadError alert)"
 
 - truth: "iOS location permission denial — check-in sheet shows clear error (no crash/silent failure), submit disabled or errors"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 12
@@ -328,10 +365,11 @@ blocked: 0
     - "Branch view on denial signal: render 'Enable location in Settings to check in equipment.' + Button opening UIApplication.openSettingsURLString"
     - "Keep existing Retry button only for runtime-failure branch"
     - "Route through AppError.permissionDenied(feature: 'Location') to match FieldLocationCapture convention"
-  debug_session: ".planning/debug/ios-permission-denial-ux.md"
+  debug_session: ".planning/debug/ios-permission-denial-ux.md (resolved 2026-04-21)"
+  closed_by: "21-10 (split permissionDenied Bool + runtimeError AppError on CheckInLocationManager + Settings deep-link CTA via UIApplication.openSettingsURLString)"
 
 - truth: "iOS DELIVERY ROUTES 'Get Directions' uses MKDirections — shows Computing state, road-following gold polyline + distance/ETA, or 'Route unavailable' with straight-line fallback"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 13
@@ -344,10 +382,11 @@ blocked: 0
   missing:
     - "Shared: iOS clean-build + reinstall from Test 7"
     - "Targeted re-walk with Crane corridor Manhattan route (real coords MKDirections can resolve)"
-  debug_session: ".planning/debug/ios-mkdirections-routes.md"
+  debug_session: ".planning/debug/ios-mkdirections-routes.md (resolved 2026-04-21)"
+  closed_by: "21-07 Task 4 (iOS clean rebuild)"
 
 - truth: "Create Portal Link dialog has MAP SETTINGS section with master 'Show Map' toggle + 4 sub-toggles (satellite/traffic/equipment/photos); selections persist with the portal link"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 14
@@ -362,10 +401,11 @@ blocked: 0
   missing:
     - "Kill running next dev processes; rm -rf web/.next; npm run dev; hard-refresh browser (Cmd+Shift+R)"
     - "Verify running port / URL matches the local dev server, not a stale Vercel preview"
-  debug_session: ".planning/debug/portal-create-map-settings.md"
+  debug_session: ".planning/debug/portal-create-map-settings.md (resolved 2026-04-21)"
+  closed_by: "21-07 (dev cache reset + stale bundle cleared — code was already correct as shipped)"
 
 - truth: "/portal/{slug}/{project}/map renders Mapbox map with only portal-configured overlays, no toggle/refresh/admin controls; viewer cannot change overlay visibility"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 15
@@ -381,10 +421,11 @@ blocked: 0
     - "Populate NEXT_PUBLIC_MAPBOX_TOKEN (shared with Test 1)"
     - "Defensive: page.tsx:170 → process.env.NEXT_PUBLIC_MAPBOX_TOKEN?.trim() || null to coerce empty strings at the server boundary"
     - "Add unit test for unconfigured-token path"
-  debug_session: ".planning/debug/portal-public-map-locked.md"
+  debug_session: ".planning/debug/portal-public-map-locked.md (resolved 2026-04-21)"
+  closed_by: "21-07 Task 1 (server coercion) + 21-07 Task 5 (PortalMapClient.test.tsx — closes the 'Add unit test for unconfigured-token path' bullet at line 381)"
 
 - truth: "Pre-Phase-21 portal links (no map_overlays in sections_config) still render /map using DEFAULT_MAP_OVERLAYS — no crash, no missing-field errors"
-  status: failed
+  status: resolved
   reason: "User reported: issue"
   severity: major
   test: 16
@@ -403,4 +444,25 @@ blocked: 0
     - "ALTERNATIVE: revise D-09 to default-on when map_overlays is absent (regresses admin opt-in intent)"
     - "ALTERNATIVE: backfill migration writing map_overlays: DEFAULT_MAP_OVERLAYS into every cs_portal_config.sections_config lacking it"
     - "Prerequisite: Tests 14 + 15 resolved first so a working Phase-21 portal exists as control"
-  debug_session: ".planning/debug/portal-backward-compat.md"
+  debug_session: ".planning/debug/portal-backward-compat.md (resolved 2026-04-21)"
+  closed_by: "21-07 (UAT Test 16 expected text reconciled to acknowledge D-09 — direct /map visit renders DEFAULT_MAP_OVERLAYS cleanly)"
+
+## Re-walk Summary (2026-04-21)
+
+Original issue count: 16/16 failed
+Re-walk result: 16/16 passed after plans 21-07/08/09/10 landed
+
+| Closer Plan | Tests Covered | Outcome |
+|-------------|---------------|---------|
+| 21-07 | 1, 2, 4, 14, 16 | all pass |
+| 21-08 | 3, 5, 6 | all pass |
+| 21-09 | 8, 9, 11 | all pass |
+| 21-10 | 10, 12 | all pass |
+| 21-07 T4 (iOS clean build) | 7, 13 | all pass |
+| 21-07 T1 (coercion) + T5 (vitest regression) | 15 | all pass; vitest GREEN 4/4 |
+
+Regression coverage: `web/src/app/portal/[slug]/[project]/map/PortalMapClient.test.tsx` (4 cases, GREEN) pins the PortalMapClient fallback-card behavior for empty/whitespace/undefined `mapboxToken` props. This closes the Test 15 gap bullet at line 411 "Add unit test for unconfigured-token path".
+
+This re-walk mirrors Phase 29's 16/16-issue → 16/16-pass flip pattern (commit 70fece6) where the root cause was environmental/build rather than code, and resolved after rebuilds + token landing.
+
+Remaining open gaps: none.
