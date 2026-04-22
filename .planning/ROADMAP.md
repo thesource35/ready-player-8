@@ -283,7 +283,7 @@ Plans:
 | 1-12 | v1.0 | 36/36 | Complete | 2026-04-06 |
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete | 2026-04-11 |
 | 20. Client Portal & Sharing | v2.0 | 10/10 | Complete | 2026-04-13 |
-| 21. Live Satellite & Traffic Maps | v2.0 | 11/11 | Complete   | 2026-04-22 |
+| 21. Live Satellite & Traffic Maps | v2.0 | 11/11 | Complete    | 2026-04-22 |
 | 21. Live Satellite & Traffic Maps — UAT Gap Closure | v2.1 | 4/5 | In Progress | — |
 | 13. Document Management Foundation | v2.1 | 5/5 | Code Complete | 2026-04-08 |
 | 14. Notifications & Activity Feed | v2.1 | 5/5 | Code Complete | 2026-04-11 |
