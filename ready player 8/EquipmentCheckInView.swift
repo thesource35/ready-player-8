@@ -3,6 +3,7 @@ import CoreLocation
 import Foundation
 import MapKit
 import SwiftUI
+import UIKit  // Phase 21-10 Task 2: UIApplication.openSettingsURLString (Test 12)
 
 // MARK: - Equipment Check-In View (Phase 21, D-05/D-09)
 
@@ -79,9 +80,26 @@ struct EquipmentCheckInView: View {
                                             : Theme.red
                                 )
                         }
-                    } else if let error = locationManager.errorMessage {
+                    } else if locationManager.permissionDenied {
+                        // Phase 21-10 Task 2: permission denial branch (Test 12).
+                        // Retry is a dead end on denial (iOS will not re-prompt) — route users
+                        // to the app's Settings pane so they can flip the permission themselves.
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(error)
+                            Text("Enable location in Settings to check in equipment.")
+                                .font(.system(size: 12))
+                                .foregroundColor(Theme.red)
+                            Button("Open Settings") {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
+                            }
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(Theme.cyan)
+                        }
+                    } else if let error = locationManager.runtimeError {
+                        // Phase 21-10 Task 2: runtime-failure branch keeps Retry (Test 12).
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(error.errorDescription ?? "GPS signal unavailable. Move to an open area and try again.")
                                 .font(.system(size: 12))
                                 .foregroundColor(Theme.red)
                             Button("Retry") {
@@ -195,7 +213,13 @@ final class CheckInLocationManager: NSObject, ObservableObject, CLLocationManage
     private let manager = CLLocationManager()
     @Published var location: CLLocationCoordinate2D?
     @Published var accuracy: CLLocationAccuracy = 0
-    @Published var errorMessage: String?
+    // Phase 21-10 Task 2: split error state into two distinct signals (Test 12).
+    // Before: single errorMessage conflated denial (.denied/.restricted) with runtime
+    // failure (didFailWithError) behind identical "GPS signal unavailable" copy + a Retry
+    // button that was a dead end on denial. After: the view branches on permissionDenied
+    // to render the Settings deep-link CTA; runtimeError keeps the Retry flow.
+    @Published var permissionDenied: Bool = false
+    @Published var runtimeError: AppError?
 
     override init() {
         super.init()
@@ -204,23 +228,35 @@ final class CheckInLocationManager: NSObject, ObservableObject, CLLocationManage
     }
 
     func requestLocation() {
-        errorMessage = nil
+        permissionDenied = false
+        runtimeError = nil
         let status = manager.authorizationStatus
         switch status {
         case .notDetermined:
             manager.requestWhenInUseAuthorization()
         case .denied, .restricted:
-            errorMessage = "GPS signal unavailable. Move to an open area and try again."
+            permissionDenied = true
+            // Log via CrashReporter with FieldLocationCapture-style AppError for analytics parity.
+            CrashReporter.shared.reportError(
+                AppError.permissionDenied(feature: "Location").errorDescription ?? "Location permission denied"
+            )
         default:
             manager.requestLocation()
         }
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
+        switch manager.authorizationStatus {
+        case .authorizedWhenInUse, .authorizedAlways:
+            permissionDenied = false
             manager.requestLocation()
-        } else if manager.authorizationStatus == .denied {
-            errorMessage = "GPS signal unavailable. Move to an open area and try again."
+        case .denied, .restricted:
+            permissionDenied = true
+            CrashReporter.shared.reportError(
+                AppError.permissionDenied(feature: "Location").errorDescription ?? "Location permission denied"
+            )
+        default:
+            break
         }
     }
 
@@ -228,11 +264,13 @@ final class CheckInLocationManager: NSObject, ObservableObject, CLLocationManage
         if let loc = locations.last {
             location = loc.coordinate
             accuracy = loc.horizontalAccuracy
+            runtimeError = nil
         }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        errorMessage = "GPS signal unavailable. Move to an open area and try again."
+        // Runtime failure (signal loss, hardware) — distinct from permission denial.
+        runtimeError = AppError.unknown("GPS signal unavailable. Move to an open area and try again.")
         CrashReporter.shared.reportError("CLLocationManager failed: \(error.localizedDescription)")
     }
 }
