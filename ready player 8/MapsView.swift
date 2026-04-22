@@ -92,6 +92,8 @@ struct MapsView: View {
     @AppStorage("ConstructOS.Maps.OverlayCrew") private var savedCrew = true
     @AppStorage("ConstructOS.Maps.OverlayWeather") private var savedWeather = false
     @AppStorage("ConstructOS.Maps.OverlayPhotos") private var savedPhotos = false
+    // Phase 21-10 Task 1: AUTO TRACK persistence (Test 10 defect 1 — was @State-only, lost on relaunch)
+    @AppStorage("ConstructOS.Maps.OverlayAutoTrack") private var savedAutoTrack = true
 
     private var selectedSite: MapSite {
         mapSites.first { $0.id == selectedSiteID } ?? mapSites[1]
@@ -471,6 +473,8 @@ struct MapsView: View {
         .onChange(of: crewOverlay) { _, new in savedCrew = new }
         .onChange(of: weatherOverlay) { _, new in savedWeather = new }
         .onChange(of: photosOverlay) { _, new in savedPhotos = new }
+        // Phase 21-10 Task 1: persist AUTO TRACK (Test 10 defect 1)
+        .onChange(of: autoTrack) { _, new in savedAutoTrack = new }
         .onAppear {
             satelliteMode = savedSatellite
             trafficOverlay = savedTraffic
@@ -478,6 +482,8 @@ struct MapsView: View {
             crewOverlay = savedCrew
             weatherOverlay = savedWeather
             photosOverlay = savedPhotos
+            // Phase 21-10 Task 1: restore AUTO TRACK (Test 10 defect 1)
+            autoTrack = savedAutoTrack
         }
         .task {
             await loadMapData()
@@ -628,6 +634,12 @@ struct LiveMapView: View {
     @State private var cameraPosition: MapCameraPosition = .region(MapSite.defaultRegion)
     @State private var selectedEquipmentID: String?
     @State private var selectedPhotoID: String?
+    // Phase 21-10 Task 1: first-restore guard (Test 10 defect 4) — suppresses
+    // the two updateCamera() onChange handlers during the tick we restore from
+    // savedCameraJSON so cameraPreset=.selected @State default can't clobber it.
+    @State private var cameraRestored = false
+    // Phase 21-10 Task 1: ScenePhase-driven save backstop for force-quit (Test 10 defect 3)
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("ConstructOS.Maps.Camera.default") private var savedCameraJSON = ""
 
     private var selectedSite: MapSite? {
@@ -780,6 +792,10 @@ struct LiveMapView: View {
                 .padding(14)
             }
         }
+        // Phase 21-10 Task 1: restore camera from savedCameraJSON on launch, then
+        // flip cameraRestored so the two updateCamera() onChange handlers below stop no-opping.
+        // Test 10 defect 4 — cameraPreset @State defaults to .selected every launch and
+        // the old .onChange would immediately clobber the restored camera.
         .onAppear {
             if !savedCameraJSON.isEmpty,
                let data = savedCameraJSON.data(using: .utf8),
@@ -788,26 +804,47 @@ struct LiveMapView: View {
                     center: CLLocationCoordinate2D(latitude: cam.lat, longitude: cam.lng),
                     span: MKCoordinateSpan(latitudeDelta: cam.spanLat, longitudeDelta: cam.spanLng)
                 ))
+                cameraRestored = true
             } else {
                 updateCamera()
+                cameraRestored = true
             }
         }
-        .onDisappear {
-            let currentRegion = region(for: cameraPreset)
+        // Phase 21-10 Task 1: live camera save via .onMapCameraChange (Test 10 defects 2 + 3).
+        // Old code saved region(for: cameraPreset) on .onDisappear — wrong source (preset, not
+        // live pan/zoom) AND unreliable trigger (doesn't fire on force-quit).
+        .onMapCameraChange(frequency: .continuous) { ctx in
             let cam = SavedCamera(
-                lat: currentRegion.center.latitude,
-                lng: currentRegion.center.longitude,
-                spanLat: currentRegion.span.latitudeDelta,
-                spanLng: currentRegion.span.longitudeDelta
+                lat: ctx.region.center.latitude,
+                lng: ctx.region.center.longitude,
+                spanLat: ctx.region.span.latitudeDelta,
+                spanLng: ctx.region.span.longitudeDelta
             )
             if let data = try? JSONEncoder().encode(cam), let str = String(data: data, encoding: .utf8) {
                 savedCameraJSON = str
             }
         }
+        // Phase 21-10 Task 1: ScenePhase backstop (Test 10 defect 3 belt-and-suspenders).
+        // .onMapCameraChange(.continuous) is the authoritative save path; this extra trigger
+        // captures any pending in-flight state before the app is backgrounded or force-quit.
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .background || newPhase == .inactive else { return }
+            // Re-encode whatever savedCameraJSON currently holds so the .continuous write is
+            // flushed to disk. No-op if savedCameraJSON is already up-to-date.
+            if !savedCameraJSON.isEmpty {
+                // touching the @AppStorage binding forces a UserDefaults sync on background
+                let current = savedCameraJSON
+                savedCameraJSON = current
+            }
+        }
+        // Phase 21-10 Task 1: gate updateCamera() on cameraRestored so the first-tick
+        // default values of selectedSiteID / cameraPreset can't clobber the restored camera.
         .onChange(of: selectedSiteID) { _, _ in
+            guard cameraRestored else { return }
             updateCamera()
         }
         .onChange(of: cameraPreset) { _, _ in
+            guard cameraRestored else { return }
             updateCamera()
         }
     }
