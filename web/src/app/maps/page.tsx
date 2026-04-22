@@ -90,6 +90,9 @@ export default function MapsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [equipmentFilter, setEquipmentFilter] = useState<string>("all");
   const [routeDirections, setRouteDirections] = useState<Record<string, { duration: string; distance: string; error?: string }>>({});
+  // Phase 21 Plan 08 Task 1: gate the "NO EQUIPMENT TRACKED YET" empty-state chip
+  // on first-response completion so a loading tick does not flash the chip.
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
   // Marker refs
   const equipmentMarkersRef = useRef<mapboxgl.Marker[]>([]);
@@ -112,14 +115,20 @@ export default function MapsPage() {
   // ---------- data loading ----------
 
   const loadMapData = useCallback(async () => {
-    const results = await Promise.allSettled([
-      fetch("/api/maps/equipment").then(r => r.json()),
-      fetch("/api/maps/photos").then(r => r.json()),
-      fetch("/api/maps/sites").then(r => r.json()),
-    ]);
-    if (results[0].status === "fulfilled") setEquipmentPositions(results[0].value.data ?? []);
-    if (results[1].status === "fulfilled") setGpsPhotos(results[1].value.data ?? []);
-    if (results[2].status === "fulfilled") setMapSites(results[2].value.data ?? []);
+    try {
+      const results = await Promise.allSettled([
+        fetch("/api/maps/equipment").then(r => r.json()),
+        fetch("/api/maps/photos").then(r => r.json()),
+        fetch("/api/maps/sites").then(r => r.json()),
+      ]);
+      if (results[0].status === "fulfilled") setEquipmentPositions(results[0].value.data ?? []);
+      if (results[1].status === "fulfilled") setGpsPhotos(results[1].value.data ?? []);
+      if (results[2].status === "fulfilled") setMapSites(results[2].value.data ?? []);
+    } finally {
+      // Phase 21 Plan 08 Task 1: flip loading flag regardless of outcome so the
+      // empty-state chip can render if every fetch legitimately returned [].
+      setIsLoadingData(false);
+    }
   }, []);
 
   // ---------- rebuild marker functions ----------
@@ -466,6 +475,31 @@ export default function MapsPage() {
       ) : (
         <div style={{ position: "relative", marginBottom: 16 }}>
           <div ref={mapContainer} style={{ width: "100%", height: 400, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(74,196,204,0.1)" }} />
+          {/* Phase 21 Plan 08 Task 1: empty-state chip for Test 3 closure. Renders only after
+              the first /api/maps/equipment response resolves AND the pre-filter array is empty
+              (so the client-side equipment-type filter turning rows invisible does NOT show this). */}
+          {!isLoadingData && equipmentPositions.length === 0 && (
+            <div
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                background: "rgba(0,0,0,0.75)",
+                color: "var(--muted)",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: 1,
+                padding: "6px 10px",
+                borderRadius: 6,
+                pointerEvents: "none",
+                zIndex: 5,
+              }}
+              role="status"
+              aria-live="polite"
+            >
+              NO EQUIPMENT TRACKED YET
+            </div>
+          )}
           {activeOverlays.has("TRAFFIC") && (
             <div style={{ position: "absolute", bottom: 8, left: 8, background: "var(--surface)", borderRadius: 8, padding: "8px 12px", fontSize: 9, fontWeight: 800, color: "var(--muted)", zIndex: 1 }}>
               Traffic: <span style={{ color: "#69D294" }}>Green</span> = flowing, <span style={{ color: "#FCC757" }}>Yellow</span> = slow, <span style={{ color: "#D94D48" }}>Red</span> = congested
