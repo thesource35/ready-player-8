@@ -13,7 +13,7 @@ Every user action must either succeed visibly or fail with a clear, actionable m
 **Shipped:** v2.0 Portal & AI Expansion (2026-04-14) — reduced scope after audit (see `milestones/v2.0-MILESTONE-AUDIT.md`)
 **Previous milestones:** v1.0 Production Hardening (2026-04-06)
 **Tech stack:** SwiftUI (iOS 18.2+), Next.js 16.2.2, React 19, Supabase, Anthropic Claude API, Mapbox GL JS, MapKit
-**Current focus:** v2.1 Gap Closure — INT-01 + INT-07 closed (Phases 26, 27); verification backfill for Phases 13–19 shipped (Phase 28, status=partial — 22 UAT items deferred to follow-up session; NOTIF-01/03/05 cluster scheduled for Phase 30 remediation)
+**Current focus:** v2.1 Gap Closure — INT-01 + INT-07 closed (Phases 26, 27); verification backfill for Phases 13–19 shipped (Phase 28, status=partial — 22 UAT items deferred to follow-up session; NOTIF-01/03/05 cluster scheduled for Phase 30 remediation). Phase 29 (Live Video Traffic Feed — Sat + Drone + AI Suggestions) shipped 2026-04-19 as row-only extension of Phase 22's video pipeline: new top-level Live Feed tab on iOS + web, drone clip upload + 24h scrubback + Fleet view, scheduled Anthropic Haiku vision adapter + pg_cron 15-min generator + 7-day retention. 4/14 Phase 29 REQs fully Satisfied; 10 Partial pending human UAT (see 29-HUMAN-UAT.md). LIVE-14 portal drone-exclusion regression locked. **Phase 21 (Live Satellite Traffic Maps) gap-closure complete 2026-04-22 — plans 21-07 through 21-11 landed: Mapbox token coercion + regression suite, web camera-race/overlay-first-paint/visible-route-error fixes + equipment seed, iOS allowlist + mock relocation + visible error surfacing, iOS persistence + permission UX split + Settings deep-link. UAT re-walk 16/16 PASS; 21-VERIFICATION.md status=passed.**
 
 ## Requirements
 
@@ -134,4 +134,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-19 after Phase 28 (Retroactive Verification Sweep) — 6 backfilled VERIFICATION.md files shipped; status=partial pending UAT walkthrough; Phase 30 NOTIF remediation queued*
+*Last updated: 2026-04-19 after Phase 29 (Live Video Traffic Feed — Sat + Drone + Suggestions) — 11 plans shipped, 43 atomic commits, 4/14 LIVE REQs Satisfied + 10 Partial pending human UAT (29-HUMAN-UAT.md); Phase 22 row-only extension contract held, LIVE-14 portal drone-exclusion regression locked; migration + secrets + Edge Function deploys confirmed live 2026-04-19; Phase 30 NOTIF remediation queued*
