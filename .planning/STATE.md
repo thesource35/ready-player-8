@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 21-09-PLAN.md
-last_updated: "2026-04-22T05:32:20.798Z"
+stopped_at: Completed 21-10-PLAN.md
+last_updated: "2026-04-22T15:35:04.149Z"
 last_activity: 2026-04-22
 progress:
   total_phases: 17
   completed_phases: 15
   total_plans: 109
-  completed_plans: 107
-  percent: 98
+  completed_plans: 108
+  percent: 99
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 Milestone: v2.1
 Phase: 21 (live-satellite-traffic-maps) — EXECUTING
-Plan: 4 of 11
+Plan: 10 of 11 (21-10 completed; 21-11 UAT re-walk remaining)
 Status: Ready to execute
 Last activity: 2026-04-22
 
@@ -105,6 +105,7 @@ v2.0 closing decisions:
 - [Phase 21]: Plan 07: Env-layer root cause closed — NEXT_PUBLIC_MAPBOX_TOKEN populated (Task 2 human), ?.trim() || null coercion at both /maps + portal /map server boundaries (Task 1), UAT Tests 1 + 16 reconciled to shipped 7-toggle + D-09 (Task 3), iOS clean rebuild with Apr 6/7 DerivedData purged (Task 4 human), PortalMapClient.test.tsx 4-case vitest suite GREEN (Task 5). Unblocks Plans 21-08/09/10/11.
 - [Phase 21]: Plan 21-08: Test 3 closed via seeded 5 equipment rows on remote (service-role upsert bypass of blocked db push) + /maps empty-state chip. Test 5 closed via visible route error instead of silent return. Test 6 all 3 sub-defects closed via cameraRestored gate + persisted-overlay apply inside map.on('load') + mapLoaded dep on SATELLITE+TRAFFIC effects. Seed uses sentinel org_id 00000000-...-000000000021 (cs_orgs/user_orgs not in public schema on this DB — RLS path flagged for Plan 21-11 verification).
 - [Phase 21]: Plan 21-09: Closed UAT Test 11 root cause (allowedTables missing cs_equipment*) + Test 8 dual defect (Atlanta coords + no empty-success fallback) + Test 9 data gap (no mock fallback, no empty-state chip) + silent-swallow regression via AppError-wrapped loadError alert + AppError-styled submitError. All four iOS files modified in 3 atomic commits (63b261c/8aa93e7/64f8991); xcodebuild BUILD SUCCEEDED.
+- [Phase 21]: Plan 21-10: Closed UAT Test 10 (4 defects) + Test 12 (split error states) — 7th @AppStorage for AUTO TRACK, .onMapCameraChange(.continuous) live save + ScenePhase backstop + cameraRestored first-restore guard; CheckInLocationManager split into permissionDenied Bool + runtimeError AppError with Settings deep-link CTA via UIApplication.openSettingsURLString. 2 atomic commits (a55779d/6295b26); xcodebuild BUILD SUCCEEDED.
 
 ### Pending Todos
 
@@ -128,6 +129,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-22T05:32:20.793Z
-Stopped at: Completed 21-09-PLAN.md
+Last session: 2026-04-22T15:35:04.144Z
+Stopped at: Completed 21-10-PLAN.md
 Resume file: None
