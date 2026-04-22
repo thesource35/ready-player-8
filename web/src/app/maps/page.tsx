@@ -77,7 +77,11 @@ export default function MapsPage() {
     const saved = localStorage.getItem(MAP_STORAGE_KEYS.overlays);
     return saved ? new Set(JSON.parse(saved) as MapOverlayKey[]) : new Set(DEFAULT_ACTIVE_OVERLAYS);
   });
-  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+  // Phase 21 Plan 07 Task 1: coerce empty-string + whitespace-only to null at both
+  // token-read sites so the "Maps Unavailable" fallback renders deterministically
+  // when NEXT_PUBLIC_MAPBOX_TOKEN is unset. Mirrors the portal /map server-boundary
+  // contract so both pages fail the same visible way instead of half-initializing.
+  const token = (process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "").trim() || null;
 
   // Data state
   const [equipmentPositions, setEquipmentPositions] = useState<EquipmentWithPosition[]>([]);
@@ -239,7 +243,10 @@ export default function MapsPage() {
   // ---------- map initialization ----------
 
   useEffect(() => {
-    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    // Phase 21 Plan 07 Task 1: second-site coercion (see component-top comment).
+    // The !token guard already handles empty string (falsy), but the explicit
+    // .trim() || null documents intent and matches the portal boundary exactly.
+    const token = (process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "").trim() || null;
     if (!token || !mapContainer.current || mapRef.current) return;
 
     const loadMap = async () => {

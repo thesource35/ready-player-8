@@ -31,7 +31,7 @@
 
 - [x] Phase 18: Enhanced AI (Angelic AI v2) (4/4 plans) — completed 2026-04-11
 - [x] Phase 20: Client Portal & Sharing (10/10 plans) — completed 2026-04-13
-- [x] Phase 21: Live Satellite & Traffic Maps (6/6 plans) — completed 2026-04-14
+- [x] Phase 21: Live Satellite & Traffic Maps (6/6 plans shipped) — completed 2026-04-14; UAT gap closure in v2.1 adds plans 07-11 (see below)
 
 **Scope note:** Original v2.0 included Phases 13-22. After audit (see `milestones/v2.0-MILESTONE-AUDIT.md`), scope was reduced to verified phases. Remaining phases carried to v2.1.
 
@@ -261,6 +261,21 @@ Plans:
 **Requirements:** DOC-01, DOC-02, DOC-03, DOC-04, DOC-05, NOTIF-01, NOTIF-02, NOTIF-03, NOTIF-05, FIELD-01, FIELD-02, FIELD-03, FIELD-04, CAL-01, CAL-02, CAL-04, REPORT-01, REPORT-02, REPORT-03, REPORT-04
 **Gap Closure:** Closes all "partial — no VERIFICATION.md" audit gaps; reconciles REQUIREMENTS.md traceability
 
+### Phase 21: Live Satellite & Traffic Maps — UAT Gap Closure
+**Goal:** Close all 16 Phase-21 UAT failures diagnosed in `21-UAT.md` (2026-04-21). Three remediation buckets: environment/build prereqs, web + iOS code defects, spec-vs-code reconciliation. Followed by full UAT re-walk.
+**Depends on:** Phase 21 (shipped v2.0), Phase 27 (D-09 decision)
+**Requirements:** MAP-01, MAP-02, MAP-03, MAP-04 (re-verification)
+**Gap Closure:** Closes all 16 UAT failures; flips 21-VERIFICATION.md from human_needed to passed when ≥ 14/16 pass on re-walk
+**Plans:** 5 plans (07-11, across 4 waves)
+
+Plans:
+- [ ] 21-07-PLAN.md — Wave 1: env/build prereqs (Mapbox token + dev cache reset + iOS clean rebuild) + UAT text reconciliation for Tests 1 and 16 (D-09 aware)
+- [ ] 21-08-PLAN.md — Wave 2 web: equipment seed migration + empty-state chip + camera/overlay race fix + visible route error (Tests 3, 5, 6)
+- [ ] 21-09-PLAN.md — Wave 2 iOS: allowedTables extension + CrashReporter UI surfacing + mock relocation + empty-successful fallback + photo mock + "0 photos with GPS" chip (Tests 8, 9, 11)
+- [ ] 21-10-PLAN.md — Wave 3 iOS: AUTO TRACK AppStorage + onMapCameraChange + ScenePhase save + clobber guard + permission-denial Settings deep-link (Tests 10, 12)
+- [ ] 21-11-PLAN.md — Wave 4: full 16-test UAT re-walk + 21-UAT.md/21-VERIFICATION.md reconciliation (blocking human checkpoints)
+
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -269,6 +284,7 @@ Plans:
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete | 2026-04-11 |
 | 20. Client Portal & Sharing | v2.0 | 10/10 | Complete | 2026-04-13 |
 | 21. Live Satellite & Traffic Maps | v2.0 | 6/6 | Complete | 2026-04-14 |
+| 21. Live Satellite & Traffic Maps — UAT Gap Closure | v2.1 | 0/5 | Planned | — |
 | 13. Document Management Foundation | v2.1 | 5/5 | Code Complete | 2026-04-08 |
 | 14. Notifications & Activity Feed | v2.1 | 5/5 | Code Complete | 2026-04-11 |
 | 15. Team & Crew Management | v2.1 | 4/4 | Code Complete | 2026-04-08 |

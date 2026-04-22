@@ -167,7 +167,11 @@ export default async function PortalMapPage({
     ),
   };
 
-  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? null;
+  // Phase 21 Plan 07 Task 1: coerce empty-string + whitespace-only to null so the
+  // PortalMapClient fallback ("Maps Unavailable") renders deterministically when
+  // NEXT_PUBLIC_MAPBOX_TOKEN is unset in .env.local. Previously `?? null` allowed
+  // "" to pass through, which type-passed but hid the intent of the prop contract.
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN?.trim() || null;
 
   // D-20, D-21: Branding inheritance -- same helper as portal home
   const { branding, theme } = await getBrandingForPortal(
