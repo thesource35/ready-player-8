@@ -266,10 +266,10 @@ Plans:
 **Depends on:** Phase 21 (shipped v2.0), Phase 27 (D-09 decision)
 **Requirements:** MAP-01, MAP-02, MAP-03, MAP-04 (re-verification)
 **Gap Closure:** Closes all 16 UAT failures; flips 21-VERIFICATION.md from human_needed to passed when ≥ 14/16 pass on re-walk
-**Plans:** 5 plans (07-11, across 4 waves)
+**Plans:** 7/11 plans executed
 
 Plans:
-- [ ] 21-07-PLAN.md — Wave 1: env/build prereqs (Mapbox token + dev cache reset + iOS clean rebuild) + UAT text reconciliation for Tests 1 and 16 (D-09 aware)
+- [x] 21-07-PLAN.md — Wave 1: env/build prereqs (Mapbox token + dev cache reset + iOS clean rebuild) + UAT text reconciliation for Tests 1 and 16 (D-09 aware)
 - [ ] 21-08-PLAN.md — Wave 2 web: equipment seed migration + empty-state chip + camera/overlay race fix + visible route error (Tests 3, 5, 6)
 - [ ] 21-09-PLAN.md — Wave 2 iOS: allowedTables extension + CrashReporter UI surfacing + mock relocation + empty-successful fallback + photo mock + "0 photos with GPS" chip (Tests 8, 9, 11)
 - [ ] 21-10-PLAN.md — Wave 3 iOS: AUTO TRACK AppStorage + onMapCameraChange + ScenePhase save + clobber guard + permission-denial Settings deep-link (Tests 10, 12)
@@ -284,7 +284,7 @@ Plans:
 | 18. Enhanced AI (Angelic AI v2) | v2.0 | 4/4 | Complete | 2026-04-11 |
 | 20. Client Portal & Sharing | v2.0 | 10/10 | Complete | 2026-04-13 |
 | 21. Live Satellite & Traffic Maps | v2.0 | 6/6 | Complete | 2026-04-14 |
-| 21. Live Satellite & Traffic Maps — UAT Gap Closure | v2.1 | 0/5 | Planned | — |
+| 21. Live Satellite & Traffic Maps — UAT Gap Closure | v2.1 | 1/5 | In Progress | — |
 | 13. Document Management Foundation | v2.1 | 5/5 | Code Complete | 2026-04-08 |
 | 14. Notifications & Activity Feed | v2.1 | 5/5 | Code Complete | 2026-04-11 |
 | 15. Team & Crew Management | v2.1 | 4/4 | Code Complete | 2026-04-08 |
