@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 30-02-PLAN.md
-last_updated: "2026-04-23T22:22:18.720Z"
+stopped_at: Completed 30-08-PLAN.md
+last_updated: "2026-04-23T23:30:00.000Z"
 last_activity: 2026-04-23
 progress:
   total_phases: 17
   completed_phases: 16
   total_plans: 118
-  completed_plans: 112
-  percent: 95
+  completed_plans: 113
+  percent: 96
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 Milestone: v2.1
 Phase: 30 (notifications-list-mark-read-ios-push-remediation) — EXECUTING
-Plan: 4 of 9
+Plan: 5 of 9
 Status: Ready to execute
 Last activity: 2026-04-23
 
@@ -110,6 +110,7 @@ v2.0 closing decisions:
 - [Phase 30]: [Phase 30-01]: Server Actions replace POST->?_method=PATCH kludge on /inbox; REST PATCH/DELETE/POST byte-preserved for iOS callers (D-03); vi.hoisted() adopted for mock refs surviving vi.mock() factory hoisting; 8/8 new regression cases + full notifications suite 19/19 GREEN
 - [Phase 30-notifications-list-mark-read-ios-push-remediation]: [Phase 30-07]: D-24 entity_id/entity_type passthrough regression locked — 4 vitest cases + 3 XCTest cases shipped; audit confirmed production code already meets D-24 contract (MOCK_NOTIFICATIONS populated, Notification type has string | null fields, SupabaseNotification DTO has entityType/entityId as String?); zero production code touched; compile-only iOS verification per Phase 22/29.1 precedent (pre-existing ready_player_8Tests.swift async errors still block build-for-testing, new DTO test file itself compiles clean).
 - [Phase 30]: [Phase 30-02]: NOTIF-01 iOS closed — picker feature land pre-shipped in salvaged f0fb701 (worktree merge 1fc1dab); regression-style XCTest coverage added in 1ddd383 locks stale-recovery (D-11), persistence round-trip (D-10), empty-state copy (D-12), and D-09 sort order. Compile-only verification per Phase 22/29.1/30-07 precedent — build-for-testing still blocked by pre-existing ready_player_8Tests.swift async errors; zero new errors reference the Phase 30 test files.
+- [Phase 30]: [Phase 30-08]: D-21 Edge Function regression floor + D-22 APNsRegistrationTests unchanged audit closed — 4 new Deno test files (push-categories 9 tests, device-token-lookup 3 tests, apns-payload-shape 3 tests, bad-device-token 3 tests) lock the notifications-fanout push path to NOTIF-05. Full suite 28/0 GREEN (18 new + 10 existing; clears ≥21 acceptance floor by 7). APNsRegistrationTests.swift SHA-1 93581122217f703a4a8e05da33c9a5e4202edf4f confirmed unchanged since Phase 14-05 (last commit 9805e17; git diff empty). Zero production code touched. Four commits (80074de/ea380af/33d3854/eefaa43) salvaged from worktree merge; prior executor's SUMMARY was lost when worktree was removed (.planning/ gitignored) — SUMMARY re-authored with current-state audit evidence.
 
 ### Pending Todos
 

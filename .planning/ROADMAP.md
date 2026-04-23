@@ -299,7 +299,7 @@ Plans:
 | 27. Portal → Map Navigation Link | v2.1 | 6/6 | Complete    | 2026-04-19 |
 | 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 2/2 | Complete    | 2026-04-19 |
 | 29. Live Video Traffic Feed (Sat + Drone + Suggestions) | v2.1 | 11/11 | Complete    | 2026-04-20 |
-| 30. Notifications List + Mark-Read + iOS Push Remediation | v2.1 | 3/9 | In Progress|  |
+| 30. Notifications List + Mark-Read + iOS Push Remediation | v2.1 | 4/9 | In Progress|  |
 
 ## Backlog
 
@@ -337,7 +337,7 @@ Plans:
 **Goal:** User can view a notification list with unread count badge on web parity with iOS, mark notifications as read individually (per-row) or all at once on both platforms, and receive iOS push notifications for bid deadlines, safety alerts, and assigned tasks on a real device.
 **Depends on:** Phase 28
 **Requirements:** NOTIF-01, NOTIF-03, NOTIF-05
-**Plans:** 3/9 plans executed
+**Plans:** 4/9 plans executed
 
 Plans:
 - [x] 30-01-PLAN.md — Web Server Action mark-read refactor (D-01..D-04) — NOTIF-03
@@ -347,7 +347,7 @@ Plans:
 - [ ] 30-05-PLAN.md — iOS Realtime subscription on cs_notifications (D-16) — NOTIF-01
 - [ ] 30-06-PLAN.md — Cross-platform inbox_filter_changed analytics (D-17) — NOTIF-01
 - [x] 30-07-PLAN.md — entity_id/entity_type passthrough audit (D-24) — NOTIF-01
-- [ ] 30-08-PLAN.md — Push Edge Function Deno-test coverage (D-21) + APNsRegistrationTests unchanged audit (D-22) — NOTIF-05
+- [x] 30-08-PLAN.md — Push Edge Function Deno-test coverage (D-21) + APNsRegistrationTests unchanged audit (D-22) — NOTIF-05
 - [ ] 30-09-PLAN.md — 30-DEPLOY-STEPS.md (D-19) + real-device UAT walkthrough with 3 screenshots (D-18) — NOTIF-05 [autonomous: false]
 
 **Deferred (explicitly excluded from this phase):**
