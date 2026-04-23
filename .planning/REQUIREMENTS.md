@@ -19,7 +19,7 @@ Downstream tools and reviewers MUST treat `[~]` as distinct from `[x]` (partial 
 
 ### Notifications & Activity Feed
 
-- [ ] **NOTIF-01**: User can view in-app notification list with unread count badge
+- [x] **NOTIF-01**: User can view in-app notification list with unread count badge
 - [x] **NOTIF-02**: User can view activity timeline per project (chronological action log)
 - [x] **NOTIF-03**: User can mark notifications as read (individually or all)
 - [x] **NOTIF-04**: User can dismiss notifications
