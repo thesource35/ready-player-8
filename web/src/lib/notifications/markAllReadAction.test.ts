@@ -7,9 +7,13 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const markReadMock = vi.fn();
-const markAllReadMock = vi.fn();
-const revalidatePathMock = vi.fn();
+// vi.mock factories are hoisted; reference mocks via vi.hoisted so they exist
+// at hoist time (see https://vitest.dev/api/vi.html#vi-hoisted).
+const { markReadMock, markAllReadMock, revalidatePathMock } = vi.hoisted(() => ({
+  markReadMock: vi.fn(),
+  markAllReadMock: vi.fn(),
+  revalidatePathMock: vi.fn(),
+}));
 
 vi.mock("@/lib/notifications", () => ({
   markRead: markReadMock,

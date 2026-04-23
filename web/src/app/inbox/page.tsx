@@ -1,9 +1,12 @@
 // Phase 14 — /inbox notification list (Server Component)
-// Filter by project via ?project_id= query string. Mark-all-read POSTs to the
-// API route which respects that filter (D-12).
+// Filter by project via ?project_id= query string. Mark-all-read uses a Server
+// Action which respects that filter (D-12).
+// Phase 30 (D-01/D-02) — per-row READ and MARK ALL READ now invoke React 19
+// Server Actions from ./actions; the legacy POST + HTTP-method-override kludge is gone.
 
 import { fetchNotifications } from "@/lib/notifications";
 import type { Notification } from "@/lib/supabase/types";
+import { markReadAction, markAllReadAction } from "./actions";
 
 export const metadata = {
   title: "Inbox — ConstructionOS",
@@ -52,7 +55,8 @@ export default async function InboxPage({
             {unreadCount} unread of {notifications.length}
           </p>
         </div>
-        <form action={`/api/notifications/mark-all-read${projectId ? `?project_id=${projectId}` : ""}`} method="POST">
+        <form action={markAllReadAction}>
+          {projectId && <input type="hidden" name="project_id" value={projectId} />}
           <button
             type="submit"
             disabled={unreadCount === 0}
@@ -127,12 +131,10 @@ export default async function InboxPage({
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   {isUnread && (
-                    <form action={`/api/notifications/${n.id}`} method="POST">
-                      {/* Next.js forms don't natively send PATCH; use _method override via API route extension */}
-                      <input type="hidden" name="_method" value="PATCH" />
+                    <form action={markReadAction}>
+                      <input type="hidden" name="id" value={n.id} />
                       <button
                         type="submit"
-                        formAction={`/api/notifications/${n.id}?_method=PATCH`}
                         style={{
                           fontSize: 9,
                           padding: "4px 8px",
