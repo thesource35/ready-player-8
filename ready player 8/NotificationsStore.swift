@@ -21,10 +21,18 @@ final class NotificationsStore: ObservableObject {
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var lastError: String?
 
+    // Phase 30 — D-05/D-08/D-10: UI-observable filter state + membership list powering
+    // the InboxView toolbar Menu picker. Widened from `private var` for @ObservedObject binding.
+    @Published private(set) var projectFilter: String?
+    @Published private(set) var memberships: [ProjectMembershipUnread] = []
+
+    // Phase 30 — D-10: AppStorage key for persistent project filter. Namespace matches
+    // the existing ConstructOS.Notifications.* keys from Phase 14.
+    static let lastFilterKey = "ConstructOS.Notifications.LastFilterProjectId"
+
     // MARK: Internals
     private var pollTask: Task<Void, Never>?
     private var currentUserId: String?
-    private var projectFilter: String?
     private let pollInterval: TimeInterval = 20
 
     // MARK: Lifecycle
@@ -34,7 +42,25 @@ final class NotificationsStore: ObservableObject {
     func start(userId: String?, projectId: String? = nil) async {
         stop()
         self.currentUserId = userId
-        self.projectFilter = projectId
+
+        // Phase 30 — D-10/D-11: rehydrate persisted filter and silently recover
+        // from stale ids (project the user is no longer a member of).
+        let persisted = UserDefaults.standard.string(forKey: Self.lastFilterKey)
+        await loadMemberships(userId: userId)
+        let validIds = Set(memberships.map(\.projectId))
+        if let p = persisted, validIds.contains(p) {
+            self.projectFilter = p
+        } else {
+            if persisted != nil {
+                UserDefaults.standard.removeObject(forKey: Self.lastFilterKey)
+            }
+            self.projectFilter = nil
+        }
+        // Explicit caller arg still wins over rehydrated state — route through setFilter
+        // so persistence stays consistent with direct UI selections (preserves Phase 14 behavior).
+        if let projectId {
+            await setFilter(projectId)
+        }
 
         guard SupabaseService.shared.isConfigured, let uid = userId else {
             applyMockData()
@@ -50,7 +76,6 @@ final class NotificationsStore: ObservableObject {
                 if Task.isCancelled { return }
                 await self.refresh()
             }
-            _ = uid // silence unused warning when polling never runs
         }
     }
 
@@ -81,6 +106,34 @@ final class NotificationsStore: ObservableObject {
             self.lastError = nil
         } catch {
             self.lastError = (error as? AppError)?.localizedDescription ?? "Failed to load notifications"
+        }
+    }
+
+    // MARK: Phase 30 — project-filter management (D-05/D-10/D-11)
+
+    /// Persist and apply a filter selection. Pass nil to clear filter.
+    /// Triggers a refresh so the list reflects the new filter immediately.
+    func setFilter(_ projectId: String?) async {
+        self.projectFilter = projectId
+        if let pid = projectId {
+            UserDefaults.standard.set(pid, forKey: Self.lastFilterKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: Self.lastFilterKey)
+        }
+        await refresh()
+    }
+
+    /// Reload the user's project memberships + per-project unread chips.
+    /// Mock fallback preserves UI previews when Supabase is not configured.
+    func loadMemberships(userId: String?) async {
+        guard SupabaseService.shared.isConfigured, let uid = userId else {
+            memberships = SupabaseService.mockMemberships
+            return
+        }
+        do {
+            memberships = try await SupabaseService.shared.fetchProjectMembershipsWithUnread(userId: uid)
+        } catch {
+            memberships = []
         }
     }
 
