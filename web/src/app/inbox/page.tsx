@@ -3,10 +3,13 @@
 // Action which respects that filter (D-12).
 // Phase 30 (D-01/D-02) — per-row READ and MARK ALL READ now invoke React 19
 // Server Actions from ./actions; the legacy POST + HTTP-method-override kludge is gone.
+// Phase 30-03 (D-06/D-10/D-12) — header now hosts the InboxProjectPicker dropdown
+// and the sub-count + empty-state copy branch on the active project filter.
 
-import { fetchNotifications } from "@/lib/notifications";
+import { fetchNotifications, fetchProjectMembershipsWithUnread } from "@/lib/notifications";
 import type { Notification } from "@/lib/supabase/types";
 import { markReadAction, markAllReadAction } from "./actions";
+import InboxProjectPicker from "./InboxProjectPicker";
 
 export const metadata = {
   title: "Inbox — ConstructionOS",
@@ -40,41 +43,50 @@ export default async function InboxPage({
 }) {
   const params = await searchParams;
   const projectId = params.project_id ?? null;
-  const notifications = await fetchNotifications({ projectId, limit: 100 });
+  const [notifications, memberships] = await Promise.all([
+    fetchNotifications({ projectId, limit: 100 }),
+    fetchProjectMembershipsWithUnread(),
+  ]);
   const unreadCount = notifications.filter((n: Notification) => !n.read_at).length;
+  const currentProjectName = projectId
+    ? memberships.find((m) => m.project_id === projectId)?.project_name ?? null
+    : null;
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "32px 20px" }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 24 }}>
-        <div>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 24, gap: 12 }}>
+        <div style={{ minWidth: 0 }}>
           <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: 2, color: "#F0F8F8", marginBottom: 4 }}>
             INBOX
           </h1>
           <p style={{ fontSize: 12, color: "#9EBDC2" }}>
-            {projectId ? `Filtered to one project · ` : ""}
+            {projectId && currentProjectName ? `Filtered to ${currentProjectName} · ` : ""}
             {unreadCount} unread of {notifications.length}
           </p>
         </div>
-        <form action={markAllReadAction}>
-          {projectId && <input type="hidden" name="project_id" value={projectId} />}
-          <button
-            type="submit"
-            disabled={unreadCount === 0}
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: 1,
-              padding: "8px 14px",
-              borderRadius: 8,
-              background: unreadCount ? "#162832" : "transparent",
-              color: unreadCount ? "#F29E3D" : "rgba(158,189,194,0.4)",
-              border: "1px solid rgba(242,158,61,0.3)",
-              cursor: unreadCount ? "pointer" : "default",
-            }}
-          >
-            MARK ALL READ
-          </button>
-        </form>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <InboxProjectPicker memberships={memberships} currentProjectId={projectId} />
+          <form action={markAllReadAction}>
+            {projectId && <input type="hidden" name="project_id" value={projectId} />}
+            <button
+              type="submit"
+              disabled={unreadCount === 0}
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: 1,
+                padding: "8px 14px",
+                borderRadius: 8,
+                background: unreadCount ? "#162832" : "transparent",
+                color: unreadCount ? "#F29E3D" : "rgba(158,189,194,0.4)",
+                border: "1px solid rgba(242,158,61,0.3)",
+                cursor: unreadCount ? "pointer" : "default",
+              }}
+            >
+              MARK ALL READ
+            </button>
+          </form>
+        </div>
       </div>
 
       {notifications.length === 0 ? (
@@ -88,10 +100,22 @@ export default async function InboxPage({
             border: "1px dashed rgba(51,84,94,0.3)",
           }}
         >
-          <p style={{ fontSize: 13 }}>No notifications yet.</p>
-          <p style={{ fontSize: 11, marginTop: 6 }}>
-            Project activity, safety alerts, and bid deadlines will appear here.
+          <p style={{ fontSize: 13 }}>
+            {projectId && currentProjectName
+              ? `No notifications for ${currentProjectName}`
+              : "No notifications yet."}
           </p>
+          {projectId ? (
+            <p style={{ fontSize: 11, marginTop: 6 }}>
+              <a href="/inbox" style={{ color: "#F29E3D", textDecoration: "underline" }}>
+                Show all projects
+              </a>
+            </p>
+          ) : (
+            <p style={{ fontSize: 11, marginTop: 6 }}>
+              Project activity, safety alerts, and bid deadlines will appear here.
+            </p>
+          )}
         </div>
       ) : (
         <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
