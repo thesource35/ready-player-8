@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 30-07-PLAN.md
-last_updated: "2026-04-23T22:01:41.995Z"
+stopped_at: Completed 30-02-PLAN.md
+last_updated: "2026-04-23T22:22:18.720Z"
 last_activity: 2026-04-23
 progress:
   total_phases: 17
   completed_phases: 16
   total_plans: 118
-  completed_plans: 111
-  percent: 94
+  completed_plans: 112
+  percent: 95
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 Milestone: v2.1
 Phase: 30 (notifications-list-mark-read-ios-push-remediation) — EXECUTING
-Plan: 3 of 9
+Plan: 4 of 9
 Status: Ready to execute
 Last activity: 2026-04-23
 
@@ -109,6 +109,7 @@ v2.0 closing decisions:
 - [Phase 21]: [Phase 21]: Plan 21-11 UAT re-walk complete — 16/16 PASS after closer plans 21-07/08/09/10 landed. vitest regression GREEN 4/4. 21-VERIFICATION.md flipped human_needed -> passed with re_verified 2026-04-21. Phase 21 v2.1 gap closure complete.
 - [Phase 30]: [Phase 30-01]: Server Actions replace POST->?_method=PATCH kludge on /inbox; REST PATCH/DELETE/POST byte-preserved for iOS callers (D-03); vi.hoisted() adopted for mock refs surviving vi.mock() factory hoisting; 8/8 new regression cases + full notifications suite 19/19 GREEN
 - [Phase 30-notifications-list-mark-read-ios-push-remediation]: [Phase 30-07]: D-24 entity_id/entity_type passthrough regression locked — 4 vitest cases + 3 XCTest cases shipped; audit confirmed production code already meets D-24 contract (MOCK_NOTIFICATIONS populated, Notification type has string | null fields, SupabaseNotification DTO has entityType/entityId as String?); zero production code touched; compile-only iOS verification per Phase 22/29.1 precedent (pre-existing ready_player_8Tests.swift async errors still block build-for-testing, new DTO test file itself compiles clean).
+- [Phase 30]: [Phase 30-02]: NOTIF-01 iOS closed — picker feature land pre-shipped in salvaged f0fb701 (worktree merge 1fc1dab); regression-style XCTest coverage added in 1ddd383 locks stale-recovery (D-11), persistence round-trip (D-10), empty-state copy (D-12), and D-09 sort order. Compile-only verification per Phase 22/29.1/30-07 precedent — build-for-testing still blocked by pre-existing ready_player_8Tests.swift async errors; zero new errors reference the Phase 30 test files.
 
 ### Pending Todos
 
@@ -132,6 +133,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-23T22:01:41.991Z
-Stopped at: Completed 30-07-PLAN.md
+Last session: 2026-04-23T22:21:51.240Z
+Stopped at: Completed 30-02-PLAN.md
 Resume file: None
