@@ -299,11 +299,14 @@ Plans:
 | 27. Portal → Map Navigation Link | v2.1 | 6/6 | Complete    | 2026-04-19 |
 | 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 2/2 | Complete    | 2026-04-19 |
 | 29. Live Video Traffic Feed (Sat + Drone + Suggestions) | v2.1 | 11/11 | Complete    | 2026-04-20 |
-| 30. Notifications List + Mark-Read + iOS Push Remediation | v2.1 | 0/? | Planned | — |
+| 30. Notifications List + Mark-Read + iOS Push Remediation | v2.1 | 1/9 | In Progress|  |
 
 ## Backlog
 
-_No items in backlog._
+| # | Name | Captured | Notes |
+|---|------|----------|-------|
+| 999.1 | Multi-party video calls | 2026-04-23 | Extend in-app conversations to support 3+ participants on a video call. Likely touches Angelic AI surface + any existing 1:1 video primitive; needs WebRTC/SFU decision, presence/mute/leave controls, recording posture, and call lifecycle schema. Scope TBD — promote via `/gsd-add-phase` when a milestone covers it. |
+| 999.2 | Multi-party phone (voice) calls | 2026-04-23 | Group voice call variant of 999.1 — N participants on an audio-only bridge. Needs decision on whether this shares infra with 999.1 (audio-only WebRTC track) or routes through a carrier bridge (Twilio/Agora). Scope TBD. |
 
 ### Phase 29: Live Video Traffic Feed (Sat + Drone + Suggestions)
 
@@ -334,10 +337,22 @@ Plans:
 **Goal:** User can view a notification list with unread count badge on web parity with iOS, mark notifications as read individually (per-row) or all at once on both platforms, and receive iOS push notifications for bid deadlines, safety alerts, and assigned tasks on a real device.
 **Depends on:** Phase 28
 **Requirements:** NOTIF-01, NOTIF-03, NOTIF-05
-**Plans:** 0 plans
+**Plans:** 1/9 plans executed
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 30 to break down)
+- [x] 30-01-PLAN.md — Web Server Action mark-read refactor (D-01..D-04) — NOTIF-03
+- [ ] 30-02-PLAN.md — iOS project-picker + filter persistence + stale recovery + empty state (D-05, D-10..D-12) — NOTIF-01
+- [ ] 30-03-PLAN.md — Web project-picker dropdown + URL searchParam (D-06..D-12) — NOTIF-01
+- [ ] 30-04-PLAN.md — Filter-scoped mark-all + bell-badge parity + 30-PARITY-SPEC.md + 99+ cap tests (D-13..D-15) — NOTIF-01, NOTIF-03
+- [ ] 30-05-PLAN.md — iOS Realtime subscription on cs_notifications (D-16) — NOTIF-01
+- [ ] 30-06-PLAN.md — Cross-platform inbox_filter_changed analytics (D-17) — NOTIF-01
+- [ ] 30-07-PLAN.md — entity_id/entity_type passthrough audit (D-24) — NOTIF-01
+- [ ] 30-08-PLAN.md — Push Edge Function Deno-test coverage (D-21) + APNsRegistrationTests unchanged audit (D-22) — NOTIF-05
+- [ ] 30-09-PLAN.md — 30-DEPLOY-STEPS.md (D-19) + real-device UAT walkthrough with 3 screenshots (D-18) — NOTIF-05 [autonomous: false]
+
+**Deferred (explicitly excluded from this phase):**
+- D-20: APNs production cutover (aps-environment=production, APNS_HOST=api.push.apple.com) — future phase, NOT pre-registered on roadmap per CONTEXT.md
+- D-23: Notification-tap deep-link routing (UNUserNotificationCenterDelegate + userInfo payload) — future phase; D-24 future-prep keeps it cheap
 
 **Evidence basis (from 28-01 VERIFICATION.md):**
 - NOTIF-01: iOS InboxView project-filter UI missing (14-04-SUMMARY.md KL #4); web has no NotificationsStore/InboxView equivalent (grep returns 0 files).

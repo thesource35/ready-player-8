@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 21-11-PLAN.md (phase 21 UAT gap closure done)
-last_updated: "2026-04-22T16:54:00.416Z"
-last_activity: 2026-04-22
+stopped_at: Completed 30-01-PLAN.md
+last_updated: "2026-04-23T21:38:43.486Z"
+last_activity: 2026-04-23
 progress:
   total_phases: 17
   completed_phases: 16
-  total_plans: 109
-  completed_plans: 109
-  percent: 100
+  total_plans: 118
+  completed_plans: 110
+  percent: 93
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Every user action must either succeed visibly or fail with a clear, actionable message -- no silent data loss, no undetected errors, no security gaps.
-**Current focus:** Phase 21 — live-satellite-traffic-maps
+**Current focus:** Phase 30 — notifications-list-mark-read-ios-push-remediation
 
 ## Current Position
 
 Milestone: v2.1
-Phase: 22
-Plan: Not started
+Phase: 30 (notifications-list-mark-read-ios-push-remediation) — EXECUTING
+Plan: 2 of 9
 Status: Ready to execute
-Last activity: 2026-04-22
+Last activity: 2026-04-23
 
 ## Accumulated Context
 
@@ -107,6 +107,7 @@ v2.0 closing decisions:
 - [Phase 21]: Plan 21-09: Closed UAT Test 11 root cause (allowedTables missing cs_equipment*) + Test 8 dual defect (Atlanta coords + no empty-success fallback) + Test 9 data gap (no mock fallback, no empty-state chip) + silent-swallow regression via AppError-wrapped loadError alert + AppError-styled submitError. All four iOS files modified in 3 atomic commits (63b261c/8aa93e7/64f8991); xcodebuild BUILD SUCCEEDED.
 - [Phase 21]: Plan 21-10: Closed UAT Test 10 (4 defects) + Test 12 (split error states) — 7th @AppStorage for AUTO TRACK, .onMapCameraChange(.continuous) live save + ScenePhase backstop + cameraRestored first-restore guard; CheckInLocationManager split into permissionDenied Bool + runtimeError AppError with Settings deep-link CTA via UIApplication.openSettingsURLString. 2 atomic commits (a55779d/6295b26); xcodebuild BUILD SUCCEEDED.
 - [Phase 21]: [Phase 21]: Plan 21-11 UAT re-walk complete — 16/16 PASS after closer plans 21-07/08/09/10 landed. vitest regression GREEN 4/4. 21-VERIFICATION.md flipped human_needed -> passed with re_verified 2026-04-21. Phase 21 v2.1 gap closure complete.
+- [Phase 30]: [Phase 30-01]: Server Actions replace POST->?_method=PATCH kludge on /inbox; REST PATCH/DELETE/POST byte-preserved for iOS callers (D-03); vi.hoisted() adopted for mock refs surviving vi.mock() factory hoisting; 8/8 new regression cases + full notifications suite 19/19 GREEN
 
 ### Pending Todos
 
@@ -130,6 +131,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-22T16:47:40.335Z
-Stopped at: Completed 21-11-PLAN.md (phase 21 UAT gap closure done)
+Last session: 2026-04-23T21:38:43.461Z
+Stopped at: Completed 30-01-PLAN.md
 Resume file: None

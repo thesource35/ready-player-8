@@ -21,7 +21,7 @@ Downstream tools and reviewers MUST treat `[~]` as distinct from `[x]` (partial 
 
 - [ ] **NOTIF-01**: User can view in-app notification list with unread count badge
 - [x] **NOTIF-02**: User can view activity timeline per project (chronological action log)
-- [ ] **NOTIF-03**: User can mark notifications as read (individually or all)
+- [x] **NOTIF-03**: User can mark notifications as read (individually or all)
 - [x] **NOTIF-04**: User can dismiss notifications
 - [ ] **NOTIF-05**: User receives push notifications on iOS for bid deadlines, safety alerts, and assigned tasks
 
