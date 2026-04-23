@@ -73,3 +73,53 @@ struct ProjectActivityViewHelperTests {
         #expect(mock.allSatisfy { $0.projectId == "test-pid" })
     }
 }
+
+// MARK: - Phase 30 picker + empty-state helpers (D-09 / D-12)
+//
+// Regression coverage for commit f0fb701 — project-filter picker UI helpers.
+// Impl lives in InboxView.{membershipSort, emptyStateCopyForFilter} statics.
+// These pure-function tests lock:
+//   - Empty-state copy branches correctly on projectName == nil vs non-nil (D-12)
+//   - Membership sort: unread desc primary, latestCreatedAt desc tiebreak (D-09)
+
+@Suite("Phase 30 picker + empty-state")
+struct InboxView_Phase30_PickerTests {
+    @Test func emptyStateCopyForFilter_nil_returnsCaughtUp() {
+        #expect(InboxView.emptyStateCopyForFilter(projectName: nil) == "You're caught up")
+    }
+
+    @Test func emptyStateCopyForFilter_empty_returnsCaughtUp() {
+        // Guard the ! n.isEmpty branch — empty string must fall through to unfiltered copy.
+        #expect(InboxView.emptyStateCopyForFilter(projectName: "") == "You're caught up")
+    }
+
+    @Test func emptyStateCopyForFilter_named_returnsScopedCopy() {
+        #expect(InboxView.emptyStateCopyForFilter(projectName: "Oak St") == "No notifications for Oak St")
+    }
+
+    @Test func membershipSort_unreadDescThenLatest() {
+        // D-09: higher unread first; within same unread count, newer latestCreatedAt first.
+        // "All Projects" row is rendered separately in the Menu so it is NOT in this array.
+        let late = "2026-04-22T12:00:00Z"
+        let early = "2026-04-20T08:00:00Z"
+        let rows: [ProjectMembershipUnread] = [
+            ProjectMembershipUnread(projectId: "a", projectName: "A", unreadCount: 5, latestCreatedAt: early),
+            ProjectMembershipUnread(projectId: "b", projectName: "B", unreadCount: 5, latestCreatedAt: late),
+            ProjectMembershipUnread(projectId: "c", projectName: "C", unreadCount: 0, latestCreatedAt: late),
+        ]
+        let sorted = rows.sorted(by: InboxView.membershipSort)
+        #expect(sorted.map(\.projectId) == ["b", "a", "c"])
+    }
+
+    @Test func membershipSort_nilLatestSortsAfterNonNil() {
+        // Defensive: latestCreatedAt == nil coalesces to "" which sorts lowest,
+        // so rows with no notifications yet fall to the bottom within their unread tier.
+        let late = "2026-04-22T12:00:00Z"
+        let rows: [ProjectMembershipUnread] = [
+            ProjectMembershipUnread(projectId: "a", projectName: "A", unreadCount: 3, latestCreatedAt: nil),
+            ProjectMembershipUnread(projectId: "b", projectName: "B", unreadCount: 3, latestCreatedAt: late),
+        ]
+        let sorted = rows.sorted(by: InboxView.membershipSort)
+        #expect(sorted.map(\.projectId) == ["b", "a"])
+    }
+}

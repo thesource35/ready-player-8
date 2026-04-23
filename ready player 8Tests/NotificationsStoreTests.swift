@@ -95,3 +95,63 @@ struct NotificationsStoreTests {
         #expect(n.isUnread == false)
     }
 }
+
+// MARK: - Phase 30 project-filter persistence (D-10 / D-11)
+//
+// Regression coverage for commit f0fb701 — project-filter picker state.
+// Impl lives in NotificationsStore.{projectFilter, memberships, setFilter,
+// loadMemberships, lastFilterKey}. These tests lock:
+//   - setFilter(…) round-trips through UserDefaults under the canonical
+//     ConstructOS.Notifications.LastFilterProjectId key (D-10)
+//   - start(userId:) rehydrates a valid persisted id (D-10)
+//   - start(userId:) silently wipes a stale persisted id that doesn't
+//     resolve to a current membership, resetting projectFilter to nil (D-11)
+// Tests run in mock-mode (SupabaseService not configured); memberships are
+// sourced from SupabaseService.mockMemberships which includes "mock-project-1"
+// and "mock-project-2".
+
+@MainActor
+@Suite("Phase 30 project-filter persistence")
+struct NotificationsStore_Phase30_FilterTests {
+    init() {
+        // Isolate each test from UserDefaults state bleeding across runs.
+        UserDefaults.standard.removeObject(forKey: NotificationsStore.lastFilterKey)
+    }
+
+    @Test func staleFilterRecovery() async {
+        // Persist an id the user is NOT a member of; start() must silently
+        // wipe it and leave projectFilter nil (D-11).
+        UserDefaults.standard.set("ghost-project-id", forKey: NotificationsStore.lastFilterKey)
+        let store = NotificationsStore()
+        await store.start(userId: nil)
+        #expect(store.projectFilter == nil)
+        #expect(UserDefaults.standard.string(forKey: NotificationsStore.lastFilterKey) == nil)
+    }
+
+    @Test func persistedFilterRehydrates() async {
+        // A valid membership id must be rehydrated on start() (D-10).
+        // "mock-project-1" is the first row in SupabaseService.mockMemberships.
+        UserDefaults.standard.set("mock-project-1", forKey: NotificationsStore.lastFilterKey)
+        let store = NotificationsStore()
+        await store.start(userId: nil)
+        #expect(store.projectFilter == "mock-project-1")
+    }
+
+    @Test func setFilterWritesUserDefaults() async {
+        let store = NotificationsStore()
+        await store.start(userId: nil)
+        await store.setFilter("mock-project-2")
+        #expect(UserDefaults.standard.string(forKey: NotificationsStore.lastFilterKey) == "mock-project-2")
+        await store.setFilter(nil)
+        #expect(UserDefaults.standard.string(forKey: NotificationsStore.lastFilterKey) == nil)
+    }
+
+    @Test func loadMembershipsSeedsMockRowsInMockMode() async {
+        // Mock-mode must always populate memberships so the picker has content
+        // even without a configured backend.
+        let store = NotificationsStore()
+        await store.loadMemberships(userId: nil)
+        #expect(store.memberships.count == SupabaseService.mockMemberships.count)
+        #expect(store.memberships.contains(where: { $0.projectId == "mock-project-1" }))
+    }
+}
