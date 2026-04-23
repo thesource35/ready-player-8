@@ -285,3 +285,100 @@ export function subscribeToOwnNotifications(
     client.removeChannel(channel);
   };
 }
+
+// ---------- Phase 30: project-filter picker helpers (D-06..D-11) ----------
+
+/**
+ * localStorage key for the /inbox project-filter picker (D-10). Mirrors the iOS
+ * AppStorage key `ConstructOS.Notifications.LastFilterProjectId` by intent — both
+ * platforms persist the last-selected project id per device.
+ */
+export const LAST_FILTER_STORAGE_KEY = "constructos.notifications.last_filter_project_id";
+
+export type ProjectMembershipUnread = {
+  project_id: string;
+  project_name: string;
+  unread_count: number;
+  latest_created_at: string | null;
+};
+
+// Mock picker rows — parity with the iOS MOCK_MEMBERSHIPS from Phase 30-02 so
+// the /inbox dropdown has something to render in mock mode (no Supabase env).
+const MOCK_MEMBERSHIPS: ProjectMembershipUnread[] = [
+  { project_id: "mock-project-1", project_name: "Civic Center Phase 2", unread_count: 2, latest_created_at: HOURS_AGO(2) },
+  { project_id: "mock-project-2", project_name: "Oak St Retrofit", unread_count: 0, latest_created_at: HOURS_AGO(28) },
+];
+
+/**
+ * Returns the signed-in user's project memberships with per-project unread counts.
+ * D-07 source: cs_project_members JOIN cs_projects. Mock fallback when unconfigured.
+ * Non-fatal on error — logs and returns [] so /inbox still renders.
+ */
+export async function fetchProjectMembershipsWithUnread(): Promise<ProjectMembershipUnread[]> {
+  const supabase = await createServerSupabase();
+  if (!supabase) return MOCK_MEMBERSHIPS;
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data: members, error: memErr } = await supabase
+    .from("cs_project_members")
+    .select("project_id, cs_projects(id, name)")
+    .eq("user_id", user.id);
+
+  if (memErr) {
+    console.error("[notifications] memberships error:", memErr.message);
+    return [];
+  }
+
+  // Enrich each membership with unread count + latest created_at in parallel
+  // (T-30-03-05 accepted: memberships ≤ 20 typical; no N+1 concern at this scale).
+  // Supabase PostgREST inference types embedded resources as an array (or null) —
+  // we grab index 0 since cs_projects.id is the one-to-one FK target.
+  type MembershipRow = { project_id: string; cs_projects: { id: string; name: string | null }[] | { id: string; name: string | null } | null };
+  const results = await Promise.all(
+    ((members ?? []) as MembershipRow[]).map(async (row) => {
+      const proj = Array.isArray(row.cs_projects) ? row.cs_projects[0] ?? null : row.cs_projects;
+      const pid = proj?.id ?? row.project_id;
+      const pname = proj?.name ?? pid;
+
+      const [{ count: unreadCount }, { data: latestRows }] = await Promise.all([
+        supabase
+          .from("cs_notifications")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("project_id", pid)
+          .is("read_at", null)
+          .is("dismissed_at", null),
+        supabase
+          .from("cs_notifications")
+          .select("created_at")
+          .eq("user_id", user.id)
+          .eq("project_id", pid)
+          .order("created_at", { ascending: false })
+          .limit(1),
+      ]);
+
+      return {
+        project_id: pid,
+        project_name: pname,
+        unread_count: unreadCount ?? 0,
+        latest_created_at: (latestRows?.[0] as { created_at?: string } | undefined)?.created_at ?? null,
+      };
+    })
+  );
+  return results;
+}
+
+/**
+ * D-11: if persistedId is not in the current memberships, return null (caller
+ * should wipe localStorage). Otherwise return the id unchanged.
+ */
+export function resolveStalePickerFilter(
+  persistedId: string | null,
+  memberships: ProjectMembershipUnread[]
+): string | null {
+  if (!persistedId) return null;
+  const ids = new Set(memberships.map((m) => m.project_id));
+  return ids.has(persistedId) ? persistedId : null;
+}
