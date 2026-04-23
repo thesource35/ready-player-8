@@ -1909,6 +1909,85 @@ extension SupabaseService {
     }
 }
 
+// MARK: - Phase 30: Project-filter picker source (NOTIF-01 iOS gap closure)
+//
+// Returns the signed-in user's project memberships joined with cs_projects for
+// the display name + per-project unread count from cs_notifications + most-recent
+// notification timestamp. Feeds the InboxView toolbar Menu picker (D-05/D-07/D-08/D-09).
+//
+// RLS on cs_notifications (Phase 03) restricts SELECT to user_id = auth.uid(), so a
+// spoofed project_id cannot leak other users' data — threat T-30-02-01.
+
+struct ProjectMembershipUnread: Identifiable, Equatable {
+    var id: String { projectId }
+    let projectId: String
+    let projectName: String
+    let unreadCount: Int
+    let latestCreatedAt: String?   // ISO-8601 of most-recent cs_notifications.created_at
+}
+
+extension SupabaseService {
+    /// Returns the signed-in user's project memberships with per-project unread counts
+    /// and the most-recent notification timestamp. Mock fallback when not configured.
+    /// D-07 source: cs_project_members JOIN cs_projects, unread via cs_notifications.
+    func fetchProjectMembershipsWithUnread(userId: String) async throws -> [ProjectMembershipUnread] {
+        guard isConfigured else {
+            return Self.mockMemberships
+        }
+        // Step 1: fetch memberships with embedded project name.
+        struct MembershipRow: Decodable {
+            let projectId: String
+            struct Project: Decodable { let id: String; let name: String? }
+            // PostgREST returns the embedded alias as the table name "cs_projects"
+            let csProjects: Project?
+        }
+        let path = "cs_project_members?select=project_id,cs_projects(id,name)&user_id=eq.\(userId)"
+        let rows: [MembershipRow] = try await phase14Get(path: path)
+
+        // Step 2: parallel enrich with unread count + latest timestamp per project.
+        // withThrowingTaskGroup caps parallelism to the count of actual memberships
+        // (typically ≤ 20 per user), bounding HEAD-count fan-out — threat T-30-02-04.
+        var results: [ProjectMembershipUnread] = []
+        try await withThrowingTaskGroup(of: ProjectMembershipUnread.self) { group in
+            for row in rows {
+                let pid = row.csProjects?.id ?? row.projectId
+                let pname = row.csProjects?.name ?? pid
+                group.addTask {
+                    async let unread = self.fetchUnreadCount(userId: userId, projectId: pid)
+                    async let latest = self.fetchLatestNotificationCreatedAt(userId: userId, projectId: pid)
+                    let (u, l) = try await (unread, latest)
+                    return ProjectMembershipUnread(projectId: pid, projectName: pname, unreadCount: u, latestCreatedAt: l)
+                }
+            }
+            for try await r in group { results.append(r) }
+        }
+        return results
+    }
+
+    /// Helper used by fetchProjectMembershipsWithUnread — max(created_at) for the user+project.
+    func fetchLatestNotificationCreatedAt(userId: String, projectId: String) async throws -> String? {
+        struct Row: Decodable { let createdAt: String? }
+        let path = "cs_notifications?select=created_at&user_id=eq.\(userId)&project_id=eq.\(projectId)&order=created_at.desc&limit=1"
+        let rows: [Row] = try await phase14Get(path: path)
+        return rows.first?.createdAt
+    }
+
+    static let mockMemberships: [ProjectMembershipUnread] = [
+        ProjectMembershipUnread(
+            projectId: "mock-project-1",
+            projectName: "Civic Center Phase 2",
+            unreadCount: 2,
+            latestCreatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-2 * 3600))
+        ),
+        ProjectMembershipUnread(
+            projectId: "mock-project-2",
+            projectName: "Oak St Retrofit",
+            unreadCount: 0,
+            latestCreatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-28 * 3600))
+        ),
+    ]
+}
+
 // MARK: - Phase 14: base64url helper for JWT decoding
 private extension Data {
     init?(base64URLEncoded input: String) {

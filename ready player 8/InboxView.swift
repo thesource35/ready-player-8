@@ -53,6 +53,54 @@ struct InboxView: View {
                     Button("Done") { dismiss() }
                         .foregroundStyle(Theme.accent)
                 }
+                // Phase 30 — D-05/D-07/D-08/D-09: project-filter Menu picker.
+                // Placed BEFORE "Mark All Read" so scoping a project reads left-to-right.
+                ToolbarItem(placement: .navigation) {
+                    Menu {
+                        Button {
+                            Task { await store.setFilter(nil) }
+                        } label: {
+                            HStack {
+                                Text("All Projects")
+                                if store.projectFilter == nil {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                        Divider()
+                        ForEach(store.memberships.sorted(by: Self.membershipSort), id: \.projectId) { m in
+                            Button {
+                                Task { await store.setFilter(m.projectId) }
+                            } label: {
+                                HStack {
+                                    Text(m.projectName)
+                                    Spacer()
+                                    if m.unreadCount > 0 {
+                                        Text("\(m.unreadCount)")
+                                            .font(.caption2.weight(.heavy))
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Theme.accent.opacity(0.25))
+                                            .foregroundStyle(Theme.accent)
+                                            .clipShape(Capsule())
+                                    }
+                                    if store.projectFilter == m.projectId {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(currentFilterLabel)
+                                .font(.system(size: 12, weight: .semibold))
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 10, weight: .bold))
+                        }
+                        .foregroundStyle(Theme.accent)
+                    }
+                    .accessibilityLabel("Filter notifications by project")
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button("Mark All Read") {
                         Task { await store.markAllRead() }
@@ -64,14 +112,51 @@ struct InboxView: View {
         }
     }
 
+    // MARK: Phase 30 — picker / empty-state helpers
+
+    /// Label shown on the toolbar Menu button — resolves current filter's project
+    /// name, or "All Projects" when no filter is active.
+    private var currentFilterLabel: String {
+        if let pid = store.projectFilter,
+           let m = store.memberships.first(where: { $0.projectId == pid }) {
+            return m.projectName
+        }
+        return "All Projects"
+    }
+
+    /// D-09 sort order: unread count descending, tiebreak by most-recent notification
+    /// timestamp descending. "All Projects" is rendered separately (pinned at top).
+    static func membershipSort(lhs: ProjectMembershipUnread, rhs: ProjectMembershipUnread) -> Bool {
+        if lhs.unreadCount != rhs.unreadCount { return lhs.unreadCount > rhs.unreadCount }
+        return (lhs.latestCreatedAt ?? "") > (rhs.latestCreatedAt ?? "")
+    }
+
+    /// D-12 empty-state copy branching. Filtered state shows scoped message; unfiltered
+    /// keeps the original "You're caught up" copy so Phase 14 behavior is preserved.
+    static func emptyStateCopyForFilter(projectName: String?) -> String {
+        if let n = projectName, !n.isEmpty { return "No notifications for \(n)" }
+        return "You're caught up"
+    }
+
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        let filteredProjectName: String? = {
+            guard let pid = store.projectFilter else { return nil }
+            return store.memberships.first(where: { $0.projectId == pid })?.projectName
+        }()
+        return VStack(spacing: 12) {
             Image(systemName: "bell.slash")
                 .font(.system(size: 42, weight: .light))
                 .foregroundStyle(Theme.muted)
-            Text("You're caught up")
+            Text(Self.emptyStateCopyForFilter(projectName: filteredProjectName))
                 .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(Theme.muted)
+            if filteredProjectName != nil {
+                Button("Show all projects") {
+                    Task { await store.setFilter(nil) }
+                }
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Theme.accent)
+            }
             if let err = store.lastError {
                 Text(err)
                     .font(.system(size: 11))
