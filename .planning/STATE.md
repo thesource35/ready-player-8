@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 30-05-PLAN.md
-last_updated: "2026-04-24T01:05:11.125Z"
+stopped_at: Completed 30-06-PLAN.md
+last_updated: "2026-04-24T02:22:26.549Z"
 last_activity: 2026-04-24
 progress:
   total_phases: 17
   completed_phases: 16
   total_plans: 118
-  completed_plans: 116
-  percent: 98
+  completed_plans: 117
+  percent: 99
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 Milestone: v2.1
 Phase: 30 (notifications-list-mark-read-ios-push-remediation) — EXECUTING
-Plan: 8 of 9
+Plan: 9 of 9
 Status: Ready to execute
 Last activity: 2026-04-24
 
@@ -114,6 +114,7 @@ v2.0 closing decisions:
 - [Phase 30]: [Phase 30-03]: Web /inbox picker shipped — NOTIF-01 cross-platform parity closed; InboxProjectPicker client component + fetchProjectMembershipsWithUnread server helper + LAST_FILTER_STORAGE_KEY cross-platform parity contract; 6 new vitest cases + 29/29 full notifications suite GREEN; 30-01 Server Actions regression-locked
 - [Phase 30]: [Phase 30-04]: 30-PARITY-SPEC.md authors canonical unread-count SQL + scope contract (D-13/D-14/D-15); extracts SupabaseService.buildMarkAllReadQueryString(userId:projectId:) as internal static helper; markAllNotificationsRead consumes it; XCTest calls REAL helper via @testable import (no mirror); 9 web vitest cases + 7 iOS XCTest cases lock filter-scope + 99+ cap; full notifications suite 38/38 GREEN; compile-only iOS verification per Phase 22/29.1/30-07/30-02 precedent
 - [Phase 30]: Plan 30-05: iOS NotificationsStore subscribes to Supabase Realtime postgres_changes on cs_notifications with canonical channel cs_notifications:{userId} matching web HeaderBell.tsx; polling remains as fallback after 3 consecutive WebSocket failures; Swift-6-clean via class-level nonisolated on NotificationsRealtimeHandle (target-level SWIFT_DEFAULT_ACTOR_ISOLATION=MainActor required explicit override); TDD RED->GREEN sequence (e0aa86e/584861c/c7d0ba1); compile-only test verification per Phase 22/29.1/30-02/30-04 precedent; Phase 14 D-08 (iOS 0-20s inbox lag) closed.
+- [Phase 30]: Plan 30-06: D-17 inbox_filter_changed analytics closed cross-platform — pure sanitizer+emit pair on web with 7/7 vitest locking three-key PII-free payload; iOS NotificationsStore.setFilter(_:) extended in place with diff-gated emitFilterChangedAnalytics helper (no parallel setProjectFilter — single-setter HARD GATE grep=0). Hydration bypasses emit on both platforms. AnalyticsEngine [String:String] signature required Int-to-String serialization deviation from plan template.
 
 ### Pending Todos
 
@@ -137,6 +138,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-24T01:05:11.119Z
-Stopped at: Completed 30-05-PLAN.md
+Last session: 2026-04-24T02:22:26.545Z
+Stopped at: Completed 30-06-PLAN.md
 Resume file: None
