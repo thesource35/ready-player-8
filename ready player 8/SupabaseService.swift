@@ -1883,9 +1883,20 @@ extension SupabaseService {
         )
     }
 
-    func markAllNotificationsRead(userId: String, projectId: String? = nil) async throws {
+    /// Phase 30 D-13 — canonical PATCH query-string builder for mark-all-read.
+    /// Single source of truth; consumed by `markAllNotificationsRead` AND by
+    /// `ready player 8Tests/NotificationsStoreTests.swift` via `@testable import ready_player_8`.
+    /// DO NOT duplicate this logic in tests — drift between mirror and production caused Phase 14 pain.
+    /// See .planning/phases/30-notifications-list-mark-read-ios-push-remediation/30-PARITY-SPEC.md
+    /// §Mark-All-Read Scope Contract.
+    internal static func buildMarkAllReadQueryString(userId: String, projectId: String?) -> String {
         var qs = "cs_notifications?user_id=eq.\(userId)&read_at=is.null&dismissed_at=is.null"
         if let projectId { qs += "&project_id=eq.\(projectId)" }
+        return qs
+    }
+
+    func markAllNotificationsRead(userId: String, projectId: String? = nil) async throws {
+        let qs = Self.buildMarkAllReadQueryString(userId: userId, projectId: projectId)
         try await phase14Patch(path: qs, jsonBody: ["read_at": phase14ISO8601Now()])
     }
 

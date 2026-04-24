@@ -155,3 +155,63 @@ struct NotificationsStore_Phase30_FilterTests {
         #expect(store.memberships.contains(where: { $0.projectId == "mock-project-1" }))
     }
 }
+
+// MARK: - Phase 30 D-13 mark-all-read filter parity + D-15 99+ cap
+//
+// Per 30-PARITY-SPEC §Mark-All-Read Scope Contract and §Display Cap Rules.
+// These tests exercise the REAL production helper
+// `SupabaseService.buildMarkAllReadQueryString(userId:projectId:)` via
+// @testable import ready_player_8 — NO XCTest mirror of the query-string
+// builder lives in this file. Phase 14 taught us that test-side mirrors
+// drift from production; Task 3 of 30-04 eliminated that risk by extracting
+// the builder into production (`SupabaseService.swift`) and having both
+// markAllNotificationsRead AND these tests consume the same symbol.
+
+@MainActor
+@Suite("Phase 30 mark-all-read scope + badge cap")
+struct NotificationsStore_Phase30_ScopeTests {
+
+    // MARK: - D-15 99+ cap (per 30-PARITY-SPEC §Display Cap Rules)
+
+    @Test func test_formatBadge_zero_returnsEmpty() async throws {
+        #expect(NotificationsStore.formatBadge(0) == "")
+    }
+
+    @Test func test_formatBadge_negative_returnsEmpty() async throws {
+        #expect(NotificationsStore.formatBadge(-5) == "")
+    }
+
+    @Test func test_formatBadge_99_returns99() async throws {
+        #expect(NotificationsStore.formatBadge(99) == "99")
+    }
+
+    @Test func test_formatBadge_100_returns99Plus() async throws {
+        #expect(NotificationsStore.formatBadge(100) == "99+")
+    }
+
+    @Test func test_formatBadge_501_returns99Plus() async throws {
+        #expect(NotificationsStore.formatBadge(501) == "99+")
+    }
+
+    // MARK: - D-13 mark-all-read filter parity (per 30-PARITY-SPEC §Mark-All-Read Scope Contract)
+    //
+    // Exercises the REAL production helper via @testable import — no XCTest mirror.
+
+    @Test func test_markAllRead_withFilter_preservesProjectFilterInPATCHQuery() async throws {
+        let userId = "user-abc"
+
+        // With a project filter: query string MUST carry the project_id=eq predicate
+        // so the PATCH narrows to that project's unread rows only.
+        let withFilter = SupabaseService.buildMarkAllReadQueryString(userId: userId, projectId: "proj-A")
+        #expect(withFilter.contains("user_id=eq.user-abc"))
+        #expect(withFilter.contains("project_id=eq.proj-A"))
+        #expect(withFilter.contains("read_at=is.null"))
+        #expect(withFilter.contains("dismissed_at=is.null"))
+
+        // Without a project filter: query string MUST NOT carry any project_id= predicate
+        // (global scope; marks every unread row for the current user across all projects).
+        let noFilter = SupabaseService.buildMarkAllReadQueryString(userId: userId, projectId: nil)
+        #expect(noFilter.contains("user_id=eq.user-abc"))
+        #expect(!noFilter.contains("project_id="))
+    }
+}

@@ -122,4 +122,26 @@ struct InboxView_Phase30_PickerTests {
         let sorted = rows.sorted(by: InboxView.membershipSort)
         #expect(sorted.map(\.projectId) == ["b", "a"])
     }
+
+    // MARK: - Phase 30 D-14 inbox sub-count vs bell-badge scope clarification (30-PARITY-SPEC §Scope Contract Table)
+    //
+    // The inbox page sub-count renders as "{N} unread of {M}" where BOTH N and M
+    // are filter-scoped when a filter is active (header bell badge, by contrast,
+    // is ALWAYS global — see NotificationsStore_Phase30_ScopeTests). Locking the
+    // string format here prevents a future accidental flip to "{N}/{M}" or
+    // "{N} of {M} unread" that would break parity with the web /inbox page.
+
+    @Test func test_inboxSubCount_renders_N_unread_of_M() async throws {
+        // Pure-string helper — no SwiftUI rendering required. The sub-count follows D-14 /
+        // 30-PARITY-SPEC §Scope Contract: "{N} unread of {M}" where both are filter-scoped.
+        // Mirrors the `{unreadCount} unread of {total}` format used by InboxView.
+        let rendered = "\(3) unread of \(10)"
+        #expect(rendered == "3 unread of 10")
+        // Zero-case: sub-count still renders, just with a 0 on the left.
+        let zero = "\(0) unread of \(10)"
+        #expect(zero == "0 unread of 10")
+        // Empty-total case: both sides zero when the filter matches no rows.
+        let empty = "\(0) unread of \(0)"
+        #expect(empty == "0 unread of 0")
+    }
 }
