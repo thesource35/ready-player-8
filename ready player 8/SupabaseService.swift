@@ -1717,6 +1717,193 @@ struct SupabaseDeviceToken: Codable, Equatable {
     var lastSeenAt: String?
 }
 
+// MARK: - Phase 30 · Realtime for cs_notifications (D-16)
+//
+// iOS parity with web HeaderBell.tsx: subscribe to postgres_changes on cs_notifications
+// filtered by user_id; refresh the list on any INSERT/UPDATE/DELETE delivered by
+// Realtime. Replaces the 20-second polling loop in NotificationsStore (polling is
+// preserved as a fallback after 3 consecutive WebSocket failures).
+//
+// Canonical channel name: cs_notifications:{userId} — matches web HeaderBell.tsx.
+// Canonical filter string: user_id=eq.{userId}.
+//
+// Why a separate URLSessionWebSocketTask (not the existing `realtimeTask`):
+// keeping notifications Realtime on its own task avoids multiplexing complexity
+// with the projects/contracts Realtime channels already running on `realtimeTask`.
+// Same apiKey/baseURL surface — no new secrets, no new leakage path (T-30-05-01).
+//
+// Swift-6 strict-concurrency contract: `NotificationsRealtimeHandle.cancel()` is
+// `nonisolated` so a @MainActor `NotificationsStore.deinit` can call it without
+// requiring a Task hop. The class is `@unchecked Sendable` because all mutable
+// state is synchronized on a private DispatchQueue (`stateQueue`) rather than
+// through the compiler's isolation checking.
+
+// NOTE: `nonisolated` at the class level is REQUIRED here because this target's
+// build settings set `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` — every
+// unmarked declaration defaults to @MainActor. The plan's Swift-6 contract
+// REQUIRES this class to run outside MainActor so `cancel()` can be invoked
+// from a @MainActor `deinit` without a Task hop. The explicit `nonisolated`
+// on the class opts out of the project-wide default and puts the class at
+// file-scope isolation domain, with `stateQueue` serializing mutable access.
+nonisolated final class NotificationsRealtimeHandle: @unchecked Sendable {
+    static let channelPrefix = "cs_notifications:"
+
+    private let userId: String
+    private let baseURL: String
+    private let apiKey: String
+    private let onChange: @Sendable () -> Void
+    private let onPermanentFailure: @Sendable () -> Void
+
+    // State serialized on `stateQueue` so cancel() can be `nonisolated`
+    // and safely called from @MainActor contexts (including deinit).
+    private let stateQueue = DispatchQueue(label: "NotificationsRealtimeHandle.state")
+    private var task: URLSessionWebSocketTask?
+    private var reconnectDelay: TimeInterval = 2
+    private let reconnectCap: TimeInterval = 30
+    private var consecutiveFailures = 0
+    private var cancelled = false
+
+    var channelName: String { Self.channelPrefix + userId }
+
+    init(userId: String,
+         baseURL: String,
+         apiKey: String,
+         onChange: @escaping @Sendable () -> Void,
+         onPermanentFailure: @escaping @Sendable () -> Void) {
+        self.userId = userId
+        self.baseURL = baseURL
+        self.apiKey = apiKey
+        self.onChange = onChange
+        self.onPermanentFailure = onPermanentFailure
+    }
+
+    func start() {
+        let isCancelled = stateQueue.sync { self.cancelled }
+        guard !isCancelled else { return }
+        guard let url = URL(string: baseURL
+                .replacingOccurrences(of: "https://", with: "wss://")
+                + "/realtime/v1/websocket?apikey=\(apiKey)&vsn=1.0.0") else {
+            fail()
+            return
+        }
+        let wsTask = URLSession.shared.webSocketTask(with: url)
+        stateQueue.sync { self.task = wsTask }
+        wsTask.resume()
+
+        // phx_join for the notifications channel with postgres_changes filter — canonical shape.
+        // Matches web HeaderBell.tsx: channel `cs_notifications:${userId}`, filter `user_id=eq.${userId}`.
+        let filter = "user_id=eq.\(userId)"
+        let join = """
+        {"topic":"realtime:\(channelName)","event":"phx_join","payload":{"config":{"postgres_changes":[{"event":"*","schema":"public","table":"cs_notifications","filter":"\(filter)"}]}},"ref":"\(UUID().uuidString.prefix(8))"}
+        """
+        wsTask.send(.string(join)) { [weak self] error in
+            if error != nil { self?.fail(); return }
+            self?.listen()
+        }
+    }
+
+    private func listen() {
+        let currentTask = stateQueue.sync { self.task }
+        currentTask?.receive { [weak self] result in
+            guard let self else { return }
+            let isCancelled = self.stateQueue.sync { self.cancelled }
+            guard !isCancelled else { return }
+            switch result {
+            case .success:
+                self.stateQueue.sync {
+                    self.consecutiveFailures = 0
+                    self.reconnectDelay = 2
+                }
+                self.onChange()
+                self.listen()
+            case .failure:
+                self.fail()
+            }
+        }
+    }
+
+    private func fail() {
+        let shouldPermanentFail: Bool = stateQueue.sync {
+            self.consecutiveFailures += 1
+            return self.consecutiveFailures >= 3
+        }
+        if shouldPermanentFail {
+            stateQueue.sync { self.cancelled = true }
+            onPermanentFailure()
+            return
+        }
+        let delay: TimeInterval = stateQueue.sync {
+            let d = self.reconnectDelay
+            self.reconnectDelay = min(self.reconnectDelay * 2, self.reconnectCap)
+            return d
+        }
+        DispatchQueue.global().asyncAfter(deadline: .now() + delay) { [weak self] in
+            guard let self else { return }
+            let isCancelled = self.stateQueue.sync { self.cancelled }
+            guard !isCancelled else { return }
+            self.stateQueue.sync {
+                self.task?.cancel(with: .goingAway, reason: nil)
+                self.task = nil
+            }
+            self.start()
+        }
+    }
+
+    /// Cancel the subscription. Safe to call from any isolation domain, including
+    /// a `@MainActor` `deinit` under Swift 6 strict concurrency.
+    /// Implementation: all state access is serialized on `stateQueue`, so this method
+    /// does NOT touch MainActor state and does NOT require `await`.
+    nonisolated func cancel() {
+        let taskToClose: URLSessionWebSocketTask? = stateQueue.sync {
+            guard !self.cancelled else { return nil }
+            self.cancelled = true
+            let t = self.task
+            self.task = nil
+            return t
+        }
+        guard let taskToClose else { return }
+        // Send phx_leave before closing — Realtime server cleans up channel state promptly.
+        if taskToClose.state == .running {
+            let leave = """
+            {"topic":"realtime:\(channelName)","event":"phx_leave","payload":{},"ref":"0"}
+            """
+            taskToClose.send(.string(leave)) { _ in }
+        }
+        taskToClose.cancel(with: .goingAway, reason: nil)
+    }
+}
+
+extension SupabaseService {
+    /// Phase 30 D-16 — subscribe to postgres_changes on cs_notifications filtered by user_id.
+    /// Caller owns the returned handle; call cancel() on stop/deinit.
+    /// `onChange` fires on every insert/update/delete delivered by Realtime.
+    /// `onPermanentFailure` fires after 3 consecutive WebSocket failures so the store can
+    /// fall back to polling.
+    ///
+    /// Mirrors the web HeaderBell.tsx subscription:
+    ///   client.channel(`cs_notifications:${userId}`)
+    ///         .on("postgres_changes", { event: "*", schema: "public",
+    ///                                   table: "cs_notifications",
+    ///                                   filter: `user_id=eq.${userId}` }, () => refresh())
+    ///         .subscribe()
+    func subscribeToNotifications(
+        userId: String,
+        onChange: @escaping @Sendable () -> Void,
+        onPermanentFailure: @escaping @Sendable () -> Void
+    ) -> NotificationsRealtimeHandle? {
+        guard isConfigured else { return nil }
+        let handle = NotificationsRealtimeHandle(
+            userId: userId,
+            baseURL: baseURL,
+            apiKey: apiKey,
+            onChange: onChange,
+            onPermanentFailure: onPermanentFailure
+        )
+        handle.start()
+        return handle
+    }
+}
+
 extension SupabaseService {
     /// User UUID extracted from the JWT `sub` claim. Returns nil when signed out
     /// or when the token can't be parsed. Notifications + device-token paths key
