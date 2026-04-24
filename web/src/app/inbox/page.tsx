@@ -65,7 +65,11 @@ export default async function InboxPage({
           </p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <InboxProjectPicker memberships={memberships} currentProjectId={projectId} />
+          <InboxProjectPicker
+            memberships={memberships}
+            currentProjectId={projectId}
+            unreadCountAtSelect={unreadCount}
+          />
           <form action={markAllReadAction}>
             {projectId && <input type="hidden" name="project_id" value={projectId} />}
             <button

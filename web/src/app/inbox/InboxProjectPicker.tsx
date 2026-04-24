@@ -4,15 +4,22 @@
 // Navigates /inbox?project_id= via next/navigation; persists choice to localStorage.
 // On mount: rehydrates from localStorage (D-10) and silently recovers from a stale
 // persisted/URL id (D-11) by wiping the key + replacing the URL with /inbox.
+// Phase 30-06 (D-17): onPick emits the filter-changed analytics event — diff-gated
+// so opening/closing the picker without a selection change does NOT fire the event,
+// and neither does the mount-time rehydrate `router.replace` (hydration is not a
+// user action). The unreadCountAtSelect prop is the page-level unread count captured
+// at the instant of render so the analytics payload reflects the pre-change state.
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { LAST_FILTER_STORAGE_KEY, type ProjectMembershipUnread } from "@/lib/notifications";
+import { emitInboxFilterChanged } from "@/lib/analytics/inboxFilter";
 
 type Props = {
   memberships: ProjectMembershipUnread[];
   currentProjectId: string | null;
+  unreadCountAtSelect: number;
 };
 
 // D-09 sort: unread descending, tiebreak by latest_created_at descending.
@@ -23,7 +30,7 @@ function sortMemberships(a: ProjectMembershipUnread, b: ProjectMembershipUnread)
   return tb.localeCompare(ta);
 }
 
-export default function InboxProjectPicker({ memberships, currentProjectId }: Props) {
+export default function InboxProjectPicker({ memberships, currentProjectId, unreadCountAtSelect }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -58,14 +65,20 @@ export default function InboxProjectPicker({ memberships, currentProjectId }: Pr
 
   const onPick = useCallback(
     (projectId: string | null) => {
+      const from = currentProjectId;
+      const to = projectId;
       if (typeof window !== "undefined") {
         if (projectId) window.localStorage.setItem(LAST_FILTER_STORAGE_KEY, projectId);
         else window.localStorage.removeItem(LAST_FILTER_STORAGE_KEY);
       }
       setOpen(false);
+      // D-17 diff-gate: opening the picker and clicking the already-active row must
+      // NOT emit the filter-changed event. Only fires on actual selection delta.
+      if (from === to) return;
+      emitInboxFilterChanged(from, to, unreadCountAtSelect);
       router.push(projectId ? `/inbox?project_id=${encodeURIComponent(projectId)}` : "/inbox");
     },
-    [router]
+    [router, currentProjectId, unreadCountAtSelect]
   );
 
   const sorted = [...memberships].sort(sortMemberships);
