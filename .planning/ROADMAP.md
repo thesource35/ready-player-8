@@ -307,6 +307,7 @@ Plans:
 |---|------|----------|-------|
 | 999.1 | Multi-party video calls | 2026-04-23 | Extend in-app conversations to support 3+ participants on a video call. Likely touches Angelic AI surface + any existing 1:1 video primitive; needs WebRTC/SFU decision, presence/mute/leave controls, recording posture, and call lifecycle schema. Scope TBD — promote via `/gsd-add-phase` when a milestone covers it. |
 | 999.2 | Multi-party phone (voice) calls | 2026-04-23 | Group voice call variant of 999.1 — N participants on an audio-only bridge. Needs decision on whether this shares infra with 999.1 (audio-only WebRTC track) or routes through a carrier bridge (Twilio/Agora). Scope TBD. |
+| 999.3 | Pre-auth Integration Hub bootstrap | 2026-04-24 | `AuthGateView` requires Supabase configured to sign up, but Integration Hub lives behind the auth gate — fresh installs / wiped devices hit a chicken-and-egg lockout (surfaced during Phase 30 NOTIF-05 UAT: "Supabase not configured. Enter your Base URL and API key in COMMAND → Integration Hub"). Fix: add a "Configure Backend" link on AuthGateView (ContentView.swift:7) that opens a minimal config sheet (URL + anon key → writes to UserDefaults; Keychain migration already handled by `SupabaseService.migrateCredentials()` per SEC-02/SEC-03). Unblocks any future Phase 30 NOTIF-05 gap-closure attempt. |
 
 ### Phase 29: Live Video Traffic Feed (Sat + Drone + Suggestions)
 
