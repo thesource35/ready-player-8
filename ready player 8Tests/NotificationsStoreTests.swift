@@ -215,3 +215,28 @@ struct NotificationsStore_Phase30_ScopeTests {
         #expect(!noFilter.contains("project_id="))
     }
 }
+
+// MARK: - Phase 30 D-16 Realtime channel name parity (matches web HeaderBell.tsx)
+//
+// iOS NotificationsStore must subscribe on the same canonical channel name shape
+// used by web HeaderBell.tsx so Realtime delivers the same postgres_changes events
+// to both platforms. This @Suite locks the contract: prefix + per-user channel name.
+//
+// See .planning/phases/30-notifications-list-mark-read-ios-push-remediation/30-05-PLAN.md
+// <interfaces> for the canonical web contract (channel: cs_notifications:${userId}).
+@Suite("Phase 30 D-16 Realtime channel parity")
+struct NotificationsStore_Phase30_RealtimeTests {
+
+    @Test func test_realtimeHandle_channelNameMatchesWebCanonical() async throws {
+        let handle = NotificationsRealtimeHandle(
+            userId: "user-abc",
+            baseURL: "https://example.supabase.co",
+            apiKey: "test-key",
+            onChange: {},
+            onPermanentFailure: {}
+        )
+        // Web HeaderBell.tsx uses `cs_notifications:${userId}` — iOS must match exactly.
+        #expect(handle.channelName == "cs_notifications:user-abc")
+        #expect(NotificationsRealtimeHandle.channelPrefix == "cs_notifications:")
+    }
+}
