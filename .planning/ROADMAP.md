@@ -299,7 +299,7 @@ Plans:
 | 27. Portal → Map Navigation Link | v2.1 | 6/6 | Complete    | 2026-04-19 |
 | 28. Retroactive Verification Sweep (Phases 13–19) | v2.1 | 2/2 | Complete    | 2026-04-19 |
 | 29. Live Video Traffic Feed (Sat + Drone + Suggestions) | v2.1 | 11/11 | Complete    | 2026-04-20 |
-| 30. Notifications List + Mark-Read + iOS Push Remediation | v2.1 | 4/9 | In Progress|  |
+| 30. Notifications List + Mark-Read + iOS Push Remediation | v2.1 | 5/9 | In Progress|  |
 
 ## Backlog
 
@@ -337,12 +337,12 @@ Plans:
 **Goal:** User can view a notification list with unread count badge on web parity with iOS, mark notifications as read individually (per-row) or all at once on both platforms, and receive iOS push notifications for bid deadlines, safety alerts, and assigned tasks on a real device.
 **Depends on:** Phase 28
 **Requirements:** NOTIF-01, NOTIF-03, NOTIF-05
-**Plans:** 4/9 plans executed
+**Plans:** 5/9 plans executed
 
 Plans:
 - [x] 30-01-PLAN.md — Web Server Action mark-read refactor (D-01..D-04) — NOTIF-03
 - [x] 30-02-PLAN.md — iOS project-picker + filter persistence + stale recovery + empty state (D-05, D-10..D-12) — NOTIF-01
-- [ ] 30-03-PLAN.md — Web project-picker dropdown + URL searchParam (D-06..D-12) — NOTIF-01
+- [x] 30-03-PLAN.md — Web project-picker dropdown + URL searchParam (D-06..D-12) — NOTIF-01
 - [ ] 30-04-PLAN.md — Filter-scoped mark-all + bell-badge parity + 30-PARITY-SPEC.md + 99+ cap tests (D-13..D-15) — NOTIF-01, NOTIF-03
 - [ ] 30-05-PLAN.md — iOS Realtime subscription on cs_notifications (D-16) — NOTIF-01
 - [ ] 30-06-PLAN.md — Cross-platform inbox_filter_changed analytics (D-17) — NOTIF-01
