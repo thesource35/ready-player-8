@@ -35,10 +35,20 @@ final class NotificationsStore: ObservableObject {
     private var currentUserId: String?
     private let pollInterval: TimeInterval = 20
 
+    // Phase 30 D-16 — Realtime handle + polling-fallback flag.
+    // `realtimeHandle` is nil in mock mode, or when Realtime permanently fails and
+    // the store has downgraded to polling. `usingFallbackPolling` guards against
+    // starting the 20s poll loop twice.
+    private var realtimeHandle: NotificationsRealtimeHandle?
+    private var usingFallbackPolling = false
+
     // MARK: Lifecycle
 
-    /// Begin polling for the given user. If `userId` is nil OR Supabase is not
-    /// configured, the store serves mock data and skips network calls.
+    /// Begin observing notifications for the given user. Prefers Supabase Realtime
+    /// (postgres_changes on cs_notifications, filter user_id=eq.{uid}) and only
+    /// falls back to 20-second polling after 3 consecutive WebSocket failures.
+    /// If `userId` is nil OR Supabase is not configured, the store serves mock
+    /// data and skips network calls.
     func start(userId: String?, projectId: String? = nil) async {
         stop()
         self.currentUserId = userId
@@ -69,6 +79,41 @@ final class NotificationsStore: ObservableObject {
 
         await refresh()
 
+        // D-16: prefer Realtime; only fall back to 20s polling if Realtime permanently fails.
+        // Matches web HeaderBell.tsx subscribe-and-refresh semantics byte-for-byte.
+        let handle = SupabaseService.shared.subscribeToNotifications(
+            userId: uid,
+            onChange: { [weak self] in
+                Task { @MainActor [weak self] in await self?.refresh() }
+            },
+            onPermanentFailure: { [weak self] in
+                Task { @MainActor [weak self] in self?.startPollingFallback(uid: uid) }
+            }
+        )
+
+        if let handle {
+            self.realtimeHandle = handle
+        } else {
+            // Realtime unavailable (e.g. baseURL/apiKey missing) — start polling directly.
+            startPollingFallback(uid: uid)
+        }
+    }
+
+    func stop() {
+        realtimeHandle?.cancel()
+        realtimeHandle = nil
+        pollTask?.cancel()
+        pollTask = nil
+        usingFallbackPolling = false
+    }
+
+    /// Polling fallback used when Realtime is unavailable or has failed
+    /// permanently (3 consecutive WebSocket errors). Preserves the Phase-14
+    /// UX — the list stays eventually-consistent with a 20s cadence — so
+    /// users on flaky WiFi still see new notifications without manual refresh.
+    private func startPollingFallback(uid: String) {
+        guard !usingFallbackPolling else { return }
+        usingFallbackPolling = true
         pollTask = Task { [weak self] in
             guard let self else { return }
             while !Task.isCancelled {
@@ -76,12 +121,18 @@ final class NotificationsStore: ObservableObject {
                 if Task.isCancelled { return }
                 await self.refresh()
             }
+            _ = uid
         }
     }
 
-    func stop() {
-        pollTask?.cancel()
-        pollTask = nil
+    // Swift 6 strict-concurrency note: `NotificationsRealtimeHandle.cancel()` is declared
+    // `nonisolated` in SupabaseService.swift (Phase 30 Task 1). That is the ONLY reason the
+    // following deinit compiles on a @MainActor class. If cancel() is ever moved back to
+    // MainActor, this deinit MUST switch to the `Task.detached { [handle] in handle?.cancel() }`
+    // pattern — otherwise the Swift-6 compiler will reject the call from deinit.
+    deinit {
+        realtimeHandle?.cancel()  // nonisolated — safe from @MainActor deinit
+        pollTask?.cancel()        // Task.cancel() is Sendable + nonisolated by design
     }
 
     /// Manual refresh (called by pull-to-refresh + on-resume).
