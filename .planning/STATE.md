@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 30-03-PLAN.md
-last_updated: "2026-04-23T23:49:40.210Z"
-last_activity: 2026-04-23
+stopped_at: Completed 30-04-PLAN.md
+last_updated: "2026-04-24T00:34:28.295Z"
+last_activity: 2026-04-24
 progress:
   total_phases: 17
   completed_phases: 16
   total_plans: 118
-  completed_plans: 114
+  completed_plans: 115
   percent: 97
 ---
 
@@ -27,9 +27,9 @@ See: .planning/PROJECT.md (updated 2026-04-14)
 
 Milestone: v2.1
 Phase: 30 (notifications-list-mark-read-ios-push-remediation) — EXECUTING
-Plan: 6 of 9
+Plan: 7 of 9
 Status: Ready to execute
-Last activity: 2026-04-23
+Last activity: 2026-04-24
 
 ## Accumulated Context
 
@@ -112,6 +112,7 @@ v2.0 closing decisions:
 - [Phase 30]: [Phase 30-02]: NOTIF-01 iOS closed — picker feature land pre-shipped in salvaged f0fb701 (worktree merge 1fc1dab); regression-style XCTest coverage added in 1ddd383 locks stale-recovery (D-11), persistence round-trip (D-10), empty-state copy (D-12), and D-09 sort order. Compile-only verification per Phase 22/29.1/30-07 precedent — build-for-testing still blocked by pre-existing ready_player_8Tests.swift async errors; zero new errors reference the Phase 30 test files.
 - [Phase 30]: [Phase 30-08]: D-21 Edge Function regression floor + D-22 APNsRegistrationTests unchanged audit closed — 4 new Deno test files (push-categories 9 tests, device-token-lookup 3 tests, apns-payload-shape 3 tests, bad-device-token 3 tests) lock the notifications-fanout push path to NOTIF-05. Full suite 28/0 GREEN (18 new + 10 existing; clears ≥21 acceptance floor by 7). APNsRegistrationTests.swift SHA-1 93581122217f703a4a8e05da33c9a5e4202edf4f confirmed unchanged since Phase 14-05 (last commit 9805e17; git diff empty). Zero production code touched. Four commits (80074de/ea380af/33d3854/eefaa43) salvaged from worktree merge; prior executor's SUMMARY was lost when worktree was removed (.planning/ gitignored) — SUMMARY re-authored with current-state audit evidence.
 - [Phase 30]: [Phase 30-03]: Web /inbox picker shipped — NOTIF-01 cross-platform parity closed; InboxProjectPicker client component + fetchProjectMembershipsWithUnread server helper + LAST_FILTER_STORAGE_KEY cross-platform parity contract; 6 new vitest cases + 29/29 full notifications suite GREEN; 30-01 Server Actions regression-locked
+- [Phase 30]: [Phase 30-04]: 30-PARITY-SPEC.md authors canonical unread-count SQL + scope contract (D-13/D-14/D-15); extracts SupabaseService.buildMarkAllReadQueryString(userId:projectId:) as internal static helper; markAllNotificationsRead consumes it; XCTest calls REAL helper via @testable import (no mirror); 9 web vitest cases + 7 iOS XCTest cases lock filter-scope + 99+ cap; full notifications suite 38/38 GREEN; compile-only iOS verification per Phase 22/29.1/30-07/30-02 precedent
 
 ### Pending Todos
 
@@ -135,6 +136,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-23T23:49:40.206Z
-Stopped at: Completed 30-03-PLAN.md
+Last session: 2026-04-24T00:34:03.343Z
+Stopped at: Completed 30-04-PLAN.md
 Resume file: None
