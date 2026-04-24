@@ -164,7 +164,13 @@ final class NotificationsStore: ObservableObject {
 
     /// Persist and apply a filter selection. Pass nil to clear filter.
     /// Triggers a refresh so the list reflects the new filter immediately.
+    /// Phase 30 D-17: emits the filter-changed analytics event at the END of
+    /// the method, diff-gated so set-to-same-value is a no-op for analytics
+    /// and so hydration paths (which write `self.projectFilter` directly on
+    /// launch) cannot fire the event.
     func setFilter(_ projectId: String?) async {
+        // D-17: capture prior value BEFORE mutation so analytics sees the diff.
+        let prev = self.projectFilter
         self.projectFilter = projectId
         if let pid = projectId {
             UserDefaults.standard.set(pid, forKey: Self.lastFilterKey)
@@ -172,6 +178,29 @@ final class NotificationsStore: ObservableObject {
             UserDefaults.standard.removeObject(forKey: Self.lastFilterKey)
         }
         await refresh()
+
+        // D-17: emit ONLY on actual change. Hydration paths set
+        // `self.projectFilter` directly (see start(userId:) rehydrate block) so
+        // no event fires on app launch. Set-to-same-value is also a no-op.
+        if prev != projectId {
+            emitFilterChangedAnalytics(from: prev, to: projectId)
+        }
+    }
+
+    /// D-17: PII-free analytics emit helper for the filter-changed event.
+    /// Payload keys are EXACTLY ["from_project_id", "to_project_id", "unread_count_at_change"].
+    /// `nil` from/to serialize to the literal "all" sentinel (matches web emitter).
+    /// `unread_count_at_change` is captured AFTER refresh() so it reflects the
+    /// post-change unread count. AnalyticsEngine.shared.track accepts
+    /// [String: String] only, so the Int count is serialized as its String form
+    /// — downstream consumers (Vercel/analytics dashboards) parse the numeric.
+    private func emitFilterChangedAnalytics(from: String?, to: String?) {
+        let payload: [String: String] = [
+            "from_project_id": from ?? "all",
+            "to_project_id": to ?? "all",
+            "unread_count_at_change": String(max(0, self.unreadCount)),
+        ]
+        AnalyticsEngine.shared.track("inbox_filter_changed", properties: payload)
     }
 
     /// Reload the user's project memberships + per-project unread chips.
