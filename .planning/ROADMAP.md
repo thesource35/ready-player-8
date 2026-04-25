@@ -307,7 +307,7 @@ Plans:
 |---|------|----------|-------|
 | 999.1 | Multi-party video calls | 2026-04-23 | Extend in-app conversations to support 3+ participants on a video call. Likely touches Angelic AI surface + any existing 1:1 video primitive; needs WebRTC/SFU decision, presence/mute/leave controls, recording posture, and call lifecycle schema. Scope TBD — promote via `/gsd-add-phase` when a milestone covers it. |
 | 999.2 | Multi-party phone (voice) calls | 2026-04-23 | Group voice call variant of 999.1 — N participants on an audio-only bridge. Needs decision on whether this shares infra with 999.1 (audio-only WebRTC track) or routes through a carrier bridge (Twilio/Agora). Scope TBD. |
-| 999.3 | Pre-auth Integration Hub bootstrap | 2026-04-24 | `AuthGateView` requires Supabase configured to sign up, but Integration Hub lives behind the auth gate — fresh installs / wiped devices hit a chicken-and-egg lockout (surfaced during Phase 30 NOTIF-05 UAT: "Supabase not configured. Enter your Base URL and API key in COMMAND → Integration Hub"). Fix: add a "Configure Backend" link on AuthGateView (ContentView.swift:7) that opens a minimal config sheet (URL + anon key → writes to UserDefaults; Keychain migration already handled by `SupabaseService.migrateCredentials()` per SEC-02/SEC-03). Unblocks any future Phase 30 NOTIF-05 gap-closure attempt. |
+| 999.3 | Pre-auth Integration Hub bootstrap | 2026-04-24 | `AuthGateView` requires Supabase configured to sign up, but Integration Hub lives behind the auth gate — fresh installs / wiped devices hit a chicken-and-egg lockout (surfaced during Phase 30 NOTIF-05 UAT: "Supabase not configured. Enter your Base URL and API key in COMMAND → Integration Hub"). Fix: add a "Configure Backend" link on AuthGateView (ContentView.swift:7) that opens a minimal config sheet (URL + anon key → writes to UserDefaults; Keychain migration already handled by `SupabaseService.migrateCredentials()` per SEC-02/SEC-03). Unblocks any future Phase 30 NOTIF-05 gap-closure attempt. **Closed by Phase 30.1 (2026-04-24).** Code paths green; UAT deferred per `defer-uat` resume signal — see `.planning/phases/30.1-fix-pre-auth-bootstrap-gap-from-phase-30-verification/30.1-VERIFICATION.md` and `30.1-UAT-LOG.md`. |
 
 ### Phase 29: Live Video Traffic Feed (Sat + Drone + Suggestions)
 
@@ -359,3 +359,15 @@ Plans:
 - NOTIF-01: iOS InboxView project-filter UI missing (14-04-SUMMARY.md KL #4); web has no NotificationsStore/InboxView equivalent (grep returns 0 files).
 - NOTIF-03: Web per-row mark-read form submits POST to `/api/notifications/[id]?_method=PATCH` but route only exports PATCH/DELETE (14-03-SUMMARY.md KL #1). iOS side works; cross-platform success criterion unmet.
 - NOTIF-05: `aps-environment` entitlement set but Apple Developer portal Push Notifications capability toggle never recorded; no real-device delivery test on file (14-05-SUMMARY.md "Manual Steps Required Before Push Delivery Works").
+
+### Phase 30.1: Fix pre-auth bootstrap gap from Phase 30 verification (INSERTED)
+
+**Goal:** On a fresh install or wiped device where Supabase is not yet configured, the user can configure their Supabase Base URL + anon key directly from `AuthGateView` without first authenticating to reach `COMMAND → Integration Hub`. The chicken-and-egg lockout that blocked Phase 30 NOTIF-05 UAT is removed. Closes backlog 999.3.
+**Requirements**: AUTH-GATE-04
+**Depends on:** Phase 30
+**Plans:** 3/3 plans complete (code green; UAT deferred)
+
+Plans:
+- [x] 30.1-01-PLAN.md — BackendConfigSheet view + validation helpers + XCTest scaffold (Wave 1)
+- [x] 30.1-02-PLAN.md — AuthGateView wiring: showBackendConfig @State + conditional affordance + .sheet modifier (Wave 2)
+- [~] 30.1-03-PLAN.md — VERIFICATION.md + Simulator UAT + ROADMAP/REQUIREMENTS reconciliation (Wave 3) [autonomous: false] — code paths verified, UAT deferred per `defer-uat` resume signal

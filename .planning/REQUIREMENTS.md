@@ -115,6 +115,7 @@ Phase 29 composes Phase 22's shipped video pipeline + Phase 21's map surface + A
 - [x] **AUTH-GATE-01**: iOS auth gate predicate (`ContentView.swift:~638`) is driven by `SupabaseService.isAuthenticated` (Keychain-backed accessToken) rather than local `UserProfileStore.currentUser` (UserDefaults). Defense-in-depth includes removal of `UserProfileStore.login(email:password:)` password-free shim (Plan 03). See RESEARCH §Candidate 1.
 - [x] **AUTH-GATE-02**: `SupabaseService.signOutEverywhere()` is a composite helper that clears BOTH Keychain auth tokens AND UserDefaults-backed `UserProfileStore.currentUser`. Settings Sign Out button wired to the composite helper. See RESEARCH §Fix 3, PITFALL-03.
 - [x] **AUTH-GATE-03**: Signup is server-first — `SupabaseService.signUp()` is awaited before `UserProfileStore.createAccount()` commits local state. Supabase failure leaves `currentUser == nil` and shows retryable error copy (UI-SPEC §Copywriting Contract T4). See RESEARCH §Candidate 2.
+- [~] **AUTH-GATE-04**: User can configure Supabase backend (Base URL + anon key) directly from the pre-auth `AuthGateView` without first authenticating to reach `COMMAND → Integration Hub`. Closes the chicken-and-egg lockout surfaced during Phase 30 NOTIF-05 UAT (backlog 999.3). iOS-only by surface (web is server-deployed with credentials baked into env vars). Credentials persist via `SupabaseService.configure()` → Keychain (SEC-02/SEC-03 invariant intact). Added 2026-04-24 by Phase 30.1; code paths green, 5-step Simulator UAT deferred per `defer-uat` resume signal — see `.planning/phases/30.1-fix-pre-auth-bootstrap-gap-from-phase-30-verification/30.1-UAT-LOG.md`.
 
 Flipped from `[~]` to `[x]` 2026-04-21 after the 3-scenario human UAT walkthrough (VALIDATION.md §Manual-Only Verifications) returned PASS on iOS Simulator (iPhone 17, iOS 26.2 SDK). See `.planning/phases/29.1-fix-critical-auth-bug/29.1-VERIFICATION.md` §UAT Verdict.
 
@@ -186,7 +187,7 @@ Deferred to v2.2 or later.
 | NOTIF-02 | Phase 28 (verified); UAT deferred 2026-04-19 | Satisfied |
 | NOTIF-03 | Phase 30 (remediation planned) | Unsatisfied |
 | NOTIF-04 | Phase 28 (verified) | Satisfied |
-| NOTIF-05 | Phase 30 (remediation planned); UAT deferred 2026-04-19 | Unsatisfied |
+| NOTIF-05 | Phase 30 (remediation planned); UAT attempted 2026-04-24 — **BLOCKED** by missing Phase 14/15 schema in configured Supabase project; see `.planning/phases/30-notifications-list-mark-read-ios-push-remediation/30-09-SUMMARY.md` | Unsatisfied |
 | DOC-01 | Phase 28 (verified) + UAT pending; UAT deferred 2026-04-19 | Partial |
 | DOC-02 | Phase 28 (verified) | Satisfied |
 | DOC-03 | Phase 28 (verified) | Satisfied |
@@ -242,17 +243,18 @@ Deferred to v2.2 or later.
 | AUTH-GATE-01 | Phase 29.1 (29.1-04 + 29.1-03) | Satisfied |
 | AUTH-GATE-02 | Phase 29.1 (29.1-02) | Satisfied |
 | AUTH-GATE-03 | Phase 29.1 (29.1-04) | Satisfied |
+| AUTH-GATE-04 | Phase 30.1 (30.1-01 + 30.1-02) | Partial (code green, UAT deferred) |
 
-**Coverage (Phase 28 reconciled, D-09 three-state + Phase 29 shipped 2026-04-19 + Phase 29.1 shipped 2026-04-21):**
-- v2.1 requirements: 60 total (27 carryover + 16 Phase 22 VIDEO-01-A..P + 14 Phase 29 LIVE-01..LIVE-14 + 3 Phase 29.1 AUTH-GATE-01/02/03)
-- Mapped to phases: 60
+**Coverage (Phase 28 reconciled, D-09 three-state + Phase 29 shipped 2026-04-19 + Phase 29.1 shipped 2026-04-21 + Phase 30.1 shipped 2026-04-24 with UAT deferred):**
+- v2.1 requirements: 61 total (27 carryover + 16 Phase 22 VIDEO-01-A..P + 14 Phase 29 LIVE-01..LIVE-14 + 4 Phase 29.1/30.1 AUTH-GATE-01/02/03/04)
+- Mapped to phases: 61
 - Unmapped: 0
 - **`[x]` Satisfied: 35** — NOTIF-02, NOTIF-04, DOC-02, DOC-03, TEAM-01..05, CAL-03, FIELD-02, FIELD-03 (12 carryover) + VIDEO-01-A..P (16 Phase 22) + LIVE-01, LIVE-05, LIVE-08, LIVE-14 (4 Phase 29 code-verified) + AUTH-GATE-01, AUTH-GATE-02, AUTH-GATE-03 (3 Phase 29.1 — code green + 3-scenario iOS Simulator UAT PASSED 2026-04-21)
-- **`[~]` Partial (code green, UAT pending): 22** — DOC-01, DOC-04, DOC-05, FIELD-01, FIELD-04, CAL-01, CAL-02, CAL-04, REPORT-01..04 (12 carryover) + LIVE-02, LIVE-03, LIVE-04, LIVE-06, LIVE-07, LIVE-09, LIVE-10, LIVE-11, LIVE-12, LIVE-13 (10 Phase 29 — human UAT or first-real-run observation pending)
+- **`[~]` Partial (code green, UAT pending): 23** — DOC-01, DOC-04, DOC-05, FIELD-01, FIELD-04, CAL-01, CAL-02, CAL-04, REPORT-01..04 (12 carryover) + LIVE-02, LIVE-03, LIVE-04, LIVE-06, LIVE-07, LIVE-09, LIVE-10, LIVE-11, LIVE-12, LIVE-13 (10 Phase 29 — human UAT or first-real-run observation pending) + AUTH-GATE-04 (1 Phase 30.1 — code green 2026-04-24, 5-step Simulator UAT deferred per `defer-uat` resume signal)
 - **`[ ]` Unsatisfied / Planned: 3** — NOTIF-01, NOTIF-03, NOTIF-05 (Phase 30 remediation planned per D-10)
 - Shipped in v2.0: 0 (see `milestones/v2.0-REQUIREMENTS.md` for AI/PORTAL/MAP — 12 shipped)
 
-Methodology (D-09): `[x]` = code evidence green AND (no UAT needed OR UAT complete); `[~]` = code green, UAT enumerated but not yet walked; `[ ]` = code missing in owning phase. See Requirement Status Legend at top of file. AUTH-GATE-01/02/03 added 2026-04-21 per Phase 29.1. AUTH-GATE-01/02/03 UAT walkthrough PASSED 2026-04-21 (3/3 scenarios, iOS Simulator iPhone 17/iOS 26.2 SDK).
+Methodology (D-09): `[x]` = code evidence green AND (no UAT needed OR UAT complete); `[~]` = code green, UAT enumerated but not yet walked; `[ ]` = code missing in owning phase. See Requirement Status Legend at top of file. AUTH-GATE-01/02/03 added 2026-04-21 per Phase 29.1. AUTH-GATE-01/02/03 UAT walkthrough PASSED 2026-04-21 (3/3 scenarios, iOS Simulator iPhone 17/iOS 26.2 SDK). AUTH-GATE-04 added 2026-04-24 per Phase 30.1 — code paths green, UAT deferred (lands `[x]` Satisfied when `30.1-UAT-LOG.md` records PASS for all 5 Simulator steps).
 
 ---
 *v2.1 requirements carried forward 2026-04-14 after v2.0 milestone scope reduction. See `milestones/v2.0-MILESTONE-AUDIT.md` for the audit that drove the scope change.*
