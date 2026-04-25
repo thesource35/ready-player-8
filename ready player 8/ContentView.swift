@@ -28,6 +28,8 @@ struct AuthGateView: View {
     @State private var mfaFactorId: String?
     @State private var mfaChallengeId: String?
     @State private var useBackupCode = false
+    // AUTH-GATE-04 (Phase 30.1): pre-auth backend bootstrap (backlog 999.3)
+    @State private var showBackendConfig: Bool = false
 
     var body: some View {
         ZStack {
@@ -113,6 +115,10 @@ struct AuthGateView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $showBackendConfig) {
+            BackendConfigSheet(isPresented: $showBackendConfig)
+                .environmentObject(supabase)
+        }
     }
 
     // MARK: - Login View
@@ -200,7 +206,36 @@ struct AuthGateView: View {
                 Button { withAnimation { step = .signup; error = nil } } label: {
                     Text("Create an account").font(.system(size: 12, weight: .bold)).foregroundColor(Theme.accent)
                 }.buttonStyle(.plain)
-            }.padding(.bottom, 24)
+            }.padding(.bottom, 8)
+
+            // AUTH-GATE-04 (Phase 30.1): pre-auth backend bootstrap (backlog 999.3)
+            // Fresh-install / wiped-device users land here without Supabase configured.
+            // Without this affordance, signup/signin throws SupabaseError.notConfigured
+            // and the only fix lives behind the auth gate (COMMAND → Integration Hub) —
+            // a chicken-and-egg lockout surfaced by Phase 30 NOTIF-05 UAT.
+            VStack(spacing: 6) {
+                if !supabase.isConfigured {
+                    Button { showBackendConfig = true } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "gearshape").font(.system(size: 12)).foregroundColor(Theme.cyan)
+                            Text("Configure Backend").font(.system(size: 12, weight: .semibold)).foregroundColor(Theme.cyan)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Configure Supabase backend")
+                    Text("Set up your Supabase backend to sign in or create an account.")
+                        .font(.system(size: 10)).foregroundColor(Theme.muted)
+                        .multilineTextAlignment(.center)
+                } else {
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark.seal.fill").font(.system(size: 12)).foregroundColor(Theme.green)
+                        Text("Backend configured").font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.green)
+                    }
+                    .accessibilityLabel("Backend configured")
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
         }
     }
 
@@ -549,6 +584,213 @@ struct AuthGateView: View {
             }
             await MainActor.run { isLoading = false }
         }
+    }
+}
+
+// MARK: - AUTH-GATE-04 (Phase 30.1): Pre-auth backend bootstrap (backlog 999.3)
+// Closes the chicken-and-egg lockout where fresh-install / wiped-device users
+// land on AuthGateView and can't authenticate because Supabase isn't configured,
+// but Integration Hub (the only configuration UI) lives behind the auth gate.
+// Sheet + validation helpers live in ContentView.swift per CLAUDE.md
+// monolithic-file constraint and Phase 29.1's in-place auth pattern.
+
+enum BackendConfigError: Error, Equatable {
+    case empty
+    case malformed
+    case insecureScheme
+}
+
+enum KeyPrefixWarning: Equatable {
+    case serviceRoleSuspected
+}
+
+/// Pure-logic validator for the Base URL field (T-30.1-04 mitigation).
+/// Trims whitespace, requires http/https only, allows http for localhost/127.0.0.1.
+func validateBaseURL(_ raw: String) -> Result<URL, BackendConfigError> {
+    let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return .failure(.empty) }
+    guard let components = URLComponents(string: trimmed),
+          let scheme = components.scheme?.lowercased(),
+          let host = components.host?.lowercased(),
+          !host.isEmpty,
+          let url = components.url else {
+        return .failure(.malformed)
+    }
+    let localhostHosts: Set<String> = ["localhost", "127.0.0.1"]
+    switch scheme {
+    case "https":
+        return .success(url)
+    case "http":
+        return localhostHosts.contains(host) ? .success(url) : .failure(.insecureScheme)
+    default:
+        return .failure(.malformed)
+    }
+}
+
+/// Pure-logic classifier for the anon-key field (T-30.1-02 mitigation).
+/// Detects likely service-role keys but never blocks save — only warns.
+func classifyKeyPrefix(_ raw: String) -> KeyPrefixWarning? {
+    let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    guard !trimmed.isEmpty else { return nil }
+    if trimmed.hasPrefix("sb_secret_") || trimmed.contains("service_role") {
+        return .serviceRoleSuspected
+    }
+    return nil
+}
+
+// AUTH-GATE-04 (Phase 30.1): minimal Supabase config sheet presented from AuthGateView.loginView
+struct BackendConfigSheet: View {
+    @EnvironmentObject var supabase: SupabaseService
+    @Binding var isPresented: Bool
+    @State private var baseURL: String = ""
+    @State private var apiKey: String = ""
+    @State private var errorMessage: String?
+    @State private var warningMessage: String?
+    @State private var isSaving: Bool = false
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Configure backend")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(Theme.text)
+                        Text("Enter the Supabase project URL and anon (public) API key. Find these in Supabase Dashboard → Project Settings → API.")
+                            .font(.system(size: 11))
+                            .foregroundColor(Theme.muted)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 16)
+
+                    VStack(spacing: 12) {
+                        configField(icon: "link", placeholder: "https://your-project.supabase.co", text: $baseURL, isSecure: false)
+                        configField(icon: "key.fill", placeholder: "Anon public API key", text: $apiKey, isSecure: true)
+                    }
+
+                    if let errorMessage {
+                        HStack(spacing: 6) {
+                            Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 10)).foregroundColor(Theme.red)
+                            Text(errorMessage).font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.red)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }.padding(.horizontal, 24)
+                    }
+
+                    if let warningMessage {
+                        HStack(spacing: 6) {
+                            Image(systemName: "exclamationmark.shield.fill").font(.system(size: 10)).foregroundColor(Theme.gold)
+                            Text(warningMessage).font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.gold)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }.padding(.horizontal, 24)
+                    }
+
+                    Button {
+                        save()
+                    } label: {
+                        Group {
+                            if isSaving {
+                                HStack(spacing: 8) {
+                                    ProgressView().tint(.black)
+                                    Text("Saving…").font(.system(size: 13, weight: .bold))
+                                }
+                            } else {
+                                Text("SAVE").font(.system(size: 13, weight: .bold)).tracking(1)
+                            }
+                        }
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity).frame(height: 48)
+                        .background(LinearGradient(colors: [Theme.accent, Theme.gold], startPoint: .leading, endPoint: .trailing))
+                        .cornerRadius(10)
+                    }
+                    .buttonStyle(.plain).disabled(isSaving)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 24)
+                }
+            }
+            .background(Theme.bg.ignoresSafeArea())
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                #if os(iOS)
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") { isPresented = false }
+                        .foregroundColor(Theme.muted)
+                }
+                #else
+                ToolbarItem {
+                    Button("Cancel") { isPresented = false }
+                        .foregroundColor(Theme.muted)
+                }
+                #endif
+            }
+            .onChange(of: baseURL) { _, _ in errorMessage = nil; warningMessage = nil }
+            .onChange(of: apiKey) { _, _ in errorMessage = nil; warningMessage = nil }
+        }
+        .preferredColorScheme(.dark)
+    }
+
+    private func configField(icon: String, placeholder: String, text: Binding<String>, isSecure: Bool) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon).font(.system(size: 14)).foregroundColor(Theme.muted).frame(width: 20)
+            if isSecure {
+                SecureField(placeholder, text: text)
+                    .font(.system(size: 14)).foregroundColor(Theme.text)
+                    #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled(true)
+                    #endif
+            } else {
+                TextField(placeholder, text: text)
+                    .font(.system(size: 14)).foregroundColor(Theme.text)
+                    #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.URL)
+                    .autocorrectionDisabled(true)
+                    #endif
+            }
+        }
+        .padding(14).background(Theme.panel)
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.border.opacity(0.2), lineWidth: 1))
+        .cornerRadius(10)
+        .padding(.horizontal, 24)
+    }
+
+    private func save() {
+        let trimmedURL = baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        switch validateBaseURL(trimmedURL) {
+        case .failure(let err):
+            switch err {
+            case .empty: errorMessage = "Base URL is required."
+            case .malformed: errorMessage = "Base URL is not a valid URL."
+            case .insecureScheme: errorMessage = "Base URL must use https:// (http:// allowed only for localhost)."
+            }
+            return
+        case .success:
+            break
+        }
+
+        guard !trimmedKey.isEmpty else {
+            errorMessage = "Anon API key is required."
+            return
+        }
+
+        if classifyKeyPrefix(trimmedKey) == .serviceRoleSuspected {
+            warningMessage = "This looks like a service-role key. Use the anon (public) key instead — service-role keys must never ship in a client app."
+        }
+
+        isSaving = true
+        supabase.configure(baseURL: trimmedURL, apiKey: trimmedKey)
+        isSaving = false
+
+        guard supabase.isConfigured else {
+            errorMessage = "Could not save credentials. Please double-check the values."
+            return
+        }
+        isPresented = false
     }
 }
 
