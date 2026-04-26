@@ -185,7 +185,7 @@ Deferred to v2.2 or later.
 |-------------|-------|--------|
 | NOTIF-01 | Phase 30 (remediation planned) | Unsatisfied |
 | NOTIF-02 | Phase 28 (verified); UAT deferred 2026-04-19 | Satisfied |
-| NOTIF-03 | Phase 30 (remediation planned) | Unsatisfied |
+| NOTIF-03 | Phase 30 (30-01 Server Actions for web; REST PATCH for iOS) | Satisfied |
 | NOTIF-04 | Phase 28 (verified) | Satisfied |
 | NOTIF-05 | Phase 30 (remediation planned); UAT attempted 2026-04-24 — **BLOCKED** by missing Phase 14/15 schema in configured Supabase project; see `.planning/phases/30-notifications-list-mark-read-ios-push-remediation/30-09-SUMMARY.md` | Unsatisfied |
 | DOC-01 | Phase 28 (verified) + UAT pending; UAT deferred 2026-04-19 | Partial |
@@ -249,9 +249,9 @@ Deferred to v2.2 or later.
 - v2.1 requirements: 61 total (27 carryover + 16 Phase 22 VIDEO-01-A..P + 14 Phase 29 LIVE-01..LIVE-14 + 4 Phase 29.1/30.1 AUTH-GATE-01/02/03/04)
 - Mapped to phases: 61
 - Unmapped: 0
-- **`[x]` Satisfied: 35** — NOTIF-02, NOTIF-04, DOC-02, DOC-03, TEAM-01..05, CAL-03, FIELD-02, FIELD-03 (12 carryover) + VIDEO-01-A..P (16 Phase 22) + LIVE-01, LIVE-05, LIVE-08, LIVE-14 (4 Phase 29 code-verified) + AUTH-GATE-01, AUTH-GATE-02, AUTH-GATE-03 (3 Phase 29.1 — code green + 3-scenario iOS Simulator UAT PASSED 2026-04-21)
+- **`[x]` Satisfied: 36** — NOTIF-02, NOTIF-03, NOTIF-04, DOC-02, DOC-03, TEAM-01..05, CAL-03, FIELD-02, FIELD-03 (13 carryover) + VIDEO-01-A..P (16 Phase 22) + LIVE-01, LIVE-05, LIVE-08, LIVE-14 (4 Phase 29 code-verified) + AUTH-GATE-01, AUTH-GATE-02, AUTH-GATE-03 (3 Phase 29.1 — code green + 3-scenario iOS Simulator UAT PASSED 2026-04-21)
 - **`[~]` Partial (code green, UAT pending): 23** — DOC-01, DOC-04, DOC-05, FIELD-01, FIELD-04, CAL-01, CAL-02, CAL-04, REPORT-01..04 (12 carryover) + LIVE-02, LIVE-03, LIVE-04, LIVE-06, LIVE-07, LIVE-09, LIVE-10, LIVE-11, LIVE-12, LIVE-13 (10 Phase 29 — human UAT or first-real-run observation pending) + AUTH-GATE-04 (1 Phase 30.1 — code green 2026-04-24, 5-step Simulator UAT deferred per `defer-uat` resume signal)
-- **`[ ]` Unsatisfied / Planned: 3** — NOTIF-01, NOTIF-03, NOTIF-05 (Phase 30 remediation planned per D-10)
+- **`[ ]` Unsatisfied / Planned: 2** — NOTIF-01, NOTIF-05 (Phase 30 remediation planned per D-10; NOTIF-03 reconciled 2026-04-26 to Satisfied — Server Actions on web + REST PATCH/DELETE on iOS verified)
 - Shipped in v2.0: 0 (see `milestones/v2.0-REQUIREMENTS.md` for AI/PORTAL/MAP — 12 shipped)
 
 Methodology (D-09): `[x]` = code evidence green AND (no UAT needed OR UAT complete); `[~]` = code green, UAT enumerated but not yet walked; `[ ]` = code missing in owning phase. See Requirement Status Legend at top of file. AUTH-GATE-01/02/03 added 2026-04-21 per Phase 29.1. AUTH-GATE-01/02/03 UAT walkthrough PASSED 2026-04-21 (3/3 scenarios, iOS Simulator iPhone 17/iOS 26.2 SDK). AUTH-GATE-04 added 2026-04-24 per Phase 30.1 — code paths green, UAT deferred (lands `[x]` Satisfied when `30.1-UAT-LOG.md` records PASS for all 5 Simulator steps).
