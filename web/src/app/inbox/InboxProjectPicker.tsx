@@ -13,7 +13,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
-import { LAST_FILTER_STORAGE_KEY, type ProjectMembershipUnread } from "@/lib/notifications";
+import { LAST_FILTER_STORAGE_KEY, type ProjectMembershipUnread } from "@/lib/notifications/shared-client";
 import { emitInboxFilterChanged } from "@/lib/analytics/inboxFilter";
 
 type Props = {

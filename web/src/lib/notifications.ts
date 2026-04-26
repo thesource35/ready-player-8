@@ -288,19 +288,17 @@ export function subscribeToOwnNotifications(
 
 // ---------- Phase 30: project-filter picker helpers (D-06..D-11) ----------
 
-/**
- * localStorage key for the /inbox project-filter picker (D-10). Mirrors the iOS
- * AppStorage key `ConstructOS.Notifications.LastFilterProjectId` by intent — both
- * platforms persist the last-selected project id per device.
- */
-export const LAST_FILTER_STORAGE_KEY = "constructos.notifications.last_filter_project_id";
+// LAST_FILTER_STORAGE_KEY + ProjectMembershipUnread were extracted to
+// `notifications/shared-client.ts` so Client Components can import them
+// without pulling next/headers transitively (this file imports server.ts).
+// Server-side callers continue importing from "@/lib/notifications" via the
+// re-exports below — no behavioral change.
+export {
+  LAST_FILTER_STORAGE_KEY,
+  type ProjectMembershipUnread,
+} from "./notifications/shared-client";
 
-export type ProjectMembershipUnread = {
-  project_id: string;
-  project_name: string;
-  unread_count: number;
-  latest_created_at: string | null;
-};
+import type { ProjectMembershipUnread } from "./notifications/shared-client";
 
 // Mock picker rows — parity with the iOS MOCK_MEMBERSHIPS from Phase 30-02 so
 // the /inbox dropdown has something to render in mock mode (no Supabase env).
