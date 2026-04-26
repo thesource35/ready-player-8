@@ -36,7 +36,7 @@
     "react-window": "^2.2.7",
     "recharts": "^3.8.1",
     "resend": "^6.10.0",
-    "sanitize-html": "^2.17.2",
+    "sanitize-html": "^2.17.3",
     "sharp": "^0.34.5",
     "tus-js-client": "^4.3.1",
     "xlsx": "^0.18.5"
@@ -62,5 +62,11 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.2"
+  },
+  "overrides": {
+    "protobufjs": "^7.5.5",
+    "dompurify": "^3.4.0",
+    "postcss": "^8.5.10",
+    "protocol-buffers-schema": "^3.6.1"
   }
 }
