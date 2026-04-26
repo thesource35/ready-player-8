@@ -356,9 +356,9 @@ Plans:
 - D-23: Notification-tap deep-link routing (UNUserNotificationCenterDelegate + userInfo payload) — future phase; D-24 future-prep keeps it cheap
 
 **Evidence basis (from 28-01 VERIFICATION.md):**
-- NOTIF-01: iOS InboxView project-filter UI missing (14-04-SUMMARY.md KL #4); web has no NotificationsStore/InboxView equivalent (grep returns 0 files).
-- NOTIF-03: Web per-row mark-read form submits POST to `/api/notifications/[id]?_method=PATCH` but route only exports PATCH/DELETE (14-03-SUMMARY.md KL #1). iOS side works; cross-platform success criterion unmet.
-- NOTIF-05: `aps-environment` entitlement set but Apple Developer portal Push Notifications capability toggle never recorded; no real-device delivery test on file (14-05-SUMMARY.md "Manual Steps Required Before Push Delivery Works").
+- ~~NOTIF-01: iOS InboxView project-filter UI missing (14-04-SUMMARY.md KL #4); web has no NotificationsStore/InboxView equivalent (grep returns 0 files).~~ **CLOSED 2026-04-26.** Both gaps shipped under Phase 30 plans 30-02 (iOS InboxView + Menu picker) and 30-04..30-06 (web /inbox page.tsx + InboxProjectPicker.tsx). Bell badge "99+" cap (D-13) verified on both platforms. REQUIREMENTS.md NOTIF-01 row reconciled to Satisfied.
+- ~~NOTIF-03: Web per-row mark-read form submits POST to `/api/notifications/[id]?_method=PATCH` but route only exports PATCH/DELETE (14-03-SUMMARY.md KL #1). iOS side works; cross-platform success criterion unmet.~~ **CLOSED 2026-04-26.** Web migrated to Server Actions (markReadAction + markAllReadAction) in commit 80c7808; iOS continues using REST PATCH/DELETE. REQUIREMENTS.md NOTIF-03 row reconciled to Satisfied.
+- NOTIF-05: `aps-environment` entitlement set but Apple Developer portal Push Notifications capability toggle never recorded; no real-device delivery test on file (14-05-SUMMARY.md "Manual Steps Required Before Push Delivery Works"). **STILL OPEN — UAT-blocked, not code-blocked.** Bundle with Phase 30.1 UAT remainder when running real-device tests.
 
 ### Phase 30.1: Fix pre-auth bootstrap gap from Phase 30 verification (INSERTED)
 
