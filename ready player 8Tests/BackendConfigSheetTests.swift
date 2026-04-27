@@ -89,6 +89,32 @@ struct BackendConfigSheetValidationTests {
         }
     }
 
+    // MARK: - validateBaseURL: 999.5 (b) — path stripping
+
+    @Test func restV1PathStrippedFromSavedURL() {
+        // 2026-04-27 UAT trap: user pasted with /rest/v1/ suffix; signup constructed
+        // <base>//auth/v1/signup which hit PostgREST with PGRST125 "Invalid path".
+        switch validateBaseURL("https://abcd.supabase.co/rest/v1/") {
+        case .success(let url):
+            #expect(url.host?.contains("supabase.co") == true)
+            // Path is stripped — absoluteString must NOT contain `/rest/v1`.
+            #expect(!url.absoluteString.contains("/rest/v1"))
+        case .failure(let err): Issue.record("Expected .success after path strip, got \(err)")
+        }
+    }
+
+    @Test func arbitraryPathStrippedFromSavedURL() {
+        // Even non-canonical paths get cleaned up — only origin matters.
+        switch validateBaseURL("https://abcd.supabase.co/some/random/path?key=val#frag") {
+        case .success(let url):
+            #expect(url.host?.contains("supabase.co") == true)
+            #expect(!url.absoluteString.contains("/some/random/path"))
+            #expect(!url.absoluteString.contains("?key=val"))
+            #expect(!url.absoluteString.contains("#frag"))
+        case .failure(let err): Issue.record("Expected .success after path/query/fragment strip, got \(err)")
+        }
+    }
+
     // MARK: - classifyKeyPrefix: nil-result cases
 
     @Test func typicalAnonJWTReturnsNil() {

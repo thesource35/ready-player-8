@@ -227,11 +227,21 @@ struct AuthGateView: View {
                         .font(.system(size: 10)).foregroundColor(Theme.muted)
                         .multilineTextAlignment(.center)
                 } else {
-                    HStack(spacing: 6) {
-                        Image(systemName: "checkmark.seal.fill").font(.system(size: 12)).foregroundColor(Theme.green)
-                        Text("Backend configured").font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.green)
+                    // 999.5 (c): tappable green checkmark — recovery path for users who
+                    // saved bad credentials that pass validateBaseURL but fail at runtime.
+                    // Without this, only fix is uninstall (App Store users can't easily recover).
+                    Button { showBackendConfig = true } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.seal.fill").font(.system(size: 12)).foregroundColor(Theme.green)
+                            Text("Backend configured").font(.system(size: 11, weight: .semibold)).foregroundColor(Theme.green)
+                            Image(systemName: "pencil").font(.system(size: 10)).foregroundColor(Theme.muted)
+                        }
                     }
-                    .accessibilityLabel("Backend configured")
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Backend configured. Tap to edit credentials.")
+                    Text("Tap to edit if you need to change the URL or anon key.")
+                        .font(.system(size: 9)).foregroundColor(Theme.muted.opacity(0.7))
+                        .multilineTextAlignment(.center)
                 }
             }
             .padding(.horizontal, 24)
@@ -604,27 +614,40 @@ enum KeyPrefixWarning: Equatable {
     case serviceRoleSuspected
 }
 
-/// Pure-logic validator for the Base URL field (T-30.1-04 mitigation).
+/// Pure-logic validator for the Base URL field (T-30.1-04 mitigation + 999.5 (b)).
 /// Trims whitespace, requires http/https only, allows http for localhost/127.0.0.1.
+/// Strips path/query/fragment from the returned URL: the Supabase project URL must be
+/// just the bare origin (scheme + host + port). Pasting `https://abc.supabase.co/rest/v1/`
+/// would otherwise cause signup to construct `<base>//auth/v1/signup` and hit PostgREST
+/// with PGRST125 "Invalid path" — observed during 2026-04-27 Phase 30.1 UAT.
 func validateBaseURL(_ raw: String) -> Result<URL, BackendConfigError> {
     let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return .failure(.empty) }
-    guard let components = URLComponents(string: trimmed),
+    guard var components = URLComponents(string: trimmed),
           let scheme = components.scheme?.lowercased(),
           let host = components.host?.lowercased(),
-          !host.isEmpty,
-          let url = components.url else {
+          !host.isEmpty else {
         return .failure(.malformed)
     }
     let localhostHosts: Set<String> = ["localhost", "127.0.0.1"]
+    let schemeAllowed: Bool
     switch scheme {
     case "https":
-        return .success(url)
+        schemeAllowed = true
     case "http":
-        return localhostHosts.contains(host) ? .success(url) : .failure(.insecureScheme)
+        schemeAllowed = localhostHosts.contains(host)
+        if !schemeAllowed { return .failure(.insecureScheme) }
     default:
         return .failure(.malformed)
     }
+    guard schemeAllowed else { return .failure(.malformed) }
+    // Strip path/query/fragment — the Supabase base URL must be just the bare
+    // origin so callers can append `/auth/v1/...`, `/rest/v1/...` cleanly.
+    components.path = ""
+    components.query = nil
+    components.fragment = nil
+    guard let url = components.url else { return .failure(.malformed) }
+    return .success(url)
 }
 
 /// Pure-logic classifier for the anon-key field (T-30.1-02 mitigation).
@@ -727,6 +750,15 @@ struct BackendConfigSheet: View {
             }
             .onChange(of: baseURL) { _, _ in errorMessage = nil; warningMessage = nil }
             .onChange(of: apiKey) { _, _ in errorMessage = nil; warningMessage = nil }
+            .onAppear {
+                // 999.5 (c): when re-opening the sheet to edit existing credentials,
+                // pre-populate the URL field. Leave anon key blank so the secret isn't
+                // echoed back into a SecureField — user re-pastes from clipboard if
+                // the key needs changing, or just re-enters the same one.
+                if supabase.isConfigured && baseURL.isEmpty {
+                    baseURL = supabase.baseURL
+                }
+            }
         }
         .preferredColorScheme(.dark)
     }
@@ -761,6 +793,7 @@ struct BackendConfigSheet: View {
         let trimmedURL = baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
 
+        let canonicalURL: String
         switch validateBaseURL(trimmedURL) {
         case .failure(let err):
             switch err {
@@ -769,8 +802,13 @@ struct BackendConfigSheet: View {
             case .insecureScheme: errorMessage = "Base URL must use https:// (http:// allowed only for localhost)."
             }
             return
-        case .success:
-            break
+        case .success(let url):
+            // 999.5 (b): use the path-stripped URL, not the raw user input.
+            // Trailing slash trimmed to keep the form `<scheme>://<host>` (no
+            // trailing `/`) so callers can construct `<base>/auth/v1/signup`.
+            var canonical = url.absoluteString
+            while canonical.hasSuffix("/") { canonical.removeLast() }
+            canonicalURL = canonical
         }
 
         guard !trimmedKey.isEmpty else {
@@ -783,7 +821,7 @@ struct BackendConfigSheet: View {
         }
 
         isSaving = true
-        supabase.configure(baseURL: trimmedURL, apiKey: trimmedKey)
+        supabase.configure(baseURL: canonicalURL, apiKey: trimmedKey)
         isSaving = false
 
         guard supabase.isConfigured else {
