@@ -1,14 +1,41 @@
 # 30-UAT-LOG — NOTIF-05 Real-Device Push UAT Evidence
 
-> **STATUS: STUB — awaiting real-device UAT.** This file was pre-created by the 30-09 executor
-> so the structure, fields, and acceptance-criteria greps are all in place. **Bev fills in every
-> `{NEEDS-FILL}` cell** after completing Task 2 (Apple Developer portal toggle + fresh device
-> build) and Task 3 (three screenshot captures + negative control) of `30-09-PLAN.md`.
+> **STATUS: BLOCKED — Phase 14 schema not deployed to the Supabase project the app is configured against (2026-04-24).**
 >
-> Do NOT delete or restructure placeholder rows — the 30-09 plan's acceptance greps depend on the
-> strings `NOTIF-05`, `bid_deadline`, `safety_alert`, `assigned_task`, `generic`, `BadDeviceToken`,
-> `Unregistered`, `notifications-schedule`, and `D-20` / `Production cutover deferred` all being
-> present even in the stub form.
+> A real-device UAT session was attempted on 2026-04-24. The operator completed the Apple
+> Developer portal toggle, re-pulled the provisioning profile in Xcode, built onto a physical
+> iPhone, granted notification permission, and configured the app's HUB tab with the Supabase
+> Base URL and anon key. Account creation succeeded. However, a schema probe on the configured
+> Supabase project (`information_schema.tables` filtered to `cs_%`) returned the following
+> presence map for the tables this UAT depends on:
+>
+> - `cs_projects` — present
+> - `cs_project_members` — **MISSING**
+> - `cs_contracts` — present
+> - `cs_safety_incidents` — present
+> - `cs_rfis` — present
+> - `cs_daily_logs` — present
+> - `cs_device_tokens` — **MISSING**
+> - `cs_notifications` — **MISSING** (inferred — not probed directly but query against it errored with 42P01 earlier in the session)
+> - `cs_activity_events` — **MISSING** (inferred — Phase 14 migration unapplied)
+>
+> Without `cs_device_tokens` the APNs registration handler has nowhere to write, so step 4 of
+> `30-09-PLAN.md` Task 2 (Check 1 device-token query) cannot return a row regardless of how
+> cleanly the device built. Without `cs_project_members` the `bid_deadline` fanout cannot scope
+> recipients. Without `cs_activity_events` none of the three category triggers can fire, so Task
+> 3 (three real-device pushes + negative control) cannot produce evidence. The UAT is therefore
+> blocked at the backend layer, not at the device/signing layer.
+>
+> Concretely: no rows in the Delivery Table below can be filled in honestly from this session.
+> The `{NEEDS-FILL}` cells are intentionally left unfilled — filling them with placeholder
+> values would falsify phase evidence. See `30-09-SUMMARY.md` for the full attempt log and the
+> prerequisite work required to unblock this UAT.
+>
+> This file was originally pre-created by the 30-09 executor as a STUB so the structure, fields,
+> and acceptance-criteria greps are all in place. The strings `NOTIF-05`, `bid_deadline`,
+> `safety_alert`, `assigned_task`, `generic`, `BadDeviceToken`, `Unregistered`,
+> `notifications-schedule`, and `D-20` / `Production cutover deferred` remain present below so
+> that grep-based acceptance checks still resolve. Do NOT delete or restructure placeholder rows.
 
 ## Metadata
 

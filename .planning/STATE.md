@@ -4,14 +4,14 @@ milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
 stopped_at: Completed 30-06-PLAN.md
-last_updated: "2026-04-24T02:22:26.549Z"
-last_activity: 2026-04-24
+last_updated: "2026-04-25T01:49:24.490Z"
+last_activity: 2026-04-25 -- Phase 30.1 planning complete
 progress:
-  total_phases: 17
-  completed_phases: 16
-  total_plans: 118
-  completed_plans: 117
-  percent: 99
+  total_phases: 18
+  completed_phases: 17
+  total_plans: 121
+  completed_plans: 118
+  percent: 98
 ---
 
 # Project State
@@ -29,13 +29,14 @@ Milestone: v2.1
 Phase: 30 (notifications-list-mark-read-ios-push-remediation) — EXECUTING
 Plan: 9 of 9
 Status: Ready to execute
-Last activity: 2026-04-24
+Last activity: 2026-04-25 -- Phase 30.1 planning complete
 
 ## Accumulated Context
 
 ### Roadmap Evolution
 
 - Phase 29.1 inserted after Phase 29: Fix critical auth bug (URGENT)
+- Phase 30.1 inserted after Phase 30: Fix pre-auth bootstrap gap from Phase 30 verification (URGENT)
 
 ### Decisions
 
