@@ -98,44 +98,44 @@ struct ConstructionOSTests {
 
     // MARK: - MCP Tool Execution Tests
 
-    @Test @MainActor func mcpGetProjects() {
+    @Test @MainActor func mcpGetProjects() async {
         let server = MCPToolServer.shared
-        let result = server.executeTool(name: "get_projects", input: [:])
+        let result = await server.executeTool(name: "get_projects", input: [:])
         #expect(result.contains("Metro Tower"))
         #expect(result.contains("Budget:"))
     }
 
-    @Test @MainActor func mcpGetSiteStatus() {
+    @Test @MainActor func mcpGetSiteStatus() async {
         let server = MCPToolServer.shared
-        let result = server.executeTool(name: "get_site_status", input: [:])
+        let result = await server.executeTool(name: "get_site_status", input: [:])
         #expect(result.contains("Riverside Lofts"))
         #expect(result.contains("DELAYED"))
         #expect(result.contains("ON TRACK"))
     }
 
-    @Test @MainActor func mcpGetWeather() {
+    @Test @MainActor func mcpGetWeather() async {
         let server = MCPToolServer.shared
-        let result = server.executeTool(name: "get_weather", input: [:])
+        let result = await server.executeTool(name: "get_weather", input: [:])
         #expect(result.contains("Heavy Rain"))
         #expect(result.contains("CONCRETE POUR HOLD"))
     }
 
-    @Test @MainActor func mcpRentalSearch() {
+    @Test @MainActor func mcpRentalSearch() async {
         let server = MCPToolServer.shared
-        let result = server.executeTool(name: "get_rental_inventory", input: ["query": "excavator"])
+        let result = await server.executeTool(name: "get_rental_inventory", input: ["query": "excavator"])
         #expect(result.contains("Excavator"))
         #expect(result.contains("/day"))
     }
 
-    @Test @MainActor func mcpRentalSearchNoResults() {
+    @Test @MainActor func mcpRentalSearchNoResults() async {
         let server = MCPToolServer.shared
-        let result = server.executeTool(name: "get_rental_inventory", input: ["query": "zzzznonexistent"])
+        let result = await server.executeTool(name: "get_rental_inventory", input: ["query": "zzzznonexistent"])
         #expect(result.contains("No equipment found"))
     }
 
-    @Test @MainActor func mcpCalculateRentalCost() {
+    @Test @MainActor func mcpCalculateRentalCost() async {
         let server = MCPToolServer.shared
-        let result = server.executeTool(name: "calculate_rental_cost", input: [
+        let result = await server.executeTool(name: "calculate_rental_cost", input: [
             "equipment": "Excavator",
             "daily_rate": 850.0,
             "days": 5,
@@ -145,9 +145,9 @@ struct ConstructionOSTests {
         #expect(result.contains("Excavator"))
     }
 
-    @Test @MainActor func mcpUnknownTool() {
+    @Test @MainActor func mcpUnknownTool() async {
         let server = MCPToolServer.shared
-        let result = server.executeTool(name: "nonexistent_tool", input: [:])
+        let result = await server.executeTool(name: "nonexistent_tool", input: [:])
         #expect(result.contains("Unknown tool"))
     }
 
@@ -405,46 +405,46 @@ struct ConstructionOSTests {
 
     // MARK: - MCP Tool Coverage
 
-    @Test @MainActor func mcpGetCrewDeploy() {
-        let result = MCPToolServer.shared.executeTool(name: "get_crew_deploy", input: [:])
+    @Test @MainActor func mcpGetCrewDeploy() async {
+        let result = await MCPToolServer.shared.executeTool(name: "get_crew_deploy", input: [:])
         #expect(result.contains("61 workers"))
     }
 
-    @Test @MainActor func mcpGetInspections() {
-        let result = MCPToolServer.shared.executeTool(name: "get_inspections", input: [:])
+    @Test @MainActor func mcpGetInspections() async {
+        let result = await MCPToolServer.shared.executeTool(name: "get_inspections", input: [:])
         #expect(result.contains("DUE TODAY"))
         #expect(result.contains("OVERDUE"))
     }
 
-    @Test @MainActor func mcpGetBudget() {
-        let result = MCPToolServer.shared.executeTool(name: "get_budget_summary", input: [:])
+    @Test @MainActor func mcpGetBudget() async {
+        let result = await MCPToolServer.shared.executeTool(name: "get_budget_summary", input: [:])
         #expect(result.contains("$92.5M"))
     }
 
-    @Test @MainActor func mcpGetContracts() {
-        let result = MCPToolServer.shared.executeTool(name: "get_contracts", input: [:])
+    @Test @MainActor func mcpGetContracts() async {
+        let result = await MCPToolServer.shared.executeTool(name: "get_contracts", input: [:])
         #expect(result.contains("Client:"))
         #expect(result.contains("Budget:"))
     }
 
-    @Test @MainActor func mcpGetChangeOrders() {
-        let result = MCPToolServer.shared.executeTool(name: "get_change_orders", input: [:])
+    @Test @MainActor func mcpGetChangeOrders() async {
+        let result = await MCPToolServer.shared.executeTool(name: "get_change_orders", input: [:])
         #expect(result.contains("CO-"))
     }
 
-    @Test @MainActor func mcpGetPunchList() {
-        let result = MCPToolServer.shared.executeTool(name: "get_punch_list", input: [:])
+    @Test @MainActor func mcpGetPunchList() async {
+        let result = await MCPToolServer.shared.executeTool(name: "get_punch_list", input: [:])
         #expect(result.contains("OPEN"))
     }
 
-    @Test @MainActor func mcpGetMaterialDeliveries() {
-        let result = MCPToolServer.shared.executeTool(name: "get_material_deliveries", input: [:])
+    @Test @MainActor func mcpGetMaterialDeliveries() async {
+        let result = await MCPToolServer.shared.executeTool(name: "get_material_deliveries", input: [:])
         #expect(result.contains("DELIVERED"))
         #expect(result.contains("DELAYED"))
     }
 
-    @Test @MainActor func mcpGetRentalRates() {
-        let result = MCPToolServer.shared.executeTool(name: "get_rental_rates", input: [:])
+    @Test @MainActor func mcpGetRentalRates() async {
+        let result = await MCPToolServer.shared.executeTool(name: "get_rental_rates", input: [:])
         #expect(result.contains("Excavators"))
         #expect(result.contains("/day"))
     }
