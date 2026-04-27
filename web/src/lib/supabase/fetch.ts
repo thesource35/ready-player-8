@@ -1,3 +1,7 @@
+// 999.5 follow-up: server-only marker. Pulls in createServerSupabase
+// transitively, which uses next/headers. Pattern documented in 606bb45.
+import "server-only";
+
 import { createServerSupabase } from "./server";
 import { createClient } from "@supabase/supabase-js";
 import { getSupabaseUrl, getSupabaseServerKey } from "./env";

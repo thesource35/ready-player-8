@@ -1,3 +1,7 @@
+// 999.5 follow-up: server-only marker. Exposes server-side env vars
+// (SUPABASE_SERVICE_ROLE_KEY etc.) — must never be bundled to client.
+import "server-only";
+
 // ─── Environment variable access with validation ──────────────────────
 
 const warned = new Set<string>();

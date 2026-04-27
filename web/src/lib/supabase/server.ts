@@ -1,3 +1,9 @@
+// 999.5 follow-up: build-time guarantee that this module never gets bundled
+// into a Client Component. Since this file imports next/headers, Next.js
+// would already throw at build — but the explicit marker fails earlier with
+// a clearer error message. Pattern documented in commit 606bb45.
+import "server-only";
+
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";

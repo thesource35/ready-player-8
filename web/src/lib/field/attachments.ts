@@ -1,3 +1,6 @@
+// 999.5 follow-up: server-only marker (uses createServerSupabase).
+import "server-only";
+
 // Phase 16 FIELD-02: DB helpers for cs_document_attachments with field entity types.
 //
 // Ground-truth schema notes (see supabase/migrations/20260406_documents.sql and

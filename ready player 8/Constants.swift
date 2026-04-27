@@ -122,6 +122,11 @@ enum StorageKey {
     static let analyticsEvents = "ConstructOS.Analytics.Events"
     static let crashes = "ConstructOS.Crashes"
     static let biometricEnabled = "ConstructOS.Security.BiometricEnabled"
-    static let angelicAPIKey = "ConstructOS.AngelicAI.APIKey"
+    // 999.5 cleanup: angelicAPIKey constant removed -- the value was the
+    // legacy UserDefaults key migrated to Keychain in AngelicAIView.swift:120-123.
+    // After the migration shipped, this constant became unused (grep returns 0
+    // call sites). Keeping the legacy key string in source code was a tiny
+    // SEC-02 risk vector (could be referenced again by future code without
+    // realizing the secret should live in Keychain).
     static let angelicSessionID = "ConstructOS.AngelicAI.SessionID"
 }

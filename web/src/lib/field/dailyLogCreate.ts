@@ -1,3 +1,6 @@
+// 999.5 follow-up: server-only marker (uses createServerSupabase).
+import "server-only";
+
 // Phase 16 FIELD-04: orchestration for creating a daily log.
 //
 // Composition:

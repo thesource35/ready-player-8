@@ -1,3 +1,6 @@
+// 999.5 follow-up: server-only marker (uses createServerSupabase).
+import "server-only";
+
 // Phase 16 FIELD-02: Server-side photo query helpers.
 //
 // Queries cs_documents filtered to image MIME types and resolves storage

@@ -1,3 +1,7 @@
+// 999.5 follow-up: server-only marker. Mux SDK init reads MUX_TOKEN_ID +
+// MUX_TOKEN_SECRET; signing keys are PRIVATE PEMs. Never bundle to client.
+import "server-only";
+
 // Phase 22 — Mux SDK singleton + live-input CRUD + playback JWT signing helpers.
 // All calls happen server-side only; Mux tokens are never shipped to the client.
 // iOS mirrors these shapes via SupabaseService + AppError.muxIngestFailed / muxDeleteFailed.
