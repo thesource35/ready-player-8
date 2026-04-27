@@ -926,19 +926,50 @@ struct ContentView: View {
     @AppStorage("ConstructOS.CertBadgeCount") private var certBadgeCount: Int = 0
 
     var body: some View {
-        Group {
-            if !supabase.isAuthenticated {
-                // AUTH-GATE-01 (Phase 29.1): server session is the source of truth.
-                // `profileStore.currentUser` is no longer trusted as the gate — it's
-                // local-only UserDefaults state that cannot prove a valid backend session.
-                // Existing users stay in via restoreSession() below (onAppear at ~L650).
-                AuthGateView()
-            } else if !onboardingComplete {
-                OnboardingView(isComplete: $onboardingComplete)
-            } else if BiometricAuthManager.shared.biometricEnabled && !biometricUnlocked {
-                BiometricLockScreen(isUnlocked: $biometricUnlocked)
-            } else {
-                mainAppView
+        VStack(spacing: 0) {
+            // 999.5 (d) Tier 1: DEMO MODE banner. Surfaces the rare-but-real
+            // degraded state where the user is authenticated (past AuthGateView)
+            // but supabase.isConfigured == false — e.g., Keychain corruption,
+            // project URL cleared mid-session, or session restored from a stale
+            // token after backend creds were wiped. Without this banner, every
+            // table read silently falls back to mock arrays and the user can't
+            // tell their data isn't real. AuthGateView's cyan "Configure Backend"
+            // button covers the unauthenticated case, so this banner only
+            // shows when both supabase.isAuthenticated AND !supabase.isConfigured.
+            if supabase.isAuthenticated && !supabase.isConfigured {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.black)
+                    Text("DEMO MODE")
+                        .font(.system(size: 11, weight: .heavy)).tracking(1)
+                        .foregroundColor(.black)
+                    Text("— showing mock data; backend not connected.")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.black.opacity(0.85))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .background(Theme.gold)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Demo mode: showing mock data because backend is not connected.")
+            }
+
+            Group {
+                if !supabase.isAuthenticated {
+                    // AUTH-GATE-01 (Phase 29.1): server session is the source of truth.
+                    // `profileStore.currentUser` is no longer trusted as the gate — it's
+                    // local-only UserDefaults state that cannot prove a valid backend session.
+                    // Existing users stay in via restoreSession() below (onAppear at ~L650).
+                    AuthGateView()
+                } else if !onboardingComplete {
+                    OnboardingView(isComplete: $onboardingComplete)
+                } else if BiometricAuthManager.shared.biometricEnabled && !biometricUnlocked {
+                    BiometricLockScreen(isUnlocked: $biometricUnlocked)
+                } else {
+                    mainAppView
+                }
             }
         }
         .onAppear {
