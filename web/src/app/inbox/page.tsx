@@ -6,7 +6,7 @@
 // Phase 30-03 (D-06/D-10/D-12) — header now hosts the InboxProjectPicker dropdown
 // and the sub-count + empty-state copy branch on the active project filter.
 
-import { fetchNotifications, fetchProjectMembershipsWithUnread } from "@/lib/notifications";
+import { fetchNotifications, fetchProjectMembershipsWithUnread } from "@/lib/notifications/server";
 import type { Notification } from "@/lib/supabase/types";
 import { markReadAction, markAllReadAction } from "./actions";
 import InboxProjectPicker from "./InboxProjectPicker";

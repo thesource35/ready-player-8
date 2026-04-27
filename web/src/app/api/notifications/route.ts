@@ -3,7 +3,7 @@
 // Also returns the unread count in the same payload to avoid a second round-trip.
 
 import { NextResponse } from "next/server";
-import { fetchNotifications, fetchUnreadCount } from "@/lib/notifications";
+import { fetchNotifications, fetchUnreadCount } from "@/lib/notifications/server";
 
 export async function GET(req: Request) {
   try {

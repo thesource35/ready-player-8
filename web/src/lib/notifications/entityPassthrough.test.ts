@@ -56,7 +56,8 @@ vi.mock("../supabase/server", () => {
   };
 });
 
-import { fetchNotifications, MOCK_NOTIFICATIONS } from "@/lib/notifications";
+import { fetchNotifications } from "@/lib/notifications/server";
+import { MOCK_NOTIFICATIONS } from "@/lib/notifications";
 
 describe("entity_id / entity_type passthrough (D-24)", () => {
   it("fetchNotifications preserves entity_type + entity_id from the server row", async () => {

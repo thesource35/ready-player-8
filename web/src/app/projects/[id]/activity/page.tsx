@@ -1,7 +1,7 @@
 // Phase 14 — /projects/[id]/activity timeline (Server Component)
 // Chronological flat list of cs_activity_events for one project.
 
-import { fetchProjectActivity } from "@/lib/notifications";
+import { fetchProjectActivity } from "@/lib/notifications/server";
 import type { ActivityEvent } from "@/lib/supabase/types";
 
 export const metadata = {

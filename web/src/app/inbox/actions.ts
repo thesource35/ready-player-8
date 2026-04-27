@@ -6,7 +6,7 @@
 // at /api/notifications/[id] stay in place for iOS + programmatic callers (D-03).
 
 import { revalidatePath } from "next/cache";
-import { markRead, markAllRead } from "@/lib/notifications";
+import { markRead, markAllRead } from "@/lib/notifications/server";
 
 export async function markReadAction(formData: FormData): Promise<void> {
   const raw = formData.get("id");

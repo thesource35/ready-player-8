@@ -3,7 +3,7 @@
 // Optional ?project_id= filter respects D-12 (current view filter).
 
 import { NextResponse } from "next/server";
-import { markAllRead } from "@/lib/notifications";
+import { markAllRead } from "@/lib/notifications/server";
 
 export async function POST(req: Request) {
   const url = new URL(req.url);

@@ -1,7 +1,7 @@
 // Phase 14 — PATCH (mark read) + DELETE (dismiss) for a single notification
 
 import { NextResponse } from "next/server";
-import { markRead, dismiss } from "@/lib/notifications";
+import { markRead, dismiss } from "@/lib/notifications/server";
 
 export async function PATCH(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
