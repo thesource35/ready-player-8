@@ -193,6 +193,9 @@ struct SatelliteRoofEstimatorView: View {
                 }
             }.padding(16)
         }.background(Theme.bg)
-        .onAppear { savedEstimates = loadJSON("ConstructOS.Roofing.Estimates", default: [RoofEstimate]()) }
+        // 999.6 followup: key alignment with the @State init (line 36).
+        // Both reads must use the same key or the .onAppear silently overwrites
+        // the loaded estimates with an empty array from a different key.
+        .onAppear { savedEstimates = loadJSON("ConstructOS.Roofing.SavedEstimates", default: [RoofEstimate]()) }
     }
 }
