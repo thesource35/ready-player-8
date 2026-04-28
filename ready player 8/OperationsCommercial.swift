@@ -69,6 +69,10 @@ struct SubmittalLogPanel: View {
     private func addSubmittal() {
         guard !newNum.isEmpty, !newDesc.isEmpty else { return }
         submittals.append(SubmittalItem(number: newNum, description: newDesc, discipline: newDisc, submittedDate: newSub, returnDate: newRet, revision: 0, status: .pending, ball: "Architect"))
+        // 999.6 fix: persist after mutation. Without this, user-added submittals
+        // appear in the UI for the current session but are silently lost on
+        // app relaunch (loadJSON returns nothing → falls back to seed array).
+        saveJSON("ConstructOS.Ops.Submittals", value: submittals)
         newNum = ""; newDesc = ""; newDisc = ""; newSub = ""; newRet = ""
         showAddForm = false
     }
@@ -614,6 +618,8 @@ struct ProjectContractAccountPanel: View {
             retainagePct: retainage,
             socialScore: 72
         ))
+        // 999.6 fix: persist after mutation (see addSubmittal for rationale).
+        saveJSON("ConstructOS.Ops.ProjectAccounts", value: projects)
         newProjectCode = ""
         newProjectName = ""
         newProjectOwner = ""
@@ -638,6 +644,8 @@ struct ProjectContractAccountPanel: View {
             socialTrend7d: [66, 67, 68, 69, 69, 70, 70],
             workEthicTrend7d: [68, 69, 70, 71, 71, 72, 72]
         ))
+        // 999.6 fix: persist after mutation (see addSubmittal for rationale).
+        saveJSON("ConstructOS.Ops.ContractAccounts", value: contracts)
         newContractNo = ""
         newContractProject = ""
         newContractPartner = ""
