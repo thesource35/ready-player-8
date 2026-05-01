@@ -132,38 +132,41 @@ final class MCPToolServer: ObservableObject {
     func executeTool(name: String, input: [String: Any]) async -> String {
         switch name {
         case "get_projects":
-            if supabase.isConfigured {
-                do {
-                    let projects: [SupabaseProject] = try await supabase.fetch(
-                        "cs_projects", query: ["order": "created_at.desc", "limit": "20"]
-                    )
-                    if !projects.isEmpty {
-                        return projects.map {
-                            "\($0.name) | Client: \($0.client) | Status: \($0.status) | Progress: \($0.progress)% | Budget: \($0.budget)"
-                        }.joined(separator: "\n")
-                    }
-                } catch {
-                    CrashReporter.shared.reportError("[MCP] get_projects: \(error.localizedDescription)")
-                }
+            // 999.5 (d) Tier 2: distinguish unconfigured / empty / fetch-failed
+            // states explicitly so the AI never silently substitutes mock data
+            // for real-but-failed fetches.
+            guard supabase.isConfigured else {
+                return "[DEMO MODE — Supabase not configured]\n" + mockProjects.map { "\($0.name) | Client: \($0.client) | Status: \($0.status) | Progress: \($0.progress)% | Budget: \($0.budget) | Score: \($0.score)" }.joined(separator: "\n")
             }
-            return mockProjects.map { "\($0.name) | Client: \($0.client) | Status: \($0.status) | Progress: \($0.progress)% | Budget: \($0.budget) | Score: \($0.score)" }.joined(separator: "\n")
+            do {
+                let projects: [SupabaseProject] = try await supabase.fetch(
+                    "cs_projects", query: ["order": "created_at.desc", "limit": "20"]
+                )
+                if projects.isEmpty { return "No projects found in your Supabase backend." }
+                return projects.map {
+                    "\($0.name) | Client: \($0.client) | Status: \($0.status) | Progress: \($0.progress)% | Budget: \($0.budget)"
+                }.joined(separator: "\n")
+            } catch {
+                CrashReporter.shared.reportError("[MCP] get_projects: \(error.localizedDescription)")
+                return "Error fetching projects from Supabase: \(error.localizedDescription)"
+            }
 
         case "get_contracts":
-            if supabase.isConfigured {
-                do {
-                    let contracts: [SupabaseContract] = try await supabase.fetch(
-                        "cs_contracts", query: ["order": "created_at.desc", "limit": "20"]
-                    )
-                    if !contracts.isEmpty {
-                        return contracts.map {
-                            "\($0.title) | Client: \($0.client) | Stage: \($0.stage) | Budget: \($0.budget) | Bid Due: \($0.bidDue) | Score: \($0.score) | Bidders: \($0.bidders)"
-                        }.joined(separator: "\n")
-                    }
-                } catch {
-                    CrashReporter.shared.reportError("[MCP] get_contracts: \(error.localizedDescription)")
-                }
+            guard supabase.isConfigured else {
+                return "[DEMO MODE — Supabase not configured]\n" + mockContracts.map { "\($0.title) | Client: \($0.client) | Stage: \($0.stage) | Budget: \($0.budget) | Bid Due: \($0.bidDue) | Score: \($0.score) | Bidders: \($0.bidders)" }.joined(separator: "\n")
             }
-            return mockContracts.map { "\($0.title) | Client: \($0.client) | Stage: \($0.stage) | Budget: \($0.budget) | Bid Due: \($0.bidDue) | Score: \($0.score) | Bidders: \($0.bidders)" }.joined(separator: "\n")
+            do {
+                let contracts: [SupabaseContract] = try await supabase.fetch(
+                    "cs_contracts", query: ["order": "created_at.desc", "limit": "20"]
+                )
+                if contracts.isEmpty { return "No contracts found in your Supabase backend." }
+                return contracts.map {
+                    "\($0.title) | Client: \($0.client) | Stage: \($0.stage) | Budget: \($0.budget) | Bid Due: \($0.bidDue) | Score: \($0.score) | Bidders: \($0.bidders)"
+                }.joined(separator: "\n")
+            } catch {
+                CrashReporter.shared.reportError("[MCP] get_contracts: \(error.localizedDescription)")
+                return "Error fetching contracts from Supabase: \(error.localizedDescription)"
+            }
 
         case "get_site_status":
             return """
@@ -201,33 +204,35 @@ final class MCPToolServer: ObservableObject {
             """
 
         case "get_change_orders":
-            if supabase.isConfigured {
-                do {
-                    let cos: [SupabaseMCPChangeOrder] = try await supabase.fetch("cs_change_orders", query: ["limit": "20"])
-                    if !cos.isEmpty {
-                        return cos.map { "CO-\($0.id.prefix(8)) | \($0.description ?? "No description") | $\($0.amount ?? 0) | \($0.status ?? "PENDING")" }.joined(separator: "\n")
-                    }
-                } catch {
-                    CrashReporter.shared.reportError("[MCP] get_change_orders: \(error.localizedDescription)")
-                }
+            let demoChangeOrders = "CO-001 | Foundation depth increase | $42,000 | PENDING owner approval\nCO-002 | Added fire stops | $18,500 | APPROVED\nCO-003 | Revised MEP routing | $27,300 | PENDING"
+            guard supabase.isConfigured else {
+                return "[DEMO MODE — Supabase not configured]\n" + demoChangeOrders
             }
-            return "CO-001 | Foundation depth increase | $42,000 | PENDING owner approval\nCO-002 | Added fire stops | $18,500 | APPROVED\nCO-003 | Revised MEP routing | $27,300 | PENDING"
+            do {
+                let cos: [SupabaseMCPChangeOrder] = try await supabase.fetch("cs_change_orders", query: ["limit": "20"])
+                if cos.isEmpty { return "No change orders found in your Supabase backend." }
+                return cos.map { "CO-\($0.id.prefix(8)) | \($0.description ?? "No description") | $\($0.amount ?? 0) | \($0.status ?? "PENDING")" }.joined(separator: "\n")
+            } catch {
+                CrashReporter.shared.reportError("[MCP] get_change_orders: \(error.localizedDescription)")
+                return "Error fetching change orders from Supabase: \(error.localizedDescription)"
+            }
 
         case "get_safety_incidents":
             return "INC-03-14 | Near Miss | Scaffold harness | Grid B-7 | Corrective action OPEN\nINC-03-10 | First Aid | Minor laceration | Site Gamma | CLOSED"
 
         case "get_rfis":
-            if supabase.isConfigured {
-                do {
-                    let rfis: [SupabaseMCPRFI] = try await supabase.fetch("cs_rfis", query: ["limit": "20"])
-                    if !rfis.isEmpty {
-                        return rfis.map { "RFI-\($0.id.prefix(8)) | \($0.subject ?? "No subject") | \($0.priority ?? "MED") | Status: \($0.status ?? "OPEN")" }.joined(separator: "\n")
-                    }
-                } catch {
-                    CrashReporter.shared.reportError("[MCP] get_rfis: \(error.localizedDescription)")
-                }
+            let demoRFIs = "RFI-001 | Structural steel connection detail | HIGH | 12 days open | Assigned: Engineering\nRFI-002 | MEP coordination conflict at grid C-4 | MED | 8 days open | PENDING\nRFI-003 | Exterior cladding attachment spec | LOW | 3 days open | OPEN"
+            guard supabase.isConfigured else {
+                return "[DEMO MODE — Supabase not configured]\n" + demoRFIs
             }
-            return "RFI-001 | Structural steel connection detail | HIGH | 12 days open | Assigned: Engineering\nRFI-002 | MEP coordination conflict at grid C-4 | MED | 8 days open | PENDING\nRFI-003 | Exterior cladding attachment spec | LOW | 3 days open | OPEN"
+            do {
+                let rfis: [SupabaseMCPRFI] = try await supabase.fetch("cs_rfis", query: ["limit": "20"])
+                if rfis.isEmpty { return "No RFIs found in your Supabase backend." }
+                return rfis.map { "RFI-\($0.id.prefix(8)) | \($0.subject ?? "No subject") | \($0.priority ?? "MED") | Status: \($0.status ?? "OPEN")" }.joined(separator: "\n")
+            } catch {
+                CrashReporter.shared.reportError("[MCP] get_rfis: \(error.localizedDescription)")
+                return "Error fetching RFIs from Supabase: \(error.localizedDescription)"
+            }
 
         case "get_rental_inventory":
             let query = (input["query"] as? String ?? "").lowercased()
@@ -273,17 +278,18 @@ final class MCPToolServer: ObservableObject {
             """
 
         case "get_punch_list":
-            if supabase.isConfigured {
-                do {
-                    let items: [SupabaseMCPPunchItem] = try await supabase.fetch("cs_punch_pro", query: ["limit": "20"])
-                    if !items.isEmpty {
-                        return items.map { "\($0.title ?? "Untitled") | \($0.priority ?? "MED") | \($0.status ?? "OPEN") | \($0.location ?? "")" }.joined(separator: "\n")
-                    }
-                } catch {
-                    CrashReporter.shared.reportError("[MCP] get_punch_list: \(error.localizedDescription)")
-                }
+            let demoPunch = "Fire-stopping gaps at grid B-7 | HIGH | OPEN | Riverside Lofts\nDrywall finish touch-up L3 corridor | LOW | OPEN | Harbor Crossing\nMEP label missing at panel 2A | MED | IN PROGRESS | Pine Ridge"
+            guard supabase.isConfigured else {
+                return "[DEMO MODE — Supabase not configured]\n" + demoPunch
             }
-            return "Fire-stopping gaps at grid B-7 | HIGH | OPEN | Riverside Lofts\nDrywall finish touch-up L3 corridor | LOW | OPEN | Harbor Crossing\nMEP label missing at panel 2A | MED | IN PROGRESS | Pine Ridge"
+            do {
+                let items: [SupabaseMCPPunchItem] = try await supabase.fetch("cs_punch_pro", query: ["limit": "20"])
+                if items.isEmpty { return "No punch list items found in your Supabase backend." }
+                return items.map { "\($0.title ?? "Untitled") | \($0.priority ?? "MED") | \($0.status ?? "OPEN") | \($0.location ?? "")" }.joined(separator: "\n")
+            } catch {
+                CrashReporter.shared.reportError("[MCP] get_punch_list: \(error.localizedDescription)")
+                return "Error fetching punch list from Supabase: \(error.localizedDescription)"
+            }
 
         case "calculate_rental_cost":
             let rate = input["daily_rate"] as? Double ?? 0
