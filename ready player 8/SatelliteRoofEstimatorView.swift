@@ -35,6 +35,12 @@ struct SatelliteRoofEstimatorView: View {
     @State private var geocodedCoordinate: CLLocationCoordinate2D?
     @State private var savedEstimates: [RoofEstimate] = loadJSON("ConstructOS.Roofing.SavedEstimates", default: [RoofEstimate]())
     @State private var isCalculating = false
+    @State private var saveConfirmation: String?
+
+    private var isCurrentEstimateSaved: Bool {
+        guard let est = estimate else { return false }
+        return savedEstimates.contains(where: { $0.id == est.id })
+    }
 
     private let pitches = ["2/12", "3/12", "4/12", "5/12", "6/12", "7/12", "8/12", "10/12", "12/12"]
     private let roofTypes = ["Gable", "Hip", "Flat", "Mansard", "Gambrel", "Shed", "Butterfly"]
@@ -112,7 +118,24 @@ struct SatelliteRoofEstimatorView: View {
             try? await Task.sleep(for: .seconds(1.2))
             estimate = RoofEstimate(address: address, roofArea: area, pitch: pitch, roofType: roofType, material: material, layers: layers, condition: condition, estimatedCost: matCost + labCost, laborCost: labCost, materialCost: matCost, wastePercent: wastePercent * 100, dumpsterCost: dumpster, permitCost: permit, totalCost: total, createdAt: Date())
             isCalculating = false
+            saveConfirmation = nil
         }
+    }
+
+    private func saveCurrentEstimate() {
+        guard let est = estimate, !isCurrentEstimateSaved else { return }
+        savedEstimates.insert(est, at: 0)
+        saveJSON("ConstructOS.Roofing.SavedEstimates", value: savedEstimates)
+        saveConfirmation = "Saved to history"
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2))
+            if saveConfirmation == "Saved to history" { saveConfirmation = nil }
+        }
+    }
+
+    private func deleteSavedEstimate(id: UUID) {
+        savedEstimates.removeAll { $0.id == id }
+        saveJSON("ConstructOS.Roofing.SavedEstimates", value: savedEstimates)
     }
 
     var body: some View {
@@ -189,7 +212,67 @@ struct SatelliteRoofEstimatorView: View {
                             HStack { Text("TOTAL ESTIMATE").font(.system(size: 10, weight: .bold)).foregroundColor(Theme.text); Spacer(); Text("$\(String(format: "%.0f", est.totalCost))").font(.system(size: 14, weight: .heavy)).foregroundColor(Theme.accent) }
                             Text("\(String(format: "%.0f", est.roofArea)) SF \u{2022} \(est.pitch) pitch \u{2022} \(est.roofType) \u{2022} \(est.layers) layer\(est.layers > 1 ? "s" : "")").font(.system(size: 8)).foregroundColor(Theme.muted)
                         }
+
+                        Button { saveCurrentEstimate() } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: isCurrentEstimateSaved ? "checkmark.circle.fill" : "square.and.arrow.down")
+                                Text(isCurrentEstimateSaved ? "SAVED TO HISTORY" : "SAVE TO HISTORY")
+                            }
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(isCurrentEstimateSaved ? Theme.green : Theme.text)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(isCurrentEstimateSaved ? Theme.green.opacity(0.12) : Theme.panel)
+                            .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(isCurrentEstimateSaved)
+
+                        if let confirm = saveConfirmation {
+                            Text(confirm).font(.system(size: 9, weight: .bold)).foregroundColor(Theme.green).frame(maxWidth: .infinity, alignment: .center).transition(.opacity)
+                        }
                     }.padding(14).background(Theme.surface).cornerRadius(12).premiumGlow(cornerRadius: 12, color: Theme.green)
+                }
+
+                if !savedEstimates.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("SAVED ESTIMATES").font(.system(size: 10, weight: .bold)).tracking(2).foregroundColor(Theme.gold)
+                            Spacer()
+                            Text("\(savedEstimates.count)").font(.system(size: 9, weight: .bold)).foregroundColor(Theme.muted)
+                        }
+                        ForEach(savedEstimates) { item in
+                            HStack(spacing: 10) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(item.address.isEmpty ? "(no address)" : item.address)
+                                        .font(.system(size: 11, weight: .bold))
+                                        .foregroundColor(Theme.text)
+                                        .lineLimit(1)
+                                    Text("\(item.createdAt, format: .dateTime.month().day().year().hour().minute()) \u{2022} \(String(format: "%.0f", item.roofArea)) SF \u{2022} \(item.material)")
+                                        .font(.system(size: 8))
+                                        .foregroundColor(Theme.muted)
+                                        .lineLimit(1)
+                                }
+                                Spacer()
+                                Text("$\(String(format: "%.0f", item.totalCost))")
+                                    .font(.system(size: 12, weight: .heavy))
+                                    .foregroundColor(Theme.accent)
+                                Button { deleteSavedEstimate(id: item.id) } label: {
+                                    Image(systemName: "trash")
+                                        .font(.system(size: 11, weight: .bold))
+                                        .foregroundColor(Theme.red)
+                                        .padding(6)
+                                        .background(Theme.red.opacity(0.10))
+                                        .cornerRadius(6)
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel("Delete saved estimate for \(item.address)")
+                            }
+                            .padding(10)
+                            .background(Theme.panel)
+                            .cornerRadius(8)
+                        }
+                    }.padding(14).background(Theme.surface).cornerRadius(12)
                 }
             }.padding(16)
         }.background(Theme.bg)
