@@ -288,12 +288,23 @@ struct ChatMessage: Identifiable, Codable, Equatable {
 }
 
 // Mock Data
+//
+// 999.5 (d) Tier 3: bundle-gate user-data simulation arrays so App Store
+// release builds never ship realistic-looking fake company names.
+// In Release: empty arrays — unconfigured users see the existing DEMO MODE
+// banner over an empty list (explicit "configure your backend" affordance
+// already lives on AuthGateView via 999.5 c). In Debug: rich demo data
+// preserved for development.
+#if DEBUG
 let mockProjects = [
     Project(name: "Nexus Tower Complex", client: "Summit Dev Group", type: "Commercial High-Rise", status: "On Track", progress: 67, budget: "$42.8M", score: "9.4", team: "48 crew", likes: 1247, comments: 89, shares: 234),
     Project(name: "Riverside Lofts", client: "Urban Renewal LLC", type: "Mixed-Use Residential", status: "Delayed", progress: 34, budget: "$8.1M", score: "7.8", team: "22 crew", likes: 534, comments: 41, shares: 89),
     Project(name: "Harbor Industrial Park", client: "Port Authority", type: "Industrial", status: "On Track", progress: 89, budget: "$19.4M", score: "9.7", team: "61 crew", likes: 2103, comments: 156, shares: 445),
     Project(name: "Tech Campus Phase II", client: "InnovateCorp", type: "Commercial Office", status: "Ahead", progress: 52, budget: "$67.2M", score: "9.1", team: "104 crew", likes: 3841, comments: 267, shares: 891),
 ]
+#else
+let mockProjects: [Project] = []
+#endif
 
 let mockContacts = [
     Contact(name: "Marcus Rivera", title: "Sr. Project Manager", company: "Apex Construction", score: 98, connections: 847, projects: 23, initials: "MR"),
@@ -313,6 +324,7 @@ let mockMapSites = [
     MapSite(x: 0.45, y: 0.70, latitude: 40.7630, longitude: -73.9800, name: "HQ Tower", status: "active", type: "commercial"),
 ]
 
+#if DEBUG
 let mockMarketData = [
     MarketData(city: "New York", vacancy: 12.4, newBiz: 847, closed: 203, trend: "up"),
     MarketData(city: "Los Angeles", vacancy: 9.8, newBiz: 612, closed: 178, trend: "up"),
@@ -321,12 +333,19 @@ let mockMarketData = [
     MarketData(city: "London", vacancy: 11.3, newBiz: 934, closed: 312, trend: "neutral"),
     MarketData(city: "Dubai", vacancy: 6.7, newBiz: 1204, closed: 89, trend: "up"),
 ]
+#else
+let mockMarketData: [MarketData] = []
+#endif
 
+#if DEBUG
 let mockContracts = [
     ContractOpportunity(title: "West Loop Medical Tower", client: "Meridian Health Partners", location: "Chicago, IL", sector: "Healthcare", stage: "Open For Bid", package: "Core & Shell", budget: "$28.4M", bidDue: "Apr 18", liveFeedStatus: "3D map + drone online", bidders: 16, score: 96, watchCount: 482),
     ContractOpportunity(title: "Portside Logistics Hub", client: "Atlas Freight Group", location: "Houston, TX", sector: "Industrial", stage: "Prequalifying Teams", package: "Site + Structural", budget: "$61.9M", bidDue: "Apr 26", liveFeedStatus: "Satellite refresh every 4h", bidders: 23, score: 92, watchCount: 615),
     ContractOpportunity(title: "Crown District Residences", client: "Urban Frontier Dev Co", location: "Dubai, UAE", sector: "Mixed-Use", stage: "Negotiation", package: "MEP + Interiors", budget: "$44.7M", bidDue: "May 02", liveFeedStatus: "Live tower cam active", bidders: 11, score: 94, watchCount: 338),
 ]
+#else
+let mockContracts: [ContractOpportunity] = []
+#endif
 
 let feedbackInsights = [
     FeedbackInsight(title: "Too Many Tools", painPoint: "Teams report bouncing between project management, bidding, maps, CRM, and spreadsheets.", solution: "Contracts, project execution, live maps, contacts, and AI now sit in one operating system.", demand: "Requested by 81% of surveyed operators", impact: "Cuts context switching and duplicate entry"),
