@@ -231,6 +231,19 @@ export async function deleteOwnedRow(
 
 const MAX_PAGE_SIZE = 100;
 
+// 999.5 (d) Tier 2 (web parallel of MCPServer fix): the `state` field lets
+// callers distinguish three previously-conflated outcomes:
+//   - "unconfigured": Supabase env vars missing (dev mode) — caller may show DEMO data
+//   - "error":        Postgres/network failure — caller should surface error, NOT mock
+//   - "ok":           query succeeded; data may be empty (legitimate empty state)
+// Without this, an API route returning an empty array could mean any of the three.
+export type FetchTablePaginatedResult<T> = {
+  data: T[];
+  hasMore: boolean;
+  total: number;
+  state: "ok" | "unconfigured" | "error";
+};
+
 export async function fetchTablePaginated<T>(
   table: string,
   options?: {
@@ -240,9 +253,9 @@ export async function fetchTablePaginated<T>(
     page?: number;
     pageSize?: number;
   }
-): Promise<{ data: T[]; hasMore: boolean; total: number }> {
+): Promise<FetchTablePaginatedResult<T>> {
   const supabase = await createServerSupabase();
-  if (!supabase) return { data: [], hasMore: false, total: 0 };
+  if (!supabase) return { data: [], hasMore: false, total: 0, state: "unconfigured" };
 
   const page = Math.max(0, options?.page ?? 0);
   const pageSize = Math.min(Math.max(1, options?.pageSize ?? 25), MAX_PAGE_SIZE);
@@ -268,17 +281,18 @@ export async function fetchTablePaginated<T>(
     const { data, error, count } = await query;
     if (error) {
       console.error(`Paginated fetch ${table} error:`, error);
-      return { data: [], hasMore: false, total: 0 };
+      return { data: [], hasMore: false, total: 0, state: "error" };
     }
 
     return {
       data: (data as T[]) || [],
       hasMore: (count ?? 0) > to + 1,
       total: count ?? 0,
+      state: "ok",
     };
   } catch (err) {
     console.error(`Paginated fetch ${table} exception:`, err);
-    return { data: [], hasMore: false, total: 0 };
+    return { data: [], hasMore: false, total: 0, state: "error" };
   }
 }
 

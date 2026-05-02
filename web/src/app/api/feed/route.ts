@@ -15,8 +15,12 @@ export async function GET(req: Request) {
     page,
   });
 
-  if (result.data.length === 0 && page === 0) {
-    return NextResponse.json({ data: MOCK_FEED_POSTS, hasMore: false, total: MOCK_FEED_POSTS.length });
+  // 999.5 (d) Tier 2: distinguish unconfigured / error / ok. Mock only on dev.
+  if (result.state === "unconfigured" && page === 0) {
+    return NextResponse.json({ data: MOCK_FEED_POSTS, hasMore: false, total: MOCK_FEED_POSTS.length, demoMode: true });
+  }
+  if (result.state === "error") {
+    return NextResponse.json({ error: "Failed to load feed", data: [], hasMore: false, total: 0 }, { status: 500 });
   }
 
   return NextResponse.json(result);

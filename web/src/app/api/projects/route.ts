@@ -15,8 +15,14 @@ export async function GET(req: Request) {
     page,
   });
 
-  if (result.data.length === 0 && page === 0) {
-    return NextResponse.json({ data: MOCK_PROJECTS, hasMore: false, total: MOCK_PROJECTS.length });
+  // 999.5 (d) Tier 2: only substitute MOCK when Supabase is unconfigured (dev
+  // mode). Don't conflate "configured + empty" or "configured + fetch error"
+  // with "show fake data" -- those are distinct user states.
+  if (result.state === "unconfigured" && page === 0) {
+    return NextResponse.json({ data: MOCK_PROJECTS, hasMore: false, total: MOCK_PROJECTS.length, demoMode: true });
+  }
+  if (result.state === "error") {
+    return NextResponse.json({ error: "Failed to load projects", data: [], hasMore: false, total: 0 }, { status: 500 });
   }
 
   return NextResponse.json(result);
