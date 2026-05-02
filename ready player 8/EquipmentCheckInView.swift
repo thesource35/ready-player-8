@@ -168,7 +168,15 @@ struct EquipmentCheckInView: View {
             equipmentList = try await SupabaseService.shared.fetchEquipment()
         } catch {
             CrashReporter.shared.reportError("Equipment list load failed: \(error.localizedDescription)")
-            equipmentList = mockEquipment
+            // 999.5 (d) Tier 2: only substitute mocks when Supabase is unconfigured
+            // (dev/demo experience). Configured + fetch failure should NOT show fake
+            // equipment as if it were real — leave list empty so the picker is empty
+            // and the user knows something is off.
+            if SupabaseService.shared.isConfigured {
+                equipmentList = []
+            } else {
+                equipmentList = mockEquipment
+            }
         }
         isLoadingEquipment = false
     }

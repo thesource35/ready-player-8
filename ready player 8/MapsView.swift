@@ -510,13 +510,17 @@ struct MapsView: View {
             }
         } catch {
             let wrapped = (error as? AppError) ?? AppError.unknown(error.localizedDescription)
-            // Only surface to UI when Supabase IS configured — unconfigured paths are expected to
-            // fall back to mocks silently (that's the intended dev/demo experience).
+            CrashReporter.shared.reportError("Maps equipment load failed: \(error.localizedDescription)")
+            // 999.5 (d) Tier 2: distinguish unconfigured vs configured-error.
+            // Configured + error must NOT substitute fake pins — the user already
+            // sees a banner via loadError; showing fake equipment positions on top
+            // would mislead them into thinking real data was loaded.
             if SupabaseService.shared.isConfigured {
                 loadError = wrapped
+                equipmentPositions = []
+            } else {
+                equipmentPositions = mockEquipmentPositions
             }
-            CrashReporter.shared.reportError("Maps equipment load failed: \(error.localizedDescription)")
-            equipmentPositions = mockEquipmentPositions
         }
         // MARK: Photo fetch (Phase 21-09 Task 3: mock fallback + visible errors symmetric with equipment)
         do {
@@ -539,11 +543,14 @@ struct MapsView: View {
             }
         } catch {
             let wrapped = (error as? AppError) ?? AppError.unknown(error.localizedDescription)
+            CrashReporter.shared.reportError("Maps photo load failed: \(error.localizedDescription)")
+            // 999.5 (d) Tier 2: same as equipment branch above.
             if SupabaseService.shared.isConfigured {
                 loadError = wrapped
+                photoAnnotations = []
+            } else {
+                photoAnnotations = mockPhotoAnnotations
             }
-            CrashReporter.shared.reportError("Maps photo load failed: \(error.localizedDescription)")
-            photoAnnotations = mockPhotoAnnotations
         }
         isLoadingData = false
     }
