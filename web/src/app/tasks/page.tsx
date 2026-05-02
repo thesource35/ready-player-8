@@ -90,8 +90,9 @@ export default function TasksPage() {
       }
       setHasMore(data.hasMore || false);
       setPage(nextPage);
-    } catch {
-      // Silently fail — user can retry
+    } catch (e) {
+      console.error("[tasks] load more failed:", e);
+      setFetchError("Couldn't load more tasks. Try again.");
     } finally {
       setLoadingMore(false);
     }

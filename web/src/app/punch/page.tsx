@@ -88,8 +88,9 @@ function PunchPageContent() {
         setHasMore(result.hasMore || false);
       }
       setPage(nextPage);
-    } catch {
-      // Silently fail — user can retry
+    } catch (e) {
+      console.error("[punch] load more failed:", e);
+      setFetchError("Couldn't load more punch items. Try again.");
     } finally {
       setLoadingMore(false);
     }

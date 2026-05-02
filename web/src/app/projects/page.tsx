@@ -92,8 +92,9 @@ export default function ProjectsPage() {
         setHasMore(result.hasMore || false);
       }
       setPage(nextPage);
-    } catch {
-      // Silently fail — user can retry
+    } catch (e) {
+      console.error("[projects] load more failed:", e);
+      setError("Couldn't load more projects. Try again.");
     } finally {
       setLoadingMore(false);
     }

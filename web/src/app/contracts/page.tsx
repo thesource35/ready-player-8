@@ -84,8 +84,9 @@ export default function ContractsPage() {
         setHasMore(result.hasMore || false);
       }
       setPage(nextPage);
-    } catch {
-      // Silently fail — user can retry
+    } catch (e) {
+      console.error("[contracts] load more failed:", e);
+      setError("Couldn't load more contracts. Try again.");
     } finally {
       setLoadingMore(false);
     }

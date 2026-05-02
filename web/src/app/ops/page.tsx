@@ -127,8 +127,9 @@ export default function OpsPage() {
       }
       setHasMore(data.hasMore || false);
       setPage(nextPage);
-    } catch {
-      // Silently fail — user can retry
+    } catch (e) {
+      console.error("[ops] load more failed:", e);
+      setFetchError("Couldn't load more alerts. Try again.");
     } finally {
       setLoadingMore(false);
     }

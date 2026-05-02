@@ -135,8 +135,9 @@ export default function FeedPage() {
         setHasMore(result.hasMore || false);
       }
       setPage(nextPage);
-    } catch {
-      // Silently fail — user can retry
+    } catch (e) {
+      console.error("[feed] load more failed:", e);
+      setError("Couldn't load more posts. Try again.");
     } finally {
       setLoadingMore(false);
     }
