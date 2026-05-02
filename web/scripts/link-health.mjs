@@ -59,7 +59,7 @@ rg.stdout.split("\n").forEach((line) => {
   const matches = line.match(urlRegex);
   if (!matches) return;
   matches.forEach((match) => {
-    const cleaned = match.replace(/[),.;]+$/, "");
+    const cleaned = match.replace(/[),.;:]+$/, "");
     if (shouldSkipUrl(cleaned)) return;
     urls.add(cleaned);
   });
@@ -185,7 +185,36 @@ function shouldSkipUrl(url) {
   if (url.includes("${") || url.includes("\\(")) return true;
   if (url.endsWith("\\")) return true;
   if (isLocalHost(url)) return true;
+  if (isPlaceholderHost(url)) return true;
   return false;
+}
+
+// Placeholder URLs that appear in source code (docs, .env.example, sample
+// configs, default placeholder text in form fields) should not be validated.
+// They never resolve and cluttering the link-health report with them hides
+// real drift in legitimate external references.
+function isPlaceholderHost(url) {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    // RFC 2606 reserved test/example TLDs
+    if (host === "example.com" || host.endsWith(".example.com")) return true;
+    if (host === "example.org" || host.endsWith(".example.org")) return true;
+    if (host === "example.net" || host.endsWith(".example.net")) return true;
+    if (host === "example" || host.endsWith(".example")) return true;
+    if (host === "test" || host.endsWith(".test")) return true;
+    if (host === "invalid" || host.endsWith(".invalid")) return true;
+    // Common placeholder hostnames (one-character or template-literal-ish)
+    if (host.length <= 1) return true;
+    if (host.startsWith("...")) return true;
+    if (host.startsWith("your-")) return true;
+    // Specific known placeholders used in BackendConfigSheet field hints,
+    // .env.example, and sample documentation
+    if (host === "abc.supabase.co") return true;
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 function isLocalHost(url) {
