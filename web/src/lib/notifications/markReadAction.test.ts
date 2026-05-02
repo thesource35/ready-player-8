@@ -15,7 +15,7 @@ const { markReadMock, markAllReadMock, revalidatePathMock } = vi.hoisted(() => (
   revalidatePathMock: vi.fn(),
 }));
 
-vi.mock("@/lib/notifications", () => ({
+vi.mock("@/lib/notifications/server", () => ({
   markRead: markReadMock,
   markAllRead: markAllReadMock,
 }));

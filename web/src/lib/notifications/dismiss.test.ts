@@ -5,7 +5,7 @@ vi.mock("../supabase/server", () => ({
   createServerSupabase: vi.fn(async () => null),
 }));
 
-import { dismiss, markRead } from "../notifications";
+import { dismiss, markRead } from "../notifications/server";
 
 describe("dismiss (mock-mode)", () => {
   it("returns true without throwing when Supabase is missing", async () => {

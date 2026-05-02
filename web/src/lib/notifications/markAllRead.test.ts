@@ -9,7 +9,7 @@ vi.mock("../supabase/server", () => ({
   createServerSupabase: vi.fn(async () => null),
 }));
 
-import { markAllRead } from "../notifications";
+import { markAllRead } from "../notifications/server";
 
 beforeEach(() => {
   vi.clearAllMocks();

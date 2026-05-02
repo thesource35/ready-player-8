@@ -7,7 +7,8 @@ vi.mock("../supabase/server", () => ({
   createServerSupabase: vi.fn(async () => null), // mock mode
 }));
 
-import { fetchProjectMembershipsWithUnread, resolveStalePickerFilter } from "../notifications";
+import { fetchProjectMembershipsWithUnread } from "../notifications/server";
+import { resolveStalePickerFilter } from "../notifications";
 
 beforeEach(() => {
   vi.clearAllMocks();

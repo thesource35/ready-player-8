@@ -5,6 +5,12 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
+      // The `server-only` package throws at import time when loaded outside
+      // a Next.js server context. Vitest's node env triggers that throw
+      // even for files that ARE correctly server-side. Alias to a no-op
+      // stub so server-side modules can be tested. See
+      // src/__tests__/_stubs/server-only.ts for the rationale.
+      "server-only": path.resolve(__dirname, "src/__tests__/_stubs/server-only.ts"),
     },
   },
   test: {

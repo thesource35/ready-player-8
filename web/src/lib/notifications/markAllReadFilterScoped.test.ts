@@ -62,7 +62,7 @@ vi.mock("../supabase/server", () => ({
   createServerSupabase: vi.fn(async () => fakeClient),
 }));
 
-import { markAllRead } from "../notifications";
+import { markAllRead } from "../notifications/server";
 
 beforeEach(() => {
   eqCalls.length = 0;
