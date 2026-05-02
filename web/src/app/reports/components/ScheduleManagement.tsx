@@ -542,20 +542,27 @@ export default function ScheduleManagement({
         if (!confirm("Delete this schedule? This cannot be undone.")) return;
         await fetch(`/api/reports/schedule?id=${id}`, { method: "DELETE" });
       } else if (action === "pause" || action === "resume") {
-        await fetch("/api/reports/schedule", {
+        const updateRes = await fetch("/api/reports/schedule", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id, is_active: action === "resume" }),
         });
+        if (!updateRes.ok) throw new Error(`HTTP ${updateRes.status}`);
       } else if (action === "send_now" || action === "send_test") {
-        await fetch("/api/reports/schedule", {
+        const sendRes = await fetch("/api/reports/schedule", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action, schedule_id: id }),
         });
+        if (!sendRes.ok) throw new Error(`HTTP ${sendRes.status}`);
       }
       onRefresh();
     } catch (err) {
+      // 999.5 (d) audit: previously the await fetch above had no res.ok
+      // check, so non-2xx responses were treated as success. Now: HTTP
+      // failures throw and land here; we still console.error (no UI
+      // error surface in this component yet -- TODO follow-up to add a
+      // visible error toast to ScheduleManagement).
       console.error(`Schedule action ${action} failed:`, err);
     } finally {
       setLoadingIds((prev) => {

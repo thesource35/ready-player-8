@@ -43,11 +43,17 @@ export default function PortalsPage() {
         const data = await listRes.json();
         setLinks(data.links ?? []);
       } else {
-        // If list endpoint doesn't exist, start with empty
+        // 999.5 (d) audit: was silent fallback to []. Now log + show toast
+        // so the user can tell the difference between "no portals exist yet"
+        // and "we couldn't load your portals."
+        console.error(`[portals] list fetch failed: HTTP ${listRes.status}`);
         setLinks([]);
+        setToast(`Couldn't load portals (HTTP ${listRes.status}). Try refreshing.`);
       }
-    } catch {
+    } catch (e) {
+      console.error("[portals] list fetch threw:", e);
       setLinks([]);
+      setToast("Couldn't load portals. Check your connection.");
     } finally {
       setLoading(false);
     }
