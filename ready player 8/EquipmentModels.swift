@@ -161,7 +161,9 @@ extension SupabaseEquipment: Hashable {
 }
 
 // MARK: - Mock Data (D-14 fallback)
-
+//
+// 999.5 (d) Tier 3: bundle-gated. Release ships empty arrays.
+#if DEBUG
 let mockEquipment: [SupabaseEquipment] = [
     SupabaseEquipment(id: "eq-001", orgId: "org-1", name: "CAT 320 Excavator", type: "equipment", subtype: "Excavator", assignedProject: "proj-1", status: "active", createdAt: "2026-01-15T08:00:00Z", updatedAt: "2026-04-01T14:30:00Z"),
     SupabaseEquipment(id: "eq-002", orgId: "org-1", name: "Concrete Mixer Truck #3", type: "vehicle", subtype: "Mixer", assignedProject: "proj-1", status: "active", createdAt: "2026-02-01T08:00:00Z", updatedAt: "2026-04-10T09:15:00Z"),
@@ -169,12 +171,19 @@ let mockEquipment: [SupabaseEquipment] = [
     SupabaseEquipment(id: "eq-004", orgId: "org-1", name: "Steel Beam Delivery", type: "material", subtype: "Steel", assignedProject: "proj-1", status: "active", createdAt: "2026-03-15T08:00:00Z", updatedAt: "2026-04-12T07:00:00Z"),
     SupabaseEquipment(id: "eq-005", orgId: "org-1", name: "Forklift FL-200", type: "equipment", subtype: "Forklift", assignedProject: nil, status: "needs_attention", createdAt: "2026-02-10T08:00:00Z", updatedAt: "2026-04-05T11:20:00Z"),
 ]
+#else
+let mockEquipment: [SupabaseEquipment] = []
+#endif
 
 // Phase 21-09 Task 2: relocated to cluster near MapSite.mapCenter (40.7580, -73.9855, NYC-Midtown)
 // so mock pins are visible in the default iOS viewport. Prior coords were Atlanta (~860 mi off-screen).
+#if DEBUG
 let mockEquipmentPositions: [SupabaseEquipmentLatestPosition] = [
     SupabaseEquipmentLatestPosition(id: "eq-001", orgId: "org-1", name: "CAT 320 Excavator", type: "equipment", subtype: "Excavator", assignedProject: "proj-1", status: "active", createdAt: "2026-01-15T08:00:00Z", updatedAt: "2026-04-01T14:30:00Z", latestLat: 40.7585, latestLng: -73.9861, latestRecordedAt: "2026-04-12T14:30:00Z", latestAccuracyM: 5.0),
     SupabaseEquipmentLatestPosition(id: "eq-002", orgId: "org-1", name: "Concrete Mixer Truck #3", type: "vehicle", subtype: "Mixer", assignedProject: "proj-1", status: "active", createdAt: "2026-02-01T08:00:00Z", updatedAt: "2026-04-10T09:15:00Z", latestLat: 40.7572, latestLng: -73.9842, latestRecordedAt: "2026-04-12T09:15:00Z", latestAccuracyM: 8.0),
     SupabaseEquipmentLatestPosition(id: "eq-003", orgId: "org-1", name: "Tower Crane TC-500", type: "equipment", subtype: "Crane", assignedProject: "proj-2", status: "idle", createdAt: "2026-01-20T08:00:00Z", updatedAt: "2026-04-08T16:45:00Z", latestLat: 40.7598, latestLng: -73.9880, latestRecordedAt: "2026-04-08T16:45:00Z", latestAccuracyM: 3.0),
     SupabaseEquipmentLatestPosition(id: "eq-004", orgId: "org-1", name: "Steel Beam Delivery", type: "material", subtype: "Steel", assignedProject: "proj-1", status: "active", createdAt: "2026-03-15T08:00:00Z", updatedAt: "2026-04-12T07:00:00Z", latestLat: 40.7558, latestLng: -73.9835, latestRecordedAt: "2026-04-12T07:00:00Z", latestAccuracyM: 12.0),
 ]
+#else
+let mockEquipmentPositions: [SupabaseEquipmentLatestPosition] = []
+#endif

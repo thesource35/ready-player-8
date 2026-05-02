@@ -165,6 +165,8 @@ final class CryptoPaymentManager: ObservableObject {
     }
 }
 
+// 999.5 (d) Tier 3: bundle-gated.
+#if DEBUG
 private let mockCryptoTransactions: [CryptoTransaction] = [
     CryptoTransaction(chain: "Ethereum", symbol: "ETH", amount: 0.0072, usdEquivalent: 24.99, fromAddress: "0x742d...8f4a", toAddress: CryptoWalletConfig.ethAddress, txHash: "0xabc123...def456", purpose: "subscription", projectRef: "PM Monthly", status: "confirmed", confirmations: 24, requiredConfirmations: 12, timestamp: Date().addingTimeInterval(-86400)),
     CryptoTransaction(chain: "Bitcoin", symbol: "BTC", amount: 0.00071, usdEquivalent: 48200, fromAddress: "bc1q...7x9m", toAddress: CryptoWalletConfig.btcAddress, txHash: "3a1b2c...9d8e7f", purpose: "pay", projectRef: "Apex Concrete Payment", status: "confirmed", confirmations: 6, requiredConfirmations: 3, timestamp: Date().addingTimeInterval(-172800)),
@@ -172,6 +174,9 @@ private let mockCryptoTransactions: [CryptoTransaction] = [
     CryptoTransaction(chain: "Solana", symbol: "SOL", amount: 349.28, usdEquivalent: 62400, fromAddress: "Gh7k...Bx9p", toAddress: CryptoWalletConfig.solAddress, txHash: "4Kx92m...7Nq3Rp", purpose: "material", projectRef: "Nucor Steel Order", status: "confirming", confirmations: 0, requiredConfirmations: 1, timestamp: Date().addingTimeInterval(-3600)),
     CryptoTransaction(chain: "Ethereum", symbol: "ETH", amount: 57.47, usdEquivalent: 198750, fromAddress: "0x445b...9e2a", toAddress: CryptoWalletConfig.ethAddress, txHash: "0x777888...999aaa", purpose: "invoice", projectRef: "Harbor Crossing Pay App", status: "pending", confirmations: 0, requiredConfirmations: 12, timestamp: Date()),
 ]
+#else
+private let mockCryptoTransactions: [CryptoTransaction] = []
+#endif
 
 // MARK: - Crypto Payment View
 

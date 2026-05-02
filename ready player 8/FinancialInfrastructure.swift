@@ -118,6 +118,8 @@ final class ConstructionOSPay: ObservableObject {
     }
 }
 
+// 999.5 (d) Tier 3: bundle-gated.
+#if DEBUG
 private let mockTransactions: [PaymentTransaction] = [
     PaymentTransaction(fromName: "Metro Development", toName: "You", amount: 284500, type: "invoice", projectRef: "Riverside Lofts", status: "completed", fee: 4267.50, date: Date().addingTimeInterval(-86400*3)),
     PaymentTransaction(fromName: "You", toName: "Apex Concrete LLC", amount: 48200, type: "payroll", projectRef: "Riverside Lofts", status: "completed", fee: 723, date: Date().addingTimeInterval(-86400*5)),
@@ -126,6 +128,9 @@ private let mockTransactions: [PaymentTransaction] = [
     PaymentTransaction(fromName: "You", toName: "United Rentals", amount: 8500, type: "rental", projectRef: "Pine Ridge", status: "completed", fee: 127.50, date: Date().addingTimeInterval(-86400*7)),
     PaymentTransaction(fromName: "Urban Living", toName: "You", amount: 156200, type: "invoice", projectRef: "Riverside Residential", status: "pending", fee: 0, date: Date().addingTimeInterval(-86400*2)),
 ]
+#else
+private let mockTransactions: [PaymentTransaction] = []
+#endif
 
 // MARK: - ConstructionOS Capital (Invoice Factoring)
 

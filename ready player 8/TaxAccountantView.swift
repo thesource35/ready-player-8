@@ -69,12 +69,17 @@ struct SubcontractorPayment: Identifiable, Codable {
     let form1099Filed: Bool
 }
 
+// 999.5 (d) Tier 3: bundle-gated.
+#if DEBUG
 private let mockCPAs: [TaxCPA] = [
     TaxCPA(name: "Robert Steinberg", firm: "Steinberg & Associates", specialty: "Construction & Real Estate", hourlyRate: "$275/hr", rating: 4.9, location: "Houston, TX", certifications: ["CPA", "CCA (Certified Construction Auditor)"], available: true, initials: "RS"),
     TaxCPA(name: "Linda Tran", firm: "BuildTax Advisory", specialty: "Contractor Tax Planning", hourlyRate: "$225/hr", rating: 4.8, location: "Los Angeles, CA", certifications: ["CPA", "EA (Enrolled Agent)"], available: true, initials: "LT"),
     TaxCPA(name: "Michael O'Donnell", firm: "O'Donnell Tax Group", specialty: "Small Business Construction", hourlyRate: "$195/hr", rating: 4.7, location: "Chicago, IL", certifications: ["CPA", "QuickBooks ProAdvisor"], available: false, initials: "MO"),
     TaxCPA(name: "Anita Sharma", firm: "Sharma & Partners", specialty: "Multi-State Contractor Tax", hourlyRate: "$250/hr", rating: 4.9, location: "New York, NY", certifications: ["CPA", "MST (Master of Tax)"], available: true, initials: "AS"),
 ]
+#else
+private let mockCPAs: [TaxCPA] = []
+#endif
 
 // MARK: - Tax Accountant Main View
 

@@ -2158,6 +2158,8 @@ struct ConditionReportView: View {
 
 // MARK: - Operator Marketplace
 
+// 999.5 (d) Tier 3: bundle-gated.
+#if DEBUG
 private let mockOperators: [OperatorListing] = [
     OperatorListing(name: "Carlos Mendez", certifications: ["NCCCO Crane", "OSHA 30"], hourlyRate: "$85/hr", experience: 18, rating: 4.9, location: "Houston, TX", available: true, specialties: ["Tower Crane", "Crawler Crane"], initials: "CM"),
     OperatorListing(name: "James Walsh", certifications: ["NCCCO Mobile Crane", "CDL-A"], hourlyRate: "$78/hr", experience: 14, rating: 4.8, location: "Chicago, IL", available: true, specialties: ["Rough Terrain", "All-Terrain"], initials: "JW"),
@@ -2166,6 +2168,9 @@ private let mockOperators: [OperatorListing] = [
     OperatorListing(name: "Aisha Williams", certifications: ["NCCCO Tower Crane", "Signal Person"], hourlyRate: "$92/hr", experience: 22, rating: 5.0, location: "New York, NY", available: true, specialties: ["Tower Crane", "Luffing Jib"], initials: "AW"),
     OperatorListing(name: "Roberto Fuentes", certifications: ["Concrete Pump", "CDL-B"], hourlyRate: "$70/hr", experience: 12, rating: 4.8, location: "Miami, FL", available: true, specialties: ["Boom Pump", "Line Pump"], initials: "RF"),
 ]
+#else
+private let mockOperators: [OperatorListing] = []
+#endif
 
 struct OperatorMarketplaceView: View {
     @State private var searchText = ""

@@ -140,7 +140,9 @@ final class UserProfileStore: ObservableObject {
 }
 
 // MARK: - Mock Network Users
-
+//
+// 999.5 (d) Tier 3: bundle-gated.
+#if DEBUG
 let mockNetworkUsers: [UserProfile] = [
     UserProfile(email: "marcus.r@powergrid.com", fullName: "Marcus Rivera", company: "PowerGrid Construction", jobTitle: "Senior Superintendent", trade: "General", birthdate: "1985-06-15", yearsExperience: 18, phone: "713-555-0142", bio: "18 years in commercial construction. Specialized in high-rise and mixed-use projects. OSHA 30, PMP certified.", location: "Houston, TX", certifications: ["OSHA 30", "PMP", "LEED AP"], skills: ["Project Management", "Scheduling", "Safety"], connectionIDs: [], pendingConnectionIDs: [], joinedDate: Date().addingTimeInterval(-86400*90), isVerified: true),
     UserProfile(email: "sarah.c@fiberlink.com", fullName: "Sarah Chen", company: "FiberLink Solutions", jobTitle: "Lead Fiber Installer", trade: "Fiber Optic", birthdate: "1990-03-22", yearsExperience: 12, phone: "415-555-0198", bio: "BICSI RCDD certified. Specializing in data center and campus fiber builds. 200+ projects completed.", location: "San Francisco, CA", certifications: ["BICSI RCDD", "CFOT", "OSHA 10"], skills: ["Fiber Optic", "OTDR Testing", "Splicing"], connectionIDs: [], pendingConnectionIDs: [], joinedDate: Date().addingTimeInterval(-86400*60), isVerified: true),
@@ -151,6 +153,9 @@ let mockNetworkUsers: [UserProfile] = [
     UserProfile(email: "kim.n@securewire.com", fullName: "Kim Nguyen", company: "SecureWire Systems", jobTitle: "Low Voltage Tech Lead", trade: "Low Voltage", birthdate: "1994-05-03", yearsExperience: 7, phone: "206-555-0156", bio: "Access control, security cameras, and structured cabling. BICSI TECH certified.", location: "Seattle, WA", certifications: ["BICSI TECH", "NICET II", "OSHA 10"], skills: ["Access Control", "CCTV", "Structured Cabling"], connectionIDs: [], pendingConnectionIDs: [], joinedDate: Date().addingTimeInterval(-86400*15), isVerified: false),
     UserProfile(email: "ashley.w@roofpro.com", fullName: "Ashley Williams", company: "RoofPro Services", jobTitle: "Roofing Foreman", trade: "Roofing", birthdate: "1987-12-25", yearsExperience: 16, phone: "214-555-0298", bio: "Commercial roofing specialist. TPO, EPDM, and modified bitumen. GAF Master Elite contractor.", location: "Dallas, TX", certifications: ["GAF Master Elite", "OSHA 30", "Fall Protection"], skills: ["TPO", "EPDM", "Metal Roofing"], connectionIDs: [], pendingConnectionIDs: [], joinedDate: Date().addingTimeInterval(-86400*75), isVerified: true),
 ]
+#else
+let mockNetworkUsers: [UserProfile] = []
+#endif
 
 // MARK: - User Profile View (Instagram-style)
 

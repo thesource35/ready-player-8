@@ -87,6 +87,8 @@ struct FiberProject: Identifiable {
     let completionPercent: Int
 }
 
+// 999.5 (d) Tier 3: bundle-gated.
+#if DEBUG
 private let mockElectricalContractors: [ElectricalContractor] = [
     ElectricalContractor(name: "Marcus Johnson", company: "PowerGrid Electric", trade: .electrician, licenseType: "Master Electrician", licenseNumber: "ME-48291", licenseState: "TX", isVerified: true, rating: 4.9, reviewCount: 147, hourlyRate: "$95/hr", yearsExperience: 22, serviceArea: "Houston Metro", certifications: ["Master Electrician", "OSHA 30", "NFPA 70E"], specialties: ["Commercial TI", "Industrial Controls", "Emergency Power"], available: true, responseTime: "< 2 hrs", completedJobs: 312, insuranceVerified: true, bondAmount: "$500K", initials: "MJ"),
     ElectricalContractor(name: "Sarah Chen", company: "FiberLink Solutions", trade: .fiberInstaller, licenseType: "BICSI RCDD", licenseNumber: "RCDD-19847", licenseState: "CA", isVerified: true, rating: 4.8, reviewCount: 93, hourlyRate: "$110/hr", yearsExperience: 15, serviceArea: "Bay Area", certifications: ["BICSI RCDD", "CFOT", "OSHA 10"], specialties: ["Data Center", "Campus Fiber", "FTTH", "OTDR Testing"], available: true, responseTime: "< 4 hrs", completedJobs: 198, insuranceVerified: true, bondAmount: "$1M", initials: "SC"),
@@ -97,12 +99,19 @@ private let mockElectricalContractors: [ElectricalContractor] = [
     ElectricalContractor(name: "James O'Brien", company: "FireShield Electric", trade: .fireAlarm, licenseType: "NICET Level III", licenseNumber: "NI-29384", licenseState: "IL", isVerified: true, rating: 4.9, reviewCount: 88, hourlyRate: "$90/hr", yearsExperience: 18, serviceArea: "Chicago Metro", certifications: ["NICET III Fire Alarm", "Master Electrician", "OSHA 30"], specialties: ["Fire Alarm Design", "Mass Notification", "Inspection/Testing"], available: true, responseTime: "< 2 hrs", completedJobs: 267, insuranceVerified: true, bondAmount: "$1M", initials: "JO"),
     ElectricalContractor(name: "Carlos Reyes", company: "GenPower Services", trade: .generatorTech, licenseType: "Master Electrician", licenseNumber: "ME-67284", licenseState: "TX", isVerified: true, rating: 4.7, reviewCount: 41, hourlyRate: "$88/hr", yearsExperience: 14, serviceArea: "Dallas-Fort Worth", certifications: ["Generac Certified", "Kohler Authorized", "Master Electrician"], specialties: ["Standby Generators", "Transfer Switches", "Load Management"], available: true, responseTime: "< 3 hrs", completedJobs: 178, insuranceVerified: true, bondAmount: "$500K", initials: "CR"),
 ]
+#else
+private let mockElectricalContractors: [ElectricalContractor] = []
+#endif
 
+#if DEBUG
 private let mockFiberProjects: [FiberProject] = [
     FiberProject(projectName: "Downtown Office FTTH", isp: "AT&T Fiber", fiberType: "Single-Mode OS2", distance: "2,400 ft", spliceCount: 48, permitStatus: "APPROVED", testResults: "OTDR Pass -0.3dB avg", status: "In Progress", completionPercent: 72),
     FiberProject(projectName: "Metro Campus Backbone", isp: "Spectrum Enterprise", fiberType: "Multi-Mode OM4", distance: "8,200 ft", spliceCount: 192, permitStatus: "APPROVED", testResults: "Pending", status: "Splicing", completionPercent: 45),
     FiberProject(projectName: "Industrial Park 5G", isp: "Verizon Business", fiberType: "Single-Mode OS2", distance: "14,800 ft", spliceCount: 384, permitStatus: "PENDING", testResults: "N/A", status: "Permitting", completionPercent: 15),
 ]
+#else
+private let mockFiberProjects: [FiberProject] = []
+#endif
 
 // MARK: - Electrician & Fiber Main View
 

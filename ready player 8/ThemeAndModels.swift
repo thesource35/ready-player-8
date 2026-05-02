@@ -306,6 +306,7 @@ let mockProjects = [
 let mockProjects: [Project] = []
 #endif
 
+#if DEBUG
 let mockContacts = [
     Contact(name: "Marcus Rivera", title: "Sr. Project Manager", company: "Apex Construction", score: 98, connections: 847, projects: 23, initials: "MR"),
     Contact(name: "Sarah Chen", title: "Civil Engineer PE", company: "BridgeTech", score: 94, connections: 612, projects: 31, initials: "SC"),
@@ -314,7 +315,11 @@ let mockContacts = [
     Contact(name: "James Kowalski", title: "Safety Director", company: "SafeFirst Inc.", score: 96, connections: 923, projects: 67, initials: "JK"),
     Contact(name: "Amara Diallo", title: "Real Estate Dev.", company: "Meridian Capital", score: 88, connections: 445, projects: 12, initials: "AD"),
 ]
+#else
+let mockContacts: [Contact] = []
+#endif
 
+#if DEBUG
 let mockMapSites = [
     MapSite(x: 0.35, y: 0.25, latitude: 40.7580, longitude: -73.9855, name: "Site Alpha", status: "active", type: "commercial"),
     MapSite(x: 0.55, y: 0.45, latitude: 40.7590, longitude: -73.9840, name: "Site Beta", status: "drone", type: "residential"),
@@ -323,6 +328,9 @@ let mockMapSites = [
     MapSite(x: 0.80, y: 0.65, latitude: 40.7620, longitude: -73.9810, name: "Site Epsilon", status: "satellite", type: "mixed"),
     MapSite(x: 0.45, y: 0.70, latitude: 40.7630, longitude: -73.9800, name: "HQ Tower", status: "active", type: "commercial"),
 ]
+#else
+let mockMapSites: [MapSite] = []
+#endif
 
 #if DEBUG
 let mockMarketData = [

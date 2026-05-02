@@ -17,6 +17,9 @@ struct MapPhotoAnnotation: Identifiable {
 // Cluster near MapSite.mapCenter (40.7580, -73.9855, NYC-Midtown). Used by MapsView.loadMapData()
 // when cs_documents returns empty AND Supabase is unconfigured — configured-and-empty cases fall
 // through to the "0 PHOTOS WITH GPS" empty-state chip instead.
+//
+// 999.5 (d) Tier 3: bundle-gated. Release ships empty array.
+#if DEBUG
 let mockPhotoAnnotations: [MapPhotoAnnotation] = [
     MapPhotoAnnotation(
         id: "photo-mock-001",
@@ -37,6 +40,9 @@ let mockPhotoAnnotations: [MapPhotoAnnotation] = [
         createdAt: "2026-04-18T12:45:00Z"
     ),
 ]
+#else
+let mockPhotoAnnotations: [MapPhotoAnnotation] = []
+#endif
 
 // MARK: - GPS Document DTO (for photo annotation fetch)
 

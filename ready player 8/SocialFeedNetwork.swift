@@ -149,7 +149,12 @@ final class VerificationStore: ObservableObject {
 }
 
 // MARK: - Mock Feed Data
-
+//
+// 999.5 (d) Tier 3: bundle-gated. Release builds ship empty arrays so the
+// social feed renders empty-state for unconfigured users instead of fake
+// "Marcus Rivera / Apex Concrete LLC" content. Debug preserves rich data
+// for development.
+#if DEBUG
 let mockFeedPosts: [FeedPost] = [
     FeedPost(authorName: "Marcus Rivera", authorTitle: "Senior Superintendent", authorCompany: "PowerGrid Construction", authorTrade: "General", authorLocation: "Houston, TX", authorInitials: "MR", authorVerified: true, content: "Just wrapped structural steel on the Harborview Tower. 47 floors, 14 months, zero LTIs. Crew of 38 made this possible. Proud doesn't cover it.", postType: "update", tags: ["#SteelWork", "#SafetyFirst", "#ZeroIncidents"], likes: 247, comments: 42, shares: 18, photoCount: 4, timeAgo: "2h", projectRef: "Harborview Tower", equipmentListing: nil, jobListing: nil),
 
@@ -169,7 +174,11 @@ let mockFeedPosts: [FeedPost] = [
 
     FeedPost(authorName: "Carlos Mendez", authorTitle: "Concrete Superintendent", authorCompany: "Apex Concrete", authorTrade: "Concrete", authorLocation: "Miami, FL", authorInitials: "CM", authorVerified: true, content: "8,400 SF mat slab in 11 hours. Not a single cold joint. This is what trust looks like when your crew has been together 8 years.", postType: "update", tags: ["#Concrete", "#MatSlab", "#CrewGoals"], likes: 421, comments: 89, shares: 52, photoCount: 6, timeAgo: "3d", projectRef: "Central District Highrise", equipmentListing: nil, jobListing: nil),
 ]
+#else
+let mockFeedPosts: [FeedPost] = []
+#endif
 
+#if DEBUG
 let mockStories: [UserStory] = [
     UserStory(authorName: "Marcus R.", authorInitials: "MR", authorTrade: "General", site: "Harborview", timeAgo: "2h", isViewed: false, photoCount: 5),
     UserStory(authorName: "Sarah C.", authorInitials: "SC", authorTrade: "Fiber", site: "Campus", timeAgo: "4h", isViewed: false, photoCount: 3),
@@ -177,7 +186,11 @@ let mockStories: [UserStory] = [
     UserStory(authorName: "Priya P.", authorInitials: "PP", authorTrade: "Electrical", site: "Data Center", timeAgo: "8h", isViewed: true, photoCount: 4),
     UserStory(authorName: "Derek T.", authorInitials: "DT", authorTrade: "Solar", site: "SunVolt", timeAgo: "12h", isViewed: false, photoCount: 6),
 ]
+#else
+let mockStories: [UserStory] = []
+#endif
 
+#if DEBUG
 let mockDMConversations: [DMConversation] = [
     DMConversation(participantName: "Marcus Rivera", participantInitials: "MR", participantTitle: "Superintendent", participantCompany: "PowerGrid", messages: [
         DirectMessage(fromName: "Marcus Rivera", fromInitials: "MR", content: "Hey, you available for the steel package on Harborview Phase 2?", timestamp: Date().addingTimeInterval(-3600), isRead: true, delivered: true),
@@ -190,18 +203,29 @@ let mockDMConversations: [DMConversation] = [
         DirectMessage(fromName: "Carlos Mendez", fromInitials: "CM", content: "Pour scheduled for 7AM tomorrow. Pump truck confirmed. Weather looks clear.", timestamp: Date().addingTimeInterval(-14400), isRead: true, delivered: true),
     ], unreadCount: 0, lastActive: "4h ago"),
 ]
+#else
+let mockDMConversations: [DMConversation] = []
+#endif
 
+#if DEBUG
 let mockCompanyPages: [CompanyPage] = [
     CompanyPage(name: "PowerGrid Construction", trade: "General Contractor", location: "Houston, TX", employees: "850+", activeProjects: 24, revenue: "$420M", insurance: "$5M GL / $10M Umbrella", bondingCapacity: "$50M single / $150M aggregate", rating: 4.9, verified: true, description: "Full-service general contractor specializing in commercial, healthcare, and data center construction across the Gulf Coast.", specialties: ["Commercial TI", "Healthcare", "Data Centers", "Mixed-Use"], initials: "PG"),
     CompanyPage(name: "Apex Concrete LLC", trade: "Concrete Contractor", location: "Miami, FL", employees: "320+", activeProjects: 12, revenue: "$85M", insurance: "$2M GL / $5M Umbrella", bondingCapacity: "$15M single / $40M aggregate", rating: 4.8, verified: true, description: "Southeast's premier concrete contractor. Post-tension, tilt-up, and high-rise foundations.", specialties: ["Post-Tension", "Tilt-Up", "Mat Foundations", "Structural"], initials: "AC"),
     CompanyPage(name: "FiberLink Solutions", trade: "Fiber Optic Contractor", location: "San Francisco, CA", employees: "180+", activeProjects: 8, revenue: "$42M", insurance: "$2M GL", bondingCapacity: "$10M", rating: 4.9, verified: true, description: "Data center and enterprise fiber infrastructure. BICSI certified. Coast to coast.", specialties: ["Data Center", "Campus Fiber", "FTTH", "5G Small Cell"], initials: "FL"),
 ]
+#else
+let mockCompanyPages: [CompanyPage] = []
+#endif
 
+#if DEBUG
 let mockPortfolios: [ProjectPortfolio] = [
     ProjectPortfolio(projectName: "Harborview Tower", role: "Lead Superintendent", client: "Metro Development", value: "$142M", duration: "14 months", scope: "47-story mixed-use tower, structural steel, MEP, finishes", completionDate: "Mar 2026", photoCount: 24, tags: ["High-Rise", "Steel", "Mixed-Use"]),
     ProjectPortfolio(projectName: "Metro Data Center", role: "Electrical PM", client: "CloudScale Inc", value: "$68M", duration: "11 months", scope: "Tier IV data center, 40MW critical load, redundant power", completionDate: "Jan 2026", photoCount: 18, tags: ["Data Center", "Electrical", "Critical Infrastructure"]),
     ProjectPortfolio(projectName: "Central District Highrise", role: "Concrete Superintendent", client: "Urban Core Holdings", value: "$92M", duration: "18 months", scope: "32-story residential, post-tension slabs, mat foundation", completionDate: "Dec 2025", photoCount: 31, tags: ["Concrete", "High-Rise", "Residential"]),
 ]
+#else
+let mockPortfolios: [ProjectPortfolio] = []
+#endif
 
 // MARK: - Social Feed View
 

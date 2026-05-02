@@ -126,6 +126,8 @@ struct ConstructionOSNetworkComment: Identifiable {
     let photoData: Data?
 }
 
+// 999.5 (d) Tier 3: bundle-gated. Release ships empty arrays.
+#if DEBUG
 private let mockConstructionOSNetworkPosts: [ConstructionOSNetworkPost] = [
     ConstructionOSNetworkPost(
         authorName: "Marcus Rivera", authorRole: "Senior Ironworker",
@@ -182,7 +184,11 @@ private let mockConstructionOSNetworkPosts: [ConstructionOSNetworkPost] = [
         avatarColors: [Theme.cyan, Theme.purple]
     ),
 ]
+#else
+private let mockConstructionOSNetworkPosts: [ConstructionOSNetworkPost] = []
+#endif
 
+#if DEBUG
 private let mockConstructionOSNetworkCrew: [ConstructionOSNetworkCrewMember] = [
     ConstructionOSNetworkCrewMember(name: "Jerome Okafor",   trade: .crane,      role: "Tower Crane Operator",       yearsExp: 18, location: "Chicago, IL",  rating: 4.9, jobsDone: 94,  socialHealthScore: 92, workEthicScore: 96, socialHealthTrend7d: [88, 89, 89, 90, 91, 92, 92], workEthicTrend7d: [93, 93, 94, 94, 95, 95, 96], available: true,  badge: "NCCCO Certified",  connections: 312, initials: "JO"),
     ConstructionOSNetworkCrewMember(name: "Sofia Mendez",    trade: .electrical, role: "Master Electrician",          yearsExp: 14, location: "Dallas, TX",   rating: 4.8, jobsDone: 127, socialHealthScore: 94, workEthicScore: 92, socialHealthTrend7d: [90, 91, 92, 92, 93, 93, 94], workEthicTrend7d: [90, 90, 91, 91, 92, 92, 92], available: true,  badge: "IBEW L20",         connections: 488, initials: "SM"),
@@ -192,7 +198,11 @@ private let mockConstructionOSNetworkCrew: [ConstructionOSNetworkCrewMember] = [
     ConstructionOSNetworkCrewMember(name: "Rachel Kim",      trade: .hvac,       role: "HVAC Lead Technician",        yearsExp: 8,  location: "Denver, CO",   rating: 4.6, jobsDone: 54,  socialHealthScore: 77, workEthicScore: 82, socialHealthTrend7d: [80, 80, 79, 79, 78, 78, 77], workEthicTrend7d: [84, 84, 83, 83, 83, 82, 82], available: false, badge: "EPA 608",          connections: 165, initials: "RK"),
     ConstructionOSNetworkCrewMember(name: "DeShawn Morris",  trade: .roofing,    role: "Roofing Foreman",             yearsExp: 16, location: "Miami, FL",    rating: 4.8, jobsDone: 109, socialHealthScore: 85, workEthicScore: 88, socialHealthTrend7d: [82, 82, 83, 84, 84, 85, 85], workEthicTrend7d: [85, 86, 86, 87, 87, 88, 88], available: true,  badge: "NRCA Certified",   connections: 258, initials: "DM"),
 ]
+#else
+private let mockConstructionOSNetworkCrew: [ConstructionOSNetworkCrewMember] = []
+#endif
 
+#if DEBUG
 private let mockConstructionOSNetworkJobs: [ConstructionOSNetworkJobListing] = [
     ConstructionOSNetworkJobListing(title: "Concrete Superintendent",    company: "Trident Construction",   trade: .concrete,   location: "Las Vegas, NV", payRate: "$95–$115K/yr", startDate: "Mar 24",    duration: "18 months", urgent: true,  applicants: 7,  requirements: ["ACI certified", "10+ yrs high-rise", "OSHA 30"]),
     ConstructionOSNetworkJobListing(title: "Journeyman Electrician",     company: "TruBuild Electrical",    trade: .electrical, location: "Austin, TX",    payRate: "$42–$48/hr",   startDate: "Apr 1",     duration: "12 months", urgent: false, applicants: 23, requirements: ["IBEW preferred", "Commercial exp", "Lift cert"]),
@@ -201,6 +211,9 @@ private let mockConstructionOSNetworkJobs: [ConstructionOSNetworkJobListing] = [
     ConstructionOSNetworkJobListing(title: "HVAC Project Manager",       company: "Apex MEP Solutions",     trade: .hvac,       location: "Denver, CO",    payRate: "$110–$130K/yr", startDate: "May 1",    duration: "Full-time", urgent: false, applicants: 5,  requirements: ["PE or LEED AP", "BIM/Revit MEP", "PMP preferred"]),
     ConstructionOSNetworkJobListing(title: "Plumbing Foreman",           company: "Summit Mechanical",      trade: .plumbing,   location: "Portland, OR",  payRate: "$75–$90K/yr",  startDate: "Mar 31",    duration: "10 months", urgent: true,  applicants: 9,  requirements: ["Master plumber lic.", "Commercial exp", "OSHA 30"]),
 ]
+#else
+private let mockConstructionOSNetworkJobs: [ConstructionOSNetworkJobListing] = []
+#endif
 
 struct ConstructionOSNetworkLiveSeed {
     let authorName: String
