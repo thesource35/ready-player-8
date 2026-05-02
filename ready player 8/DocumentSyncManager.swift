@@ -242,12 +242,22 @@ final class DocumentSyncManager: ObservableObject {
         await withTaskGroup(of: (DocumentEntityType, Bool).self) { group in
             for t in DocumentEntityType.allCases {
                 group.addTask {
-                    let rows: [IdRow] = (try? await svc.fetch(
-                        tableFor(t),
-                        query: ["select": "id", "limit": "1"],
-                        orderBy: nil
-                    )) ?? []
-                    return (t, !rows.isEmpty)
+                    // 999.5 (d) audit: was try? -- silent network/RLS failures here
+                    // would mark an entity type as "no rows" when it might have rows
+                    // we just couldn't fetch. Log to telemetry so we can detect.
+                    do {
+                        let rows: [IdRow] = try await svc.fetch(
+                            tableFor(t),
+                            query: ["select": "id", "limit": "1"],
+                            orderBy: nil
+                        )
+                        return (t, !rows.isEmpty)
+                    } catch {
+                        await MainActor.run {
+                            CrashReporter.shared.reportError("[DocumentSync] hasAny probe \(t) failed: \(error.localizedDescription)")
+                        }
+                        return (t, false)
+                    }
                 }
             }
             for await (t, hasRow) in group where hasRow {
@@ -283,11 +293,19 @@ final class DocumentSyncManager: ObservableObject {
         case .punchItem:       table = "cs_punch_items"
         }
         struct IdRow: Decodable { let id: String }
-        let rows: [IdRow] = (try? await svc.fetch(
-            table,
-            query: ["select": "id", "id": "eq.\(entityId)"],
-            orderBy: nil
-        )) ?? []
+        // 999.5 (d) audit: was try? -- silent fetch failure would treat the entity as
+        // missing (and throw .validationFailed below) even when it actually exists.
+        let rows: [IdRow]
+        do {
+            rows = try await svc.fetch(
+                table,
+                query: ["select": "id", "id": "eq.\(entityId)"],
+                orderBy: nil
+            )
+        } catch {
+            CrashReporter.shared.reportError("[DocumentSync] entity verify \(table)/\(entityId) failed: \(error.localizedDescription)")
+            throw error
+        }
         if rows.isEmpty {
             throw AppError.validationFailed(
                 field: "entity",

@@ -170,10 +170,22 @@ struct AuthGateView: View {
                             if hasMFA {
                                 step = .twoFactor
                                 Task {
-                                    let factors = (try? await supabase.listMFAFactors()) ?? []
-                                    if let totpFactor = factors.first(where: { $0.factorType == "totp" && $0.status == "verified" }) {
-                                        mfaFactorId = totpFactor.id
-                                        mfaChallengeId = try? await supabase.createMFAChallenge(factorId: totpFactor.id)
+                                    // 999.5 (d) audit: try? was swallowing both list+challenge
+                                    // failures, leaving user staring at "Enter code" with no
+                                    // mfaChallengeId set -- code submission would fail without
+                                    // ever telling them why. Surface the failure path.
+                                    do {
+                                        let factors = try await supabase.listMFAFactors()
+                                        if let totpFactor = factors.first(where: { $0.factorType == "totp" && $0.status == "verified" }) {
+                                            mfaFactorId = totpFactor.id
+                                            mfaChallengeId = try await supabase.createMFAChallenge(factorId: totpFactor.id)
+                                        }
+                                    } catch {
+                                        CrashReporter.shared.reportError("MFA list/challenge setup failed: \(error.localizedDescription)")
+                                        await MainActor.run {
+                                            self.error = "Couldn't set up two-factor verification. Sign in again to retry."
+                                            step = .login
+                                        }
                                     }
                                 }
                             }
@@ -588,7 +600,18 @@ struct AuthGateView: View {
                     self.error = "Invalid verification code. Please try again."
                     twoFactorCode = ""
                     Task {
-                        mfaChallengeId = try? await supabase.createMFAChallenge(factorId: factorId)
+                        // 999.5 (d) audit: regenerate the challenge after a failed code
+                        // entry. try? was swallowing the regeneration failure, which
+                        // would leave the user with a stale mfaChallengeId and no
+                        // signal that the next code attempt would also fail.
+                        do {
+                            mfaChallengeId = try await supabase.createMFAChallenge(factorId: factorId)
+                        } catch {
+                            CrashReporter.shared.reportError("MFA challenge regenerate failed: \(error.localizedDescription)")
+                            await MainActor.run {
+                                self.error = "Couldn't refresh verification code. Sign in again."
+                            }
+                        }
                     }
                 }
             }
