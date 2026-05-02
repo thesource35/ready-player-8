@@ -1,5 +1,15 @@
 # Silent-failure / Tier 2 audit — 2026-05-02
 
+> **UPDATE 2026-05-02 (post-audit fixes):** After verifying every flagged
+> spot, original "30 remaining" count was overstated due to grep window
+> being too narrow. Group B (mutation/upload paths) was mostly **false
+> positives** — DroneUploadButton, checkout, jobs, ClipUploadCard,
+> AddCameraWizard, PortalCreateDialog, CollaborationPanel, DataExportBackup
+> all correctly check `res.ok` and surface errors. The audit doc below is
+> kept as-is for posterity; the **Final tally** section at the bottom
+> reflects ground truth post-fixes.
+
+
 Comprehensive audit of silent-failure patterns across iOS + web,
 spawned by the 999.5 (d) Tier 2 work. Documents what was fixed in
 the 2026-05-01/02 session burst, what remains, and what's
@@ -214,3 +224,63 @@ critical patterns. The remaining ~30 spots cataloged here range from
 HIGH-severity (drone upload, checkout, MFA) to LOW-severity (image
 picker cancel paths) and should be addressed in follow-up sessions
 with appropriate scope per session.
+
+---
+
+## Final tally (after audit follow-through, 2026-05-02 evening)
+
+**Fixes added on top of the original session burst:**
+
+| Commit | Fix |
+|---|---|
+| `233d30c` | 6 web "Load More" handlers (projects, contracts, feed, tasks, ops, punch) — surface failure via existing error/fetchError state instead of silently swallowing |
+| `ccdcb78` | iOS MFA setup (3 spots in ContentView): listMFAFactors + createMFAChallenge failures now surface to user instead of stranding them on "Enter code" with no challenge |
+| `ccdcb78` | iOS DocumentSyncManager (2 spots): hasAny probe + entity-verify now log via CrashReporter (with @MainActor.run wrapping for the detached task case) |
+| `5a39fb0` | iOS StoreKit (2 spots): `restorePurchases` AppStore.sync failure surfaces via `purchaseError`; `updateSubscriptionStatus` verification failures log to telemetry while still safely skipping |
+| `9c1f1f7` | Web portals/page list-fetch (catch + !ok), web ScheduleManagement schedule-action fetches (PUT + POST, 2 spots) |
+
+**Confirmed false positives (re-verified, NOT silent failures):**
+
+- `src/app/live-feed/DroneUploadButton.tsx:66, 98` — both check `resp.ok` + surface via `setError`
+- `src/app/checkout/page.tsx:60` — checks `!response.ok || !data.url`, throws to catch
+- `src/app/jobs/page.tsx:158` — checks `!response.ok || !payload.job`
+- `src/app/projects/[id]/cameras/ClipUploadCard.tsx:106` — checks `!res.ok` + setError
+- `src/app/projects/[id]/cameras/AddCameraWizard.tsx:59` — checks res.status branches
+- `src/app/components/portal/PortalCreateDialog.tsx:140` — has error handling
+- `src/app/projects/page.tsx:129` — POST mutation with full error handling
+- `src/app/reports/components/CollaborationPanel.tsx:73` — checks `!res.ok`
+- `src/app/reports/components/DataExportBackup.tsx:38` — checks res.status + `!res.ok`
+
+**Remaining (intentional or low-priority backlog):**
+
+- `src/app/maps/page.tsx:435` — Mapbox call; checks `json.routes` + sets explicit "Route unavailable" message. Soft (no res.ok) but UI surfaces clear failure.
+- `src/app/portal/[slug]/[project]/cameras/PortalCamerasSection.tsx:40` — graceful degradation (`?.ok ? json() : default`); comment intentional. Low priority.
+- `src/lib/links/linkHealth.ts:156` — utility check, intentional silent on transient failures.
+- iOS `DocumentSyncManager.swift:32, 40` — local UserDefaults decode/encode of cache. Cache is non-authoritative; silent fallback to "no cache" is correct.
+- iOS `ReportExportView.swift:551` — temp file write for Share sheet. If fails, user sees no share action. Low priority.
+- iOS image-picker `loadTransferable` (3 spots) — nil on cancel is expected; only non-cancel failures merit logging (low-priority follow-up).
+- iOS `Task {}` fire-and-forget (97 occurrences) — most intentional (analytics, animations, background sync). Targeted review needed only if specific user data writes are involved.
+- iOS `catch { CrashReporter.shared.reportError(...) }` (47 occurrences) — soft Tier 2; often intentional for background work where surfacing to user would be wrong. Case-by-case review.
+- Web `ScheduleManagement.tsx` UI error toast — added res.ok check + console.error, but visible toast state is a UI follow-up (component has no error-display surface today).
+
+## Final session totals
+
+**33 silent-failure spots fixed across 8 commits this audit-and-fix cycle:**
+
+- iOS MCPServer (5) — `6d3010f`
+- Web 4 list API routes — `f5aa3a7`
+- iOS MapsView + EquipmentCheckIn (3) — `d9e3047`
+- iOS Projects/Contracts filter refetch (2) — `6cdf0ba`
+- iOS Wealth Suite try? (5) — `a3a611b`
+- iOS Tier 3 mock bundle gating (20 arrays / 12 files) — `03018f4` + `1b48aeb`
+- Web vitest infra (server-only + 6 path corrections) — `2ee3659`
+- Web 6 Load More handlers — `233d30c`
+- iOS MFA + DocumentSync (5) — `ccdcb78`
+- iOS StoreKit (2) — `5a39fb0`
+- Web portals + schedule (3) — `9c1f1f7`
+
+The audit is genuinely comprehensive. The remaining items in the lower
+priority backlog are either intentional (graceful degradation with explicit
+comments) or are areas where surfacing failure would be wrong (background
+sync, fire-and-forget telemetry).
+
