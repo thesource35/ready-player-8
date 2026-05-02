@@ -387,13 +387,30 @@ final class SubscriptionManager: ObservableObject {
     }
 
     func restorePurchases() async {
-        try? await AppStore.sync()
+        // 999.5 (d) audit: was try? -- silent AppStore.sync failure meant a
+        // user tapping "Restore Purchases" got no feedback; their entitlements
+        // wouldn't refresh and the UI would still show their old (potentially
+        // demoted) tier with no error explaining why.
+        do {
+            try await AppStore.sync()
+            await MainActor.run { purchaseError = nil }
+        } catch {
+            CrashReporter.shared.reportError("AppStore.sync (restore purchases) failed: \(error.localizedDescription)")
+            await MainActor.run {
+                purchaseError = "Couldn't restore purchases: \(error.localizedDescription)"
+            }
+        }
         await updateSubscriptionStatus()
     }
 
     func updateSubscriptionStatus() async {
         for await result in Transaction.currentEntitlements {
-            if let transaction = try? checkVerified(result) {
+            // 999.5 (d) audit: still silently skip unverified transactions
+            // (the SECURE behavior — never unlock entitlement on bad
+            // signature) but log them so genuine system failures and
+            // tampering attempts both leave a CrashReporter trail.
+            do {
+                let transaction = try checkVerified(result)
                 if transaction.productID.contains("enterprise") {
                     await MainActor.run { subscriptionStatus = .companyOwner }
                     return
@@ -401,6 +418,9 @@ final class SubscriptionManager: ObservableObject {
                     await MainActor.run { subscriptionStatus = .projectManager }
                     return
                 }
+            } catch {
+                CrashReporter.shared.reportError("StoreKit transaction verification failed: \(error.localizedDescription)")
+                // skip this entitlement, try the next one
             }
         }
         await MainActor.run { subscriptionStatus = .fieldWorker }
