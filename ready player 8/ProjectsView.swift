@@ -75,9 +75,12 @@ struct ProjectsView: View {
                 do {
                     let query: [String: String] = ["status": "eq.\(newFilter)"]
                     let remote: [SupabaseProject] = try await supabase.fetch("cs_projects", query: query)
-                    await MainActor.run { projects = remote }
+                    await MainActor.run { projects = remote; errorMessage = nil }
                 } catch {
                     CrashReporter.shared.reportError("Projects filter refetch failed: \(error.localizedDescription)")
+                    // 999.5 (d) Tier 2 follow-up: surface refetch failures so the user
+                    // sees why the filter pill highlighted but the list didn't change.
+                    await MainActor.run { errorMessage = error.localizedDescription }
                 }
             }
         }

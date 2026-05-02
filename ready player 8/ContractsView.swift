@@ -74,9 +74,12 @@ struct ContractsView: View {
                 do {
                     let query: [String: String] = ["stage": "eq.\(newStage)"]
                     let remote: [SupabaseContract] = try await supabase.fetch("cs_contracts", query: query)
-                    await MainActor.run { contracts = remote }
+                    await MainActor.run { contracts = remote; errorMessage = nil }
                 } catch {
                     CrashReporter.shared.reportError("Contracts filter refetch failed: \(error.localizedDescription)")
+                    // 999.5 (d) Tier 2 follow-up: surface refetch failures so the user
+                    // sees why the filter pill highlighted but the list didn't change.
+                    await MainActor.run { errorMessage = error.localizedDescription }
                 }
             }
         }
