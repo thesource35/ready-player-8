@@ -345,7 +345,11 @@ struct PsychologyDecoderView: View {
                     score: session.score,
                     profileLabel: session.profileLabel
                 )
-                try? await supabase.insert(SupabaseTable.psychologySessions, record: dto)
+                do {
+                    try await supabase.insert(SupabaseTable.psychologySessions, record: dto)
+                } catch {
+                    CrashReporter.shared.reportError("Supabase psychologySessions insert failed: \(error.localizedDescription)")
+                }
             }
         }
     }

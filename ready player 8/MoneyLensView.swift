@@ -432,7 +432,11 @@ struct MoneyLensView: View {
                     margin: entry.margin,
                     notes: entry.notes
                 )
-                try? await supabase.insert(SupabaseTable.wealthTracking, record: dto)
+                do {
+                    try await supabase.insert(SupabaseTable.wealthTracking, record: dto)
+                } catch {
+                    CrashReporter.shared.reportError("Supabase wealthTracking insert failed: \(error.localizedDescription)")
+                }
             }
         }
     }

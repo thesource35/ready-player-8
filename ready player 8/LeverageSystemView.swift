@@ -365,7 +365,11 @@ struct LeverageSystemView: View {
         if supabase.isConfigured {
             Task {
                 let dto = SupabaseLeverageSnapshot(totalScore: snapshot.totalScore)
-                try? await supabase.insert(SupabaseTable.leverageSnapshots, record: dto)
+                do {
+                    try await supabase.insert(SupabaseTable.leverageSnapshots, record: dto)
+                } catch {
+                    CrashReporter.shared.reportError("Supabase leverageSnapshots insert failed: \(error.localizedDescription)")
+                }
             }
         }
     }

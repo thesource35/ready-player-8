@@ -355,7 +355,11 @@ struct OpportunityFilterView: View {
                     contractId: opp.contractId,
                     status: opp.status
                 )
-                try? await supabase.insert(SupabaseTable.wealthOpportunities, record: dto)
+                do {
+                    try await supabase.insert(SupabaseTable.wealthOpportunities, record: dto)
+                } catch {
+                    CrashReporter.shared.reportError("Supabase wealthOpportunities insert failed: \(error.localizedDescription)")
+                }
             }
         }
     }

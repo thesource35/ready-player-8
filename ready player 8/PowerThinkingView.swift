@@ -347,7 +347,11 @@ struct PowerThinkingView: View {
                     gatesPassed: entry.gatesPassed,
                     outcomeStatus: entry.outcomeStatus
                 )
-                try? await supabase.insert(SupabaseTable.decisionJournal, record: dto)
+                do {
+                    try await supabase.insert(SupabaseTable.decisionJournal, record: dto)
+                } catch {
+                    CrashReporter.shared.reportError("Supabase decisionJournal insert failed: \(error.localizedDescription)")
+                }
             }
         }
     }
