@@ -139,6 +139,13 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-24T02:22:26.545Z
-Stopped at: Completed 30-06-PLAN.md
+Last session: 2026-05-03T20:45:00Z
+Stopped at: Production-readiness sweep complete -- silent-failure audit (33 spots fixed across iOS+web), Tier 3 mock bundle gating (20 arrays in 12 files), CI fully green-up after 5+ days red (web-build lint/typecheck/script + link-health placeholder skips + non-blocking continue-on-error)
 Resume file: None
+Outstanding (blocked on user decision or external steps):
+  - Schema FK refactor draft -- 4 open questions in .planning/drafts/cs_schedule_events_cs_todos_fk_refactor.sql
+  - NOTIF-05 push notification UAT on physical iPhone -- blocked on Supabase anon-key paste
+  - 999.5 (f) email smoke test + (g) xlsx CDN -- need a Vercel deploy
+  - constructionos.com / constructionos.app domain registration + Resend verification + App Store privacy/support URL setup -- all production launch blockers
+  - 92 React Compiler ESLint warnings (downgraded from errors in eslint.config.mjs) -- focused refactor pass
+Drift detector armed: trig_011Q9x8jXoEd6ed2SWbnxLPt fires 2026-05-08T21:15:00Z, checks Phase 30.1 closure state.
