@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import AngelicAssistant from "./components/AngelicAssistant";
@@ -78,16 +79,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen">
         <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3" style={{ background: 'rgba(8,14,18,0.95)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(51,84,94,0.2)' }}>
-          <a href="/" className="flex items-center gap-2 shrink-0">
+          <Link href="/" className="flex items-center gap-2 shrink-0">
             <img src="/logo-sm.png" alt="ConstructionOS" className="w-8 h-8 rounded-lg" />
             <span className="text-base font-black tracking-wide text-[#F0F8F8]">CONSTRUCT<span className="text-[#F29E3D]">OS</span></span>
-          </a>
+          </Link>
           <div className="hidden lg:flex items-center gap-1 overflow-x-auto mx-4" style={{ scrollbarWidth: 'none' }}>
             {navGroups.map(g => (
               <div key={g.label} className="flex items-center gap-1">
                 <span className="text-[7px] font-black tracking-widest px-1" style={{ color: 'rgba(158,189,194,0.3)' }}>{g.label}</span>
                 {g.links.map(l => (
-                  <a key={l.href} href={l.href} className="text-[11px] font-semibold px-2 py-1 rounded hover:bg-[#162832] whitespace-nowrap" style={{ color: '#9EBDC2' }}>{l.label}</a>
+                  <Link key={l.href} href={l.href} className="text-[11px] font-semibold px-2 py-1 rounded hover:bg-[#162832] whitespace-nowrap" style={{ color: '#9EBDC2' }}>{l.label}</Link>
                 ))}
                 <span className="mx-1" style={{ color: 'rgba(51,84,94,0.3)' }}>|</span>
               </div>
@@ -104,12 +105,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Analytics />
         <footer className="text-center py-10" style={{ borderTop: '1px solid rgba(51,84,94,0.1)' }}>
           <div className="flex justify-center gap-6 mb-4 flex-wrap">
-            <a href="/projects" className="text-xs text-[#9EBDC2]">Projects</a>
-            <a href="/ai" className="text-xs text-[#9EBDC2]">Angelic AI</a>
-            <a href="/rentals" className="text-xs text-[#9EBDC2]">Rentals</a>
-            <a href="/pricing" className="text-xs text-[#9EBDC2]">Pricing</a>
-            <a href="/terms" className="text-xs text-[#9EBDC2]">Terms</a>
-            <a href="/privacy" className="text-xs text-[#9EBDC2]">Privacy</a>
+            <Link href="/projects" className="text-xs text-[#9EBDC2]">Projects</Link>
+            <Link href="/ai" className="text-xs text-[#9EBDC2]">Angelic AI</Link>
+            <Link href="/rentals" className="text-xs text-[#9EBDC2]">Rentals</Link>
+            <Link href="/pricing" className="text-xs text-[#9EBDC2]">Pricing</Link>
+            <Link href="/terms" className="text-xs text-[#9EBDC2]">Terms</Link>
+            <Link href="/privacy" className="text-xs text-[#9EBDC2]">Privacy</Link>
             <a href="https://github.com/thesource35/ready-player-8" className="text-xs text-[#9EBDC2]">GitHub</a>
           </div>
           <p className="text-xs" style={{ color: 'rgba(158,189,194,0.4)' }}>ConstructionOS © 2026 Donovan Fagan · Built for the builders</p>

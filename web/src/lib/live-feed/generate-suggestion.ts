@@ -151,7 +151,9 @@ export async function generateSuggestion(
   try {
     parsed = await callAnthropicVision({
       imageUrl: signed.signedUrl,
-      promptInput: context,
+      // VisionPromptInput requires imageUrl on the prompt object too; pass
+      // the same signed URL through so buildVisionPrompt can reference it.
+      promptInput: { ...context, imageUrl: signed.signedUrl },
       model,
       apiKey,
     })

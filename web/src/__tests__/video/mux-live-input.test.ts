@@ -16,7 +16,7 @@ vi.mock('@/lib/video/mux', () => ({
 }))
 
 // Mock Supabase client
-let mockQueryResults: Record<string, unknown> = {}
+const mockQueryResults: Record<string, unknown> = {}
 const mockInsertReturn = { data: null, error: null }
 
 vi.mock('@/lib/supabase/server', () => ({

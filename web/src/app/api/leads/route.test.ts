@@ -25,6 +25,7 @@ vi.mock("@/lib/csrf", () => ({
 }));
 
 vi.mock("@/lib/validation", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- vi.mock factory is hoisted; require is the canonical pattern for accessing modules at hoist time
   const { z } = require("zod");
   return {
     leadSchema: z.object({

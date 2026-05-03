@@ -107,7 +107,9 @@ export async function insertRow<T>(table: string, row: Partial<T>): Promise<T | 
   const supabase = await createServerSupabase();
   if (!supabase) return null;
 
-  const { data, error } = await supabase.from(table).insert(row).select().single();
+  // Supabase types upgrade narrowed insert(values: T) to reject Partial<T>.
+  // Keep the public Partial<T> ergonomics for callers; cast at the call site.
+  const { data, error } = await supabase.from(table).insert(row as never).select().single();
   if (error) {
     console.error(`Insert ${table} error:`, error);
     return null;
@@ -119,7 +121,7 @@ export async function updateRow<T>(table: string, id: string, updates: Partial<T
   const supabase = await createServerSupabase();
   if (!supabase) return null;
 
-  const { data, error } = await supabase.from(table).update(updates).eq("id", id).select().single();
+  const { data, error } = await supabase.from(table).update(updates as never).eq("id", id).select().single();
   if (error) {
     console.error(`Update ${table} error:`, error);
     return null;
@@ -194,7 +196,7 @@ export async function updateOwnedRow<T>(
     );
   }
 
-  let query = supabase.from(table).update(updates).eq("id", id);
+  let query = supabase.from(table).update(updates as never).eq("id", id);
   if (orgId) query = query.eq("org_id", orgId);
   const { data, error } = await query.select().single();
 
