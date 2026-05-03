@@ -181,7 +181,7 @@ export function HelpSection({ isOpen, onClose }: HelpSectionProps) {
 
           {/* D-66d: External documentation link */}
           <a
-            href="https://docs.constructos.app/reports"
+            href="https://docs.constructionos.app/reports"
             target="_blank"
             rel="noopener noreferrer"
             style={{

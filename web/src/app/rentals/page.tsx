@@ -19,14 +19,14 @@ const items = [
   { name: "CAT 320 Excavator", cat: "Heavy Equipment", daily: "$850", weekly: "$3,200", provider: "United Rentals", providerUrl: "https://www.unitedrentals.com/marketplace/equipment/earthmoving/excavators", avail: "Available", specs: "20-ton, 158 HP" },
   { name: "CAT D6 Dozer", cat: "Earthmoving", daily: "$1,200", weekly: "$4,500", provider: "United Rentals", providerUrl: "https://www.unitedrentals.com/marketplace/equipment/earthmoving/dozers", avail: "Available", specs: "215 HP, 6-way blade" },
   { name: "JLG 1932R Scissor Lift", cat: "Aerial Lifts", daily: "$120", weekly: "$380", provider: "United Rentals", providerUrl: "https://www.unitedrentals.com/marketplace/equipment/aerial-work-platforms/scissor-lifts", avail: "Available", specs: "19ft height" },
-  { name: "Genie S-65 Boom Lift", cat: "Aerial Lifts", daily: "$350", weekly: "$1,200", provider: "Sunbelt Rentals", providerUrl: "https://www.sunbeltrentals.com/equipment/aerial-work-platforms/", avail: "Available", specs: "65ft height" },
-  { name: "Bosch Jackhammer", cat: "Hand Tools", daily: "$65", weekly: "$220", provider: "Sunbelt Rentals", providerUrl: "https://www.sunbeltrentals.com/equipment/concrete-and-masonry/", avail: "Available", specs: "35 lb, 15 Amp" },
+  { name: "Genie S-65 Boom Lift", cat: "Aerial Lifts", daily: "$350", weekly: "$1,200", provider: "Sunbelt Rentals", providerUrl: "https://www.sunbeltrentals.com/equipment-rental/aerial-work-platforms-scaffolding-and-ladders/", avail: "Available", specs: "65ft height" },
+  { name: "Bosch Jackhammer", cat: "Hand Tools", daily: "$65", weekly: "$220", provider: "Sunbelt Rentals", providerUrl: "https://www.sunbeltrentals.com/equipment-rental/concrete-and-masonry/", avail: "Available", specs: "35 lb, 15 Amp" },
   { name: "Concrete Pump Trailer", cat: "Concrete", daily: "$800", weekly: "$3,000", provider: "BigRentz", providerUrl: "https://www.bigrentz.com/equipment-rentals/concrete", avail: "2-day lead", specs: "120ft boom" },
   { name: "Mini Excavator 3.5-Ton", cat: "Heavy Equipment", daily: "$295", weekly: "$1,100", provider: "DOZR", providerUrl: "https://dozr.com/rent/mini-excavators", avail: "Available", specs: "Kubota KX035" },
   { name: "BOMAG BW211D Roller", cat: "Compaction", daily: "$450", weekly: "$1,600", provider: "United Rentals", providerUrl: "https://www.unitedrentals.com/marketplace/equipment/compaction", avail: "Available", specs: "84in drum" },
   { name: "Liebherr LTM 1100 Crane", cat: "Cranes", daily: "$2,800", weekly: "$12,000", provider: "DOZR", providerUrl: "https://dozr.com/rent/cranes", avail: "1-week lead", specs: "100-ton" },
   { name: "Ford F-350 Flatbed", cat: "Vehicles", daily: "$180", weekly: "$650", provider: "United Rentals", providerUrl: "https://www.unitedrentals.com/marketplace/equipment/trucks-and-trailers", avail: "Available", specs: "Diesel, 12ft bed" },
-  { name: "CAT XQ60 Generator", cat: "Generators", daily: "$180", weekly: "$650", provider: "Sunbelt Rentals", providerUrl: "https://www.sunbeltrentals.com/equipment/power-generation/", avail: "Available", specs: "60 kW diesel" },
+  { name: "CAT XQ60 Generator", cat: "Generators", daily: "$180", weekly: "$650", provider: "Sunbelt Rentals", providerUrl: "https://www.sunbeltrentals.com/equipment-rental/generators-and-accessories/", avail: "Available", specs: "60 kW diesel" },
   { name: "NPK GH-2 Breaker", cat: "Demolition", daily: "$280", weekly: "$950", provider: "BigRentz", providerUrl: "https://www.bigrentz.com/equipment-rentals", avail: "Available", specs: "1,500 ft-lb" },
 ];
 
