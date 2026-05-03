@@ -183,10 +183,32 @@ async function fetchWithTimeout(url, method) {
 
 function shouldSkipUrl(url) {
   if (url.includes("${") || url.includes("\\(")) return true;
+  // <PLACEHOLDER> style template syntax in docs (e.g. https://<worker>/...)
+  if (url.includes("<") && url.includes(">")) return true;
   if (url.endsWith("\\")) return true;
   if (isLocalHost(url)) return true;
   if (isPlaceholderHost(url)) return true;
+  if (isUnvalidatableProtocol(url)) return true;
   return false;
+}
+
+// Hosts that respond on a non-HTTP protocol (push tokens, mTLS-only, etc.)
+// or that intentionally reject GET requests. They appear in source as
+// canonical service URLs but can't be link-health-validated.
+function isUnvalidatableProtocol(url) {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    // APNs HTTP/2 push endpoints — only accept TLS connections with a
+    // device-token-bearing POST and a client-certificate handshake.
+    // A plain GET will fail; that's by design, not drift.
+    if (host === "api.push.apple.com") return true;
+    if (host === "api.sandbox.push.apple.com") return true;
+    if (host === "api.development.push.apple.com") return true;
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 // Placeholder URLs that appear in source code (docs, .env.example, sample
@@ -211,6 +233,14 @@ function isPlaceholderHost(url) {
     // Specific known placeholders used in BackendConfigSheet field hints,
     // .env.example, and sample documentation
     if (host === "abc.supabase.co") return true;
+    if (host === "abcd.supabase.co") return true;
+    if (host === "test.supabase.co") return true;
+    if (host === "example.supabase.co") return true;
+    // <project_ref> patterns left in docs after URL.replace(...) was
+    // documented but the literal placeholder wasn't substituted
+    if (host.startsWith("<")) return true;
+    // Internal worker placeholders that aren't deployed yet
+    if (host === "evil.com") return true; // CSP test placeholder in tests
     return false;
   } catch {
     return false;

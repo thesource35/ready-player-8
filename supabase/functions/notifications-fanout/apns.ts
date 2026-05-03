@@ -2,8 +2,10 @@
 // Decisions: D-14 (direct APNs, no vendor), D-16 (push gating enforced in index.ts)
 // Pattern: RESEARCH §Pattern 3 + Pitfall 1 (JWT cache 50 min)
 //
-// djwt pin: v3.0.2 (stable as of plan date 2026-04-07). If deploy fails with
-// a redirect warning, re-check https://deno.land/x/djwt for the current tag.
+// djwt pin: v3.0.2 (stable as of plan date 2026-04-07). If deploy fails
+// with a redirect warning, re-check the package on deno.land (search for
+// "djwt" — the bare /x/djwt URL no longer resolves; use the versioned
+// import URL on the line below as the canonical reference).
 
 import { create, getNumericDate } from 'https://deno.land/x/djwt@v3.0.2/mod.ts'
 
