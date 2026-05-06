@@ -392,7 +392,16 @@ struct PhotoPickerButton: View {
         .onChange(of: photoItem) { _, newItem in
             guard let newItem else { return }
             Task {
-                guard let data = try? await newItem.loadTransferable(type: Data.self) else { return }
+                // 999.5 (d) audit: was try? -- distinguish nil-from-cancel
+                // (silent OK) from throw-from-real-error (log + give up).
+                let data: Data?
+                do {
+                    data = try await newItem.loadTransferable(type: Data.self)
+                } catch {
+                    CrashReporter.shared.reportError("PhotoPicker loadTransferable failed: \(error.localizedDescription)")
+                    return
+                }
+                guard let data else { return }
                 await MainActor.run {
                     if data.count <= maxBytes {
                         selectedData = data

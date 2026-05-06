@@ -133,7 +133,16 @@ struct NetworkView: View {
         }
 
         Task {
-            guard let data = try? await item.loadTransferable(type: Data.self) else { return }
+            // 999.5 (d) audit: was try? -- distinguish nil-from-cancel
+            // (silent OK) from throw-from-real-error (log + give up).
+            let data: Data?
+            do {
+                data = try await item.loadTransferable(type: Data.self)
+            } catch {
+                CrashReporter.shared.reportError("SocialNetwork photo loadTransferable failed: \(error.localizedDescription)")
+                return
+            }
+            guard let data else { return }
             await MainActor.run {
                 pendingPhotoData = data
                 photoMessagingTodoDone = true

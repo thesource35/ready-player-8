@@ -949,12 +949,26 @@ struct ConstructionOSNetworkPanel: View {
         }
 
         Task {
-            guard let data = try? await item.loadTransferable(type: Data.self) else {
-                CrashReporter.shared.reportError("Photo load failed for network post comment")
+            // 999.5 (d) audit: was try? blanket -- now distinguishes
+            // nil-from-cancel (silent OK, no fake "Could not load" message)
+            // from throw-from-real-error (log + show error to user).
+            let data: Data?
+            do {
+                data = try await item.loadTransferable(type: Data.self)
+            } catch {
+                CrashReporter.shared.reportError("Network comment photo loadTransferable failed: \(error.localizedDescription)")
                 await MainActor.run {
                     commentPhotoDrafts[postID] = nil
                     commentPhotoSelections[postID] = nil
                     commentAttachmentStatuses[postID] = "Could not load selected photo."
+                }
+                return
+            }
+            guard let data else {
+                // User canceled the picker — silently clear pending state, no error message.
+                await MainActor.run {
+                    commentPhotoDrafts[postID] = nil
+                    commentPhotoSelections[postID] = nil
                 }
                 return
             }
