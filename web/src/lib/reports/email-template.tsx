@@ -115,7 +115,7 @@ export function ReportEmail({
             }}
           >
             <Img
-              src="https://constructionos.com/logo-light.png"
+              src="https://constructionos.com/logo.png"
               alt="ConstructionOS"
               width={180}
               height={36}
