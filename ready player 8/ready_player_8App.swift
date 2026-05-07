@@ -134,15 +134,33 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
     // MARK: - Phase 14: APNs registration callbacks
 
+    /// Cached APNs device token hex (race fix 2026-05-07).
+    ///
+    /// iOS delivers the device token via `didRegisterForRemoteNotificationsWithDeviceToken`
+    /// at app-launch time, BEFORE the user has signed in. At that moment
+    /// `SupabaseService.currentUserId` is nil, so `upsertDeviceToken` silently
+    /// no-ops (its first guard returns early). After signin completes, iOS
+    /// does NOT re-fire the callback. Result: the token is delivered but
+    /// never written to `cs_device_tokens`, so push delivery silently breaks.
+    ///
+    /// Fix: cache the latest token hex here, and have `SupabaseService.signIn`
+    /// retry the upsert against the cached value once `accessToken` is set.
+    static var cachedDeviceTokenHex: String?
+
     /// Apple delivers the device token here after a successful
-    /// `registerForRemoteNotifications()`. Convert to hex and upsert into
-    /// `cs_device_tokens` for the current user. (D-15)
+    /// `registerForRemoteNotifications()`. Convert to hex, cache for the
+    /// post-signin retry, and upsert into `cs_device_tokens` for the current
+    /// user. (D-15 + 2026-05-07 race fix)
     func application(
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
     ) {
         let tokenString = AppDelegate.hexString(from: deviceToken)
         let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+
+        // Cache for post-signin retry (the upsert below silently no-ops if
+        // currentUserId is still nil because the user hasn't signed in yet).
+        AppDelegate.cachedDeviceTokenHex = tokenString
 
         Task {
             do {

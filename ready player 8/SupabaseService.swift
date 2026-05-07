@@ -183,17 +183,26 @@ final class SupabaseService: ObservableObject {
         return e
     }()
 
+    // 2026-05-07: every getter falls back to SupabaseBundled.{baseURL,anonKey}
+    // (production defaults baked in at build time) when no override is stored.
+    // This is what makes the App Store build "just work" for end users -- they
+    // never see the Configure Backend sheet. Power users + developers can
+    // still override via the sheet (e.g. to point at a staging project), and
+    // the override wins because Keychain/UserDefaults reads come first.
     var baseURL: String {
-        (KeychainHelper.read(key: "Backend.BaseURL") ?? UserDefaults.standard.string(forKey: configKeyPrefix + "BaseURL") ?? "").trimmingCharacters(in: .whitespaces)
+        let stored = (KeychainHelper.read(key: "Backend.BaseURL") ?? UserDefaults.standard.string(forKey: configKeyPrefix + "BaseURL") ?? "").trimmingCharacters(in: .whitespaces)
+        return stored.isEmpty ? SupabaseBundled.baseURL : stored
     }
     var apiKey: String {
-        (KeychainHelper.read(key: "Backend.ApiKey") ?? UserDefaults.standard.string(forKey: configKeyPrefix + "ApiKey") ?? "").trimmingCharacters(in: .whitespaces)
+        let stored = (KeychainHelper.read(key: "Backend.ApiKey") ?? UserDefaults.standard.string(forKey: configKeyPrefix + "ApiKey") ?? "").trimmingCharacters(in: .whitespaces)
+        return stored.isEmpty ? SupabaseBundled.anonKey : stored
     }
 
     var isConfigured: Bool {
         !baseURL.isEmpty
             && !apiKey.isEmpty
             && !baseURL.contains("your-project.supabase.co")
+            && apiKey != "PASTE_ANON_KEY_HERE"
             && URL(string: baseURL) != nil
     }
 
@@ -278,6 +287,21 @@ final class SupabaseService: ObservableObject {
             throw SupabaseError.httpError(0, "Auth succeeded but no access token returned")
         }
         startAutoRefresh()
+
+        // 2026-05-07 race fix: if iOS already delivered the APNs device token
+        // BEFORE this signin completed (very common on first-launch flow --
+        // user grants notif permission, OS delivers token, all before they
+        // type email + password), upsertDeviceToken would have silently
+        // no-op'd at that time because currentUserId was nil. Retry now that
+        // we have a session.
+        if let cached = await MainActor.run(body: { AppDelegate.cachedDeviceTokenHex }) {
+            let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+            do {
+                try await upsertDeviceToken(token: cached, platform: "ios", appVersion: appVersion)
+            } catch {
+                CrashReporter.shared.reportError("Post-signin device-token retry failed: \(error.localizedDescription)")
+            }
+        }
     }
 
     func refreshToken() async -> Bool {
