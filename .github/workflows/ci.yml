@@ -9,34 +9,49 @@ on:
 jobs:
   build-and-test:
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.2.app
 
+      # 2026-05-07: macos-15 runner image ships without iOS Simulator runtime
+      # pre-installed (only macOS + visionOS in `xcodebuild -showdestinations`).
+      # Without this step, build/test silently no-op'd because
+      # `name=iPhone 16,OS=latest` never resolved to a real destination, and
+      # the previous `|| true` masked the failure entirely. Install iOS
+      # platform explicitly so the simulator + iPhone device profiles exist.
+      - name: Install iOS Simulator runtime
+        run: |
+          xcodebuild -downloadPlatform iOS
+          xcrun simctl list devices available | head -40
+
+      # Pinned to iPhone 17 to match local dev convention. Removed `|| true`
+      # so iOS build failures actually fail CI (the whole point of CI).
       - name: Build iOS
         run: |
+          set -o pipefail
           xcodebuild build \
             -project "ready player 8.xcodeproj" \
             -scheme "ready player 8" \
-            -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
+            -destination "platform=iOS Simulator,name=iPhone 17,OS=latest" \
             -configuration Debug \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            | xcpretty || true
+            | xcpretty
 
       - name: Run Tests
         run: |
+          set -o pipefail
           xcodebuild test \
             -project "ready player 8.xcodeproj" \
             -scheme "ready player 8" \
-            -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
+            -destination "platform=iOS Simulator,name=iPhone 17,OS=latest" \
             -configuration Debug \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            | xcpretty || true
+            | xcpretty
 
   web-build:
     runs-on: ubuntu-latest
