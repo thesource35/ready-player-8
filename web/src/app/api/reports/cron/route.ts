@@ -203,7 +203,7 @@ async function processSchedule(
   // Render email (D-50c)
   // ---------------------------------------------------------------------------
   const { renderReportEmail } = await import("@/lib/reports/email-template");
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://constructionos.com";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://constructionos.world";
   const emailHtml = await renderReportEmail({
     ...reportData,
     reportUrl: `${appUrl}/reports/rollup`,
@@ -249,7 +249,7 @@ async function processSchedule(
 
     // D-50q: noreply from address
     await resend.emails.send({
-      from: "ConstructionOS Reports <reports@constructionos.com>",
+      from: "ConstructionOS Reports <reports@constructionos.world>",
       to: recipientEmails,
       subject,
       html: emailHtml,

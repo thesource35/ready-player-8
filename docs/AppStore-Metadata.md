@@ -53,10 +53,10 @@ construction,project management,field ops,safety,bidding,equipment rental,contra
 Version 2.0 — Complete rebuild with 25 navigation tabs, 41 Swift files, and full construction lifecycle coverage from bidding through closeout.
 
 ## Support URL
-https://constructionos.app/support
+https://constructionos.world/support
 
 ## Marketing URL
-https://constructionos.app
+https://constructionos.world
 
 ## Privacy Policy URL
-https://constructionos.app/privacy
+https://constructionos.world/privacy

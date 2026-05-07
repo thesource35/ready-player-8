@@ -310,7 +310,7 @@ func appendSecurityAudit(_ message: String) {
     UserDefaults.standard.set(Array(entries.prefix(20)), forKey: securityAuditLogKey)
 }
 
-func securityOtpAuthURL(secret: String, accountName: String = "ops@constructionos.app", issuer: String = "Construction OS") -> String {
+func securityOtpAuthURL(secret: String, accountName: String = "ops@constructionos.world", issuer: String = "Construction OS") -> String {
     guard !secret.isEmpty else { return "" }
     let allowed = CharacterSet.urlQueryAllowed
     let encodedIssuer = issuer.addingPercentEncoding(withAllowedCharacters: allowed) ?? issuer
@@ -393,10 +393,10 @@ struct SecurityAccessPanel: View {
     @AppStorage("ConstructOS.Security.TrustedUntil") private var trustedUntilEpoch: Double = 0
     @AppStorage("ConstructOS.Security.TrustHours") private var trustedDeviceHoursRaw: Int = 8
     @AppStorage("ConstructOS.Security.EmergencyCodes") private var emergencyCodesRaw: String = ""
-    @AppStorage("ConstructOS.Security.AuthAccount") private var authAccountNameRaw: String = "ops@constructionos.app"
+    @AppStorage("ConstructOS.Security.AuthAccount") private var authAccountNameRaw: String = "ops@constructionos.world"
     @AppStorage("ConstructOS.Security.AuthIssuer") private var authIssuerRaw: String = "Construction OS"
     @AppStorage("ConstructOS.Security.SMSNumber") private var smsNumberRaw: String = "+1 (555) 010-2424"
-    @AppStorage("ConstructOS.Security.EmailDestination") private var emailDestinationRaw: String = "ops@constructionos.app"
+    @AppStorage("ConstructOS.Security.EmailDestination") private var emailDestinationRaw: String = "ops@constructionos.world"
     @AppStorage("ConstructOS.Security.LastUnlockEpoch") private var lastUnlockEpoch: Double = 0
     @AppStorage("ConstructOS.Security.LastFailedEpoch") private var lastFailedEpoch: Double = 0
     @State private var currentPasswordInput: String = ""
@@ -464,7 +464,7 @@ struct SecurityAccessPanel: View {
 
     private var authenticatorAccountName: String {
         let trimmed = authAccountNameRaw.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "ops@constructionos.app" : trimmed
+        return trimmed.isEmpty ? "ops@constructionos.world" : trimmed
     }
 
     private var authenticatorIssuer: String {
@@ -603,7 +603,7 @@ struct SecurityAccessPanel: View {
 
     private func refreshState() {
         if authAccountNameRaw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            authAccountNameRaw = "ops@constructionos.app"
+            authAccountNameRaw = "ops@constructionos.world"
         }
 
         if authIssuerRaw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {

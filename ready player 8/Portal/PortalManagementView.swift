@@ -263,7 +263,7 @@ struct PortalManagementView: View {
     }
 
     private func copyPortalURL(_ config: SupabasePortalConfig) {
-        let url = "https://app.constructionos.com/portal/\(config.companySlug)/\(config.slug)"
+        let url = "https://app.constructionos.world/portal/\(config.companySlug)/\(config.slug)"
         UIPasteboard.general.string = url
         withAnimation {
             copiedLinkId = config.linkId

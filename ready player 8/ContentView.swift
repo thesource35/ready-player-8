@@ -462,7 +462,7 @@ struct AuthGateView: View {
                 supabase.accessToken = supabase.accessToken ?? UUID().uuidString
                 if profileStore.currentUser == nil {
                     let _ = profileStore.createAccount(profile: UserProfile(
-                        email: "demo@constructionos.app", fullName: "Demo User", company: "ConstructionOS",
+                        email: "demo@constructionos.world", fullName: "Demo User", company: "ConstructionOS",
                         jobTitle: "Demo", trade: "General", birthdate: "01/01/2000",
                         yearsExperience: 1, phone: "", bio: "Demo account",
                         location: "Austin, TX", certifications: [], skills: [],

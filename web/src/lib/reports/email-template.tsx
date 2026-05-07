@@ -59,7 +59,7 @@ function getHealthLabel(score: number): string {
  * ConstructionOS Report Email Component
  *
  * D-50c: Branded HTML with header/logo, inline metrics, PDF note, and live link.
- * D-50q: Sent from noreply address (reports@constructionos.com).
+ * D-50q: Sent from noreply address (reports@constructionos.world).
  * D-50m: No unsubscribe link (team members managed by sender).
  */
 export function ReportEmail({
@@ -115,7 +115,7 @@ export function ReportEmail({
             }}
           >
             <Img
-              src="https://constructionos.com/logo.png"
+              src="https://constructionos.world/logo.png"
               alt="ConstructionOS"
               width={180}
               height={36}

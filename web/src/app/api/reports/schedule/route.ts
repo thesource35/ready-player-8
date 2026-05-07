@@ -484,7 +484,7 @@ async function handleAction(
       budgetPercent: 72,
       projectCount: 0,
       openIssues: 0,
-      reportUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://constructionos.com"}/reports/rollup`,
+      reportUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://constructionos.world"}/reports/rollup`,
       generatedAt: new Date().toISOString(),
     });
 
@@ -529,7 +529,7 @@ async function handleAction(
 
     // Send via Resend (D-50q: noreply from address)
     await resend.emails.send({
-      from: "ConstructionOS Reports <reports@constructionos.com>",
+      from: "ConstructionOS Reports <reports@constructionos.world>",
       to: recipientEmails,
       subject,
       html: emailHtml,

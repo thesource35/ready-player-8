@@ -312,7 +312,7 @@ export default function PortalShell({
       <PortalFooter
         contactInfo={branding?.contact_info ?? undefined}
         poweredByEnabled={portalConfig.powered_by_enabled}
-        reportAbuseUrl={`mailto:abuse@constructionos.com?subject=Report portal: ${portalConfig.slug}`}
+        reportAbuseUrl={`mailto:abuse@constructionos.world?subject=Report portal: ${portalConfig.slug}`}
       />
 
       {/* Phase 27 D-19: Mobile bottom nav (<=640px viewport via MobilePortalNav's md:hidden).

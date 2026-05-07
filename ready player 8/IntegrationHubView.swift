@@ -895,7 +895,7 @@ final class IntegrationHub: ObservableObject {
 
     func signIn(role: IntegrationRole) {
         self.role = role
-        self.signedInUser = "demo@constructionos.app"
+        self.signedInUser = "demo@constructionos.world"
         trackEvent("auth_sign_in_\(role.rawValue.lowercased())")
     }
 

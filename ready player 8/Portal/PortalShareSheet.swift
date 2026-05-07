@@ -277,7 +277,7 @@ struct PortalShareSheet: View {
                 clientEmail: clientEmail.isEmpty ? nil : clientEmail
             )
 
-            let url = "https://app.constructionos.com/portal/\(companySlug)/\(slug)"
+            let url = "https://app.constructionos.world/portal/\(companySlug)/\(slug)"
             createdURL = url
 
             // Copy to clipboard

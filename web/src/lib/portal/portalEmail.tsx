@@ -512,7 +512,7 @@ export async function sendPortalCreatedEmail(params: {
     );
 
     await resend.emails.send({
-      from: `${params.companyName} <noreply@constructionos.com>`,
+      from: `${params.companyName} <noreply@constructionos.world>`,
       to: params.to,
       subject: `You've been invited to view ${params.projectName}`,
       html,
@@ -550,7 +550,7 @@ export async function sendPortalUpdatedEmail(params: {
     );
 
     await resend.emails.send({
-      from: `${params.companyName} <noreply@constructionos.com>`,
+      from: `${params.companyName} <noreply@constructionos.world>`,
       to: params.to,
       subject: `Project update: ${params.projectName}`,
       html,
@@ -584,7 +584,7 @@ export async function sendViewNotificationEmail(params: {
     );
 
     await resend.emails.send({
-      from: "ConstructionOS <noreply@constructionos.com>",
+      from: "ConstructionOS <noreply@constructionos.world>",
       to: params.to,
       subject: `${params.viewerInfo} viewed your portal for ${params.projectName}`,
       html,

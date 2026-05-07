@@ -98,7 +98,7 @@ async function sendReportEmail(
     const resend = new Resend("re_test_key");
 
     await resend.emails.send({
-      from: "reports@constructionos.com",
+      from: "reports@constructionos.world",
       to: valid.map((r) => r.email),
       subject: payload.subject,
       html: `<html><body>Health: ${payload.healthScore}, Budget: ${payload.budgetPercent}%</body></html>`,
@@ -191,7 +191,7 @@ describe("Email: Sending via Resend (D-82)", () => {
       budgetPercent: 50,
       projectCount: 3,
       openIssues: 2,
-      reportUrl: "https://app.constructionos.com/reports",
+      reportUrl: "https://app.constructionos.world/reports",
       generatedAt: "2025-06-15T10:00:00Z",
     });
 
@@ -200,7 +200,7 @@ describe("Email: Sending via Resend (D-82)", () => {
     expect(mockSend).toHaveBeenCalledTimes(1);
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({
-        from: "reports@constructionos.com",
+        from: "reports@constructionos.world",
         to: ["jane@company.com"],
         subject: "[ConstructionOS] Weekly Report - 2025-06-15",
       })
