@@ -262,14 +262,20 @@ final class SupabaseService: ObservableObject {
             throw SupabaseError.httpError((response as? HTTPURLResponse)?.statusCode ?? 0, body)
         }
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        // 2026-05-09: with email-confirmation enabled in Supabase Auth, /signup
+        // returns 2xx with the user object but access_token is null until the
+        // user clicks the confirmation link. Treat that as success -- the UI
+        // advances to the "check your email" step and the user signs in
+        // afterwards. Only throw if we got NO user at all (genuinely broken).
+        let userObj = json?["user"] as? [String: Any]
         await MainActor.run {
             accessToken = json?["access_token"] as? String
-            currentUserEmail = (json?["user"] as? [String: Any])?["email"] as? String
+            currentUserEmail = userObj?["email"] as? String
             if let token = accessToken { KeychainHelper.save(key: "Auth.AccessToken", data: token) }
             if let email = currentUserEmail { KeychainHelper.save(key: "Auth.Email", data: email) }
         }
-        guard accessToken != nil else {
-            throw SupabaseError.httpError(0, "Auth succeeded but no access token returned")
+        guard userObj != nil else {
+            throw SupabaseError.httpError(0, "Signup response missing user object")
         }
     }
 
