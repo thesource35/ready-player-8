@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Completed 30-06-PLAN.md
-last_updated: "2026-04-25T01:49:24.490Z"
-last_activity: 2026-04-25 -- Phase 30.1 planning complete
+stopped_at: Production-readiness sweep complete -- silent-failure audit (33 spots fixed across iOS+web), Tier 3 mock bundle gating (20 arrays in 12 files), CI fully green-up after 5+ days red (web-build lint/typecheck/script + link-health placeholder skips + non-blocking continue-on-error)
+last_updated: "2026-05-11T00:30:06.259Z"
+last_activity: 2026-05-11
 progress:
   total_phases: 18
-  completed_phases: 17
+  completed_phases: 18
   total_plans: 121
-  completed_plans: 118
-  percent: 98
+  completed_plans: 121
+  percent: 100
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-14)
 
 **Core value:** Every user action must either succeed visibly or fail with a clear, actionable message -- no silent data loss, no undetected errors, no security gaps.
-**Current focus:** Phase 30 — notifications-list-mark-read-ios-push-remediation
+**Current focus:** Production launch hardening — see Session Continuity for the live list (NOTIF-05 push UAT blocked on anon-key paste, schema FK refactor draft, domain registration, Vercel deploy gating 999.5 (f)/(g), 92 React Compiler warnings)
 
 ## Current Position
 
 Milestone: v2.1
-Phase: 30 (notifications-list-mark-read-ios-push-remediation) — EXECUTING
-Plan: 9 of 9
-Status: Ready to execute
-Last activity: 2026-04-25 -- Phase 30.1 planning complete
+Phase: 30.1 (fix-pre-auth-bootstrap-gap-from-phase-30-verification) — COMPLETE ✓
+Plans: 3/3 complete (verification PASSED 6/6 on 2026-04-28, full UAT closure on iPhone 17 Simulator iOS 26.3)
+Status: All v2.1 milestone phases closed (18/18); milestone work continues post-phase via production-readiness sweep — see Session Continuity
+Last activity: 2026-05-11 - Completed quick task 260510-snz: Land 3 post-multi-tenancy production fixes (user_orgs RLS recursion + per-row decode resilience + email-confirm signup acceptance)
 
 ## Accumulated Context
 
@@ -116,6 +116,9 @@ v2.0 closing decisions:
 - [Phase 30]: [Phase 30-04]: 30-PARITY-SPEC.md authors canonical unread-count SQL + scope contract (D-13/D-14/D-15); extracts SupabaseService.buildMarkAllReadQueryString(userId:projectId:) as internal static helper; markAllNotificationsRead consumes it; XCTest calls REAL helper via @testable import (no mirror); 9 web vitest cases + 7 iOS XCTest cases lock filter-scope + 99+ cap; full notifications suite 38/38 GREEN; compile-only iOS verification per Phase 22/29.1/30-07/30-02 precedent
 - [Phase 30]: Plan 30-05: iOS NotificationsStore subscribes to Supabase Realtime postgres_changes on cs_notifications with canonical channel cs_notifications:{userId} matching web HeaderBell.tsx; polling remains as fallback after 3 consecutive WebSocket failures; Swift-6-clean via class-level nonisolated on NotificationsRealtimeHandle (target-level SWIFT_DEFAULT_ACTOR_ISOLATION=MainActor required explicit override); TDD RED->GREEN sequence (e0aa86e/584861c/c7d0ba1); compile-only test verification per Phase 22/29.1/30-02/30-04 precedent; Phase 14 D-08 (iOS 0-20s inbox lag) closed.
 - [Phase 30]: Plan 30-06: D-17 inbox_filter_changed analytics closed cross-platform — pure sanitizer+emit pair on web with 7/7 vitest locking three-key PII-free payload; iOS NotificationsStore.setFilter(_:) extended in place with diff-gated emitFilterChangedAnalytics helper (no parallel setProjectFilter — single-setter HARD GATE grep=0). Hydration bypasses emit on both platforms. AnalyticsEngine [String:String] signature required Int-to-String serialization deviation from plan template.
+- [Phase 30.1]: Plan 30.1-01: BackendConfigSheet shipped inside ContentView.swift (monolith preserved per CLAUDE.md constraint); validateBaseURL enforces https-only with localhost dev allowance (T4 mitigation); classifyKeyPrefix non-blocking warning on sb_secret_* paste (T2); SecureField on anon-key field (T3); 13-case BackendConfigSheetTests.swift compile-only per Phase 22/29.1/30 precedent.
+- [Phase 30.1]: Plan 30.1-02: AuthGateView.loginView wires conditional "Configure Backend" affordance keyed on !supabase.isConfigured + .sheet(isPresented: $showBackendConfig). Save handler delegates to existing SupabaseService.configure() — Keychain write via established SEC-02/SEC-03 path, zero new credential storage; signin/signup handlers byte-identical (verified via git diff grep). objectWillChange.send() inside configure() drives no-restart re-render (acceptance #4).
+- [Phase 30.1]: Plan 30.1-03: VERIFICATION.md scored 6/6 PASS on 2026-04-27 (Steps 1-4) + 2026-04-28 (Step 5 cross-launch persistence) on iPhone 17 Simulator iOS 26.3; AUTH-GATE-04 added to REQUIREMENTS.md ("User can configure Supabase backend from the pre-auth screen"); ROADMAP backlog 999.3 → Closed. Chicken-and-egg lockout that blocked Phase 30 NOTIF-05 UAT removed.
 
 ### Pending Todos
 
@@ -136,6 +139,7 @@ None.
 |---|-------------|------|--------|-----------|
 | 260406-rcz | Fix all 8 partial requirements and 36 TS errors from v1.0 milestone audit | 2026-04-07 | 1fe77a6 | [260406-rcz-fix-all-8-partial-requirements-and-36-ts](./quick/260406-rcz-fix-all-8-partial-requirements-and-36-ts/) |
 | 260414-n4w | Fix 4 v2.0 audit integration blockers (INT-03/04/05 + STATE cleanup) | 2026-04-14 | 44a7dd3 | [260414-n4w-fix-4-v2-0-audit-integration-blockers-wi](./quick/260414-n4w-fix-4-v2-0-audit-integration-blockers-wi/) |
+| 260510-snz | Land 3 post-multi-tenancy production fixes: user_orgs RLS recursion + per-row decode resilience + email-confirm signup acceptance | 2026-05-11 | fe266a6 | [260510-snz-land-3-post-multi-tenancy-production-fix](./quick/260510-snz-land-3-post-multi-tenancy-production-fix/) |
 
 ## Session Continuity
 
@@ -143,9 +147,11 @@ Last session: 2026-05-03T20:45:00Z
 Stopped at: Production-readiness sweep complete -- silent-failure audit (33 spots fixed across iOS+web), Tier 3 mock bundle gating (20 arrays in 12 files), CI fully green-up after 5+ days red (web-build lint/typecheck/script + link-health placeholder skips + non-blocking continue-on-error)
 Resume file: None
 Outstanding (blocked on user decision or external steps):
+
   - Schema FK refactor draft -- 4 open questions in .planning/drafts/cs_schedule_events_cs_todos_fk_refactor.sql
   - NOTIF-05 push notification UAT on physical iPhone -- blocked on Supabase anon-key paste
   - 999.5 (f) email smoke test + (g) xlsx CDN -- need a Vercel deploy
   - constructionos.com / constructionos.app domain registration + Resend verification + App Store privacy/support URL setup -- all production launch blockers
   - 92 React Compiler ESLint warnings (downgraded from errors in eslint.config.mjs) -- focused refactor pass
+
 Drift detector armed: trig_011Q9x8jXoEd6ed2SWbnxLPt fires 2026-05-08T21:15:00Z, checks Phase 30.1 closure state.
