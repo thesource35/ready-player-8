@@ -143,15 +143,18 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-03T20:45:00Z
-Stopped at: Production-readiness sweep complete -- silent-failure audit (33 spots fixed across iOS+web), Tier 3 mock bundle gating (20 arrays in 12 files), CI fully green-up after 5+ days red (web-build lint/typecheck/script + link-health placeholder skips + non-blocking continue-on-error)
+Last session: 2026-05-11T00:30:00Z
+Stopped at: 4-item production-launch sweep -- (1) project.pbxproj cross-platform CODE_SIGN_IDENTITY shipped (commit 35f14c4), Pattern 2 UI Tests team-clear reverted; (2) migration 20260509001 user_orgs RLS recursion fix applied to remote via file-move workaround for 999.7 bare-timestamp drift; (3) NOTIF-05 push UAT preflight verified (APNs secrets present, all code blockers closed, runbook 30-DEPLOY-STEPS.md augmented with 2026-05-10 preflight section); (4) Vercel deploy shipped (dpl_FVsFudokp1RsamWA9FXuKC4jjaAc -> constructionos.world), vercel.json cron dropped from */15 to daily 13:00 UTC for Hobby tier (commit 40b2ebf), RESEND_API_KEY + CRON_SECRET added to prod env vars, auth-gate end-to-end smoke test PASSES.
 Resume file: None
 Outstanding (blocked on user decision or external steps):
 
   - Schema FK refactor draft -- 4 open questions in .planning/drafts/cs_schedule_events_cs_todos_fk_refactor.sql
-  - NOTIF-05 push notification UAT on physical iPhone -- blocked on Supabase anon-key paste
-  - 999.5 (f) email smoke test + (g) xlsx CDN -- need a Vercel deploy
-  - constructionos.com / constructionos.app domain registration + Resend verification + App Store privacy/support URL setup -- all production launch blockers
+  - NOTIF-05 push notification UAT on physical iPhone -- code blockers all closed; remaining is the manual Apple Developer portal capability toggle + Xcode rebuild + iPhone install + signin + screenshots (see .planning/phases/30-notifications-list-mark-read-ios-push-remediation/30-DEPLOY-STEPS.md preflight section)
+  - 999.5 (f) email smoke test -- deploy + env vars + cron-fix shipped 2026-05-10; NEW BLOCKER discovered: cs_report_schedules table is orphan in web/src/lib/reports/db-schema.sql, never promoted to a real supabase/migrations file. Promote + push (use Item #2 file-move workaround) before end-to-end test can succeed.
+  - 999.5 (g) xlsx CDN runtime verify -- build-time verified 2026-05-10 (deploy succeeded with CDN tarball import); needs user-driven Excel export click in deployed UI to fully close.
+  - 999.7 bare-timestamp migration drift -- 20260406_documents.sql + 20260407_phase14_notifications.sql still need rename to add 000 suffix; bypass-via-file-move works but recurs on every db push. Promote to a real /gsd-quick when ready.
+  - constructionos.world domain is registered + serving HTTPS; constructionos.com / constructionos.app registration + App Store privacy/support URL setup still TBD (canonical domain consolidation in commit 7c54c75 already moved email senders to .world, so 999.8's primary email blocker is closed).
   - 92 React Compiler ESLint warnings (downgraded from errors in eslint.config.mjs) -- focused refactor pass
+  - GitHub Dependabot reports 5 outstanding vulnerabilities (4 moderate, 1 low) on default branch -- review at https://github.com/thesource35/ready-player-8/security/dependabot
 
 Drift detector armed: trig_011Q9x8jXoEd6ed2SWbnxLPt fires 2026-05-08T21:15:00Z, checks Phase 30.1 closure state.

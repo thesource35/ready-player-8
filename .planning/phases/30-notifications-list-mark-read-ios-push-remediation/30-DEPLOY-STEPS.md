@@ -1,5 +1,24 @@
 # 30-DEPLOY-STEPS — Operator Runbook: Apple Developer Portal Push Capability + UAT Push Invocation
 
+## Pre-flight 2026-05-10 (verified before walkthrough)
+
+All blockers that were not "operator-must-do-by-hand" are now closed. When you return to walk the steps below, only the human/iPhone steps remain. Tonight's verification:
+
+| Prereq | Status | Evidence |
+|---|---|---|
+| `aps-environment = development` in entitlements | ✅ | `cat "ready player 8/ready player 8.entitlements"` |
+| APNs secrets in Supabase Edge Functions | ✅ all 5 present | `supabase secrets list` → `APNS_AUTH_KEY_P8`, `APNS_BUNDLE_ID`, `APNS_HOST`, `APNS_KEY_ID`, `APNS_TEAM_ID` |
+| `user_orgs` RLS recursion fixed | ✅ migration applied | `20260509001_fix_user_orgs_rls_recursion.sql` live on remote (Local & Remote columns match in `supabase migration list`) |
+| Signup access-token-nullable false positive fixed | ✅ shipped | iOS commit `6f2fa5e` — `signUp()` no longer throws when Supabase returns user object with `access_token=null` (the email-confirmation response shape) |
+| Per-row resilient decode in `fetchTable` | ✅ shipped | iOS commit `704df94` — fresh accounts whose rows pre-date non-optional Codable fields no longer drop the whole list |
+| `BackendConfigSheet` for fresh-install anon-key paste | ✅ shipped | Phase 30.1 closed 2026-04-28 (`30.1-VERIFICATION.md` 6/6 PASS); `AuthGateView` shows "Configure Backend" affordance when `!supabase.isConfigured` |
+
+**What still requires you with iPhone in hand** (the original purpose of this runbook): the Apple Developer portal capability toggle (Step 4 below), the Xcode rebuild + iPhone install (Steps 7-13), the in-app sign-in or fresh signup, the verification SQL queries, and capturing the 3 push category screenshots (`bid_deadline`, `safety_alert`, `assigned_task`) for `30-UAT-LOG.md`.
+
+**The chicken-and-egg lockout** that blocked the original Phase 30 UAT attempt is fully resolved: a fresh-install device can now configure Supabase from the AuthGateView (Phase 30.1), sign up successfully even with email-confirmation enabled (commit `6f2fa5e`), and reach the multi-tenant tabs without HTTP 500 (migration `20260509001`).
+
+---
+
 ## Purpose
 
 This file exists because one step in shipping APNs push delivery for ConstructionOS cannot be automated: the
