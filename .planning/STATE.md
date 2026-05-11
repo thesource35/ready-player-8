@@ -29,7 +29,7 @@ Milestone: v2.1
 Phase: 30.1 (fix-pre-auth-bootstrap-gap-from-phase-30-verification) — COMPLETE ✓
 Plans: 3/3 complete (verification PASSED 6/6 on 2026-04-28, full UAT closure on iPhone 17 Simulator iOS 26.3)
 Status: All v2.1 milestone phases closed (18/18); milestone work continues post-phase via production-readiness sweep — see Session Continuity
-Last activity: 2026-05-11 - Completed quick task 260510-snz: Land 3 post-multi-tenancy production fixes (user_orgs RLS recursion + per-row decode resilience + email-confirm signup acceptance)
+Last activity: 2026-05-11 - Completed quick task 260510-v81: Promote cs_report_schedules schema (closes 999.5 (f) end-to-end at code+schema+config layers)
 
 ## Accumulated Context
 
@@ -140,6 +140,7 @@ None.
 | 260406-rcz | Fix all 8 partial requirements and 36 TS errors from v1.0 milestone audit | 2026-04-07 | 1fe77a6 | [260406-rcz-fix-all-8-partial-requirements-and-36-ts](./quick/260406-rcz-fix-all-8-partial-requirements-and-36-ts/) |
 | 260414-n4w | Fix 4 v2.0 audit integration blockers (INT-03/04/05 + STATE cleanup) | 2026-04-14 | 44a7dd3 | [260414-n4w-fix-4-v2-0-audit-integration-blockers-wi](./quick/260414-n4w-fix-4-v2-0-audit-integration-blockers-wi/) |
 | 260510-snz | Land 3 post-multi-tenancy production fixes: user_orgs RLS recursion + per-row decode resilience + email-confirm signup acceptance | 2026-05-11 | fe266a6 | [260510-snz-land-3-post-multi-tenancy-production-fix](./quick/260510-snz-land-3-post-multi-tenancy-production-fix/) |
+| 260510-v81 | Promote cs_report_schedules schema from orphan db-schema.sql to real migration and push to remote | 2026-05-11 | 748320d | [260510-v81-promote-cs-report-schedules-schema-from-](./quick/260510-v81-promote-cs-report-schedules-schema-from-/) |
 
 ## Session Continuity
 
@@ -150,7 +151,7 @@ Outstanding (blocked on user decision or external steps):
 
   - Schema FK refactor draft -- 4 open questions in .planning/drafts/cs_schedule_events_cs_todos_fk_refactor.sql
   - NOTIF-05 push notification UAT on physical iPhone -- code blockers all closed; remaining is the manual Apple Developer portal capability toggle + Xcode rebuild + iPhone install + signin + screenshots (see .planning/phases/30-notifications-list-mark-read-ios-push-remediation/30-DEPLOY-STEPS.md preflight section)
-  - 999.5 (f) email smoke test -- deploy + env vars + cron-fix shipped 2026-05-10; NEW BLOCKER discovered: cs_report_schedules table is orphan in web/src/lib/reports/db-schema.sql, never promoted to a real supabase/migrations file. Promote + push (use Item #2 file-move workaround) before end-to-end test can succeed.
+  - 999.5 (f) email smoke test -- code+schema+config all green: deploy shipped 2026-05-10 (constructionos.world); RESEND_API_KEY + CRON_SECRET in prod env vars; cron schedule daily 13:00 UTC (Hobby tier OK); cs_report_schedules table promoted via 20260511001 (commit 748320d, quick 260510-v81); end-to-end /api/reports/cron smoke test PASSES (HTTP 200 + processed:0). Remaining (f) work is just user-flow exercise: seed a schedule row, observe Resend send. Other 7 cs_report_* tables in db-schema.sql still orphan -- separate scoped phase if needed.
   - 999.5 (g) xlsx CDN runtime verify -- build-time verified 2026-05-10 (deploy succeeded with CDN tarball import); needs user-driven Excel export click in deployed UI to fully close.
   - 999.7 bare-timestamp migration drift -- 20260406_documents.sql + 20260407_phase14_notifications.sql still need rename to add 000 suffix; bypass-via-file-move works but recurs on every db push. Promote to a real /gsd-quick when ready.
   - constructionos.world domain is registered + serving HTTPS; constructionos.com / constructionos.app registration + App Store privacy/support URL setup still TBD (canonical domain consolidation in commit 7c54c75 already moved email senders to .world, so 999.8's primary email blocker is closed).
