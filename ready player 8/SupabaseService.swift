@@ -132,6 +132,20 @@ enum SupabaseError: LocalizedError {
     }
 }
 
+// MARK: - Per-row resilient decode wrapper
+
+/// Decodes a single row, swallowing field-mismatch errors so one bad row
+/// doesn't drop the whole list. Used by fetchTable<T> after the multi-tenancy
+/// schema additions started causing "data could not be read because it is
+/// missing" alerts on tabs that hit tables with rows pre-dating the new
+/// non-optional columns.
+fileprivate struct DecodableSurvivor<T: Decodable>: Decodable {
+    let value: T?
+    init(from decoder: Decoder) throws {
+        value = try? T(from: decoder)
+    }
+}
+
 // MARK: - Service
 
 @MainActor
@@ -696,8 +710,23 @@ final class SupabaseService: ObservableObject {
         if limit != nil { request.setValue("count=exact", forHTTPHeaderField: "Prefer") }
         let (data, response) = try await URLSession.shared.data(for: request)
         try checkHTTPStatus(data: data, response: response)
+        // 2026-05-09: per-row resilient decode. Pre-fix this called
+        // decoder.decode([T].self, ...) which fails the WHOLE list if any
+        // single row is missing a Codable-required field -- producing the
+        // "data could not be read because it is missing" alert that broke
+        // Maps/Projects/etc. for fresh accounts after the multi-tenancy
+        // schema additions. Now we decode each row independently; bad rows
+        // are dropped and logged, good rows still populate the UI.
         do {
-            return try decoder.decode([T].self, from: data)
+            let survivors = try decoder.decode([DecodableSurvivor<T>].self, from: data)
+            let rows = survivors.compactMap(\.value)
+            let dropped = survivors.count - rows.count
+            if dropped > 0 {
+                CrashReporter.shared.reportError(
+                    "fetchTable(\(table)): dropped \(dropped) of \(survivors.count) rows on decode"
+                )
+            }
+            return rows
         } catch {
             throw SupabaseError.decodingError(error)
         }
