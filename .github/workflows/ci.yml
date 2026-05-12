@@ -6,37 +6,57 @@ on:
   pull_request:
     branches: [main]
 
+defaults:
+  run:
+    shell: bash -eo pipefail {0}
+
 jobs:
   build-and-test:
     runs-on: macos-15
     timeout-minutes: 30
+    # Pin Xcode 16.4 (macos-15 default) — its matching iOS 18.5 simulator runtime
+    # is pre-installed in the image. Xcode 16.2 was previously pinned but its
+    # matching iOS 18.2 runtime was removed under GitHub's Aug 2025 "three
+    # runtimes max" policy, causing the previous "latest" OS pin to match zero destinations and
+    # the job to silently no-op (backlog 999.10).
+    #
+    # Audit periodically against:
+    #   https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md
+    # If iOS 18.5 is removed from the image, this pin must move to the next
+    # pre-installed runtime (likely 18.6 or 26.x) — failing to do so will
+    # surface visibly in the "Show available iOS Simulator destinations" step
+    # below, NOT silently as before. (T-999.10-02)
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.2.app
+      # Sanity assertion: surface destination availability in the log so future
+      # runtime-removal events are caught the FIRST CI run, not weeks later.
+      # (T-999.10-01 — silent failure mitigation)
+      - name: Show available iOS Simulator destinations
+        run: |
+          xcodebuild -version
+          echo "--- iOS Simulator destinations ---"
+          xcrun simctl list devices available | { grep -E "iOS|iPhone" || :; }
 
-      - name: Build iOS
+      # Compile-only verification per Phase 22 / 29.1 / 30 precedent (STATE.md):
+      # ready_player_8Tests.swift has 30+ pre-existing async/concurrency errors
+      # that block `xcodebuild test`. Re-enable the test step ONLY after a
+      # focused phase repairs the test target.
+      # TODO(999.10): re-enable xcodebuild test step once
+      # ready_player_8Tests.swift async errors are fixed (tracked in
+      # Phase 22 deferred-items). Grep marker: TODO(999.10) (T-999.10-03)
+      - name: Build iOS (compile-only — see TODO above)
         run: |
           xcodebuild build \
             -project "ready player 8.xcodeproj" \
             -scheme "ready player 8" \
-            -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
+            -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5" \
             -configuration Debug \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            | xcpretty || true
-
-      - name: Run Tests
-        run: |
-          xcodebuild test \
-            -project "ready player 8.xcodeproj" \
-            -scheme "ready player 8" \
-            -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
-            -configuration Debug \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            | xcpretty || true
+            | xcbeautify --renderer github-actions
 
   web-build:
     runs-on: ubuntu-latest
