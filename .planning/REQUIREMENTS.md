@@ -119,6 +119,51 @@ Phase 29 composes Phase 22's shipped video pipeline + Phase 21's map surface + A
 
 Flipped from `[~]` to `[x]` 2026-04-21 after the 3-scenario human UAT walkthrough (VALIDATION.md §Manual-Only Verifications) returned PASS on iOS Simulator (iPhone 17, iOS 26.2 SDK). See `.planning/phases/29.1-fix-critical-auth-bug/29.1-VERIFICATION.md` §UAT Verdict.
 
+## v2.2 Requirements — Multi-tenancy Foundation
+
+Defined 2026-05-12. Closes backlog 999.4 by locking the 4 architecture decisions deferred during v2.1's tactical multi-tenancy migrations. Decisions captured in PROJECT.md Current Milestone block:
+1. **Org membership**: multi-org (Slack/Notion/GitHub pattern) — user can belong to N orgs simultaneously
+2. **Role model**: four roles — owner / admin / member / viewer
+3. **Existing-user assignment**: auto-create personal org on first login post-v2.2
+4. **New-org provisioning**: self-serve creation + email-link invitation
+
+### Schema & Backfill
+
+- [ ] **ORG-01**: `cs_orgs` table exists with id, name, slug, owner_id, created_at, updated_at. Slug is unique + URL-safe (lowercased, dash-separated).
+- [ ] **ORG-02**: `cs_user_orgs` membership table exists with (user_id, org_id) primary key, `role` enum column (owner / admin / member / viewer), joined_at timestamp. Replaces / unifies the tactical table shipped by 20260413001.
+- [ ] **ORG-03**: `cs_org_invitations` table exists with id, org_id, email, role, token (cryptographic), expires_at (default 7 days), accepted_at (null until accept), invited_by user_id.
+- [ ] **ORG-04**: Migration creates one personal org per existing user (name = "{User}'s Workspace", user becomes owner) AND backfills every cs_* row's org_id column with that personal-org id. Idempotent and reversible.
+
+### Org Lifecycle API
+
+- [ ] **ORG-05**: User can create a new org via `POST /api/orgs` (self-serve; user becomes owner; org is added to their memberships).
+- [ ] **ORG-06**: User can list their org memberships via `GET /api/orgs` (returns id, name, role, member_count for each org).
+- [ ] **ORG-07**: Owner/admin can invite a user by email via `POST /api/orgs/[id]/invite` (creates cs_org_invitations row, sends Resend email with token-link).
+- [ ] **ORG-08**: Invited user can accept invitation via `POST /api/orgs/invitations/[token]/accept` (validates token + expiry; creates cs_user_orgs row with invited role).
+- [ ] **ORG-09**: Owner/admin can change a member's role via `PATCH /api/orgs/[id]/members/[userId]` (cannot demote the last owner).
+- [ ] **ORG-10**: Owner/admin can remove a member via `DELETE /api/orgs/[id]/members/[userId]` (cannot remove the last owner; member's data stays in the org).
+
+### Active-Org Context
+
+- [ ] **ORG-11**: User's active org context persists across sessions (web: cookie `cs_active_org`; iOS: `@AppStorage("ConstructOS.ActiveOrgId")`). Falls back to first membership if cookie/storage is empty or invalid.
+- [ ] **ORG-12**: Web header surfaces an org switcher dropdown (top-right, near user avatar) showing all memberships; switching updates the cookie + triggers re-fetch of scoped data.
+- [ ] **ORG-13**: iOS exposes the org switcher in COMMAND tab settings (matches existing Integration Hub style); switching updates @AppStorage + posts NotificationCenter event for views to refresh.
+
+### RLS & Data Isolation
+
+- [ ] **ORG-14**: All cs_* RLS policies enforce active-org scoping via the existing `public.user_org_ids()` SECURITY DEFINER helper (introduced 20260509001). Audit: every cs_* table's RLS WHERE clause references either `org_id IN (SELECT org_id FROM public.user_org_ids())` or the helper directly.
+- [ ] **ORG-15**: Cross-org isolation verified — a user with multi-org membership sees ONLY active-org data in cs_projects, cs_contracts, and cs_documents queries. Other orgs' rows must be invisible (RLS returns 0 rows, NOT a permission error).
+
+### Settings UI
+
+- [ ] **ORG-16**: Web org settings page at `/orgs/[id]/settings` with sections: Name (editable by owner), Members (list with role + remove actions for admin/owner; current user can leave non-last-owner), Pending Invitations (resend + revoke for admin/owner), Danger Zone (delete org for owner only).
+- [ ] **ORG-17**: iOS Org Settings view (presented from COMMAND → Org Settings) mirrors web's surface: Name field, Members list, Pending Invitations, Leave Org action. Owner sees Delete Org.
+- [ ] **ORG-18**: Invitation email template (HTML + plain text via Resend) with org name, inviter name, role being granted, accept-link, and 7-day expiry note. Sent on ORG-07; reusable for resend in ORG-16/17.
+
+### Verification
+
+- [ ] **ORG-19**: End-to-end smoke test of multi-org flow: user A creates Org Alpha → invites user B → user B accepts → user B creates Org Beta → user B switches active context → cs_projects query returns ONLY active-org rows on each switch. Run on iPhone 17 Simulator AND web (Playwright or manual UAT).
+
 ## Carried Integration Blockers
 
 These gaps were identified in the v2.0 milestone audit and remain open at v2.1 start.
