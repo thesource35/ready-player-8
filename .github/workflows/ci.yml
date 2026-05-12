@@ -12,24 +12,24 @@ defaults:
 
 jobs:
   build-and-test:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 30
-    # Pin Xcode 16.4 (macos-15 default) — its matching iOS 18.5 simulator runtime
-    # is pre-installed in the image. Xcode 16.2 was previously pinned but its
-    # matching iOS 18.2 runtime was removed under GitHub's Aug 2025 "three
-    # runtimes max" policy, causing the previous "latest" OS pin to match zero destinations and
-    # the job to silently no-op (backlog 999.10).
+    # Pin Xcode 26.3 (matches developer-local Xcode 26.3) + iOS 26.2 destination
+    # (iOS 26.3 simulator runtime is NOT pre-installed on macos-26 as of May 2026
+    # — image ships iOS 26.1 / 26.2 / 26.4). Patch mismatch is fine for
+    # compile-only verification of iOS 26 SDK semantics (Chart inference +
+    # Swift 6 concurrency behavior is iOS-major-SDK triggered, not patch-level).
     #
     # Audit periodically against:
-    #   https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md
-    # If iOS 18.5 is removed from the image, this pin must move to the next
-    # pre-installed runtime (likely 18.6 or 26.x) — failing to do so will
-    # surface visibly in the "Show available iOS Simulator destinations" step
-    # below, NOT silently as before. (T-999.10-02)
+    #   https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md
+    # If iOS 26.2 is removed from the image, this pin must move to the next
+    # pre-installed iOS 26.x runtime — failing to do so will surface visibly
+    # in the "Show available iOS Simulator destinations" step below, NOT
+    # silently. (T-999.10-02 still applies)
     env:
-      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Sanity assertion: surface destination availability in the log so future
       # runtime-removal events are caught the FIRST CI run, not weeks later.
@@ -52,7 +52,7 @@ jobs:
           xcodebuild build \
             -project "ready player 8.xcodeproj" \
             -scheme "ready player 8" \
-            -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5" \
+            -destination "platform=iOS Simulator,name=iPhone 17 Pro,OS=26.2" \
             -configuration Debug \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
@@ -65,8 +65,8 @@ jobs:
       run:
         working-directory: web
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "20"
           cache: "npm"
@@ -87,8 +87,8 @@ jobs:
     # asynchronously, and this CI run still reports findings on the PR.
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "20"
       - name: Install ripgrep
