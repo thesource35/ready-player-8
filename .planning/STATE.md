@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Quick task 260511-7vh closed (commit b293291) -- iOS CI silent no-op trap closed via Xcode 16.4 + iPhone 16 Pro/iOS 18.5 + xcbeautify under workflow-level pipefail; backlog 999.10 closed-pending-CI-observation (real-CI verification deferred to next push per T-999.10-04 acceptance, see SUMMARY 4-outcome table)
-last_updated: "2026-05-12T00:39:12.000Z"
+stopped_at: Quick task 260511-thn closed (commit e5d6f74) -- iOS Swift 6 concurrency + Charts inference compile errors surfaced by 999.10 CI fix closed via 3 surgical edits (nonisolated reportError + Task @MainActor wrap per T-thn-01 fallback step 1; @ChartContentBuilder leverageChartContent extraction; MEMORY.md iOS 26.2 -> 18.2 reconciliation to pbxproj). xcodebuild BUILD SUCCEEDED on iPhone 17 + iPhone 16e (iOS 26.3 local sub for iPhone 16 Pro/iOS 18.5 which lacks local runtime). Real-CI verification deferred to next push. Closes thn AND 999.10 together when CI green.
+last_updated: "2026-05-12T01:45:00.000Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 18
@@ -29,7 +29,7 @@ Milestone: v2.1
 Phase: 30.1 (fix-pre-auth-bootstrap-gap-from-phase-30-verification) — COMPLETE ✓
 Plans: 3/3 complete (verification PASSED 6/6 on 2026-04-28, full UAT closure on iPhone 17 Simulator iOS 26.3)
 Status: All v2.1 milestone phases closed (18/18); milestone work continues post-phase via production-readiness sweep — see Session Continuity
-Last activity: 2026-05-12 - Completed quick task 260511-7vh: Fix CI iOS build/test silently no-op on macos-15 (closes backlog 999.10, commit b293291; real-CI verification deferred to next push)
+Last activity: 2026-05-12 - Completed quick task 260511-thn: Fix iOS Swift 6 concurrency + Charts inference compile errors surfaced by 999.10 CI (commit e5d6f74; real-CI verification deferred to next push, will close 7vh + thn together when green)
 
 ## Accumulated Context
 
@@ -143,6 +143,7 @@ None.
 | 260510-v81 | Promote cs_report_schedules schema from orphan db-schema.sql to real migration and push to remote | 2026-05-11 | 748320d | | [260510-v81-promote-cs-report-schedules-schema-from-](./quick/260510-v81-promote-cs-report-schedules-schema-from-/) |
 | 260511-7l7 | Reconcile 30.1-VERIFICATION.md body to PASSED frontmatter + cross-link 999.5 closures | 2026-05-11 | e299bc2 | | [260511-7l7-reconcile-30-1-verification-md-body-to-p](./quick/260511-7l7-reconcile-30-1-verification-md-body-to-p/) |
 | 260511-7vh | Fix CI iOS build/test silently no-op on macos-15 (closes backlog 999.10) | 2026-05-12 | b293291 | Needs Review | [260511-7vh-fix-ci-ios-build-test-silently-no-op-on-](./quick/260511-7vh-fix-ci-ios-build-test-silently-no-op-on-/) |
+| 260511-thn | Fix iOS Swift 6 concurrency + Charts inference compile errors surfaced by 999.10 CI | 2026-05-12 | e5d6f74 | Needs Review | [260511-thn-fix-ios-compile-errors-surfaced-by-999-1](./quick/260511-thn-fix-ios-compile-errors-surfaced-by-999-1/) |
 
 ## Session Continuity
 
