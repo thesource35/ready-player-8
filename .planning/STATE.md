@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: Production-readiness sweep complete -- silent-failure audit (33 spots fixed across iOS+web), Tier 3 mock bundle gating (20 arrays in 12 files), CI fully green-up after 5+ days red (web-build lint/typecheck/script + link-health placeholder skips + non-blocking continue-on-error)
-last_updated: "2026-05-11T09:35:00.000Z"
-last_activity: 2026-05-11
+stopped_at: Quick task 260511-7vh closed (commit b293291) -- iOS CI silent no-op trap closed via Xcode 16.4 + iPhone 16 Pro/iOS 18.5 + xcbeautify under workflow-level pipefail; backlog 999.10 closed-pending-CI-observation (real-CI verification deferred to next push per T-999.10-04 acceptance, see SUMMARY 4-outcome table)
+last_updated: "2026-05-12T00:39:12.000Z"
+last_activity: 2026-05-12
 progress:
   total_phases: 18
   completed_phases: 18
@@ -29,7 +29,7 @@ Milestone: v2.1
 Phase: 30.1 (fix-pre-auth-bootstrap-gap-from-phase-30-verification) — COMPLETE ✓
 Plans: 3/3 complete (verification PASSED 6/6 on 2026-04-28, full UAT closure on iPhone 17 Simulator iOS 26.3)
 Status: All v2.1 milestone phases closed (18/18); milestone work continues post-phase via production-readiness sweep — see Session Continuity
-Last activity: 2026-05-11 - Completed quick task 260511-7l7: Reconcile 30.1-VERIFICATION.md body to PASSED frontmatter + cross-link 999.5 (b)/(c) closures
+Last activity: 2026-05-12 - Completed quick task 260511-7vh: Fix CI iOS build/test silently no-op on macos-15 (closes backlog 999.10, commit b293291; real-CI verification deferred to next push)
 
 ## Accumulated Context
 
@@ -135,18 +135,19 @@ None.
 
 ### Quick Tasks Completed
 
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 260406-rcz | Fix all 8 partial requirements and 36 TS errors from v1.0 milestone audit | 2026-04-07 | 1fe77a6 | [260406-rcz-fix-all-8-partial-requirements-and-36-ts](./quick/260406-rcz-fix-all-8-partial-requirements-and-36-ts/) |
-| 260414-n4w | Fix 4 v2.0 audit integration blockers (INT-03/04/05 + STATE cleanup) | 2026-04-14 | 44a7dd3 | [260414-n4w-fix-4-v2-0-audit-integration-blockers-wi](./quick/260414-n4w-fix-4-v2-0-audit-integration-blockers-wi/) |
-| 260510-snz | Land 3 post-multi-tenancy production fixes: user_orgs RLS recursion + per-row decode resilience + email-confirm signup acceptance | 2026-05-11 | fe266a6 | [260510-snz-land-3-post-multi-tenancy-production-fix](./quick/260510-snz-land-3-post-multi-tenancy-production-fix/) |
-| 260510-v81 | Promote cs_report_schedules schema from orphan db-schema.sql to real migration and push to remote | 2026-05-11 | 748320d | [260510-v81-promote-cs-report-schedules-schema-from-](./quick/260510-v81-promote-cs-report-schedules-schema-from-/) |
-| 260511-7l7 | Reconcile 30.1-VERIFICATION.md body to PASSED frontmatter + cross-link 999.5 closures | 2026-05-11 | e299bc2 | [260511-7l7-reconcile-30-1-verification-md-body-to-p](./quick/260511-7l7-reconcile-30-1-verification-md-body-to-p/) |
+| # | Description | Date | Commit | Status | Directory |
+|---|-------------|------|--------|--------|-----------|
+| 260406-rcz | Fix all 8 partial requirements and 36 TS errors from v1.0 milestone audit | 2026-04-07 | 1fe77a6 | | [260406-rcz-fix-all-8-partial-requirements-and-36-ts](./quick/260406-rcz-fix-all-8-partial-requirements-and-36-ts/) |
+| 260414-n4w | Fix 4 v2.0 audit integration blockers (INT-03/04/05 + STATE cleanup) | 2026-04-14 | 44a7dd3 | | [260414-n4w-fix-4-v2-0-audit-integration-blockers-wi](./quick/260414-n4w-fix-4-v2-0-audit-integration-blockers-wi/) |
+| 260510-snz | Land 3 post-multi-tenancy production fixes: user_orgs RLS recursion + per-row decode resilience + email-confirm signup acceptance | 2026-05-11 | fe266a6 | | [260510-snz-land-3-post-multi-tenancy-production-fix](./quick/260510-snz-land-3-post-multi-tenancy-production-fix/) |
+| 260510-v81 | Promote cs_report_schedules schema from orphan db-schema.sql to real migration and push to remote | 2026-05-11 | 748320d | | [260510-v81-promote-cs-report-schedules-schema-from-](./quick/260510-v81-promote-cs-report-schedules-schema-from-/) |
+| 260511-7l7 | Reconcile 30.1-VERIFICATION.md body to PASSED frontmatter + cross-link 999.5 closures | 2026-05-11 | e299bc2 | | [260511-7l7-reconcile-30-1-verification-md-body-to-p](./quick/260511-7l7-reconcile-30-1-verification-md-body-to-p/) |
+| 260511-7vh | Fix CI iOS build/test silently no-op on macos-15 (closes backlog 999.10) | 2026-05-12 | b293291 | Needs Review | [260511-7vh-fix-ci-ios-build-test-silently-no-op-on-](./quick/260511-7vh-fix-ci-ios-build-test-silently-no-op-on-/) |
 
 ## Session Continuity
 
-Last session: 2026-05-11T02:50:00Z
-Stopped at: Production-launch sweep complete -- 14 commits pushed (490c1db..c7190a1), 2 prod migrations applied, 1 Vercel prod deploy, 2 prod env vars added, 3 quick tasks completed. Closures: (1) project.pbxproj cross-platform CODE_SIGN_IDENTITY (35f14c4); (2) migration 20260509001 user_orgs RLS recursion fix on remote; (3) NOTIF-05 UAT preflight all green; (4) Vercel deploy to constructionos.world + cron-fix (40b2ebf) + env vars (RESEND_API_KEY + CRON_SECRET) + auth-gate smoke test PASSES; (5) cs_report_schedules schema promoted via 20260511001 (748320d, quick 260510-v81), end-to-end /api/reports/cron smoke test PASSES (HTTP 200 + processed:0); (6) 999.7 (a) bare-timestamp drift permanently fixed via file rename + applied-status repair (2c688ec) -- "db push --dry-run" now reports "Remote database is up to date", file-move workaround retired; (7) 5 Dependabot CVEs closed via hono 4.12.14 -> 4.12.18 upgrade in worker/ (c7190a1) -- npm audit reports 0 vulnerabilities.
+Last session: 2026-05-12T00:39:12Z
+Stopped at: Quick task 260511-7vh closed -- iOS CI silent no-op trap fixed (commit b293291): swapped Xcode 16.2 + iPhone 16/OS=latest + xcpretty || true (silent 20s no-op) for Xcode 16.4 + iPhone 16 Pro/iOS 18.5 + xcbeautify --renderer github-actions under workflow-level bash -eo pipefail; new "Show available iOS Simulator destinations" diagnostic step prevents silent recurrence. Backlog 999.10 closed-pending-CI-observation per T-999.10-04 acceptance (4 named expected-outcome scenarios documented in SUMMARY for next push). web-build + link-health jobs byte-unchanged. Inline TODO(999.10) marker keeps deferred xcodebuild test re-enable grep-discoverable. PRIOR session: Production-launch sweep complete -- 14 commits pushed (490c1db..c7190a1), 2 prod migrations applied, 1 Vercel prod deploy, 2 prod env vars added, 3 quick tasks completed. Closures: (1) project.pbxproj cross-platform CODE_SIGN_IDENTITY (35f14c4); (2) migration 20260509001 user_orgs RLS recursion fix on remote; (3) NOTIF-05 UAT preflight all green; (4) Vercel deploy to constructionos.world + cron-fix (40b2ebf) + env vars (RESEND_API_KEY + CRON_SECRET) + auth-gate smoke test PASSES; (5) cs_report_schedules schema promoted via 20260511001 (748320d, quick 260510-v81), end-to-end /api/reports/cron smoke test PASSES (HTTP 200 + processed:0); (6) 999.7 (a) bare-timestamp drift permanently fixed via file rename + applied-status repair (2c688ec) -- "db push --dry-run" now reports "Remote database is up to date", file-move workaround retired; (7) 5 Dependabot CVEs closed via hono 4.12.14 -> 4.12.18 upgrade in worker/ (c7190a1) -- npm audit reports 0 vulnerabilities.
 Resume file: None
 Outstanding (blocked on user decision or external steps):
 
