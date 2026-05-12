@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: 999.10 saga CLOSED END-TO-END. Triplet 260511-7vh + 260511-thn + 260511-u3y verified on real CI run 25743599585 (workflow conclusion=success, build-and-test 2m18s real Swift compilation on macos-26 + Xcode 26.3 + iOS 26.2 + iPhone 17 Pro; diagnostic step confirms image inventory). web-build also green (next 16.2.6 + 0 vulnerabilities). link-health failure remains job-level only (continue-on-error preserves workflow success). The "silent CI green" trap that hid drift for weeks is replaced by an honest green that proves real compilation; the iOS 26 SDK / iOS 18.5 runner mismatch is resolved by aligning CI to the code's actual SDK requirements.
-last_updated: "2026-05-12T15:20:00.000Z"
+stopped_at: CI dashboard FULLY GREEN. Quartet 260511-7vh + 260511-thn + 260511-u3y + 260512-fs7 all Verified on real CI runs. Final run 25744634563 (commit 70ce4a7) shows all 3 jobs success: build-and-test (macos-26 + Xcode 26.3 + iOS 26.2 + iPhone 17 Pro, real Swift compile), web-build (next 16.2.6 + 0 vulnerabilities), link-health (89 links checked, 5 skipped via knownExceptions, 0 errors). The "silent CI green" trap is fully exorcised — every green now means real verification.
+last_updated: "2026-05-12T15:35:00.000Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 18
@@ -29,7 +29,7 @@ Milestone: v2.1
 Phase: 30.1 (fix-pre-auth-bootstrap-gap-from-phase-30-verification) — COMPLETE ✓
 Plans: 3/3 complete (verification PASSED 6/6 on 2026-04-28, full UAT closure on iPhone 17 Simulator iOS 26.3)
 Status: All v2.1 milestone phases closed (18/18); milestone work continues post-phase via production-readiness sweep — see Session Continuity
-Last activity: 2026-05-12 - 999.10 saga closed end-to-end via 260511-u3y CI bump to macos-26 + Xcode 26.3 + iOS 26.2 (commit 5d9f886). Real-CI run 25743599585 GREEN — flips 260511-7vh + 260511-thn + 260511-u3y all to Verified.
+Last activity: 2026-05-12 - CI dashboard fully green: quick task 260512-fs7 closed link-health drift (commit 70ce4a7) via knownExceptions array + 2 source-fixes (dozr URL + email.test.ts fixture). Real CI run 25744634563 shows all 3 jobs success. End-of-day quartet: 7vh + thn + u3y + fs7 all Verified.
 
 ## Accumulated Context
 
@@ -145,6 +145,7 @@ None.
 | 260511-7vh | Fix CI iOS build/test silently no-op on macos-15 (closes backlog 999.10) | 2026-05-12 | b293291 | Verified | [260511-7vh-fix-ci-ios-build-test-silently-no-op-on-](./quick/260511-7vh-fix-ci-ios-build-test-silently-no-op-on-/) |
 | 260511-thn | Fix iOS Swift 6 concurrency + Charts inference compile errors surfaced by 999.10 CI | 2026-05-12 | e5d6f74 | Verified | [260511-thn-fix-ios-compile-errors-surfaced-by-999-1](./quick/260511-thn-fix-ios-compile-errors-surfaced-by-999-1/) |
 | 260511-u3y | Bump CI to Xcode 26.x + iOS 26.x runtime (closes thn+7vh real-CI gap) | 2026-05-12 | 5d9f886 | Verified | [260511-u3y-bump-ci-to-xcode-26-x-ios-26-x-runtime-t](./quick/260511-u3y-bump-ci-to-xcode-26-x-ios-26-x-runtime-t/) |
+| 260512-fs7 | Triage 6 link-health failures so CI dashboard goes fully green | 2026-05-12 | 70ce4a7 | Verified | [260512-fs7-triage-6-link-health-failures-so-ci-dash](./quick/260512-fs7-triage-6-link-health-failures-so-ci-dash/) |
 
 ## Session Continuity
 
