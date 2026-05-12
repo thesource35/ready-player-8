@@ -72,18 +72,34 @@ Every user action must either succeed visibly or fail with a clear, actionable m
 - Load/performance testing — defer until after feature expansion
 - OAuth login (Google, Apple) — deferred to v2.1+
 
-## Current Milestone: v2.1 Gap Closure & Feature Completion
+## Current Milestone: v2.2 Multi-tenancy Foundation
+
+**Goal:** Close backlog 999.4 by shipping the architected `user_orgs` table + role model + org provisioning flow that every RLS policy in the codebase already references. The tactical multi-tenancy migrations shipped in v2.1 (20260413001 + 20260428002..006 + 20260509001 RLS recursion fix) put a *working* table in place; v2.2 locks the *architecture* decisions that were deferred.
+
+**Target features (4 deferred decisions to lock):**
+- Org membership model — one-org-per-user vs multi-org membership
+- Role model — owner/admin/member/viewer vs simpler vs RBAC
+- Existing-user assignment — auto-create personal org vs admin-assigned vs hybrid
+- New-org provisioning flow — invitation vs self-serve vs approval-gated
+
+**Phase numbering:** continues from v2.1 (ended at Phase 30.1) — v2.2 starts at Phase 31.
+
+## Previous Milestone: v2.1 Gap Closure & Feature Completion (Shipped: 2026-05-12)
 
 **Goal:** Close v2.0 carryover: add missing VERIFICATION.md for phases 13–19, resolve 4 integration blockers (INT-01, INT-02, INT-06, INT-07), and plan Phase 22 (Live Site Video).
 
-**Target work:**
-- Phase 23: iOS Navigation & Assignment Wiring (code closed by quick task 260414-n4w; phase formalizes verification)
+**Phases shipped (18/18):**
+- Phase 23: iOS Navigation & Assignment Wiring (code closed by quick task 260414-n4w)
 - Phase 24: Document → Activity Event Emission (INT-02)
 - Phase 25: Certification Expiry Notifications (INT-06)
 - Phase 26: Documents RLS Table Reconciliation (INT-01)
 - Phase 27: Portal → Map Navigation Link (INT-07)
 - Phase 28: Retroactive Verification Sweep (Phases 13–19)
-- Phase 22: Live Site Video — requires planning
+- Phase 22: Live Site Video
+- Phases 29 + 29.1: Live Video Traffic Feed + auth bug fix
+- Phases 30 + 30.1: Notifications remediation + pre-auth bootstrap gap
+
+**Closing accomplishments (2026-05-12 quintet):** CI honesty cascade — silent-green trap eliminated, macos-26 runner alignment, link-health drift cleanup, 999.7(b) reconciliation, 15 Dependabot CVEs closed.
 
 ## Constraints
 

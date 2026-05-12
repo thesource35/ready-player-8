@@ -1,35 +1,35 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1
-milestone_name: Gap Closure & Feature Completion
-status: executing
-stopped_at: 999.7(b) substantially closed via quick task 260512-nn1 (re-audit found 00000000000_baseline_pre_migration_tables.sql already addresses the superuser concern; ROADMAP annotated with closure + 999.7(c) recovery path for the remaining real-staging E2E unknown). Earlier today: CI dashboard FULLY GREEN. Quintet 260511-7vh + 260511-thn + 260511-u3y + 260512-fs7 + 260512-nn1 all Verified. Final CI run 25744634563 shows all 3 jobs success.
-last_updated: "2026-05-12T21:15:00.000Z"
+milestone: v2.2
+milestone_name: Multi-tenancy Foundation
+status: defining_requirements
+stopped_at: v2.2 milestone scoping started. PROJECT.md updated with v2.2 goal + 4 deferred decisions to lock (org membership model, role model, existing-user assignment, new-org provisioning). v2.1 closed 18/18 with end-of-day quintet 7vh+thn+u3y+fs7+nn1 verified + CI dashboard fully green. Next: requirements derivation from the 4 decisions, then roadmap creation continuing phase numbering from Phase 31.
+last_updated: "2026-05-12T21:35:00.000Z"
 last_activity: 2026-05-12
 progress:
-  total_phases: 18
-  completed_phases: 18
-  total_plans: 121
-  completed_plans: 121
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-14)
+See: .planning/PROJECT.md (updated 2026-05-12 with v2.2 milestone block)
 
 **Core value:** Every user action must either succeed visibly or fail with a clear, actionable message -- no silent data loss, no undetected errors, no security gaps.
-**Current focus:** Production launch hardening — see Session Continuity for the live list (NOTIF-05 push UAT blocked on anon-key paste, schema FK refactor draft, domain registration, Vercel deploy gating 999.5 (f)/(g), 92 React Compiler warnings)
+**Current focus:** v2.2 Multi-tenancy Foundation — close backlog 999.4 by locking the 4 deferred architecture decisions (org membership model, role model, existing-user assignment, new-org provisioning flow) that every RLS policy in the codebase already depends on.
 
 ## Current Position
 
-Milestone: v2.1
-Phase: 30.1 (fix-pre-auth-bootstrap-gap-from-phase-30-verification) — COMPLETE ✓
-Plans: 3/3 complete (verification PASSED 6/6 on 2026-04-28, full UAT closure on iPhone 17 Simulator iOS 26.3)
-Status: All v2.1 milestone phases closed (18/18); milestone work continues post-phase via production-readiness sweep — see Session Continuity
-Last activity: 2026-05-12 - 999.7(b) substantially closed via quick task 260512-nn1 (commit 820e5d7). Re-audit found baseline file already addresses superuser concern; ROADMAP annotated with closure + 999.7(c) recovery path. End-of-day quintet: 7vh + thn + u3y + fs7 + nn1 all Verified.
+Milestone: v2.2 (Multi-tenancy Foundation)
+Phase: Not started (defining requirements)
+Plans: —
+Status: Defining requirements
+Last activity: 2026-05-12 — Milestone v2.2 started. PROJECT.md updated with v2.2 goal + previous-milestone block for v2.1. Next: 4 design-decision questions → requirements → roadmap.
 
 ## Accumulated Context
 
