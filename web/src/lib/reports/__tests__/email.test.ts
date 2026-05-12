@@ -191,7 +191,7 @@ describe("Email: Sending via Resend (D-82)", () => {
       budgetPercent: 50,
       projectCount: 3,
       openIssues: 2,
-      reportUrl: "https://app.constructionos.world/reports",
+      reportUrl: "https://example.com/reports",
       generatedAt: "2025-06-15T10:00:00Z",
     });
 

@@ -12,6 +12,44 @@ const jsonOutput = args.includes("--json");
 const reportPathFlagIndex = args.indexOf("--report");
 const reportPath = reportPathFlagIndex >= 0 ? args[reportPathFlagIndex + 1] : process.env.LINK_REPORT_PATH;
 
+// knownExceptions: URLs that are real production references but cannot be
+// health-checked via GET (POST-only endpoints, REST roots, deferred-domain
+// links). Each entry MUST have a reason. Optional `expires` (ISO date)
+// makes the URL resurface into checks after that date — used for URLs
+// awaiting future domain registration (999.8). See
+// .planning/quick/260512-fs7-triage-6-link-health-failures-so-ci-dash/
+// 260512-fs7-CONTEXT.md for the triage rationale.
+const knownExceptions = [
+  {
+    url: "https://constructionos-video-worker.fly.dev/transcode",
+    reason: "POST-only Fly.io worker endpoint; GET returns error but URL is correct (worker/README.md)",
+  },
+  {
+    url: "https://nzdbphddnrfybwecvsvq.supabase.co",
+    reason: "Supabase project root returns 404 by design; REST APIs require /rest/v1/ path",
+  },
+  {
+    url: "https://hooks.zapier.com/hooks/catch/",
+    reason: "Zapier base URL placeholder in WebhookConfig.tsx; real hooks attach a path",
+  },
+  {
+    url: "https://company.com",
+    reason: "Sample placeholder text (security/page.tsx, ThemeEditor.tsx, email.test.ts); real domain blocks bots",
+  },
+  {
+    url: "https://docs.constructionos.world/reports",
+    reason: "Help link in HelpSection.tsx; awaiting 999.8 domain registration",
+    expires: "2027-01-01",
+  },
+];
+
+function findKnownException(url) {
+  const match = knownExceptions.find((e) => e.url === url);
+  if (!match) return null;
+  if (match.expires && new Date() > new Date(match.expires)) return null;
+  return match;
+}
+
 const rgArgs = [
   "-n",
   "https?://",
@@ -90,18 +128,28 @@ console.log(`Checked ${results.length} links.`);
 Object.entries(summary).forEach(([status, count]) => {
   if (status === "blocked") {
     console.log(`blocked: ${count} (treated as ok)`);
+  } else if (status === "skipped") {
+    console.log(`skipped: ${count} (knownExceptions — see list below)`);
   } else {
     console.log(`${status}: ${count}`);
   }
 });
 
 const blocked = results.filter((result) => result.status === "blocked");
-const failures = results.filter((result) => !["ok", "redirect", "blocked"].includes(result.status));
+const skipped = results.filter((result) => result.status === "skipped");
+const failures = results.filter((result) => !["ok", "redirect", "blocked", "skipped"].includes(result.status));
 
 if (blocked.length > 0 && process.env.LINKCHECK_SHOW_BLOCKED !== "0") {
   console.log("\nBlocked by remote host (often anti-bot protections):");
   blocked.forEach((result) => {
     console.log(`- ${result.url} (${result.statusCode ? `HTTP ${result.statusCode}` : result.status})`);
+  });
+}
+
+if (skipped.length > 0) {
+  console.log("\nSkipped (knownExceptions):");
+  skipped.forEach((result) => {
+    console.log(`- ${result.url} — ${result.reason}`);
   });
 }
 
@@ -132,6 +180,15 @@ async function checkAll(list, concurrency) {
 
 async function checkUrl(url) {
   const startedAt = Date.now();
+  const exception = findKnownException(url);
+  if (exception) {
+    return {
+      url,
+      status: "skipped",
+      reason: exception.reason,
+      checkedAt: new Date().toISOString(),
+    };
+  }
   try {
     let response = await fetchWithTimeout(url, "HEAD");
     if (!response.ok || response.status === 405 || response.status === 403) {

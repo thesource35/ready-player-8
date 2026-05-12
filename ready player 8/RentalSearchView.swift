@@ -118,7 +118,7 @@ enum RentalProvider: String, CaseIterable {
     var searchURL: String {
         switch self {
         case .unitedRentals: return "https://www.unitedrentals.com/marketplace/equipment?ref=constructionos"
-        case .dozr: return "https://dozr.com/equipment-rental?ref=constructionos"
+        case .dozr: return "https://dozr.com/rent?ref=constructionos"
         case .toolsy: return "https://www.toolsy.ca"
         case .rentMyEquipment: return "https://www.rentmyequipment.com/listings"
         case .sunbelt: return "https://www.sunbeltrentals.com/equipment?ref=constructionos"
