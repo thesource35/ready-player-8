@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Gap Closure & Feature Completion
 status: executing
-stopped_at: CI dashboard FULLY GREEN. Quartet 260511-7vh + 260511-thn + 260511-u3y + 260512-fs7 all Verified on real CI runs. Final run 25744634563 (commit 70ce4a7) shows all 3 jobs success: build-and-test (macos-26 + Xcode 26.3 + iOS 26.2 + iPhone 17 Pro, real Swift compile), web-build (next 16.2.6 + 0 vulnerabilities), link-health (89 links checked, 5 skipped via knownExceptions, 0 errors). The "silent CI green" trap is fully exorcised — every green now means real verification.
-last_updated: "2026-05-12T15:35:00.000Z"
+stopped_at: 999.7(b) substantially closed via quick task 260512-nn1 (re-audit found 00000000000_baseline_pre_migration_tables.sql already addresses the superuser concern; ROADMAP annotated with closure + 999.7(c) recovery path for the remaining real-staging E2E unknown). Earlier today: CI dashboard FULLY GREEN. Quintet 260511-7vh + 260511-thn + 260511-u3y + 260512-fs7 + 260512-nn1 all Verified. Final CI run 25744634563 shows all 3 jobs success.
+last_updated: "2026-05-12T21:15:00.000Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 18
@@ -29,7 +29,7 @@ Milestone: v2.1
 Phase: 30.1 (fix-pre-auth-bootstrap-gap-from-phase-30-verification) — COMPLETE ✓
 Plans: 3/3 complete (verification PASSED 6/6 on 2026-04-28, full UAT closure on iPhone 17 Simulator iOS 26.3)
 Status: All v2.1 milestone phases closed (18/18); milestone work continues post-phase via production-readiness sweep — see Session Continuity
-Last activity: 2026-05-12 - CI dashboard fully green: quick task 260512-fs7 closed link-health drift (commit 70ce4a7) via knownExceptions array + 2 source-fixes (dozr URL + email.test.ts fixture). Real CI run 25744634563 shows all 3 jobs success. End-of-day quartet: 7vh + thn + u3y + fs7 all Verified.
+Last activity: 2026-05-12 - 999.7(b) substantially closed via quick task 260512-nn1 (commit 820e5d7). Re-audit found baseline file already addresses superuser concern; ROADMAP annotated with closure + 999.7(c) recovery path. End-of-day quintet: 7vh + thn + u3y + fs7 + nn1 all Verified.
 
 ## Accumulated Context
 
@@ -146,6 +146,7 @@ None.
 | 260511-thn | Fix iOS Swift 6 concurrency + Charts inference compile errors surfaced by 999.10 CI | 2026-05-12 | e5d6f74 | Verified | [260511-thn-fix-ios-compile-errors-surfaced-by-999-1](./quick/260511-thn-fix-ios-compile-errors-surfaced-by-999-1/) |
 | 260511-u3y | Bump CI to Xcode 26.x + iOS 26.x runtime (closes thn+7vh real-CI gap) | 2026-05-12 | 5d9f886 | Verified | [260511-u3y-bump-ci-to-xcode-26-x-ios-26-x-runtime-t](./quick/260511-u3y-bump-ci-to-xcode-26-x-ios-26-x-runtime-t/) |
 | 260512-fs7 | Triage 6 link-health failures so CI dashboard goes fully green | 2026-05-12 | 70ce4a7 | Verified | [260512-fs7-triage-6-link-health-failures-so-ci-dash](./quick/260512-fs7-triage-6-link-health-failures-so-ci-dash/) |
+| 260512-nn1 | Close 999.7(b) substantially: re-audit shows baseline file already addresses superuser concern; mark closed-pending-staging-verify | 2026-05-12 | 820e5d7 | Verified | [260512-nn1-close-999-7-b-bootstrap-from-zero-migrat](./quick/260512-nn1-close-999-7-b-bootstrap-from-zero-migrat/) |
 
 ## Session Continuity
 
