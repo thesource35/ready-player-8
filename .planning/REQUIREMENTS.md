@@ -23,7 +23,7 @@ Downstream tools and reviewers MUST treat `[~]` as distinct from `[x]` (partial 
 - [x] **NOTIF-02**: User can view activity timeline per project (chronological action log)
 - [x] **NOTIF-03**: User can mark notifications as read (individually or all)
 - [x] **NOTIF-04**: User can dismiss notifications
-- [ ] **NOTIF-05**: User receives push notifications on iOS for bid deadlines, safety alerts, and assigned tasks
+- [x] **NOTIF-05**: User receives push notifications on iOS for bid deadlines, safety alerts, and assigned tasks. **Verified end-to-end 2026-05-12** via real-device push test on physical iPhone — `cs_activity_events` insert (id `7cd6b74b-2a11-4752-8379-f5d7bf766384`, entity_type `certifications`, category `assigned_task`) fired Database Webhook → `notifications-fanout` Edge Function → APNs → push delivered. Closes 999.5(j). Test SQL surfaced 999.11 (Phase 25 cert renewal trigger references nonexistent `summary` column — dead code in prod; backlog row added).
 
 ### Document Management
 
