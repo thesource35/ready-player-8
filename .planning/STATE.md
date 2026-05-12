@@ -150,19 +150,35 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-12T00:39:12Z
-Stopped at: Quick task 260511-7vh closed -- iOS CI silent no-op trap fixed (commit b293291): swapped Xcode 16.2 + iPhone 16/OS=latest + xcpretty || true (silent 20s no-op) for Xcode 16.4 + iPhone 16 Pro/iOS 18.5 + xcbeautify --renderer github-actions under workflow-level bash -eo pipefail; new "Show available iOS Simulator destinations" diagnostic step prevents silent recurrence. Backlog 999.10 closed-pending-CI-observation per T-999.10-04 acceptance (4 named expected-outcome scenarios documented in SUMMARY for next push). web-build + link-health jobs byte-unchanged. Inline TODO(999.10) marker keeps deferred xcodebuild test re-enable grep-discoverable. PRIOR session: Production-launch sweep complete -- 14 commits pushed (490c1db..c7190a1), 2 prod migrations applied, 1 Vercel prod deploy, 2 prod env vars added, 3 quick tasks completed. Closures: (1) project.pbxproj cross-platform CODE_SIGN_IDENTITY (35f14c4); (2) migration 20260509001 user_orgs RLS recursion fix on remote; (3) NOTIF-05 UAT preflight all green; (4) Vercel deploy to constructionos.world + cron-fix (40b2ebf) + env vars (RESEND_API_KEY + CRON_SECRET) + auth-gate smoke test PASSES; (5) cs_report_schedules schema promoted via 20260511001 (748320d, quick 260510-v81), end-to-end /api/reports/cron smoke test PASSES (HTTP 200 + processed:0); (6) 999.7 (a) bare-timestamp drift permanently fixed via file rename + applied-status repair (2c688ec) -- "db push --dry-run" now reports "Remote database is up to date", file-move workaround retired; (7) 5 Dependabot CVEs closed via hono 4.12.14 -> 4.12.18 upgrade in worker/ (c7190a1) -- npm audit reports 0 vulnerabilities.
-Resume file: None
+Last session: 2026-05-12T21:20:00Z
+
+Stopped at: CI honesty-win cascade complete + 999.7(b) reconciled. 5 quick tasks shipped today closing the silent-CI-green trap end-to-end. Final state: CI dashboard fully green on real verification (no more silent no-op), iOS code aligned with macos-26 runner, link-health drift cleaned up via knownExceptions, 15 Dependabot CVEs closed via next 16.2.6 + @swc/helpers bump, 999.7(b) re-audited and marked substantially closed. Quintet 260511-7vh + 260511-thn + 260511-u3y + 260512-fs7 + 260512-nn1 all Verified.
+
+The narrative arc this session: silent green (999.10) -> red on real issues (thn) -> CI/SDK alignment (u3y) -> drift cleanup (fs7) -> backlog reconciliation (nn1). Each step revealed the next; none of it was visible at the start. Pattern worth remembering: when CI starts honestly failing, the surfaced issues often go deeper than the first layer.
+
+Resume file: None (clean handoff — no in-progress work mid-edit)
+
 Outstanding (blocked on user decision or external steps):
 
-  - Schema FK refactor draft -- 4 open questions in .planning/drafts/cs_schedule_events_cs_todos_fk_refactor.sql
-  - NOTIF-05 push notification UAT on physical iPhone -- code blockers all closed; remaining is the manual Apple Developer portal capability toggle + Xcode rebuild + iPhone install + signin + screenshots (see .planning/phases/30-notifications-list-mark-read-ios-push-remediation/30-DEPLOY-STEPS.md preflight section)
-  - 999.5 (f) email smoke test -- code+schema+config all green: deploy shipped 2026-05-10 (constructionos.world); RESEND_API_KEY + CRON_SECRET in prod env vars; cron schedule daily 13:00 UTC (Hobby tier OK); cs_report_schedules table promoted via 20260511001 (commit 748320d, quick 260510-v81); end-to-end /api/reports/cron smoke test PASSES (HTTP 200 + processed:0). Remaining (f) work is just user-flow exercise: seed a schedule row, observe Resend send. Other 7 cs_report_* tables in db-schema.sql still orphan -- separate scoped phase if needed.
-  - 999.5 (g) xlsx CDN runtime verify -- build-time verified 2026-05-10 (deploy succeeded with CDN tarball import); needs user-driven Excel export click in deployed UI to fully close.
-  - 999.7 (b) fresh-project bootstrap superuser-required statements -- the (a) bare-timestamp drift half was closed tonight via 2c688ec; the (b) prod-schema-dump-needs-postgres-superuser half remains open (not blocking any current work; relevant only when bootstrapping a fresh staging Supabase project).
-  - constructionos.world domain is registered + serving HTTPS; constructionos.com / constructionos.app registration + App Store privacy/support URL setup still TBD (canonical domain consolidation in commit 7c54c75 already moved email senders to .world, so 999.8's primary email blocker is closed).
-  - 92 React Compiler ESLint warnings (downgraded from errors in eslint.config.mjs) -- focused refactor pass per 999.9
-  - 7 cs_report_* tables in web/src/lib/reports/db-schema.sql remain orphan (cs_report_delivery_log, cs_report_shared_links, cs_report_history, cs_report_templates, cs_report_comments, cs_report_annotations, cs_report_audit_log). Consumers shipped but never expected to work -- no regression. Promote when scoping a focused reporting phase; reuse the 20260511001 RLS pattern (public.user_org_ids() helper).
-  - CRON_SECRET value = 59d515e5bc7e4dc6420d093f987eeb8e0fb3cb312212ac3fff9949eddb5e1f9e (stored in Vercel prod env vars as of 2026-05-10). Rotate if transcript persistence is a concern.
+  - **999.7(b) full closure** -- file work done (baseline + 999.7(c) recovery path in ROADMAP). Only remaining: provision a fresh Supabase project + run `supabase db push --linked --include-all` to confirm end-to-end. Cost + cleanup overhead -- user-initiated. If push reveals a real gap, open 999.7(c) at that point.
+  - **Schema FK refactor draft** -- 4 open questions in `.planning/drafts/cs_schedule_events_cs_todos_fk_refactor.sql`. Needs user input on schema design before /gsd-quick --discuss can lock decisions.
+  - **NOTIF-05 push notification UAT** on physical iPhone -- code blockers all closed; remaining is the manual Apple Developer portal capability toggle + Xcode rebuild + iPhone install + signin + screenshots (see `.planning/phases/30-notifications-list-mark-read-ios-push-remediation/30-DEPLOY-STEPS.md` preflight section).
+  - **999.5 (f) email smoke test** -- code+schema+config all green: deploy shipped 2026-05-10 (constructionos.world); RESEND_API_KEY + CRON_SECRET in prod env vars; cron schedule daily 13:00 UTC; cs_report_schedules table promoted via 20260511001; end-to-end /api/reports/cron smoke test PASSES (HTTP 200 + processed:0). Remaining (f) work is user-flow exercise: seed a schedule row, observe Resend send.
+  - **999.5 (g) xlsx CDN runtime verify** -- build-time verified 2026-05-10; needs user-driven Excel export click in deployed UI to fully close.
+  - **999.8 domain registration** -- constructionos.world registered + serving HTTPS; constructionos.com / constructionos.app registration + App Store privacy/support URL setup still TBD. Business/DNS decision, not engineering.
+  - **999.9 React Compiler refactor** -- 92 ESLint warnings (downgraded from errors in eslint.config.mjs). Phase-scope (~1 day, multi-session). Promote via /gsd-add-phase when ready to invest.
+  - **999.4 Multi-tenancy architecture** -- milestone-scope. Needs 4 design decisions before code (single-org-per-user vs multi-org? role model? existing-user assignment? new-org provisioning?). Promote via /gsd-new-milestone when ready.
+  - **7 cs_report_* tables orphan** in `web/src/lib/reports/db-schema.sql` (cs_report_delivery_log, cs_report_shared_links, cs_report_history, cs_report_templates, cs_report_comments, cs_report_annotations, cs_report_audit_log). Consumers shipped but never expected to work -- no regression. Reuse the 20260511001 RLS pattern when promoting.
+  - **CRON_SECRET** value = 59d515e5bc7e4dc6420d093f987eeb8e0fb3cb312212ac3fff9949eddb5e1f9e (stored in Vercel prod env vars as of 2026-05-10). Rotate if transcript persistence is a concern.
+
+Today's quintet (chronological):
+
+  1. **260511-7vh** (b293291) -- iOS CI honest. xcbeautify + workflow-level pipefail + diagnostic destination step. Closed backlog 999.10.
+  2. **260511-thn** (e5d6f74) -- iOS Swift 6 + Charts inference compile errors. `nonisolated reportError` + `Task { @MainActor in ... }` wrap; `@ChartContentBuilder leverageChartContent` extraction.
+  3. **260511-u3y** (5d9f886) -- CI runner bump to macos-26 + Xcode 26.3 + iOS 26.2. Real Swift compilation, 2m18s build time, all CI invariants preserved.
+  4. **260512-fs7** (70ce4a7) -- link-health triage. 5 knownExceptions + 2 source-fixes (dozr URL + email.test.ts fixture). 89 links checked, 0 errors.
+  5. **260512-nn1** (820e5d7) -- 999.7(b) re-audit + ROADMAP annotation. Found baseline file already addresses superuser concern; documented 999.7(c) recovery path.
+
+  Plus: **c2e5667** + **e03d681** -- next 16.2.6 + @swc/helpers pin (15 Dependabot CVEs closed in passing).
 
 Drift detector armed: trig_011Q9x8jXoEd6ed2SWbnxLPt fires 2026-05-08T21:15:00Z, checks Phase 30.1 closure state.
