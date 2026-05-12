@@ -289,6 +289,25 @@ Deferred to v2.2 or later.
 | AUTH-GATE-02 | Phase 29.1 (29.1-02) | Satisfied |
 | AUTH-GATE-03 | Phase 29.1 (29.1-04) | Satisfied |
 | AUTH-GATE-04 | Phase 30.1 (30.1-01 + 30.1-02) | Satisfied (UAT Steps 1-4 PASS 2026-04-27; Step 5 de-scoped — Phase 29.1 invariant) |
+| ORG-01 | Phase 31 | Planned |
+| ORG-02 | Phase 31 | Planned |
+| ORG-03 | Phase 31 | Planned |
+| ORG-04 | Phase 31 | Planned |
+| ORG-05 | Phase 32 | Planned |
+| ORG-06 | Phase 32 | Planned |
+| ORG-07 | Phase 32 | Planned |
+| ORG-08 | Phase 32 | Planned |
+| ORG-09 | Phase 32 | Planned |
+| ORG-10 | Phase 32 | Planned |
+| ORG-11 | Phase 33 | Planned |
+| ORG-12 | Phase 33 | Planned |
+| ORG-13 | Phase 33 | Planned |
+| ORG-14 | Phase 33 | Planned |
+| ORG-15 | Phase 33 | Planned |
+| ORG-16 | Phase 34 | Planned |
+| ORG-17 | Phase 34 | Planned |
+| ORG-18 | Phase 34 | Planned |
+| ORG-19 | Phase 35 | Planned |
 
 **Coverage (Phase 28 reconciled, D-09 three-state + Phase 29 shipped 2026-04-19 + Phase 29.1 shipped 2026-04-21 + Phase 30.1 shipped 2026-04-24 with UAT deferred):**
 - v2.1 requirements: 61 total (27 carryover + 16 Phase 22 VIDEO-01-A..P + 14 Phase 29 LIVE-01..LIVE-14 + 4 Phase 29.1/30.1 AUTH-GATE-01/02/03/04)

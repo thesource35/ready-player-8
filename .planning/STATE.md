@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Multi-tenancy Foundation
-status: defining_requirements
-stopped_at: v2.2 milestone scoping started. PROJECT.md updated with v2.2 goal + 4 deferred decisions to lock (org membership model, role model, existing-user assignment, new-org provisioning). v2.1 closed 18/18 with end-of-day quintet 7vh+thn+u3y+fs7+nn1 verified + CI dashboard fully green. Next: requirements derivation from the 4 decisions, then roadmap creation continuing phase numbering from Phase 31.
-last_updated: "2026-05-12T21:35:00.000Z"
+status: roadmap_created
+stopped_at: v2.2 roadmap created — 5 phases (31-35) decomposing 19 ORG-* requirements. Phase 31 schema+backfill, Phase 32 lifecycle API, Phase 33 active-org context+RLS audit, Phase 34 settings UI both platforms+Resend email, Phase 35 multi-org E2E + milestone close. 100% requirement coverage validated. Next: /gsd-plan-phase 31 to break down schema migrations + backfill plan.
+last_updated: "2026-05-12T22:15:00.000Z"
 last_activity: 2026-05-12
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -26,10 +26,10 @@ See: .planning/PROJECT.md (updated 2026-05-12 with v2.2 milestone block)
 ## Current Position
 
 Milestone: v2.2 (Multi-tenancy Foundation)
-Phase: Not started (defining requirements)
-Plans: —
-Status: Defining requirements
-Last activity: 2026-05-12 — Milestone v2.2 started. PROJECT.md updated with v2.2 goal + previous-milestone block for v2.1. Next: 4 design-decision questions → requirements → roadmap.
+Phase: Phase 31 (planned, not started)
+Plans: — (run /gsd-plan-phase 31 to break down)
+Status: Roadmap created — 5 phases (31-35), 19 ORG-* requirements mapped 1:1, 0 plans authored
+Last activity: 2026-05-12 — v2.2 ROADMAP.md appended with Phases 31-35 + Phase Details + Progress table; REQUIREMENTS.md Traceability table extended with 19 ORG-* rows (all Planned). Next: /gsd-plan-phase 31 to break down schema migrations + personal-org backfill into atomic plans.
 
 ## Accumulated Context
 

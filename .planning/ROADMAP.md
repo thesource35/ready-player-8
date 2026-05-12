@@ -4,7 +4,8 @@
 
 - ✅ **v1.0 Production Hardening** — Phases 1-12 (shipped 2026-04-06) — [archive](milestones/v1.0-ROADMAP.md)
 - ✅ **v2.0 Portal & AI Expansion** — Phases 18, 20, 21 (shipped 2026-04-14) — [archive](milestones/v2.0-ROADMAP.md)
-- 🚧 **v2.1 Gap Closure & Feature Completion** — Phases 13-17, 19, 22-28 (in progress)
+- ✅ **v2.1 Gap Closure & Feature Completion** — Phases 13-17, 19, 22-30.1 (shipped 2026-05-12)
+- 🚧 **v2.2 Multi-tenancy Foundation** — Phases 31-35 (in progress; closes backlog 999.4)
 
 ## Phases
 
@@ -378,3 +379,99 @@ Plans:
 - [x] 30.1-01-PLAN.md — BackendConfigSheet view + validation helpers + XCTest scaffold (Wave 1)
 - [x] 30.1-02-PLAN.md — AuthGateView wiring: showBackendConfig @State + conditional affordance + .sheet modifier (Wave 2)
 - [x] 30.1-03-PLAN.md — VERIFICATION.md + Simulator UAT + ROADMAP/REQUIREMENTS reconciliation (Wave 3) [autonomous: false] — UAT Steps 1-4 PASS 2026-04-27 on iPhone 17 Simulator iOS 26.3; Step 5 de-scoped as Phase 29.1 invariant. AUTH-GATE-04 reconciled to `[x]` Satisfied.
+
+---
+
+## v2.2 Multi-tenancy Foundation
+
+Closes backlog 999.4 by shipping the `cs_orgs` / `cs_user_orgs` / `cs_org_invitations` schema + role model + org provisioning flow that every existing RLS policy already depends on. The 4 deferred architecture decisions are locked in PROJECT.md Current Milestone block. Phase numbering continues from v2.1 (last shipped: Phase 30.1) -- v2.2 begins at Phase 31.
+
+### 🚧 v2.2 Phases
+
+- [ ] **Phase 31: Org Schema Foundation & Personal-Org Backfill** — `cs_orgs` + `cs_user_orgs` (with role enum) + `cs_org_invitations` tables exist; every existing user has a personal org; every cs_* row has its org_id populated.
+- [ ] **Phase 32: Org Lifecycle API** — User can self-serve create orgs, list memberships, invite by email, accept invitations, change member roles, and remove members via REST endpoints.
+- [ ] **Phase 33: Active-Org Context & RLS Audit** — User has a persistent active-org context across sessions on both platforms; all cs_* RLS policies route through the SECURITY DEFINER helper and isolate cross-org data.
+- [ ] **Phase 34: Org Settings UI + Invitation Email** — User can manage their org (name, members, invitations, leave/delete) from web and iOS; invited users receive a branded Resend email with accept-link.
+- [ ] **Phase 35: Multi-org E2E Verification & Milestone Close-out** — End-to-end smoke test of the multi-org flow passes on both platforms; milestone v2.2 closes.
+
+## Phase Details (v2.2)
+
+### Phase 31: Org Schema Foundation & Personal-Org Backfill
+**Goal:** Every existing user has a personal org assigned, and any new signup auto-creates a personal org on first login. The `cs_orgs`, `cs_user_orgs` (with role enum), and `cs_org_invitations` tables exist on the remote DB with RLS, and every cs_* table row has its `org_id` populated against the user's personal org. The tactical multi-tenancy migrations from v2.1 (20260413001 + 20260428002..006 + 20260509001) are subsumed by the canonical architecture.
+**Depends on:** v2.1 close-out (999.4 prerequisite multi-tenancy migrations + RLS recursion fix shipped)
+**Requirements:** ORG-01, ORG-02, ORG-03, ORG-04
+**Success Criteria** (what must be TRUE):
+  1. A fresh-install user who signs up sees a personal org named "{their name}'s Workspace" auto-created and themselves recorded as owner.
+  2. An existing user (signed up before v2.2 cutover) signs in and sees every cs_projects / cs_contracts / cs_documents row they previously owned, now scoped to their personal org.
+  3. The `cs_orgs` table has a unique URL-safe slug per org (e.g. `donovan-fagan-s-workspace`); two orgs cannot share a slug.
+  4. The `cs_user_orgs` table holds a (user_id, org_id) primary key with a `role` enum of owner/admin/member/viewer, replacing the v2.1 tactical table.
+  5. The backfill migration is idempotent — re-running it does not create duplicate personal orgs or duplicate cs_user_orgs rows.
+**Plans:** TBD
+**UI hint**: no
+**v2.2 status**: planned
+
+### Phase 32: Org Lifecycle API
+**Goal:** User can create a new org, list the orgs they belong to, invite teammates by email, accept invitations, and (as owner/admin) change member roles or remove members — all via REST endpoints. Self-serve org creation works without admin approval; invitations expire after 7 days; the last owner cannot be demoted or removed.
+**Depends on:** Phase 31 (schema must exist before lifecycle endpoints have tables to mutate)
+**Requirements:** ORG-05, ORG-06, ORG-07, ORG-08, ORG-09, ORG-10
+**Success Criteria** (what must be TRUE):
+  1. User can call `POST /api/orgs` with a name and is immediately added as owner of a new org with a generated slug.
+  2. User can call `GET /api/orgs` and sees every org they belong to with their role and the org's member count.
+  3. Owner or admin can call `POST /api/orgs/[id]/invite` with an email + role and a `cs_org_invitations` row is created with a cryptographic token and 7-day expiry.
+  4. Invited user can call `POST /api/orgs/invitations/[token]/accept` and is added to the org with the role they were invited at; expired tokens are rejected with an actionable error.
+  5. Owner or admin can change a member's role via `PATCH /api/orgs/[id]/members/[userId]` and remove a member via `DELETE`, but attempting to demote or remove the last owner returns a clear "cannot demote/remove last owner" error.
+**Plans:** TBD
+**UI hint**: no
+**v2.2 status**: planned
+
+### Phase 33: Active-Org Context & RLS Audit
+**Goal:** User has an active-org context that persists across sessions on both platforms (web cookie + iOS @AppStorage); switching active orgs immediately re-scopes all data queries. Every cs_* RLS policy in the codebase is audited and confirmed to route through the `public.user_org_ids()` SECURITY DEFINER helper introduced in 20260509001, so cross-org data is invisible (RLS returns 0 rows, not a permission error).
+**Depends on:** Phase 32 (a user must be able to belong to multiple orgs before switching matters)
+**Requirements:** ORG-11, ORG-12, ORG-13, ORG-14, ORG-15
+**Success Criteria** (what must be TRUE):
+  1. User who belongs to two orgs sees an org switcher in the web header (top-right, near avatar) that lists both orgs with their roles; clicking switches the active org and the page re-fetches data.
+  2. User opens the iOS COMMAND tab settings and sees an org switcher matching Integration Hub style; switching updates `@AppStorage("ConstructOS.ActiveOrgId")` and a NotificationCenter event triggers all active views to refresh.
+  3. After switching active org and reloading the app (web refresh or iOS cold-launch), the previously-selected active org is still selected; if the cookie/storage holds an invalid org_id, the app falls back to the user's first membership without error.
+  4. A user with multi-org membership queries cs_projects in Org Alpha and sees ONLY Alpha rows; the Org Beta rows are not in the result set (they are invisible, not denied with a 403).
+  5. Every cs_* table's RLS policy WHERE clause is documented in a migration or audit note as either calling `public.user_org_ids()` directly or referencing `org_id IN (SELECT org_id FROM public.user_org_ids())`.
+**Plans:** TBD
+**UI hint**: yes
+**v2.2 status**: planned
+
+### Phase 34: Org Settings UI + Invitation Email
+**Goal:** User can fully manage their org from a settings surface on both web and iOS: rename the org, view members with their roles, invite new members, resend or revoke pending invitations, change member roles, remove members, leave the org, or (if owner) delete the org. Invited users receive a branded HTML+text email via Resend with the inviter's name, the role they're being granted, an accept-link, and the 7-day expiry note.
+**Depends on:** Phase 32 (lifecycle endpoints must exist for the UI to call), Phase 33 (active-org context drives which org settings page loads)
+**Requirements:** ORG-16, ORG-17, ORG-18
+**Success Criteria** (what must be TRUE):
+  1. Web user navigates to `/orgs/[id]/settings` and sees four sections: Name (editable by owner), Members (list with role + remove for admin/owner), Pending Invitations (resend + revoke for admin/owner), Danger Zone (delete org for owner only).
+  2. iOS user opens COMMAND → Org Settings and sees the same surface (Name, Members, Pending Invitations, Leave Org action); owners additionally see Delete Org.
+  3. Owner or admin clicks "Invite" with an email + role; the invited user receives a Resend-delivered email with the org name, inviter name, granted role, accept-link, and 7-day expiry copy.
+  4. Owner or admin clicks "Resend" on a pending invitation; the same template re-sends to the same email with a fresh expiry; the cs_org_invitations row's expires_at is bumped.
+  5. A non-last-owner member clicks "Leave Org" and is removed from cs_user_orgs without error; their cs_projects / cs_contracts data stays in the org (visible to remaining members).
+**Plans:** TBD
+**UI hint**: yes
+**v2.2 status**: planned
+
+### Phase 35: Multi-org E2E Verification & Milestone Close-out
+**Goal:** End-to-end smoke test of the multi-org flow passes on both iPhone 17 Simulator (iOS) and web (Playwright or manual UAT): user A creates Org Alpha → invites user B by email → user B accepts → user B creates their own Org Beta → user B switches active context → user B's cs_projects query returns ONLY active-org rows on each switch. v2.2 milestone closes with REQUIREMENTS.md traceability, backlog 999.4 marked closed, MILESTONES.md updated, and a v2.2-MILESTONE-AUDIT.md confirming all 19 ORG-* requirements satisfied.
+**Depends on:** Phase 34 (the UI surface that the E2E walkthrough exercises)
+**Requirements:** ORG-19
+**Success Criteria** (what must be TRUE):
+  1. Two-user E2E walkthrough completes on iOS Simulator: invite email arrives, accept-link works, both users see correct org memberships, switching active org re-scopes data.
+  2. Two-user E2E walkthrough completes on web (Playwright or manual): same flow, same outcome.
+  3. After Phase 35 close, no cs_* RLS policy references `user_orgs` with the recursion bug pattern from pre-20260509001; the SECURITY DEFINER helper is the only access path.
+  4. REQUIREMENTS.md Traceability table shows ORG-01 through ORG-19 all marked Satisfied.
+  5. Backlog 999.4 is marked closed in ROADMAP.md with a pointer to v2.2 close-out artifacts.
+**Plans:** TBD
+**UI hint**: no
+**v2.2 status**: planned
+
+## Progress (v2.2)
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 31. Org Schema Foundation & Personal-Org Backfill | v2.2 | 0/0 | Not started | — |
+| 32. Org Lifecycle API | v2.2 | 0/0 | Not started | — |
+| 33. Active-Org Context & RLS Audit | v2.2 | 0/0 | Not started | — |
+| 34. Org Settings UI + Invitation Email | v2.2 | 0/0 | Not started | — |
+| 35. Multi-org E2E Verification & Milestone Close-out | v2.2 | 0/0 | Not started | — |
