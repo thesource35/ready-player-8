@@ -83,20 +83,26 @@ final class CrashReporter: ObservableObject {
         setupCrashHandler()
     }
 
-    func reportError(_ error: String, file: String = #file, line: Int = #line, function: String = #function) {
-        let log = CrashLog(
-            message: error,
-            file: URL(fileURLWithPath: file).lastPathComponent,
-            line: line,
-            function: function,
-            timestamp: Date(),
-            appVersion: "2.0",
-            buildNumber: "3",
-            deviceModel: deviceModel()
-        )
-        crashLogs.insert(log, at: 0)
-        if crashLogs.count > 100 { crashLogs = Array(crashLogs.prefix(100)) }
-        saveJSON(key, value: crashLogs)
+    nonisolated func reportError(_ error: String, file: String = #file, line: Int = #line, function: String = #function) {
+        // Per quick-260511-thn T-thn-01 fallback ladder step 1: body wraps in Task { @MainActor in ... }
+        // because @Published crashLogs + saveJSON + deviceModel() require MainActor context.
+        // Acceptable log-ordering shift for fire-and-forget logging (CONTEXT D-01 fallback).
+        let fileName = URL(fileURLWithPath: file).lastPathComponent
+        Task { @MainActor in
+            let log = CrashLog(
+                message: error,
+                file: fileName,
+                line: line,
+                function: function,
+                timestamp: Date(),
+                appVersion: "2.0",
+                buildNumber: "3",
+                deviceModel: deviceModel()
+            )
+            crashLogs.insert(log, at: 0)
+            if crashLogs.count > 100 { crashLogs = Array(crashLogs.prefix(100)) }
+            saveJSON(key, value: crashLogs)
+        }
     }
 
     private func setupCrashHandler() {

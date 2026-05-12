@@ -121,6 +121,17 @@ struct LeverageSystemView: View {
 
     // MARK: - Leverage History Chart
 
+    @ChartContentBuilder private var leverageChartContent: some ChartContent {
+        ForEach(leverageHistory.sorted(by: { $0.createdAt < $1.createdAt })) { snapshot in
+            LineMark(
+                x: .value("Date", snapshot.createdAt),
+                y: .value("Total", snapshot.totalScore)
+            )
+            .foregroundStyle(Theme.cyan)
+            .symbol(Circle())
+        }
+    }
+
     private var leverageHistoryPanel: some View {
         VStack(alignment: .leading, spacing: 10) {
             WealthLensLabel(text: "LEVERAGE GROWTH HISTORY")
@@ -134,16 +145,7 @@ struct LeverageSystemView: View {
                 .padding(14).frame(maxWidth: .infinity, alignment: .leading)
                 .background(Theme.surface).cornerRadius(12)
             } else {
-                Chart {
-                    ForEach(leverageHistory.sorted(by: { $0.createdAt < $1.createdAt })) { snapshot in
-                        LineMark(
-                            x: .value("Date", snapshot.createdAt),
-                            y: .value("Total", snapshot.totalScore)
-                        )
-                        .foregroundStyle(Theme.cyan)
-                        .symbol(Circle())
-                    }
-                }
+                Chart { leverageChartContent }
                 .chartYScale(domain: 0...100)
                 .chartYAxis {
                     AxisMarks(position: .leading) { value in
