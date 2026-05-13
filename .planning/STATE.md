@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Multi-tenancy Foundation
-status: roadmap_created
-stopped_at: v2.2 roadmap created — 5 phases (31-35) decomposing 19 ORG-* requirements. Phase 31 schema+backfill, Phase 32 lifecycle API, Phase 33 active-org context+RLS audit, Phase 34 settings UI both platforms+Resend email, Phase 35 multi-org E2E + milestone close. 100% requirement coverage validated. Next: /gsd-plan-phase 31 to break down schema migrations + backfill plan.
-last_updated: "2026-05-12T22:15:00.000Z"
-last_activity: 2026-05-12
+status: "Roadmap created — 5 phases (31-35), 19 ORG-* requirements mapped 1:1, 0 plans authored"
+stopped_at: Phase 31 context gathered — 5 decisions locked reconciling v2.1 schema reality with v2.2 spec; ready for /gsd-plan-phase 31
+last_updated: "2026-05-13T12:47:51.546Z"
+last_activity: "2026-05-12 — v2.2 ROADMAP.md appended with Phases 31-35 + Phase Details + Progress table; REQUIREMENTS.md Traceability table extended with 19 ORG-* rows (all Planned). Next: /gsd-plan-phase 31 to break down schema migrations + personal-org backfill into atomic plans."
 progress:
-  total_phases: 5
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_phases: 18
+  completed_phases: 18
+  total_plans: 121
+  completed_plans: 121
+  percent: 100
 ---
 
 # Project State
@@ -26,10 +26,10 @@ See: .planning/PROJECT.md (updated 2026-05-12 with v2.2 milestone block)
 ## Current Position
 
 Milestone: v2.2 (Multi-tenancy Foundation)
-Phase: Phase 31 (planned, not started)
+Phase: Phase 31 (context gathered, ready for planning)
 Plans: — (run /gsd-plan-phase 31 to break down)
-Status: Roadmap created — 5 phases (31-35), 19 ORG-* requirements mapped 1:1, 0 plans authored
-Last activity: 2026-05-12 — v2.2 ROADMAP.md appended with Phases 31-35 + Phase Details + Progress table; REQUIREMENTS.md Traceability table extended with 19 ORG-* rows (all Planned). Next: /gsd-plan-phase 31 to break down schema migrations + personal-org backfill into atomic plans.
+Status: Phase 31 context captured — 5 decisions locked (D-01..05) reconciling v2.1 schema reality with v2.2 spec; REQUIREMENTS.md ORG-01..04 updated to match canonical names (user_orgs + cs_organizations, 3 roles); cs_org_invitations table scoped to Phase 31 (schema), endpoints to Phase 32 (API).
+Last activity: 2026-05-13 — Phase 31 discuss-phase complete. CONTEXT.md + DISCUSSION-LOG.md committed (cb44d45). Next: /gsd-plan-phase 31 to decompose into atomic plans (likely: ALTER + slug migration, cs_org_invitations migration, idempotent backfill+audit migration, REQUIREMENTS.md traceability update).
 
 ## Accumulated Context
 
@@ -150,13 +150,13 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-12T21:20:00Z
+Last session: 2026-05-13T12:47:51.537Z
 
-Stopped at: CI honesty-win cascade complete + 999.7(b) reconciled. 5 quick tasks shipped today closing the silent-CI-green trap end-to-end. Final state: CI dashboard fully green on real verification (no more silent no-op), iOS code aligned with macos-26 runner, link-health drift cleaned up via knownExceptions, 15 Dependabot CVEs closed via next 16.2.6 + @swc/helpers bump, 999.7(b) re-audited and marked substantially closed. Quintet 260511-7vh + 260511-thn + 260511-u3y + 260512-fs7 + 260512-nn1 all Verified.
+Stopped at: Phase 31 context gathered — 5 decisions locked reconciling v2.1 schema reality with v2.2 spec; ready for /gsd-plan-phase 31
 
 The narrative arc this session: silent green (999.10) -> red on real issues (thn) -> CI/SDK alignment (u3y) -> drift cleanup (fs7) -> backlog reconciliation (nn1). Each step revealed the next; none of it was visible at the start. Pattern worth remembering: when CI starts honestly failing, the surfaced issues often go deeper than the first layer.
 
-Resume file: None (clean handoff — no in-progress work mid-edit)
+Resume file: .planning/phases/31-org-schema-foundation-personal-org-backfill/31-CONTEXT.md
 
 Outstanding (blocked on user decision or external steps):
 
