@@ -129,10 +129,10 @@ Defined 2026-05-12. Closes backlog 999.4 by locking the 4 architecture decisions
 
 ### Schema & Backfill
 
-- [ ] **ORG-01**: `cs_orgs` table exists with id, name, slug, owner_id, created_at, updated_at. Slug is unique + URL-safe (lowercased, dash-separated).
-- [ ] **ORG-02**: `cs_user_orgs` membership table exists with (user_id, org_id) primary key, `role` enum column (owner / admin / member / viewer), joined_at timestamp. Replaces / unifies the tactical table shipped by 20260413001.
-- [ ] **ORG-03**: `cs_org_invitations` table exists with id, org_id, email, role, token (cryptographic), expires_at (default 7 days), accepted_at (null until accept), invited_by user_id.
-- [ ] **ORG-04**: Migration creates one personal org per existing user (name = "{User}'s Workspace", user becomes owner) AND backfills every cs_* row's org_id column with that personal-org id. Idempotent and reversible.
+- [ ] **ORG-01**: `cs_organizations` table exists (already shipped by 20260413001 — v2.1 tactical foundation) with id, name, owner_user_id, plan_tier, billing_provider, external_billing_id, created_at, updated_at. **Phase 31 adds:** `slug text unique not null` column (lowercased, dash-separated, URL-safe). Backfilled for existing rows in Phase 31's migration. Reconciled with v2.1 reality 2026-05-13 — was originally spec'd as `cs_orgs` but the canonical name is `cs_organizations` per the 2026-04-28 design lock.
+- [ ] **ORG-02**: `user_orgs` membership table exists (already shipped by 20260413001) with (user_id, org_id) primary key, `role` enum check column (owner / admin / member — 3 roles, no viewer), `is_primary boolean` with partial unique index `where is_primary = true`, joined_at timestamp. Reconciled with v2.1 reality 2026-05-13 — was originally spec'd as `cs_user_orgs` + 4 roles but the canonical name is `user_orgs` + 3 roles per the 2026-04-28 design lock. The `is_primary` column is the persistent active-org anchor; Phase 33's cookie/@AppStorage overrides per-device.
+- [ ] **ORG-03**: `cs_org_invitations` table exists with id, org_id, email, role (3 roles: owner/admin/member), token (cryptographic), expires_at (default 7 days), accepted_at (null until accept), invited_by user_id. RLS: admins+owners can manage; invitee SELECT via token-lookup in Phase 32 endpoint (not RLS).
+- [ ] **ORG-04**: Phase 31 ships an idempotent backfill + audit migration. On existing prod (v2.1 backfill complete): largely no-op + audit log (RAISE NOTICE counts of NULL org_ids and orphan refs across 47 cs_* tables). On fresh staging or future bootstrap: full personal-org creation (INSERT WHERE NOT EXISTS) + cs_* org_id backfill (UPDATE WHERE NULL). Idempotent: re-running produces zero new rows on a fully-backfilled DB. Connects to 999.7(b) bootstrap-from-zero story.
 
 ### Org Lifecycle API
 
